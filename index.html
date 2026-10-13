@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PokÃ©dex Báº£ng Tuáº§n HoÃ n 118 NguyÃªn Tá»‘ HÃ³a Há»c</title>
+    <title>Pokédex Bảng Tuần Hoàn 118 Nguyên Tố Hóa Học</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Retro & Sci-Fi Fonts -->
@@ -39,7 +39,7 @@
         .font-vt { font-family: 'VT323', monospace; }
         .font-chakra { font-family: 'Chakra Petch', sans-serif; }
 
-        /* 3D PokÃ©dex Red Casing */
+        /* 3D Pokédex Red Casing */
         .pokedex-case {
             background: linear-gradient(145deg, #f21b3f 0%, #d90429 40%, #a0001a 80%, #5e000c 100%);
             box-shadow: 
@@ -393,7 +393,7 @@
 
         /* Attack, impact, red flash, shake, and floating damage number. */
         #battle-modal .battle-effect{position:absolute;z-index:12;pointer-events:none;opacity:0;font:900 clamp(15px,3vw,23px) 'Press Start 2P',monospace;color:#fff;text-shadow:2px 2px #18283b,-1px -1px #18283b}
-        #battle-modal .battle-effect:before{content:'âœ¦';position:absolute;font-size:clamp(38px,7vw,58px);left:-14px;top:-20px;color:#ffe96b;text-shadow:2px 2px #d64a35}
+        #battle-modal .battle-effect:before{content:'✦';position:absolute;font-size:clamp(38px,7vw,58px);left:-14px;top:-20px;color:#ffe96b;text-shadow:2px 2px #d64a35}
         #battle-modal .battle-effect.active{animation:impactBurst .72s steps(2,end) forwards}
         #battle-modal .battle-projectile{position:absolute;z-index:10;left:25%;top:68%;width:17px;height:17px;opacity:0;background:#fff28a;border:3px solid #fff;border-radius:2px;box-shadow:0 0 0 3px #f29d38,0 0 18px #fff28a;transform:rotate(45deg);pointer-events:none}
         #battle-modal .move-player .battle-projectile{animation:shotPlayer .38s steps(5,end) forwards}
@@ -423,7 +423,7 @@
         #battle-modal .battle-sprite .creature-svg{image-rendering:pixelated}
         #battle-modal .battle-sprite.evolved-sprite{filter:drop-shadow(0 0 7px #fff0a0) drop-shadow(0 4px 1px rgba(20,55,43,.28))}
         #element-creature.evolved{filter:drop-shadow(0 0 8px #ffe08a) drop-shadow(0 5px 8px #0008)}
-        #element-creature.evolved:after{content:'âœ¦';position:absolute;right:4px;top:2px;color:#ffe98b;font-size:17px;animation:evoSparkle .9s steps(2,end) infinite alternate}
+        #element-creature.evolved:after{content:'✦';position:absolute;right:4px;top:2px;color:#ffe98b;font-size:17px;animation:evoSparkle .9s steps(2,end) infinite alternate}
         @keyframes pixelBurst{0%{opacity:0;transform:translate(0,0) scale(.5)}15%{opacity:1}100%{opacity:0;transform:translate(var(--dx),var(--dy)) rotate(var(--rot,90deg)) scale(.25)}}
         @keyframes moveNamePop{0%{opacity:0;transform:translate(-50%,-35%) scale(.6)}18%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}65%{opacity:1;transform:translate(-50%,-55%) scale(1)}100%{opacity:0;transform:translate(-50%,-70%) scale(.8)}}
         @keyframes evoSparkle{from{transform:scale(.75) rotate(-12deg)}to{transform:scale(1.2) rotate(18deg)}}
@@ -530,7 +530,7 @@
         #wild-cutscene-player-sprite,#wild-cutscene-sprite{width:100%;height:100%;display:grid;place-items:center;overflow:visible}
         .wild-cutscene-name{position:relative;z-index:4;min-height:20px;color:#8be8ff;font-weight:900;font-size:clamp(12px,2vw,17px);text-shadow:1px 2px #11243a}
         .wild-cutscene-message{position:relative;z-index:4;max-width:520px;width:100%;min-height:42px;padding:8px 11px;box-sizing:border-box;background:#f3f7fa;color:#17263b;border:3px solid #263b55;text-align:left;font:700 clamp(10px,1.6vw,13px) 'Chakra Petch',sans-serif;line-height:1.35;box-shadow:inset 0 0 0 1px #a6c7d7}
-        .wild-cutscene-message:after{content:"â–Œ";color:#187ea0;animation:wildCursorBlink .7s steps(2,end) infinite}
+        .wild-cutscene-message:after{content:"▌";color:#187ea0;animation:wildCursorBlink .7s steps(2,end) infinite}
         #wild-cutscene-start{position:absolute;z-index:8;right:10px;top:10px;border:1px solid #8aabc1;border-radius:6px;padding:6px 9px;background:#182b42;color:#eafaff;font-weight:800;font-size:10px;cursor:pointer;opacity:.85}
         #wild-cutscene-start:hover{background:#254765;opacity:1}
         .wild-cutscene-pixel{position:absolute;z-index:1;width:5px;height:5px;background:var(--wild-pixel,#baf4ff);box-shadow:0 0 9px var(--wild-pixel,#baf4ff);left:var(--wx);top:var(--wy);animation:wildPixelDrift var(--wd,2.5s) ease-in-out infinite alternate;animation-delay:var(--wdelay,0s);opacity:.8}
@@ -600,18 +600,58 @@
         #asgore-youtube-player iframe{display:block!important;width:200px!important;height:200px!important;border:0}
         @media(max-width:700px){.audio-dock{gap:5px;padding:6px}.audio-dock button{padding:6px;font-size:9px}#audio-status{width:100%;text-align:left;margin-left:0}}
 
-    </style>
+    
+/* Vietnamese text and responsive wrapping fixes */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+body, button, input, textarea, select {
+  font-family: 'Chakra Petch', Arial, sans-serif;
+}
+.font-pixel {
+  font-family: 'Chakra Petch', Arial, sans-serif !important;
+  font-weight: 700;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+#battle-modal .battle-dialogue,
+#battle-modal #battle-question,
+#battle-modal #battle-options,
+#wild-encounter-cutscene .wild-cutscene-label,
+#wild-encounter-cutscene .wild-cutscene-message,
+#wild-encounter-cutscene .wild-cutscene-name {
+  font-family: 'Chakra Petch', Arial, sans-serif;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
+}
+.pokedex-case, .crt-monitor, .trainer-card, .speech-bubble {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.pokedex-case * { box-sizing: border-box; }
+@media (max-width: 520px) {
+  #battle-modal .battle-dialogue {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  #wild-encounter-cutscene .wild-cutscene-label {
+    font-size: clamp(14px, 4vw, 22px);
+    line-height: 1.25;
+  }
+}
+
+</style>
 </head>
 <body class="p-2 md:p-6 flex items-start justify-center">
     <div class="element-doodle-layer" aria-hidden="true">
-        <span class="element-doodle">ðŸ”¥</span>
-        <span class="element-doodle">ðŸ’§</span>
-        <span class="element-doodle">ðŸŒ¿</span>
-        <span class="element-doodle">âš¡</span>
-        <span class="element-doodle">â„ï¸</span>
-        <span class="element-doodle">ðŸª¨</span>
-        <span class="element-doodle">ðŸ‘»</span>
-        <span class="element-doodle">ðŸ‰</span>
+        <span class="element-doodle">🔥</span>
+        <span class="element-doodle">💧</span>
+        <span class="element-doodle">🌿</span>
+        <span class="element-doodle">⚡</span>
+        <span class="element-doodle">❄️</span>
+        <span class="element-doodle">🪨</span>
+        <span class="element-doodle">👻</span>
+        <span class="element-doodle">🐉</span>
     </div>
 
     <!-- MAIN POKEDEX FOLDING BODY CONTAINER -->
@@ -626,7 +666,7 @@
             <div class="flex items-center justify-between border-b-4 border-black/40 pb-3 mb-3">
                 <div class="flex items-center gap-4">
                     <!-- Big Blue Sensor Lens -->
-                    <div id="blue-lens" class="big-blue-lens w-20 h-20 md:w-22 md:h-22 rounded-full relative flex-shrink-0" title="Báº¥m Ä‘á»ƒ phÃ¡t Ã¢m thanh PokÃ©dex">
+                    <div id="blue-lens" class="big-blue-lens w-20 h-20 md:w-22 md:h-22 rounded-full relative flex-shrink-0" title="Bấm để phát âm thanh Pokédex">
                         <div class="absolute top-3 left-3 w-6 h-6 bg-white/80 rounded-full blur-[1px]"></div>
                     </div>
                     <!-- Trio Status Lights -->
@@ -639,8 +679,8 @@
 
                 <!-- Header Title Banner -->
                 <div class="text-right">
-                    <span class="font-pixel text-xs md:text-sm text-yellow-300 tracking-wider block drop-shadow">POKÃ‰DEX MAIN DISPLAY</span>
-                    <span class="text-xs text-red-200 font-mono">Báº¢NG TUáº¦N HOÃ€N 118 NGUYÃŠN Tá» HÃ“A Há»ŒC</span>
+                    <span class="font-pixel text-xs md:text-sm text-yellow-300 tracking-wider block drop-shadow">POKÉDEX MAIN DISPLAY</span>
+                    <span class="text-xs text-red-200 font-mono">BẢNG TUẦN HOÀN 118 NGUYÊN TỐ HÓA HỌC</span>
                 </div>
             </div>
 
@@ -655,20 +695,20 @@
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 border-b border-[#39ff14]/30 pb-2 z-10">
                         <!-- Search Bar -->
                         <div class="flex items-center gap-2 bg-black/80 border border-[#39ff14]/60 px-3 py-1 rounded-md w-full sm:w-60">
-                            <span class="text-yellow-400 text-xs font-pixel">ðŸ”</span>
-                            <input type="text" id="search-input" placeholder="TÃ¬m tÃªn, kÃ½ hiá»‡u, sá»‘ Ã´..." 
+                            <span class="text-yellow-400 text-xs font-pixel">🔍</span>
+                            <input type="text" id="search-input" placeholder="Tìm tên, ký hiệu, số ô..." 
                                 class="bg-transparent text-xs text-[#39ff14] font-mono focus:outline-none w-full placeholder-[#39ff14]/40">
                         </div>
 
                         <!-- Filter Chips -->
                         <div class="flex items-center gap-1 overflow-x-auto crt-scrollbar py-1 text-[10px]">
-                            <button class="filter-chip active px-2 py-1 bg-[#39ff14] text-black font-bold rounded border border-[#39ff14]" data-cat="ALL">Táº¤T Cáº¢</button>
-                            <button class="filter-chip px-2 py-1 bg-orange-600 text-white rounded border border-orange-400" data-cat="alkali">KIá»€M</button>
-                            <button class="filter-chip px-2 py-1 bg-amber-600 text-white rounded border border-amber-400" data-cat="alkaline">KIá»€M THá»”</button>
-                            <button class="filter-chip px-2 py-1 bg-red-600 text-white rounded border border-red-400" data-cat="transition">CHUYá»‚N TIáº¾P</button>
+                            <button class="filter-chip active px-2 py-1 bg-[#39ff14] text-black font-bold rounded border border-[#39ff14]" data-cat="ALL">TẤT CẢ</button>
+                            <button class="filter-chip px-2 py-1 bg-orange-600 text-white rounded border border-orange-400" data-cat="alkali">KIỀM</button>
+                            <button class="filter-chip px-2 py-1 bg-amber-600 text-white rounded border border-amber-400" data-cat="alkaline">KIỀM THỔ</button>
+                            <button class="filter-chip px-2 py-1 bg-red-600 text-white rounded border border-red-400" data-cat="transition">CHUYỂN TIẾP</button>
                             <button class="filter-chip px-2 py-1 bg-emerald-600 text-white rounded border border-emerald-400" data-cat="nonmetal">PHI KIM</button>
                             <button class="filter-chip px-2 py-1 bg-purple-600 text-white rounded border border-purple-400" data-cat="halogen">HALOGEN</button>
-                            <button class="filter-chip px-2 py-1 bg-pink-600 text-white rounded border border-pink-400" data-cat="noble">KHÃ HIáº¾M</button>
+                            <button class="filter-chip px-2 py-1 bg-pink-600 text-white rounded border border-pink-400" data-cat="noble">KHÍ HIẾM</button>
                         </div>
                     </div>
 
@@ -681,20 +721,20 @@
 
                     <!-- Screen Status Footer -->
                     <div class="flex justify-between items-center text-xs text-[#39ff14]/80 font-mono border-t border-[#39ff14]/30 pt-2 z-10">
-                        <span id="grid-status-txt">ÄANG HIá»‚N THá»Š: 118 / 118 NGUYÃŠN Tá»</span>
-                        <span class="animate-pulse text-yellow-300 font-bold text-[11px]">âš¡ Báº¤M CHá»ŒN NGUYÃŠN Tá» Äá»‚ QUÃ‰T Dá»® LIá»†U</span>
+                        <span id="grid-status-txt">ĐANG HIỂN THỊ: 118 / 118 NGUYÊN TỐ</span>
+                        <span class="animate-pulse text-yellow-300 font-bold text-[11px]">⚡ BẤM CHỌN NGUYÊN TỐ ĐỂ QUÉT DỮ LIỆU</span>
                     </div>
 
-    <div id="battle-modal" role="dialog" aria-modal="true" aria-label="Tráº­n Ä‘áº¥u nguyÃªn tá»‘">
+    <div id="battle-modal" role="dialog" aria-modal="true" aria-label="Trận đấu nguyên tố">
       <div class="battle-window">
         <div id="wild-encounter-cutscene" aria-hidden="true">
           <span class="wild-cutscene-pixel" style="--wx:12%;--wy:23%;--wild-pixel:#a6edff;--wd:2.1s"></span>
           <span class="wild-cutscene-pixel" style="--wx:82%;--wy:19%;--wild-pixel:#ffe88b;--wd:2.7s;--wdelay:-.7s"></span>
           <span class="wild-cutscene-pixel" style="--wx:22%;--wy:68%;--wild-pixel:#a8ffd9;--wd:2.4s;--wdelay:-1.2s"></span>
           <span class="wild-cutscene-pixel" style="--wx:75%;--wy:72%;--wild-pixel:#ffb8d5;--wd:2.9s;--wdelay:-.4s"></span>
-          <div id="wild-cutscene-title" class="wild-cutscene-label">ÄANG KHÃM PHÃ...</div>
-          <button type="button" id="wild-cutscene-start" aria-label="Bá» qua cutscene">Bá»Ž QUA â–¶</button>
-          <div class="wild-cutscene-stage" aria-label="Elementomon cá»§a báº¡n bÆ°á»›c tá»›i, má»™t bá»¥i cÃ¢y rung lÃªn rá»“i Elementomon hoang dÃ£ nháº£y ra">
+          <div id="wild-cutscene-title" class="wild-cutscene-label">ĐANG KHÁM PHÁ...</div>
+          <button type="button" id="wild-cutscene-start" aria-label="Bỏ qua cutscene">BỎ QUA ▶</button>
+          <div class="wild-cutscene-stage" aria-label="Elementomon của bạn bước tới, một bụi cây rung lên rồi Elementomon hoang dã nhảy ra">
             <span class="wild-cutscene-cloud cloud-one" style="--cloud-top:15%;--cloud-left:8%;--cloud-speed:15s" aria-hidden="true"></span>
             <span class="wild-cutscene-cloud cloud-two" aria-hidden="true"></span>
             <span class="wild-cutscene-cloud cloud-three" aria-hidden="true"></span>
@@ -703,11 +743,11 @@
             <span class="wild-cutscene-wind" style="--wind-left:26%;--wind-top:35%;--wind-width:38px;--wind-speed:3.4s;--wind-delay:-.5s" aria-hidden="true"></span>
             <div class="wild-cutscene-ground" aria-hidden="true"></div>
             <div class="wild-cutscene-combatant wild-cutscene-player">
-              <div id="wild-cutscene-player-sprite" aria-label="Elementomon cá»§a ngÆ°á»i chÆ¡i"></div>
+              <div id="wild-cutscene-player-sprite" aria-label="Elementomon của người chơi"></div>
               <span class="wild-cutscene-exclamation" aria-hidden="true">!</span>
             </div>
             <div class="wild-cutscene-combatant wild-cutscene-wild">
-              <div id="wild-cutscene-sprite" aria-label="Elementomon hoang dÃ£ chui ra khá»i bá»¥i cÃ¢y"></div>
+              <div id="wild-cutscene-sprite" aria-label="Elementomon hoang dã chui ra khỏi bụi cây"></div>
               <span class="wild-cutscene-exclamation" aria-hidden="true">!</span>
             </div>
             <div class="wild-cutscene-bush" aria-hidden="true">
@@ -717,10 +757,10 @@
               <i class="wild-bush-leaf leaf-b" style="--leaf-dx:14px"></i><i class="wild-bush-leaf leaf-c" style="--leaf-dx:3px"></i>
             </div>
           </div>
-          <div id="wild-cutscene-name" class="wild-cutscene-name">Elementomon hoang dÃ£</div>
-          <div id="wild-cutscene-message" class="wild-cutscene-message">Elementomon cá»§a báº¡n Ä‘ang Ä‘i qua bÃ£i cá»...</div>
+          <div id="wild-cutscene-name" class="wild-cutscene-name">Elementomon hoang dã</div>
+          <div id="wild-cutscene-message" class="wild-cutscene-message">Elementomon của bạn đang đi qua bãi cỏ...</div>
         </div>
-        <div id="battle-modal-header" class="flex items-center justify-between gap-3 mb-3"><div><div class="text-xs text-cyan-300 font-bold">ELEMENT ARENA</div><h2 class="text-xl font-black">TRáº¬N Äáº¤U NGUYÃŠN Tá»</h2></div><button id="battle-close" class="rounded-lg px-3 py-2 bg-slate-700 hover:bg-slate-600" aria-label="ÄÃ³ng">âœ•</button></div>
+        <div id="battle-modal-header" class="flex items-center justify-between gap-3 mb-3"><div><div class="text-xs text-cyan-300 font-bold">ELEMENT ARENA</div><h2 class="text-xl font-black">TRẬN ĐẤU NGUYÊN TỐ</h2></div><button id="battle-close" class="rounded-lg px-3 py-2 bg-slate-700 hover:bg-slate-600" aria-label="Đóng">✕</button></div>
         <div class="battlefield" id="battlefield">
           <div class="battle-platform enemy-platform" aria-hidden="true"></div>
           <div class="battle-platform player-platform" aria-hidden="true"></div>
@@ -729,17 +769,17 @@
           <div id="battle-move-label" class="battle-move-label" aria-hidden="true"></div>
           <div id="battle-effect" class="battle-effect" aria-hidden="true">-1</div>
           <div class="battle-status enemy-status">
-            <div class="battle-name-row"><span id="battle-enemy-name" class="battle-name">Äá»‘i thá»§</span><span id="battle-enemy-level" class="battle-level">Lv. 1</span></div>
+            <div class="battle-name-row"><span id="battle-enemy-name" class="battle-name">Đối thủ</span><span id="battle-enemy-level" class="battle-level">Lv. 1</span></div>
             <div class="battle-hp-line"><span class="battle-hp-label">HP</span><div class="battle-hp"><div id="battle-enemy-hp"></div></div><span id="battle-enemy-hp-label" class="battle-hp-count">5/5</span></div>
           </div>
-          <div id="battle-enemy-emoji" class="battle-sprite enemy-creature" aria-label="Sinh váº­t nguyÃªn tá»‘ Ä‘á»‘i thá»§"></div>
-          <div id="battle-player-emoji" class="battle-sprite player-creature" aria-label="Sinh váº­t nguyÃªn tá»‘ cá»§a báº¡n"></div>
+          <div id="battle-enemy-emoji" class="battle-sprite enemy-creature" aria-label="Sinh vật nguyên tố đối thủ"></div>
+          <div id="battle-player-emoji" class="battle-sprite player-creature" aria-label="Sinh vật nguyên tố của bạn"></div>
           <div class="battle-status player-status">
-            <div class="battle-name-row"><span id="battle-player-name" class="battle-name">NguyÃªn tá»‘ cá»§a báº¡n</span><span id="battle-player-level" class="battle-level">Lv. 1</span></div>
+            <div class="battle-name-row"><span id="battle-player-name" class="battle-name">Nguyên tố của bạn</span><span id="battle-player-level" class="battle-level">Lv. 1</span></div>
             <div class="battle-hp-line"><span class="battle-hp-label">HP</span><div class="battle-hp"><div id="battle-player-hp"></div></div><span id="battle-player-hp-label" class="battle-hp-count">5/5</span></div>
           </div>
         </div>
-        <div id="battle-dialogue" class="battle-dialogue">Má»™t Ä‘á»‘i thá»§ xuáº¥t hiá»‡n! Tráº£ lá»i cÃ¢u há»i vá» nguyÃªn tá»‘ Ä‘á»ƒ táº¥n cÃ´ng.</div>
+        <div id="battle-dialogue" class="battle-dialogue">Một đối thủ xuất hiện! Trả lời câu hỏi về nguyên tố để tấn công.</div>
         <div id="battle-question" class="font-bold text-base mb-3"></div>
         <div id="battle-options" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
         <div id="battle-result-actions" class="mt-3 flex flex-wrap gap-2"></div>
@@ -763,23 +803,23 @@
             <div class="flex justify-between items-center px-1">
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-3">
-                    <button id="btn-speak" class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black border-2 border-gray-600 shadow-2xl flex items-center justify-center active:scale-95 transition" title="Äá»c thuyáº¿t minh PokÃ©dex">
+                    <button id="btn-speak" class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black border-2 border-gray-600 shadow-2xl flex items-center justify-center active:scale-95 transition" title="Đọc thuyết minh Pokédex">
                         <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
                     </button>
                     <button id="btn-random" class="px-3 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-pixel text-[10px] rounded-lg border-2 border-yellow-600 shadow-lg active:scale-95 transition">
-                        ðŸ”€ RANDOM
+                        🔀 RANDOM
                     </button>
                 </div>
 
                 <!-- D-Pad Navigation Cross -->
                 <div class="relative w-28 h-28 flex items-center justify-center">
                     <div class="absolute w-28 h-9 bg-gray-900 rounded-md border-2 border-black shadow-2xl flex justify-between p-0.5">
-                        <button id="dpad-left" class="dpad-btn w-8 h-full rounded-l flex items-center justify-center text-white font-bold text-xs">â—€</button>
-                        <button id="dpad-right" class="dpad-btn w-8 h-full rounded-r flex items-center justify-center text-white font-bold text-xs">â–¶</button>
+                        <button id="dpad-left" class="dpad-btn w-8 h-full rounded-l flex items-center justify-center text-white font-bold text-xs">◀</button>
+                        <button id="dpad-right" class="dpad-btn w-8 h-full rounded-r flex items-center justify-center text-white font-bold text-xs">▶</button>
                     </div>
                     <div class="absolute h-28 w-9 bg-gray-900 rounded-md border-2 border-black shadow-2xl flex flex-col justify-between p-0.5">
-                        <button id="dpad-up" class="dpad-btn h-8 w-full rounded-t flex items-center justify-center text-white font-bold text-xs">â–²</button>
-                        <button id="dpad-down" class="dpad-btn h-8 w-full rounded-b flex items-center justify-center text-white font-bold text-xs">â–¼</button>
+                        <button id="dpad-up" class="dpad-btn h-8 w-full rounded-t flex items-center justify-center text-white font-bold text-xs">▲</button>
+                        <button id="dpad-down" class="dpad-btn h-8 w-full rounded-b flex items-center justify-center text-white font-bold text-xs">▼</button>
                     </div>
                     <div class="w-4 h-4 bg-gray-800 rounded-full z-10 border border-gray-700"></div>
                 </div>
@@ -829,7 +869,7 @@
                         </div>
                     </div>
                     <div class="text-right">
-                        <span id="disp-atomic-badge" class="font-pixel text-xs bg-cyan-950 text-cyan-300 px-2 py-1 rounded border border-cyan-500">Ã” Sá»: 1</span>
+                        <span id="disp-atomic-badge" class="font-pixel text-xs bg-cyan-950 text-cyan-300 px-2 py-1 rounded border border-cyan-500">Ô SỐ: 1</span>
                         <p id="disp-category-badge" class="text-[10px] mt-1 text-yellow-400 font-bold uppercase">PHI KIM</p>
                     </div>
                 </div>
@@ -854,15 +894,15 @@
                 <!-- NEW: REAL ELEMENT PHOTO PANEL (keeps original Specimen Preview above) -->
                 <div class="relative my-1 rounded-xl border border-cyan-400/40 bg-gradient-to-br from-[#07101b]/70 to-[#0b1927]/70 p-2 overflow-hidden">
                     <div class="flex items-center justify-between gap-2 mb-2">
-                        <span class="text-[10px] font-mono tracking-wider text-cyan-300">REAL ELEMENT â€¢ áº¢NH THá»°C Táº¾</span>
+                        <span class="text-[10px] font-mono tracking-wider text-cyan-300">REAL ELEMENT • ẢNH THỰC TẾ</span>
                     </div>
                     <div id="disp-real-image-stage" class="real-image-stage flex items-center justify-center rounded-lg min-h-[112px] md:min-h-[132px]">
-                        <img id="disp-real-element-image" alt="áº¢nh thá»±c táº¿ nguyÃªn tá»‘" loading="lazy" />
+                        <img id="disp-real-element-image" alt="Ảnh thực tế nguyên tố" loading="lazy" />
                         <div id="disp-real-image-fallback" class="hidden text-center py-3 px-2" role="alert">
                             <div class="inline-flex items-center justify-center gap-2 text-red-400 font-bold font-mono text-xs border border-red-500/80 bg-red-950/50 rounded-md px-3 py-2 shadow-[0_0_14px_rgba(239,68,68,.25)]">
-                                <span aria-hidden="true" class="text-lg">âš </span><span>ERROR!</span>
+                                <span aria-hidden="true" class="text-lg">⚠</span><span>ERROR!</span>
                             </div>
-                            <p class="text-xs text-red-300 mt-2 font-bold">NguyÃªn tá»‘ nÃ y chÆ°a cÃ³ hÃ¬nh áº£nh cá»¥ thá»ƒ!</p>
+                            <p class="text-xs text-red-300 mt-2 font-bold">Nguyên tố này chưa có hình ảnh cụ thể!</p>
                         </div>
                     </div>
                 </div>
@@ -870,55 +910,55 @@
                 <!-- TECHNICAL SPECS GRID -->
                 <div class="grid grid-cols-2 gap-2 text-xs bg-black/60 p-2.5 rounded-lg border border-cyan-500/30 font-chakra">
                     <div>
-                        <span class="text-gray-400 text-[10px] block">Cáº¤U HÃŒNH ELECTRON:</span>
-                        <span id="disp-config-full" class="text-yellow-300 font-bold">1sÂ¹</span>
+                        <span class="text-gray-400 text-[10px] block">CẤU HÌNH ELECTRON:</span>
+                        <span id="disp-config-full" class="text-yellow-300 font-bold">1s¹</span>
                     </div>
                     <div>
-                        <span class="text-gray-400 text-[10px] block">KHá»I LÆ¯á»¢NG / Sá» KHá»I:</span>
+                        <span class="text-gray-400 text-[10px] block">KHỐI LƯỢNG / SỐ KHỐI:</span>
                         <span id="disp-mass" class="text-white font-bold">1.008 u</span>
                     </div>
                     <div>
-                        <span class="text-gray-400 text-[10px] block">Vá»Š TRÃ (CHU Ká»² - NHÃ“M):</span>
-                        <span id="disp-position" class="text-cyan-200">Chu ká»³ 1, NhÃ³m 1A</span>
+                        <span class="text-gray-400 text-[10px] block">VỊ TRÍ (CHU KỲ - NHÓM):</span>
+                        <span id="disp-position" class="text-cyan-200">Chu kỳ 1, Nhóm 1A</span>
                     </div>
                     <div>
-                        <span class="text-gray-400 text-[10px] block">Lá»šP ELECTRON (K, L, M...):</span>
+                        <span class="text-gray-400 text-[10px] block">LỚP ELECTRON (K, L, M...):</span>
                         <span id="disp-shells" class="text-green-300 font-bold">K: 1</span>
                     </div>
                     <div class="col-span-2 border-t border-cyan-500/20 pt-1">
-                        <span class="text-gray-400 text-[10px] block">NGÆ¯á»œI PHÃT HIá»†N & NÄ‚M:</span>
+                        <span class="text-gray-400 text-[10px] block">NGƯỜI PHÁT HIỆN & NĂM:</span>
                         <span id="disp-discoverer" class="text-yellow-200">Henry Cavendish (1766)</span>
                     </div>
                 </div>
 
                 <!-- POKEDEX LORE / FUN FACT BOX WITH TYPEWRITER EFFECT -->
                 <div class="bg-black/80 p-2.5 rounded-lg border border-cyan-500/40 h-28 overflow-y-auto crt-scrollbar my-1">
-                    <span class="text-[10px] text-yellow-400 font-pixel block mb-1">ðŸ“– POKÃ‰DEX LORE / FUN FACT:</span>
+                    <span class="text-[10px] text-yellow-400 font-pixel block mb-1">📖 POKÉDEX LORE / FUN FACT:</span>
                     <p id="disp-fact" class="text-sm text-cyan-200 font-vt leading-relaxed">
-                        Äang táº£i dá»¯ liá»‡u há»“ sÆ¡ nguyÃªn tá»‘...
+                        Đang tải dữ liệu hồ sơ nguyên tố...
                     </p>
                 </div>
 
                 <!-- ELEMENT CREATURE TRAINER: fun-fact bubble + level -->
                 <div class="trainer-card" id="trainer-card">
                     <div class="trainer-top">
-                        <div class="creature-doodle" id="element-creature" aria-label="Doodle nguyÃªn tá»‘"></div>
-                        <div class="speech-bubble" id="creature-fact">Xin chÃ o! HÃ£y cÃ¹ng khÃ¡m phÃ¡ nguyÃªn tá»‘ nÃ y nhÃ©!</div>
+                        <div class="creature-doodle" id="element-creature" aria-label="Doodle nguyên tố"></div>
+                        <div class="speech-bubble" id="creature-fact">Xin chào! Hãy cùng khám phá nguyên tố này nhé!</div>
                     </div>
                     <div class="flex items-center justify-between gap-3 mt-3">
                         <div class="flex-1">
                             <div class="flex justify-between text-[11px] mb-1"><strong id="creature-name">HYDRO MON</strong><span id="creature-level">LEVEL 0 / 5</span></div>
                             <div class="level-track"><div id="creature-level-fill" class="level-fill" style="width:0%"></div></div>
-                            <div id="creature-evolution-note" class="text-[10px] text-cyan-200 mt-1">Tháº¯ng tráº­n Ä‘á»ƒ tÄƒng cáº¥p. Äáº¡t cáº¥p 5 sáº½ tiáº¿n hÃ³a!</div>
+                            <div id="creature-evolution-note" class="text-[10px] text-cyan-200 mt-1">Thắng trận để tăng cấp. Đạt cấp 5 sẽ tiến hóa!</div>
                         </div>
-                        <button type="button" id="btn-train" class="trainer-btn">âš” RÃˆN LUYá»†N</button>
+                        <button type="button" id="btn-train" class="trainer-btn">⚔ RÈN LUYỆN</button>
                     </div>
                 </div>
 
                 <!-- Footer Direct Jump Input -->
                 <div class="flex items-center justify-between text-xs border-t border-cyan-500/30 pt-1.5">
                     <div class="flex items-center gap-2">
-                        <span class="text-gray-400">NHáº¬P Sá» Ã”:</span>
+                        <span class="text-gray-400">NHẬP SỐ Ô:</span>
                         <input type="number" id="direct-num-input" min="1" max="118" value="1" 
                             class="w-16 bg-black border border-cyan-500 text-yellow-300 font-bold text-center rounded px-1 focus:outline-none">
                         <button id="btn-direct-go" class="px-2 py-1 bg-cyan-700 hover:bg-cyan-600 text-white font-pixel text-[9px] rounded">GO</button>
@@ -943,11 +983,11 @@
                 </div>
                 <div class="flex justify-between items-center">
                     <div class="flex gap-2">
-                        <button id="btn-key-clear" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded border border-red-700 shadow">XÃ“A</button>
-                        <button id="btn-key-enter" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-bold text-xs rounded border border-green-700 shadow">XÃC NHáº¬N</button>
+                        <button id="btn-key-clear" class="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded border border-red-700 shadow">XÓA</button>
+                        <button id="btn-key-enter" class="px-4 py-2 bg-green-600 hover:bg-green-500 text-white font-bold text-xs rounded border border-green-700 shadow">XÁC NHẬN</button>
                     </div>
                     <div class="text-right text-[10px] text-gray-400 font-mono">
-                        POKÃ‰DEX S/N: PK-CHEM-118
+                        POKÉDEX S/N: PK-CHEM-118
                     </div>
                 </div>
             </div>
@@ -960,11 +1000,11 @@
 
     <script>
         /* ===================================================================
-           1. ORIGINAL POKEDEX AUDIO ENGINE â€” CHIPTUNE BGM + GAME SFX
+           1. ORIGINAL POKEDEX AUDIO ENGINE — CHIPTUNE BGM + GAME SFX
            Generated with Web Audio: no external audio files or network needed.
            Audio starts after the first user interaction (browser autoplay policy).
            =================================================================== */
-        const PokÃ©dexAudio = {
+        const PokédexAudio = {
             ctx: null, masterBus: null, sfxBus: null, musicBus: null,
             sfxEnabled: true, musicEnabled: true, userSetMusic: false,
             musicTimer: null, musicStep: 0, musicMode: 'explore',
@@ -989,7 +1029,7 @@
                     this.masterBus.connect(this.ctx.destination);
                     return true;
                 } catch (e) {
-                    this.updateControls('Ã‚m thanh khÃ´ng Ä‘Æ°á»£c trÃ¬nh duyá»‡t há»— trá»£');
+                    this.updateControls('Âm thanh không được trình duyệt hỗ trợ');
                     return false;
                 }
             },
@@ -1005,7 +1045,7 @@
                     }
                     return true;
                 } catch (e) {
-                    this.updateControls('KhÃ´ng thá»ƒ báº­t Ã¢m thanh');
+                    this.updateControls('Không thể bật âm thanh');
                     return false;
                 }
             },
@@ -1115,7 +1155,7 @@
                     this.musicBus.gain.setTargetAtTime(0.0001, this.ctx.currentTime, .05);
                 }
                 if (!this.asgorePlayerReady || !this.asgorePlayer) {
-                    this.updateControls('ÄANG Táº¢I ASGOREâ€¦');
+                    this.updateControls('ĐANG TẢI ASGORE…');
                     return;
                 }
                 try {
@@ -1128,9 +1168,9 @@
                     else this.asgorePlayer.mute();
                     this.asgorePlayer.playVideo();
                     this.asgorePlayPending = false;
-                    this.updateControls('BATTLE BGM: ASGORE â€¢ TOBY FOX');
+                    this.updateControls('BATTLE BGM: ASGORE • TOBY FOX');
                 } catch (e) {
-                    this.updateControls('KhÃ´ng phÃ¡t Ä‘Æ°á»£c ASGORE tá»± Ä‘á»™ng; hÃ£y báº­t láº¡i NHáº C Ä‘á»ƒ thá»­ láº¡i.');
+                    this.updateControls('Không phát được ASGORE tự động; hãy bật lại NHẠC để thử lại.');
                 }
             },
             pauseAsgoreMusic() {
@@ -1249,7 +1289,7 @@
                     }
                     this.showAsgorePlayer(true);
                     if (this.musicEnabled) this.startAsgoreMusic();
-                    else this.updateControls('ASGORE pronto â€¢ la musica Ã¨ spenta');
+                    else this.updateControls('ASGORE pronto • la musica è spenta');
                     return;
                 }
                 if (previousMode === 'battle') {
@@ -1311,15 +1351,15 @@
                 const music = document.getElementById('audio-music-toggle');
                 const sfx = document.getElementById('audio-sfx-toggle');
                 const status = document.getElementById('audio-status');
-                if (music) { music.textContent = this.musicEnabled ? 'â™« NHáº C: Báº¬T' : 'â™« NHáº C: Táº®T'; music.setAttribute('aria-pressed', String(this.musicEnabled)); music.classList.toggle('audio-on', this.musicEnabled); }
-                if (sfx) { sfx.textContent = this.sfxEnabled ? 'ðŸ”Š SFX: Báº¬T' : 'ðŸ”‡ SFX: Táº®T'; sfx.setAttribute('aria-pressed', String(this.sfxEnabled)); sfx.classList.toggle('audio-on', this.sfxEnabled); }
-                if (status) status.textContent = message || (this.musicMode === 'battle' ? (this.musicEnabled ? 'BATTLE BGM: ASGORE â€¢ TOBY FOX' : 'BGM Táº®T â€¢ ASGORE ÄANG Táº M Dá»ªNG') : (this.ctx && this.ctx.state === 'running' ? 'AUDIO READY' : 'Báº¬T Ã‚M THANH SAU Láº¦N Báº¤M Äáº¦U'));
+                if (music) { music.textContent = this.musicEnabled ? '♫ NHẠC: BẬT' : '♫ NHẠC: TẮT'; music.setAttribute('aria-pressed', String(this.musicEnabled)); music.classList.toggle('audio-on', this.musicEnabled); }
+                if (sfx) { sfx.textContent = this.sfxEnabled ? '🔊 SFX: BẬT' : '🔇 SFX: TẮT'; sfx.setAttribute('aria-pressed', String(this.sfxEnabled)); sfx.classList.toggle('audio-on', this.sfxEnabled); }
+                if (status) status.textContent = message || (this.musicMode === 'battle' ? (this.musicEnabled ? 'BATTLE BGM: ASGORE • TOBY FOX' : 'BGM TẮT • ASGORE ĐANG TẠM DỪNG') : (this.ctx && this.ctx.state === 'running' ? 'AUDIO READY' : 'BẬT ÂM THANH SAU LẦN BẤM ĐẦU'));
             }
         };
 
         // Use the officially published Toby Fox upload for battle BGM. The old visible
         // Battle BGM card is removed; the official YouTube API player is kept in a separate host.
-        window.onYouTubeIframeAPIReady = function () { PokÃ©dexAudio.createAsgorePlayer(); };
+        window.onYouTubeIframeAPIReady = function () { PokédexAudio.createAsgorePlayer(); };
         (function loadYouTubePlayerAPI() {
             if (document.querySelector('script[data-asgore-youtube-api="true"]')) return;
             const tag = document.createElement('script');
@@ -1333,124 +1373,124 @@
            2. COMPLETE DATABASE OF ALL 118 CHEMICAL ELEMENTS
            =================================================================== */
         const RAW_ELEMENTS = [
-            { num: 1, sym: "H", vn: "Hydro", en: "Hydrogen", mass: "1.008", period: 1, group: 1, block: "s", cat: "Phi kim", catKey: "nonmetal", config: "1sÂ¹", shells: [1], disc: "Henry Cavendish (1766)", fact: "Hydro lÃ  nguyÃªn tá»‘ phá»• biáº¿n nháº¥t trong váº­t cháº¥t thÃ´ng thÆ°á»ng cá»§a vÅ© trá»¥, chiáº¿m khoáº£ng 75% khá»‘i lÆ°á»£ng váº­t cháº¥t baryon. NÃ³ lÃ  nhiÃªn liá»‡u trong pháº£n á»©ng nhiá»‡t háº¡ch cá»§a cÃ¡c sao." },
-            { num: 2, sym: "He", vn: "Heli", en: "Helium", mass: "4.0026", period: 1, group: 18, block: "s", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "1sÂ²", shells: [2], disc: "Pierre Janssen (1868)", fact: "ÄÆ°á»£c phÃ¡t hiá»‡n trÃªn Máº·t Trá»i trÆ°á»›c khi tÃ¬m tháº¥y trÃªn TrÃ¡i Äáº¥t. KhÃ´ng thá»ƒ bá»‹ Ä‘Ã³ng bÄƒng á»Ÿ Ã¡p suáº¥t khÃ­ quyá»ƒn." },
-            { num: 3, sym: "Li", vn: "Liti", en: "Lithium", mass: "6.94", period: 2, group: 1, block: "s", cat: "Kim loáº¡i kiá»m", catKey: "alkali", config: "[He] 2sÂ¹", shells: [2, 1], disc: "Johan Arfwedson (1817)", fact: "Kim loáº¡i nháº¹ nháº¥t tháº¿ giá»›i, ná»•i trÃªn dáº§u. TrÃ¡i tim cung cáº¥p nÄƒng lÆ°á»£ng cho pin smartphone & xe Ä‘iá»‡n." },
-            { num: 4, sym: "Be", vn: "Beri", en: "Beryllium", mass: "9.0122", period: 2, group: 2, block: "s", cat: "Kiá»m thá»•", catKey: "alkaline", config: "[He] 2sÂ²", shells: [2, 2], disc: "Louis Vauquelin (1798)", fact: "Beri lÃ  kim loáº¡i nháº¹, cá»©ng vÃ  Ä‘á»™c khi hÃ­t pháº£i bá»¥i. Trong Ä‘Ã¡ emerald, beri thuá»™c cáº¥u trÃºc khoÃ¡ng beryl; sáº¯c xanh chá»§ yáº¿u do táº¡p cháº¥t crom vÃ /hoáº·c vanadi." },
-            { num: 5, sym: "B", vn: "Bo", en: "Boron", mass: "10.81", period: 2, group: 13, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[He] 2sÂ² 2pÂ¹", shells: [2, 3], disc: "Joseph Gay-Lussac (1808)", fact: "Boron carbide (Bâ‚„C), má»™t há»£p cháº¥t cá»§a bo, Ä‘Æ°á»£c dÃ¹ng lÃ m váº­t liá»‡u giÃ¡p nháº¹ vÃ  trong cÃ¡c á»©ng dá»¥ng háº¥p thá»¥ nÆ¡tron; Ä‘Ã¢y khÃ´ng pháº£i lÃ  Ã¡o giÃ¡p lÃ m tá»« bo nguyÃªn cháº¥t." },
-            { num: 6, sym: "C", vn: "Cacbon", en: "Carbon", mass: "12.011", period: 2, group: 14, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[He] 2sÂ² 2pÂ²", shells: [2, 4], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Cacbon lÃ  ná»n táº£ng hÃ³a há»c cá»§a sá»± sá»‘ng há»¯u cÆ¡. CÃ¡c dáº¡ng thÃ¹ hÃ¬nh gá»“m than chÃ¬ má»m vÃ  kim cÆ°Æ¡ng â€” má»™t trong nhá»¯ng váº­t liá»‡u tá»± nhiÃªn cá»©ng nháº¥t." },
-            { num: 7, sym: "N", vn: "NitÆ¡", en: "Nitrogen", mass: "14.007", period: 2, group: 15, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[He] 2sÂ² 2pÂ³", shells: [2, 5], disc: "Daniel Rutherford (1772)", fact: "NitÆ¡ chiáº¿m khoáº£ng 78% thá»ƒ tÃ­ch khÃ´ng khÃ­ khÃ´. NitÆ¡ lá»ng á»Ÿ gáº§n âˆ’196Â°C Ä‘Æ°á»£c dÃ¹ng lÃ m cháº¥t lÃ m láº¡nh sÃ¢u vÃ  cÃ³ thá»ƒ gÃ¢y bá»ng láº¡nh nghiÃªm trá»ng." },
-            { num: 8, sym: "O", vn: "Oxi", en: "Oxygen", mass: "15.999", period: 2, group: 16, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[He] 2sÂ² 2pâ´", shells: [2, 6], disc: "Carl Wilhelm Scheele (1774)", fact: "Duy trÃ¬ sá»± sá»‘ng vÃ  sá»± chÃ¡y. Chiáº¿m 21% khÃ´ng khÃ­ vÃ  gáº§n má»™t ná»­a khá»‘i lÆ°á»£ng vá» TrÃ¡i Äáº¥t." },
-            { num: 9, sym: "F", vn: "Flo", en: "Fluorine", mass: "18.998", period: 2, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[He] 2sÂ² 2pâµ", shells: [2, 7], disc: "Henri Moissan (1886)", fact: "Flo nguyÃªn tá»‘ lÃ  cháº¥t khÃ­ cá»±c ká»³ pháº£n á»©ng vÃ  Ä‘á»™c. Kem Ä‘Ã¡nh rÄƒng thÆ°á»ng chá»©a cÃ¡c há»£p cháº¥t fluoride vá»›i lÆ°á»£ng Ä‘Æ°á»£c kiá»ƒm soÃ¡t Ä‘á»ƒ giÃºp ngÄƒn ngá»«a sÃ¢u rÄƒng, khÃ´ng pháº£i bá»™t flo nguyÃªn tá»‘." },
-            { num: 10, sym: "Ne", vn: "Neon", en: "Neon", mass: "20.180", period: 2, group: 18, block: "p", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "[He] 2sÂ² 2pâ¶", shells: [2, 8], disc: "William Ramsay (1898)", fact: "PhÃ¡t ra Ã¡nh sÃ¡ng mÃ u Ä‘á» cam rá»±c rá»¡ khi cÃ³ dÃ²ng Ä‘iá»‡n cháº¡y qua, táº¡o nÃªn cÃ¡c biá»ƒn quáº£ng cÃ¡o neon vá» Ä‘Ãªm." },
-            { num: 11, sym: "Na", vn: "Natri", en: "Sodium", mass: "22.990", period: 3, group: 1, block: "s", cat: "Kim loáº¡i kiá»m", catKey: "alkali", config: "[Ne] 3sÂ¹", shells: [2, 8, 1], disc: "Humphry Davy (1807)", fact: "Natri lÃ  kim loáº¡i má»m cÃ³ thá»ƒ cáº¯t báº±ng dao vÃ  pháº£n á»©ng ráº¥t máº¡nh vá»›i nÆ°á»›c; trong má»™t sá»‘ Ä‘iá»u kiá»‡n pháº£n á»©ng cÃ³ thá»ƒ bÃ¹ng chÃ¡y hoáº·c ná»•. Natri cÅ©ng cÃ³ trong muá»‘i Äƒn NaCl." },
-            { num: 12, sym: "Mg", vn: "Magie", en: "Magnesium", mass: "24.305", period: 3, group: 2, block: "s", cat: "Kiá»m thá»•", catKey: "alkaline", config: "[Ne] 3sÂ²", shells: [2, 8, 2], disc: "Joseph Black (1755)", fact: "ChÃ¡y vá»›i Ã¡nh sÃ¡ng chÃ³i lÃ³a máº¯t. TrÃ¡i tim cá»§a cháº¥t diá»‡p lá»¥c giÃºp cÃ¢y xanh quang há»£p nÄƒng lÆ°á»£ng." },
-            { num: 13, sym: "Al", vn: "NhÃ´m", en: "Aluminium", mass: "26.982", period: 3, group: 13, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Ne] 3sÂ² 3pÂ¹", shells: [2, 8, 3], disc: "Hans Christian Ã˜rsted (1825)", fact: "Kim loáº¡i phá»• biáº¿n nháº¥t vá» TrÃ¡i Äáº¥t. Nháº¹, khÃ´ng gá»‰, lÃ  váº­t liá»‡u khÃ´ng thá»ƒ thiáº¿u cháº¿ táº¡o mÃ¡y bay." },
-            { num: 14, sym: "Si", vn: "Silic", en: "Silicon", mass: "28.085", period: 3, group: 14, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[Ne] 3sÂ² 3pÂ²", shells: [2, 8, 4], disc: "JÃ¶ns Jacob Berzelius (1824)", fact: "Linh há»“n cá»§a Thung lÅ©ng Silicon! Váº­t liá»‡u bÃ¡n dáº«n táº¡o nÃªn toÃ n bá»™ vi xá»­ lÃ½ mÃ¡y tÃ­nh hiá»‡n Ä‘áº¡i." },
-            { num: 15, sym: "P", vn: "Photpho", en: "Phosphorus", mass: "30.974", period: 3, group: 15, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[Ne] 3sÂ² 3pÂ³", shells: [2, 8, 5], disc: "Hennig Brand (1669)", fact: "Photpho tráº¯ng phÃ¡t sÃ¡ng trong Ä‘Ãªm, photpho Ä‘á» Ä‘Æ°á»£c dÃ¹ng á»Ÿ Ä‘áº§u que diÃªm an toÃ n." },
-            { num: 16, sym: "S", vn: "LÆ°u huá»³nh", en: "Sulfur", mass: "32.06", period: 3, group: 16, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[Ne] 3sÂ² 3pâ´", shells: [2, 8, 6], disc: "Thá»i cá»• Ä‘áº¡i", fact: "CÃ³ mÃ u vÃ ng chanh rá»±c rá»¡ vÃ  mÃ¹i trá»©ng thá»‘i Ä‘áº·c trÆ°ng khi káº¿t há»£p vá»›i Hydro thÃ nh H2S." },
-            { num: 17, sym: "Cl", vn: "Clo", en: "Chlorine", mass: "35.45", period: 3, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Ne] 3sÂ² 3pâµ", shells: [2, 8, 7], disc: "Carl Wilhelm Scheele (1774)", fact: "KhÃ­ Ä‘á»™c mÃ u vÃ ng lá»¥c, Ä‘Æ°á»£c dÃ¹ng phá»• biáº¿n Ä‘á»ƒ khá»­ trÃ¹ng lÃ m sáº¡ch nÆ°á»›c bá»ƒ bÆ¡i." },
-            { num: 18, sym: "Ar", vn: "Argon", en: "Argon", mass: "39.95", period: 3, group: 18, block: "p", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "[Ne] 3sÂ² 3pâ¶", shells: [2, 8, 8], disc: "Lord Rayleigh (1894)", fact: "Argon lÃ  khÃ­ chiáº¿m tá»· lá»‡ lá»›n thá»© ba trong khÃ­ quyá»ƒn TrÃ¡i Äáº¥t, sau nitÆ¡ vÃ  oxy. Argon Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ bÃ³ng Ä‘Ã¨n vÃ  lÃ m khÃ­ báº£o vá»‡ khi hÃ n." },
-            { num: 19, sym: "K", vn: "Kali", en: "Potassium", mass: "39.098", period: 4, group: 1, block: "s", cat: "Kim loáº¡i kiá»m", catKey: "alkali", config: "[Ar] 4sÂ¹", shells: [2, 8, 8, 1], disc: "Humphry Davy (1807)", fact: "KhoÃ¡ng cháº¥t thiáº¿t yáº¿u cho tim máº¡ch vÃ  dÃ¢y tháº§n kinh. CÃ³ ráº¥t nhiá»u trong chuá»‘i tÆ°Æ¡i." },
-            { num: 20, sym: "Ca", vn: "Canxi", en: "Calcium", mass: "40.078", period: 4, group: 2, block: "s", cat: "Kiá»m thá»•", catKey: "alkaline", config: "[Ar] 4sÂ²", shells: [2, 8, 8, 2], disc: "Humphry Davy (1808)", fact: "ThÃ nh pháº§n cáº¥u táº¡o nÃªn xÆ°Æ¡ng, rÄƒng vÃ  vá» sÃ² vá» á»‘c. GiÃºp cÆ¡ thá»ƒ Ä‘á»©ng vá»¯ng cháº¯c." },
-            { num: 21, sym: "Sc", vn: "Scandi", en: "Scandium", mass: "44.956", period: 4, group: 3, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dÂ¹ 4sÂ²", shells: [2, 8, 9, 2], disc: "Lars Fredrik Nilson (1879)", fact: "Há»£p kim Scandi-NhÃ´m siÃªu nháº¹ bá»n dÃ¹ng cháº¿ táº¡o gáº­y bÃ³ng chÃ y vÃ  khung xe Ä‘áº¡p Ä‘ua Ä‘áº¯t tiá»n." },
-            { num: 22, sym: "Ti", vn: "Titan", en: "Titanium", mass: "47.867", period: 4, group: 4, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dÂ² 4sÂ²", shells: [2, 8, 10, 2], disc: "William Gregor (1791)", fact: "Titan cÃ³ tá»· lá»‡ bá»n trÃªn khá»‘i lÆ°á»£ng cao vÃ  kháº£ nÄƒng tÆ°Æ¡ng thÃ­ch sinh há»c tá»‘t nhá» lá»›p oxit bá» máº·t á»•n Ä‘á»‹nh; vÃ¬ váº­y nÃ³ Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ implant y táº¿." },
-            { num: 23, sym: "V", vn: "Vanadi", en: "Vanadium", mass: "50.942", period: 4, group: 5, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dÂ³ 4sÂ²", shells: [2, 8, 11, 2], disc: "AndrÃ©s Manuel del RÃ­o (1801)", fact: "Pha vÃ o thÃ©p giÃºp táº¡o Ä‘á»™ Ä‘Ã n há»“i dáº»o dai cá»±c cao cho lÃ² xo Ã´ tÃ´ vÃ  dá»¥ng cá»¥ cÆ¡ khÃ­." },
-            { num: 24, sym: "Cr", vn: "Crom", en: "Chromium", mass: "51.996", period: 4, group: 6, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dâµ 4sÂ¹", shells: [2, 8, 13, 1], disc: "Louis Vauquelin (1797)", fact: "Crom lÃ  kim loáº¡i cá»©ng, chá»‘ng Äƒn mÃ²n tá»‘t khi Ä‘Æ°á»£c dÃ¹ng trong há»£p kim hoáº·c lá»›p máº¡. KhÃ´ng nÃªn gá»i nÃ³ lÃ  kim loáº¡i cá»©ng nháº¥t tháº¿ giá»›i theo nghÄ©a tuyá»‡t Ä‘á»‘i." },
-            { num: 25, sym: "Mn", vn: "Mangan", en: "Manganese", mass: "54.938", period: 4, group: 7, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dâµ 4sÂ²", shells: [2, 8, 13, 2], disc: "Johan Gottlieb Gahn (1774)", fact: "ThÃ nh pháº§n quan trá»ng Ä‘á»ƒ luyá»‡n thÃ©p khÃ´ng gá»‰ cháº¯c cháº¯n vÃ  sáº£n xuáº¥t vá» lon nÆ°á»›c ngá»t." },
-            { num: 26, sym: "Fe", vn: "Sáº¯t", en: "Iron", mass: "55.845", period: 4, group: 8, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dâ¶ 4sÂ²", shells: [2, 8, 14, 2], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Kim loáº¡i phá»• biáº¿n nháº¥t ná»n vÄƒn minh con ngÆ°á»i! GiÃºp mÃ¡u cÃ³ mÃ u Ä‘á» nhá» protein Hemoglobin." },
-            { num: 27, sym: "Co", vn: "Coban", en: "Cobalt", mass: "58.933", period: 4, group: 9, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dâ· 4sÂ²", shells: [2, 8, 15, 2], disc: "Georg Brandt (1735)", fact: "Táº¡o nÃªn sáº¯c xanh lam Coban tuyá»‡t Ä‘áº¹p cho gá»‘m sá»© cá»• truyá»n vÃ  kÃ­nh mÃ u nghá»‡ thuáº­t." },
-            { num: 28, sym: "Ni", vn: "Niken", en: "Nickel", mass: "58.693", period: 4, group: 10, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dâ¸ 4sÂ²", shells: [2, 8, 16, 2], disc: "Axel Fredrik Cronstedt (1751)", fact: "Niken Ä‘Æ°á»£c dÃ¹ng trong thÃ©p khÃ´ng gá»‰, há»£p kim chá»‹u nhiá»‡t, máº¡ kim loáº¡i vÃ  má»™t sá»‘ loáº¡i tiá»n xu; má»™t sá»‘ há»£p cháº¥t niken cÃ³ thá»ƒ gÃ¢y dá»‹ á»©ng hoáº·c Ä‘á»™c tÃ­nh." },
-            { num: 29, sym: "Cu", vn: "Äá»“ng", en: "Copper", mass: "63.546", period: 4, group: 11, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dÂ¹â° 4sÂ¹", shells: [2, 8, 18, 1], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Äá»“ng lÃ  má»™t trong nhá»¯ng kim loáº¡i Ä‘Æ°á»£c con ngÆ°á»i sá»­ dá»¥ng sá»›m nháº¥t. Trong cÃ¡c kim loáº¡i nguyÃªn cháº¥t, báº¡c dáº«n Ä‘iá»‡n tá»‘t hÆ¡n Ä‘á»“ng; Ä‘á»“ng váº«n Ä‘Æ°á»£c dÃ¹ng rá»™ng rÃ£i lÃ m dÃ¢y dáº«n Ä‘iá»‡n." },
-            { num: 30, sym: "Zn", vn: "Káº½m", en: "Zinc", mass: "65.38", period: 4, group: 12, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Ar] 3dÂ¹â° 4sÂ²", shells: [2, 8, 18, 2], disc: "Andreas Sigismund Marggraf (1746)", fact: "DÃ¹ng Ä‘á»ƒ máº¡ tÃ´n chá»‘ng gá»‰ vÃ  káº¿t há»£p vá»›i Äá»“ng táº¡o nÃªn há»£p kim Äá»“ng thau sÃ¡ng bÃ³ng." },
-            { num: 31, sym: "Ga", vn: "Gali", en: "Gallium", mass: "69.723", period: 4, group: 13, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Ar] 3dÂ¹â° 4sÂ² 4pÂ¹", shells: [2, 8, 18, 3], disc: "Ã‰mile Lecoq de Boisbaudran (1875)", fact: "Gali nguyÃªn cháº¥t nÃ³ng cháº£y á»Ÿ khoáº£ng 29,76Â°C nÃªn cÃ³ thá»ƒ báº¯t Ä‘áº§u tan trong bÃ n tay áº¥m. KhÃ´ng nÃªn Ä‘á»ƒ gali tiáº¿p xÃºc vá»›i nhÃ´m vÃ¬ cÃ³ thá»ƒ lÃ m nhÃ´m giÃ²n." },
-            { num: 32, sym: "Ge", vn: "Germani", en: "Germanium", mass: "72.630", period: 4, group: 14, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[Ar] 3dÂ¹â° 4sÂ² 4pÂ²", shells: [2, 8, 18, 4], disc: "Clemens Winkler (1886)", fact: "Gecmani lÃ  cháº¥t bÃ¡n dáº«n, Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ linh kiá»‡n Ä‘iá»‡n tá»­, cáº£m biáº¿n há»“ng ngoáº¡i vÃ  há»‡ thá»‘ng quang há»c sá»£i quang." },
-            { num: 33, sym: "As", vn: "Asen", en: "Arsenic", mass: "74.922", period: 4, group: 15, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[Ar] 3dÂ¹â° 4sÂ² 4pÂ³", shells: [2, 8, 18, 5], disc: "Albertus Magnus (1250)", fact: "Asen nguyÃªn tá»‘ thÆ°á»ng cÃ³ dáº¡ng ráº¯n xÃ¡m báº¡c, giÃ²n vÃ  cÃ³ Ã¡nh kim. Má»™t sá»‘ há»£p cháº¥t asen ráº¥t Ä‘á»™c; Ä‘á»™c tÃ­nh phá»¥ thuá»™c dáº¡ng hÃ³a há»c vÃ  má»©c phÆ¡i nhiá»…m." },
-            { num: 34, sym: "Se", vn: "Selen", en: "Selenium", mass: "78.971", period: 4, group: 16, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[Ar] 3dÂ¹â° 4sÂ² 4pâ´", shells: [2, 8, 18, 6], disc: "JÃ¶ns Jacob Berzelius (1817)", fact: "Dáº«n Ä‘iá»‡n tá»‘t hÆ¡n khi cÃ³ Ã¡nh sÃ¡ng chiáº¿u vÃ o, linh há»“n cá»§a cÃ¡c bá»™ cáº£m biáº¿n quang há»c mÃ¡y áº£nh." },
-            { num: 35, sym: "Br", vn: "Brom", en: "Bromine", mass: "79.904", period: 4, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Ar] 3dÂ¹â° 4sÂ² 4pâµ", shells: [2, 8, 18, 7], disc: "Antoine JÃ©rÃ´me Balard (1826)", fact: "Brom lÃ  phi kim á»Ÿ dáº¡ng lá»ng gáº§n nhiá»‡t Ä‘á»™ phÃ²ng; cháº¥t lá»ng cÃ³ mÃ u nÃ¢u Ä‘á» vÃ  hÆ¡i brom cÃ³ tÃ­nh Äƒn mÃ²n, Ä‘á»™c, mÃ¹i háº¯c." },
-            { num: 36, sym: "Kr", vn: "Kripton", en: "Krypton", mass: "83.798", period: 4, group: 18, block: "p", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "[Ar] 3dÂ¹â° 4sÂ² 4pâ¶", shells: [2, 8, 18, 8], disc: "William Ramsay (1898)", fact: "Äá»“ng vá»‹ krypton-86 tá»«ng Ä‘Æ°á»£c dÃ¹ng Ä‘á»ƒ Ä‘á»‹nh nghÄ©a mÃ©t tá»« nÄƒm 1960 Ä‘áº¿n nÄƒm 1983 thÃ´ng qua bÆ°á»›c sÃ³ng cá»§a váº¡ch phá»• mÃ u cam Ä‘á»." },
-            { num: 37, sym: "Rb", vn: "Rubidi", en: "Rubidium", mass: "85.468", period: 5, group: 1, block: "s", cat: "Kim loáº¡i kiá»m", catKey: "alkali", config: "[Kr] 5sÂ¹", shells: [2, 8, 18, 8, 1], disc: "Robert Bunsen (1861)", fact: "Táº¡o nÃªn ngá»n lá»­a mÃ u Ä‘á» tÃ­m quyáº¿n rÅ©. DÃ¹ng trong Ä‘á»“ng há»“ nguyÃªn tá»­ chÃ­nh xÃ¡c cao." },
-            { num: 38, sym: "Sr", vn: "Stronti", en: "Strontium", mass: "87.62", period: 5, group: 2, block: "s", cat: "Kiá»m thá»•", catKey: "alkaline", config: "[Kr] 5sÂ²", shells: [2, 8, 18, 8, 2], disc: "Adair Crawford (1790; mÃ´ táº£ khoÃ¡ng strontianite)", fact: "Muá»‘i stronti táº¡o mÃ u Ä‘á» trong phÃ¡o hoa. Stronti cÅ©ng Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ váº­t liá»‡u gá»‘m vÃ  á»©ng dá»¥ng cÃ´ng nghiá»‡p." },
-            { num: 39, sym: "Y", vn: "Ytri", en: "Yttrium", mass: "88.906", period: 5, group: 3, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dÂ¹ 5sÂ²", shells: [2, 8, 18, 9, 2], disc: "Johan Gadolin (1794)", fact: "ThÃ nh pháº§n quan trá»ng cháº¿ táº¡o váº­t liá»‡u siÃªu dáº«n nhiá»‡t Ä‘á»™ cao vÃ  Ä‘Ã¨n LED tháº¯p sÃ¡ng." },
-            { num: 40, sym: "Zr", vn: "Zirconi", en: "Zirconium", mass: "91.224", period: 5, group: 4, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dÂ² 5sÂ²", shells: [2, 8, 18, 10, 2], disc: "Martin Heinrich Klaproth (1789)", fact: "Zirconi cÃ³ kháº£ nÄƒng chá»‘ng Äƒn mÃ²n tá»‘t. ÄÃ¡ cubic zirconia lÃ  tinh thá»ƒ zirconium dioxide (ZrOâ‚‚) tá»•ng há»£p, Ä‘Æ°á»£c dÃ¹ng lÃ m Ä‘Ã¡ mÃ´ phá»ng kim cÆ°Æ¡ng; nÃ³ khÃ´ng pháº£i kim cÆ°Æ¡ng tháº­t." },
-            { num: 41, sym: "Nb", vn: "Niobi", en: "Niobium", mass: "92.906", period: 5, group: 5, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dâ´ 5sÂ¹", shells: [2, 8, 18, 12, 1], disc: "Charles Hatchett (1801)", fact: "Niobi Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ há»£p kim siÃªu dáº«n, trong Ä‘Ã³ cÃ³ váº­t liá»‡u cho nam chÃ¢m siÃªu dáº«n cá»§a mÃ¡y MRI." },
-            { num: 42, sym: "Mo", vn: "Molibden", en: "Molybdenum", mass: "95.95", period: 5, group: 6, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dâµ 5sÂ¹", shells: [2, 8, 18, 13, 1], disc: "Carl Wilhelm Scheele (1778)", fact: "Molypden giÃºp tÄƒng Ä‘á»™ bá»n vÃ  kháº£ nÄƒng chá»‹u nhiá»‡t cá»§a nhiá»u loáº¡i thÃ©p, siÃªu há»£p kim vÃ  má»™t sá»‘ chi tiáº¿t lÃ m viá»‡c á»Ÿ nhiá»‡t Ä‘á»™ cao." },
-            { num: 43, sym: "Tc", vn: "Tecneti", en: "Technetium", mass: "(97)", period: 5, group: 7, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dâµ 5sÂ²", shells: [2, 8, 18, 13, 2], disc: "Emilio SegrÃ¨ & Carlo Perrier (1937)", fact: "NguyÃªn tá»‘ nhÃ¢n táº¡o Ä‘áº§u tiÃªn do con ngÆ°á»i tá»•ng há»£p! DÃ¹ng trong Ä‘á»“ng vá»‹ phÃ³ng xáº¡ y há»c." },
-            { num: 44, sym: "Ru", vn: "Ruteni", en: "Ruthenium", mass: "101.07", period: 5, group: 8, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dâ· 5sÂ¹", shells: [2, 8, 18, 15, 1], disc: "Karl Ernst Claus (1844)", fact: "Kim loáº¡i quÃ½ hiáº¿m nhÃ³m Báº¡ch kim, dÃ¹ng phá»§ vi máº¡ch linh kiá»‡n Ä‘iá»‡n tá»­ siÃªu bá»n." },
-            { num: 45, sym: "Rh", vn: "Rodi", en: "Rhodium", mass: "102.91", period: 5, group: 9, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dâ¸ 5sÂ¹", shells: [2, 8, 18, 16, 1], disc: "William Hyde Wollaston (1803)", fact: "Rodi lÃ  kim loáº¡i nhÃ³m platin cÃ³ giÃ¡ trá»‹ cao vÃ  Ä‘Æ°á»£c dÃ¹ng lÃ m cháº¥t xÃºc tÃ¡c trong bá»™ xá»­ lÃ½ khÃ­ tháº£i Ã´ tÃ´; giÃ¡ cá»§a nÃ³ biáº¿n Ä‘á»™ng vÃ  khÃ´ng luÃ´n Ä‘áº¯t hÆ¡n vÃ ng." },
-            { num: 46, sym: "Pd", vn: "Paladi", en: "Palladium", mass: "106.42", period: 5, group: 10, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dÂ¹â°", shells: [2, 8, 18, 18], disc: "William Hyde Wollaston (1803)", fact: "Palladi cÃ³ thá»ƒ háº¥p thá»¥ hydro vá»›i lÆ°á»£ng lá»›n so vá»›i thá»ƒ tÃ­ch kim loáº¡i trong nhá»¯ng Ä‘iá»u kiá»‡n phÃ¹ há»£p; con sá»‘ cá»¥ thá»ƒ phá»¥ thuá»™c Ä‘iá»u kiá»‡n vÃ  cÃ¡ch Ä‘o." },
-            { num: 47, sym: "Ag", vn: "Báº¡c", en: "Silver", mass: "107.87", period: 5, group: 11, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dÂ¹â° 5sÂ¹", shells: [2, 8, 18, 18, 1], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Dáº«n Ä‘iá»‡n vÃ  dáº«n nhiá»‡t tá»‘t nháº¥t trong táº¥t cáº£ kim loáº¡i. CÃ³ tÃ­nh diá»‡t khuáº©n tá»± nhiÃªn cao." },
-            { num: 48, sym: "Cd", vn: "Cadimi", en: "Cadmium", mass: "112.41", period: 5, group: 12, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Kr] 4dÂ¹â° 5sÂ²", shells: [2, 8, 18, 18, 2], disc: "Karl Samuel Leberecht Hermann (1817)", fact: "Tá»«ng lÃ m pin Ni-Cd xáº¡c láº¡i Ä‘Æ°á»£c, nhÆ°ng ráº¥t Ä‘á»™c háº¡i nÃªn Ä‘ang bá»‹ thay tháº¿ dáº§n." },
-            { num: 49, sym: "In", vn: "Indi", en: "Indium", mass: "114.82", period: 5, group: 13, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Kr] 4dÂ¹â° 5sÂ² 5pÂ¹", shells: [2, 8, 18, 18, 3], disc: "Ferdinand Reich & Hieronymous Theodor Richter (1863)", fact: "Indium tin oxide (ITO) lÃ  váº­t liá»‡u dáº«n Ä‘iá»‡n trong suá»‘t Ä‘Æ°á»£c dÃ¹ng phá»• biáº¿n trong mÃ n hÃ¬nh cáº£m á»©ng vÃ  mÃ n hÃ¬nh pháº³ng, dÃ¹ khÃ´ng pháº£i má»i mÃ n hÃ¬nh Ä‘á»u dÃ¹ng ITO." },
-            { num: 50, sym: "Sn", vn: "Thiáº¿c", en: "Tin", mass: "118.71", period: 5, group: 14, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Kr] 4dÂ¹â° 5sÂ² 5pÂ²", shells: [2, 8, 18, 18, 4], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Thiáº¿c káº¿t há»£p vá»›i Ä‘á»“ng táº¡o thÃ nh Ä‘á»“ng thiáº¿c (bronze), há»£p kim cÃ³ vai trÃ² quan trá»ng trong Thá»i Ä‘áº¡i Äá»“ Ä‘á»“ng. Äá»“ng thau (brass) chá»§ yáº¿u lÃ  há»£p kim Ä‘á»“ngâ€“káº½m." },
-            { num: 51, sym: "Sb", vn: "Antimon", en: "Antimony", mass: "121.76", period: 5, group: 15, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[Kr] 4dÂ¹â° 5sÂ² 5pÂ³", shells: [2, 8, 18, 18, 5], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Thá»i Ai Cáº­p cá»• Ä‘áº¡i Ä‘Æ°á»£c nghiá»n má»‹n lÃ m pháº¥n káº» máº¯t quyáº¿n rÅ© cho cÃ¡c Ná»¯ hoÃ ng." },
-            { num: 52, sym: "Te", vn: "Telu", en: "Tellurium", mass: "127.60", period: 5, group: 16, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[Kr] 4dÂ¹â° 5sÂ² 5pâ´", shells: [2, 8, 18, 18, 6], disc: "Franz-Joseph MÃ¼ller von Reichenstein (1782)", fact: "Ráº¥t hiáº¿m trÃªn TrÃ¡i Äáº¥t. DÃ¹ng cháº¿ táº¡o pin máº·t trá»i quang Ä‘iá»‡n hiá»‡u suáº¥t cao." },
-            { num: 53, sym: "I", vn: "Iá»‘t", en: "Iodine", mass: "126.90", period: 5, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Kr] 4dÂ¹â° 5sÂ² 5pâµ", shells: [2, 8, 18, 18, 7], disc: "Bernard Courtois (1811)", fact: "Iá»‘t Ä‘Æ°á»£c bá»• sung vÃ o muá»‘i Äƒn dÆ°á»›i dáº¡ng há»£p cháº¥t iá»‘t Ä‘á»ƒ phÃ²ng thiáº¿u iá»‘t. Iá»‘t ráº¯n cÃ³ thá»ƒ thÄƒng hoa táº¡o hÆ¡i mÃ u tÃ­m." },
-            { num: 54, sym: "Xe", vn: "Xenon", en: "Xenon", mass: "131.29", period: 5, group: 18, block: "p", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "[Kr] 4dÂ¹â° 5sÂ² 5pâ¶", shells: [2, 8, 18, 18, 8], disc: "William Ramsay & Morris Travers (1898)", fact: "KhÃ­ trÆ¡ phÃ¡t Ã¡nh sÃ¡ng xanh lam cá»±c sÃ¡ng, dÃ¹ng lÃ m Ä‘Ã¨n pha Ã´ tÃ´ siÃªu sÃ¡ng vÃ  Ä‘á»™ng cÆ¡ Ä‘áº©y Ion vÅ© trá»¥." },
-            { num: 55, sym: "Cs", vn: "Cesi", en: "Caesium", mass: "132.91", period: 6, group: 1, block: "s", cat: "Kim loáº¡i kiá»m", catKey: "alkali", config: "[Xe] 6sÂ¹", shells: [2, 8, 18, 18, 8, 1], disc: "Robert Bunsen & Gustav Kirchhoff (1860)", fact: "Cesi lÃ  kim loáº¡i kiá»m pháº£n á»©ng ráº¥t máº¡nh. Táº§n sá»‘ chuyá»ƒn tiáº¿p siÃªu tinh táº¿ cá»§a nguyÃªn tá»­ cesi-133 Ä‘Æ°á»£c dÃ¹ng Ä‘á»ƒ Ä‘á»‹nh nghÄ©a giÃ¢y SI." },
-            { num: 56, sym: "Ba", vn: "Bari", en: "Barium", mass: "137.33", period: 6, group: 2, block: "s", cat: "Kiá»m thá»•", catKey: "alkaline", config: "[Xe] 6sÂ²", shells: [2, 8, 18, 18, 8, 2], disc: "Humphry Davy (1808)", fact: "Táº¡o mÃ u xanh lÃ¡ cÃ¢y rá»±c rá»¡ cho phÃ¡o hoa nghá»‡ thuáº­t Ä‘Ãªm há»™i." },
-            { num: 57, sym: "La", vn: "Lantan", en: "Lanthanum", mass: "138.91", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 5dÂ¹ 6sÂ²", shells: [2, 8, 18, 18, 9, 2], disc: "Carl Gustaf Mosander (1839)", fact: "Lantan lÃ  nguyÃªn tá»‘ má»Ÿ Ä‘áº§u dÃ£y lantan trong cÃ¡ch sáº¯p xáº¿p báº£ng tuáº§n hoÃ n phá»• biáº¿n. Má»™t sá»‘ há»£p cháº¥t lantan Ä‘Æ°á»£c dÃ¹ng trong kÃ­nh quang há»c vÃ  váº­t liá»‡u xÃºc tÃ¡c." },
-            { num: 58, sym: "Ce", vn: "Ceri", en: "Cerium", mass: "140.12", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹ 5dÂ¹ 6sÂ²", shells: [2, 8, 18, 19, 9, 2], disc: "Martin Heinrich Klaproth (1803)", fact: "Táº¡o ra tia lá»­a khi cá» xÃ¡t, dÃ¹ng lÃ m Ä‘Ã¡ lá»­a trong báº­t lá»­a gas hÃ ng ngÃ y." },
-            { num: 59, sym: "Pr", vn: "Praseodim", en: "Praseodymium", mass: "140.91", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ³ 6sÂ²", shells: [2, 8, 18, 21, 8, 2], disc: "Carl Auer von Welsbach (1885)", fact: "Nhuá»™m mÃ u vÃ ng chanh nháº¡t xinh Ä‘áº¹p cho thá»§y tinh vÃ  kÃ­nh báº£o há»™ thá»£ hÃ n." },
-            { num: 60, sym: "Nd", vn: "Neodim", en: "Neodymium", mass: "144.24", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fâ´ 6sÂ²", shells: [2, 8, 18, 22, 8, 2], disc: "Carl Auer von Welsbach (1885)", fact: "Nam chÃ¢m neodymiâ€“sáº¯tâ€“bo (Ndâ‚‚Feâ‚â‚„B) cÃ³ lá»±c tá»« ráº¥t máº¡nh so vá»›i kÃ­ch thÆ°á»›c; lá»±c kÃ©o thá»±c táº¿ phá»¥ thuá»™c kÃ­ch thÆ°á»›c, hÃ¬nh dáº¡ng vÃ  Ä‘iá»u kiá»‡n tiáº¿p xÃºc cá»§a nam chÃ¢m." },
-            { num: 61, sym: "Pm", vn: "Prometi", en: "Promethium", mass: "(145)", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fâµ 6sÂ²", shells: [2, 8, 18, 23, 8, 2], disc: "Jacob A. Marinsky, Lawrence E. Glendenin & Charles D. Coryell (1945)", fact: "Prometi lÃ  nguyÃªn tá»‘ lantan duy nháº¥t khÃ´ng cÃ³ Ä‘á»“ng vá»‹ bá»n; má»i Ä‘á»“ng vá»‹ cá»§a nÃ³ Ä‘á»u phÃ³ng xáº¡. Má»™t sá»‘ Ä‘á»“ng vá»‹ Ä‘Æ°á»£c dÃ¹ng trong nguá»“n beta vÃ  nghiÃªn cá»©u." },
-            { num: 62, sym: "Sm", vn: "Samari", en: "Samarium", mass: "150.36", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fâ¶ 6sÂ²", shells: [2, 8, 18, 24, 8, 2], disc: "Ã‰mile Lecoq de Boisbaudran (1879)", fact: "Nam chÃ¢m samariâ€“coban giá»¯ Ä‘Æ°á»£c tÃ­nh nÄƒng tá»« trong Ä‘iá»u kiá»‡n nhiá»‡t Ä‘á»™ cao hÆ¡n nhiá»u loáº¡i nam chÃ¢m khÃ¡c, nÃªn dÃ¹ng trong Ä‘á»™ng cÆ¡ vÃ  thiáº¿t bá»‹ ká»¹ thuáº­t." },
-            { num: 63, sym: "Eu", vn: "Europi", en: "Europium", mass: "151.96", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fâ· 6sÂ²", shells: [2, 8, 18, 25, 8, 2], disc: "EugÃ¨ne-Anatole DemarÃ§ay (1901)", fact: "PhÃ¡t huá»³nh quang Ä‘á» rá»±c dÆ°á»›i tia cá»±c tÃ­m, dÃ¹ng in cháº¥t chá»‘ng giáº£ trÃªn tá» tiá»n Euro." },
-            { num: 64, sym: "Gd", vn: "Gadolini", en: "Gadolinium", mass: "157.25", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fâ· 5dÂ¹ 6sÂ²", shells: [2, 8, 18, 25, 9, 2], disc: "Jean Charles Galissard de Marignac (1880)", fact: "Thuá»‘c cáº£n quang tiÃªm vÃ o cÆ¡ thá»ƒ giÃºp hÃ¬nh áº£nh chá»¥p MRI sáº¯c nÃ©t rÃµ rÃ ng." },
-            { num: 65, sym: "Tb", vn: "Terbi", en: "Terbium", mass: "158.93", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fâ¹ 6sÂ²", shells: [2, 8, 18, 27, 8, 2], disc: "Carl Gustaf Mosander (1843)", fact: "PhÃ¡t quang mÃ u xanh lÃ¡ cÃ¢y rá»±c rá»¡ trong mÃ n hÃ¬nh tivi vÃ  bÃ³ng Ä‘Ã¨n tiáº¿t kiá»‡m Ä‘iá»‡n." },
-            { num: 66, sym: "Dy", vn: "Disprosi", en: "Dysprosium", mass: "162.50", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹â° 6sÂ²", shells: [2, 8, 18, 28, 8, 2], disc: "Paul-Ã‰mile Lecoq de Boisbaudran (1886)", fact: "Disprosi Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ nam chÃ¢m vÄ©nh cá»­u hiá»‡u nÄƒng cao Ä‘á»ƒ cáº£i thiá»‡n kháº£ nÄƒng giá»¯ tá»« tÃ­nh á»Ÿ nhiá»‡t Ä‘á»™ cao." },
-            { num: 67, sym: "Ho", vn: "Holmi", en: "Holmium", mass: "164.93", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹Â¹ 6sÂ²", shells: [2, 8, 18, 29, 8, 2], disc: "Per Teodor Cleve (1879)", fact: "Holmi cÃ³ mÃ´men tá»« nguyÃªn tá»­ lá»›n nháº¥t trong cÃ¡c nguyÃªn tá»‘ tá»± nhiÃªn vÃ  thá»ƒ hiá»‡n tÃ­nh cháº¥t tá»« Ä‘áº·c biá»‡t; mÃ´ táº£ nÃ y cá»¥ thá»ƒ hÆ¡n viá»‡c gá»i nÃ³ lÃ  â€œnguyÃªn tá»‘ tá»« tÃ­nh máº¡nh nháº¥tâ€ trong má»i hoÃ n cáº£nh." },
-            { num: 68, sym: "Er", vn: "Erbi", en: "Erbium", mass: "167.26", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹Â² 6sÂ²", shells: [2, 8, 18, 30, 8, 2], disc: "Carl Gustaf Mosander (1843)", fact: "Erbi táº¡o mÃ u há»“ng trong má»™t sá»‘ loáº¡i thá»§y tinh vÃ  Ä‘Æ°á»£c dÃ¹ng lÃ m cháº¥t pha táº¡p khuáº¿ch Ä‘áº¡i tÃ­n hiá»‡u trong sá»£i quang." },
-            { num: 69, sym: "Tm", vn: "Tuli", en: "Thulium", mass: "168.93", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹Â³ 6sÂ²", shells: [2, 8, 18, 31, 8, 2], disc: "Per Teodor Cleve (1879)", fact: "NguyÃªn tá»‘ hiáº¿m nháº¥t trong há» Lantan, dÃ¹ng cháº¿ táº¡o mÃ¡y X-quang xÃ¡ch tay gá»n nháº¹." },
-            { num: 70, sym: "Yb", vn: "Yterbi", en: "Ytterbium", mass: "173.05", period: 6, group: 3, block: "f", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹â´ 6sÂ²", shells: [2, 8, 18, 32, 8, 2], disc: "Jean Charles Galissard de Marignac (1878)", fact: "DÃ¹ng lÃ m Ä‘á»“ng há»“ nguyÃªn tá»­ Yterbi chÃ­nh xÃ¡c cao gáº¥p hÃ ng chá»¥c láº§n Ä‘á»“ng há»“ Cesi." },
-            { num: 71, sym: "Lu", vn: "Luteti", en: "Lutetium", mass: "174.97", period: 6, group: 3, block: "d", cat: "Há» Lantan", catKey: "lanthanide", config: "[Xe] 4fÂ¹â´ 5dÂ¹ 6sÂ²", shells: [2, 8, 18, 32, 9, 2], disc: "Georges Urbain & Carl Auer von Welsbach (1907; Ä‘á»™c láº­p)", fact: "Luteti Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ cháº¥t xÃºc tÃ¡c vÃ  tinh thá»ƒ phÃ¡t hiá»‡n bá»©c xáº¡, cháº³ng háº¡n váº­t liá»‡u tinh thá»ƒ chá»©a luteti dÃ¹ng trong mÃ¡y PET." },
-            { num: 72, sym: "Hf", vn: "Hafni", en: "Hafnium", mass: "178.49", period: 6, group: 4, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dÂ² 6sÂ²", shells: [2, 8, 18, 32, 10, 2], disc: "Dirk Coster & George de Hevesy (1923)", fact: "Háº¥p thá»¥ nÆ¡tron cá»±c tá»‘t, dÃ¹ng lÃ m thanh khá»‘ng cháº¿ an toÃ n trong tÃ u ngáº§m háº¡t nhÃ¢n." },
-            { num: 73, sym: "Ta", vn: "Tantan", en: "Tantalum", mass: "180.95", period: 6, group: 5, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dÂ³ 6sÂ²", shells: [2, 8, 18, 32, 11, 2], disc: "Anders Gustaf Ekeberg (1802)", fact: "Tantan cÃ³ kháº£ nÄƒng chá»‘ng Äƒn mÃ²n ráº¥t tá»‘t trong nhiá»u mÃ´i trÆ°á»ng hÃ³a há»c, nhÆ°ng khÃ´ng trÆ¡ vá»›i má»i axit vÃ  má»i Ä‘iá»u kiá»‡n. NÃ³ Ä‘Æ°á»£c dÃ¹ng trong tá»¥ Ä‘iá»‡n vÃ  há»£p kim." },
-            { num: 74, sym: "W", vn: "Vonfram", en: "Tungsten", mass: "183.84", period: 6, group: 6, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dâ´ 6sÂ²", shells: [2, 8, 18, 32, 12, 2], disc: "Carl Wilhelm Scheele (1781)", fact: "Vonfram cÃ³ nhiá»‡t Ä‘á»™ nÃ³ng cháº£y cao nháº¥t trong cÃ¡c kim loáº¡i tinh khiáº¿t thÃ´ng dá»¥ng Ä‘Ã£ biáº¿t (khoáº£ng 3422Â°C) vÃ  tá»«ng Ä‘Æ°á»£c dÃ¹ng lÃ m dÃ¢y tÃ³c bÃ³ng Ä‘Ã¨n sá»£i Ä‘á»‘t." },
-            { num: 75, sym: "Re", vn: "Reni", en: "Rhenium", mass: "186.21", period: 6, group: 7, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dâµ 6sÂ²", shells: [2, 8, 18, 32, 13, 2], disc: "Walter Noddack, Ida Tacke & Otto Berg (1925)", fact: "Reni Ä‘Æ°á»£c Walter Noddack, Ida Tacke vÃ  Otto Berg xÃ¡c Ä‘á»‹nh nÄƒm 1925. ÄÃ¢y lÃ  nguyÃªn tá»‘ hiáº¿m, Ä‘Æ°á»£c dÃ¹ng trong má»™t sá»‘ siÃªu há»£p kim chá»‹u nhiá»‡t cho tua-bin." },
-            { num: 76, sym: "Os", vn: "Osmi", en: "Osmium", mass: "190.23", period: 6, group: 8, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dâ¶ 6sÂ²", shells: [2, 8, 18, 32, 14, 2], disc: "Smithson Tennant (1803)", fact: "Osmi cÃ³ khá»‘i lÆ°á»£ng riÃªng thuá»™c nhÃ³m cao nháº¥t trong cÃ¡c nguyÃªn tá»‘ Ä‘Ã£ biáº¿t, gáº§n vá»›i iridi; thá»© tá»± chÃ­nh xÃ¡c phá»¥ thuá»™c dá»¯ liá»‡u vÃ  Ä‘iá»u kiá»‡n Ä‘o." },
-            { num: 77, sym: "Ir", vn: "Iridi", en: "Iridium", mass: "192.22", period: 6, group: 9, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dâ· 6sÂ²", shells: [2, 8, 18, 32, 15, 2], disc: "Smithson Tennant (1803)", fact: "Iridi ráº¥t bá»n vá»›i Äƒn mÃ²n. Dá»‹ thÆ°á»ng iridi á»Ÿ lá»›p ranh giá»›i Kâ€“Pg lÃ  má»™t báº±ng chá»©ng quan trá»ng á»§ng há»™ giáº£ thuyáº¿t va cháº¡m thiÃªn tháº¡ch liÃªn quan Ä‘áº¿n sá»± kiá»‡n tuyá»‡t chá»§ng cuá»‘i ká»· Pháº¥n Tráº¯ng." },
-            { num: 78, sym: "Pt", vn: "Báº¡ch kim", en: "Platinum", mass: "195.08", period: 6, group: 10, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dâ¹ 6sÂ¹", shells: [2, 8, 18, 32, 17, 1], disc: "Antonio de Ulloa (1735)", fact: "Báº¡ch kim lÃ  kim loáº¡i quÃ½, cÃ³ kháº£ nÄƒng chá»‘ng Äƒn mÃ²n vÃ  hoáº¡t tÃ­nh xÃºc tÃ¡c há»¯u Ã­ch; nÃ³ Ä‘Æ°á»£c dÃ¹ng trong trang sá»©c, thiáº¿t bá»‹ phÃ²ng thÃ­ nghiá»‡m vÃ  bá»™ xÃºc tÃ¡c." },
-            { num: 79, sym: "Au", vn: "VÃ ng", en: "Gold", mass: "196.97", period: 6, group: 11, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ¹", shells: [2, 8, 18, 32, 18, 1], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Vua cá»§a cÃ¡c kim loáº¡i! Dá»… dÃ¡t má»ng tá»›i má»©c 1 gram vÃ ng dÃ¡t ra Ä‘Æ°á»£c lÃ¡ rá»™ng 1 mÃ©t vuÃ´ng." },
-            { num: 80, sym: "Hg", vn: "Thá»§y ngÃ¢n", en: "Mercury", mass: "200.59", period: 6, group: 12, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ²", shells: [2, 8, 18, 32, 18, 2], disc: "Thá»i cá»• Ä‘áº¡i", fact: "Thá»§y ngÃ¢n lÃ  kim loáº¡i lá»ng á»Ÿ nhiá»‡t Ä‘á»™ phÃ²ng thÃ´ng thÆ°á»ng. TrÆ°á»›c Ä‘Ã¢y nÃ³ Ä‘Æ°á»£c dÃ¹ng trong nhiá»‡t káº¿, nhÆ°ng nhiá»u á»©ng dá»¥ng Ä‘Ã£ bá»‹ thay tháº¿ do Ä‘á»™c tÃ­nh." },
-            { num: 81, sym: "Tl", vn: "Tali", en: "Thallium", mass: "204.38", period: 6, group: 13, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ² 6pÂ¹", shells: [2, 8, 18, 32, 18, 3], disc: "William Crookes (1861)", fact: "Tali vÃ  nhiá»u há»£p cháº¥t cá»§a nÃ³ ráº¥t Ä‘á»™c. KhÃ´ng nÃªn mÃ´ táº£ nguyÃªn tá»‘ kim loáº¡i lÃ  â€œkhÃ´ng mÃ u, khÃ´ng mÃ¹iâ€; cÃ¡c Ä‘áº·c Ä‘iá»ƒm Ä‘Ã³ cÃ³ thá»ƒ Ã¡p dá»¥ng cho má»™t sá»‘ há»£p cháº¥t." },
-            { num: 82, sym: "Pb", vn: "ChÃ¬", en: "Lead", mass: "207.2", period: 6, group: 14, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ² 6pÂ²", shells: [2, 8, 18, 32, 18, 4], disc: "Thá»i cá»• Ä‘áº¡i", fact: "ChÃ¬ cÃ³ thá»ƒ lÃ m suy giáº£m tia X vÃ  tia gamma khi dÃ¹ng vá»›i Ä‘á»™ dÃ y phÃ¹ há»£p, nhÆ°ng khÃ´ng cháº·n hiá»‡u quáº£ má»i loáº¡i bá»©c xáº¡ vÃ  cáº§n Ä‘Æ°á»£c sá»­ dá»¥ng theo yÃªu cáº§u an toÃ n." },
-            { num: 83, sym: "Bi", vn: "Bismut", en: "Bismuth", mass: "208.98", period: 6, group: 15, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ² 6pÂ³", shells: [2, 8, 18, 32, 18, 5], disc: "Marie & Pierre Curie (1898)", fact: "Táº¡o nÃªn tinh thá»ƒ ngÅ© sáº¯c Ã³ng Ã¡nh nhÆ° báº­c thang tÆ°Æ¡ng lai tuyá»‡t Ä‘áº¹p." },
-            { num: 84, sym: "Po", vn: "Poloni", en: "Polonium", mass: "(209)", period: 6, group: 16, block: "p", cat: "Ã kim", catKey: "metalloid", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ² 6pâ´", shells: [2, 8, 18, 32, 18, 6], disc: "Marie Curie (1898)", fact: "Poloni Ä‘Æ°á»£c Marie vÃ  Pierre Curie phÃ¡t hiá»‡n nÄƒm 1898 vÃ  Ä‘áº·t tÃªn Ä‘á»ƒ gá»£i nháº¯c Ä‘áº¿n Ba Lan (Poland), quÃª hÆ°Æ¡ng cá»§a Marie Curie." },
-            { num: 85, sym: "At", vn: "Astatin", en: "Astatine", mass: "(210)", period: 6, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ² 6pâµ", shells: [2, 8, 18, 32, 18, 7], disc: "Dale R. Corson, Kenneth R. MacKenzie & Emilio SegrÃ¨ (1940)", fact: "Astatin cá»±c ká»³ hiáº¿m trong tá»± nhiÃªn vÃ  cÃ³ tÃ­nh phÃ³ng xáº¡; tá»•ng lÆ°á»£ng hiá»‡n diá»‡n trong vá» TrÃ¡i Äáº¥t táº¡i má»™t thá»i Ä‘iá»ƒm chá»‰ lÃ  Æ°á»›c tÃ­nh vÃ  thay Ä‘á»•i theo mÃ´ hÃ¬nh." },
-            { num: 86, sym: "Rn", vn: "Radon", en: "Radon", mass: "(222)", period: 6, group: 18, block: "p", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "[Xe] 4fÂ¹â´ 5dÂ¹â° 6sÂ² 6pâ¶", shells: [2, 8, 18, 32, 18, 8], disc: "Friedrich Ernst Dorn (1900)", fact: "Radon lÃ  khÃ­ hiáº¿m khÃ´ng cÃ³ Ä‘á»“ng vá»‹ bá»n; nÃ³ cÃ³ thá»ƒ tÃ­ch tá»¥ trong nhÃ  tá»« Ä‘áº¥t Ä‘Ã¡ bÃªn dÆ°á»›i, Ä‘áº·c biá»‡t náº¿u thÃ´ng giÃ³ kÃ©m. PhÆ¡i nhiá»…m radon kÃ©o dÃ i lÃ m tÄƒng nguy cÆ¡ ung thÆ° phá»•i." },
-            { num: 87, sym: "Fr", vn: "Francium", en: "Francium", mass: "(223)", period: 7, group: 1, block: "s", cat: "Kim loáº¡i kiá»m", catKey: "alkali", config: "[Rn] 7sÂ¹", shells: [2, 8, 18, 32, 18, 8, 1], disc: "Marguerite Perey (1939)", fact: "Äá»“ng vá»‹ francium-223 cÃ³ chu ká»³ bÃ¡n rÃ£ khoáº£ng 22 phÃºt; cÃ¡c Ä‘á»“ng vá»‹ khÃ¡c cÃ³ chu ká»³ bÃ¡n rÃ£ khÃ¡c nhau." },
-            { num: 88, sym: "Ra", vn: "Radi", en: "Radium", mass: "(226)", period: 7, group: 2, block: "s", cat: "Kiá»m thá»•", catKey: "alkaline", config: "[Rn] 7sÂ²", shells: [2, 8, 18, 32, 18, 8, 2], disc: "Marie Curie (1898)", fact: "Radium lÃ  cháº¥t phÃ³ng xáº¡. Ãnh sÃ¡ng xanh lá»¥c cá»§a sÆ¡n dáº¡ quang trÃªn nhiá»u máº·t Ä‘á»“ng há»“ cá»• chá»§ yáº¿u Ä‘áº¿n tá»« cháº¥t phÃ¡t quang nhÆ° káº½m sulfide bá»‹ bá»©c xáº¡ kÃ­ch thÃ­ch, khÃ´ng pháº£i mÃ u xanh lá»¥c tá»± phÃ¡t cá»§a radium nguyÃªn cháº¥t." },
-            { num: 89, sym: "Ac", vn: "Actini", en: "Actinium", mass: "(227)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 6dÂ¹ 7sÂ²", shells: [2, 8, 18, 32, 18, 9, 2], disc: "AndrÃ©-Louis Debierne (1899)", fact: "Má»Ÿ Ä‘áº§u há» Actini phÃ³ng xáº¡, phÃ¡t ra luá»“ng Ã¡nh sÃ¡ng xanh lam má» áº£o do ion hÃ³a khÃ´ng khÃ­." },
-            { num: 90, sym: "Th", vn: "Thori", en: "Thorium", mass: "232.04", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 6dÂ² 7sÂ²", shells: [2, 8, 18, 32, 18, 10, 2], disc: "JÃ¶ns Jacob Berzelius (1829)", fact: "Thorium cÃ³ thá»ƒ Ä‘Æ°á»£c dÃ¹ng trong chu trÃ¬nh nhiÃªn liá»‡u háº¡t nhÃ¢n. Má»©c Ä‘á»™ an toÃ n phá»¥ thuá»™c thiáº¿t káº¿ lÃ², chu trÃ¬nh nhiÃªn liá»‡u, váº­n hÃ nh vÃ  xá»­ lÃ½ cháº¥t tháº£i; khÃ´ng cÃ³ cÄƒn cá»© Ä‘á»ƒ nÃ³i nÃ³ luÃ´n â€œan toÃ n gáº¥p nhiá»u láº§nâ€ uranium." },
-            { num: 91, sym: "Pa", vn: "Protactini", en: "Protactinium", mass: "231.04", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ² 6dÂ¹ 7sÂ²", shells: [2, 8, 18, 32, 20, 9, 2], disc: "Kasimir Fajans & Oswald GÃ¶hring (1913; Ä‘á»“ng vá»‹ ngáº¯n sá»‘ng, khi Ä‘Ã³ gá»i lÃ  brevium)", fact: "Protactini lÃ  nguyÃªn tá»‘ phÃ³ng xáº¡ hiáº¿m. Äá»“ng vá»‹ protactini-231 phÃ¢n rÃ£ alpha thÃ nh actini-227." },
-            { num: 92, sym: "U", vn: "Uran", en: "Uranium", mass: "238.03", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ³ 6dÂ¹ 7sÂ²", shells: [2, 8, 18, 32, 21, 9, 2], disc: "Martin Heinrich Klaproth (1789)", fact: "Uranium-235 cÃ³ thá»ƒ duy trÃ¬ pháº£n á»©ng phÃ¢n háº¡ch dÃ¢y chuyá»n; nhiÃªn liá»‡u cá»§a nhiá»u nhÃ  mÃ¡y Ä‘iá»‡n háº¡t nhÃ¢n chá»©a uranium Ä‘Ã£ Ä‘Æ°á»£c lÃ m giÃ u." },
-            { num: 93, sym: "Np", vn: "Neptuni", en: "Neptunium", mass: "(237)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fâ´ 6dÂ¹ 7sÂ²", shells: [2, 8, 18, 32, 22, 9, 2], disc: "Edwin McMillan & Philip H. Abelson (1940)", fact: "Neptuni lÃ  nguyÃªn tá»‘ siÃªu urani Ä‘áº§u tiÃªn Ä‘Æ°á»£c táº¡o ra cÃ³ chá»§ Ä‘Ã­ch trong má»™t thÃ­ nghiá»‡m tá»•ng há»£p nÄƒm 1940." },
-            { num: 94, sym: "Pu", vn: "Plutoni", en: "Plutonium", mass: "(244)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fâ¶ 7sÂ²", shells: [2, 8, 18, 32, 24, 8, 2], disc: "Glenn T. Seaborg, Edwin M. McMillan, Joseph W. Kennedy & Arthur C. Wahl (1940)", fact: "Má»™t sá»‘ Ä‘á»“ng vá»‹ plutoni Ä‘Æ°á»£c dÃ¹ng trong vÅ© khÃ­ háº¡t nhÃ¢n; plutoni-238 cÅ©ng Ä‘Æ°á»£c dÃ¹ng lÃ m nguá»“n nhiá»‡t cho mÃ¡y phÃ¡t nhiá»‡t Ä‘iá»‡n Ä‘á»“ng vá»‹ phÃ³ng xáº¡ trÃªn má»™t sá»‘ tÃ u thÄƒm dÃ² khÃ´ng gian, gá»“m Voyager." },
-            { num: 95, sym: "Am", vn: "Americi", en: "Americium", mass: "(243)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fâ· 7sÂ²", shells: [2, 8, 18, 32, 25, 8, 2], disc: "Glenn T. Seaborg vÃ  nhÃ³m nghiÃªn cá»©u (1944)", fact: "CÃ³ máº·t ngay trong nhÃ  báº¡n! DÃ¹ng lÃ m cáº£m biáº¿n phÃ¡t hiá»‡n khÃ³i bÃ¡o chÃ¡y tá»± Ä‘á»™ng." },
-            { num: 96, sym: "Cm", vn: "Curi", en: "Curium", mass: "(247)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fâ· 6dÂ¹ 7sÂ²", shells: [2, 8, 18, 32, 25, 9, 2], disc: "Glenn T. Seaborg, Ralph A. James & Albert Ghiorso (1944)", fact: "Äáº·t tÃªn tÃ´n vinh vÄ© nhÃ¢n Marie vÃ  Pierre Curie. PhÃ¡t ra nhiá»‡t nÄƒng ráº¥t máº¡nh khi phÃ¢n rÃ£." },
-            { num: 97, sym: "Bk", vn: "Berkeli", en: "Berkelium", mass: "(247)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fâ¹ 7sÂ²", shells: [2, 8, 18, 32, 27, 8, 2], disc: "Stanley G. Thompson, Albert Ghiorso & Glenn T. Seaborg (1949)", fact: "Äáº·t theo tÃªn thÃ nh phá»‘ Berkeley, California nÆ¡i nÃ³ Ä‘Æ°á»£c tá»•ng há»£p." },
-            { num: 98, sym: "Cf", vn: "Californi", en: "Californium", mass: "(251)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ¹â° 7sÂ²", shells: [2, 8, 18, 32, 28, 8, 2], disc: "Stanley G. Thompson, Kenneth Street Jr., Albert Ghiorso & Glenn T. Seaborg (1950)", fact: "Nguá»“n phÃ¡t nÆ¡tron siÃªu máº¡nh dÃ¹ng khá»Ÿi Ä‘á»™ng lÃ² pháº£n á»©ng háº¡t nhÃ¢n vÃ  rÃ  soÃ¡t quáº·ng má»." },
-            { num: 99, sym: "Es", vn: "Einsteni", en: "Einsteinium", mass: "(252)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ¹Â¹ 7sÂ²", shells: [2, 8, 18, 32, 29, 8, 2], disc: "Albert Ghiorso vÃ  nhÃ³m nghiÃªn cá»©u (1952)", fact: "PhÃ¡t hiá»‡n trong tro bá»¥i vá»¥ thá»­ bom nhiá»‡t háº¡ch Ä‘áº§u tiÃªn, Ä‘áº·t tÃªn vinh danh Albert Einstein." },
-            { num: 100, sym: "Fm", vn: "Fermi", en: "Fermium", mass: "(257)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ¹Â² 7sÂ²", shells: [2, 8, 18, 32, 30, 8, 2], disc: "Albert Ghiorso vÃ  nhÃ³m nghiÃªn cá»©u (1952)", fact: "Äáº·t tÃªn vinh danh nhÃ  váº­t lÃ½ háº¡t nhÃ¢n thiÃªn tÃ i Enrico Fermi." },
-            { num: 101, sym: "Md", vn: "Mendelevi", en: "Mendelevium", mass: "(258)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ¹Â³ 7sÂ²", shells: [2, 8, 18, 32, 31, 8, 2], disc: "Albert Ghiorso vÃ  nhÃ³m nghiÃªn cá»©u (1955)", fact: "TÃ´n vinh Dmitri Mendeleev - ngÆ°á»i cha phÃ¡t minh ra Báº£ng tuáº§n hoÃ n nguyÃªn tá»‘ hÃ³a há»c!" },
-            { num: 102, sym: "No", vn: "Nobeli", en: "Nobelium", mass: "(259)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ¹â´ 7sÂ²", shells: [2, 8, 18, 32, 32, 8, 2], disc: "Joint Institute for Nuclear Research (1966)", fact: "Äáº·t tÃªn vinh danh Alfred Nobel - ngÆ°á»i sÃ¡ng láº­p giáº£i thÆ°á»Ÿng Nobel danh giÃ¡." },
-            { num: 103, sym: "Lr", vn: "Lawrenci", en: "Lawrencium", mass: "(262)", period: 7, group: 3, block: "f", cat: "Há» Actini", catKey: "actinide", config: "[Rn] 5fÂ¹â´ 7sÂ² 7pÂ¹", shells: [2, 8, 18, 32, 32, 8, 3], disc: "Albert Ghiorso vÃ  nhÃ³m nghiÃªn cá»©u (1961)", fact: "Lawrenci lÃ  nguyÃªn tá»‘ phÃ³ng xáº¡ tá»•ng há»£p, chá»‰ táº¡o ra Ä‘Æ°á»£c sá»‘ lÆ°á»£ng nguyÃªn tá»­ ráº¥t nhá». Cáº¥u hÃ¬nh electron tráº¡ng thÃ¡i cÆ¡ báº£n thÆ°á»ng Ä‘Æ°á»£c ghi lÃ  [Rn] 5fÂ¹â´ 7sÂ² 7pÂ¹; cÃ¡ch xáº¿p khá»‘i cá»§a nÃ³ cÃ³ tÃ­nh Ä‘áº·c thÃ¹." },
-            { num: 104, sym: "Rf", vn: "RÆ¡teri", en: "Rutherfordium", mass: "(267)", period: 7, group: 4, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dÂ² 7sÂ²", shells: [2, 8, 18, 32, 32, 10, 2], disc: "Dubna / Berkeley (1964)", fact: "Rutherfordi Ä‘Æ°á»£c Ä‘áº·t tÃªn Ä‘á»ƒ vinh danh Ernest Rutherford, ngÆ°á»i cÃ³ Ä‘Ã³ng gÃ³p ná»n táº£ng cho mÃ´ hÃ¬nh nguyÃªn tá»­ háº¡t nhÃ¢n." },
-            { num: 105, sym: "Db", vn: "Dubni", en: "Dubnium", mass: "(268)", period: 7, group: 5, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dÂ³ 7sÂ²", shells: [2, 8, 18, 32, 32, 11, 2], disc: "Dubna / Berkeley (1968)", fact: "Äáº·t theo tÃªn thÃ nh phá»‘ Dubna táº¡i Nga - trung tÃ¢m nghiÃªn cá»©u háº¡t nhÃ¢n tháº¿ giá»›i." },
-            { num: 106, sym: "Sg", vn: "Xiborgi", en: "Seaborgium", mass: "(269)", period: 7, group: 6, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dâ´ 7sÂ²", shells: [2, 8, 18, 32, 32, 12, 2], disc: "Lawrence Berkeley Lab (1974)", fact: "NguyÃªn tá»‘ Ä‘áº§u tiÃªn Ä‘Æ°á»£c Ä‘áº·t theo tÃªn má»™t nhÃ  khoa há»c cÃ²n sá»‘ng thá»i báº¥y giá» (Glenn Seaborg)." },
-            { num: 107, sym: "Bh", vn: "Bori", en: "Bohrium", mass: "(270)", period: 7, group: 7, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dâµ 7sÂ²", shells: [2, 8, 18, 32, 32, 13, 2], disc: "GSI Helmholtz Centre (1981)", fact: "Vinh danh Niels Bohr - nhÃ  váº­t lÃ½ xÃ¢y dá»±ng mÃ´ hÃ¬nh cÃ¡c lá»›p vá» electron nguyÃªn tá»­." },
-            { num: 108, sym: "Hs", vn: "Hassi", en: "Hassium", mass: "(269)", period: 7, group: 8, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dâ¶ 7sÂ²", shells: [2, 8, 18, 32, 32, 14, 2], disc: "GSI Helmholtz Centre (1984)", fact: "Äáº·t tÃªn theo bang Hesse cá»§a nÆ°á»›c Äá»©c." },
-            { num: 109, sym: "Mt", vn: "Maitneri", en: "Meitnerium", mass: "(277)", period: 7, group: 9, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dâ· 7sÂ²", shells: [2, 8, 18, 32, 32, 15, 2], disc: "GSI Helmholtz Centre (1982)", fact: "Vinh danh Lise Meitner - ná»¯ bÃ¡c há»c Ä‘á»“ng phÃ¡t minh ra pháº£n á»©ng phÃ¢n háº¡ch háº¡t nhÃ¢n." },
-            { num: 110, sym: "Ds", vn: "Darmstati", en: "Darmstadtium", mass: "(281)", period: 7, group: 10, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dâ¸ 7sÂ²", shells: [2, 8, 18, 32, 32, 16, 2], disc: "GSI Helmholtz Centre (1994)", fact: "Äáº·t theo tÃªn thÃ nh phá»‘ Darmstadt cá»§a Äá»©c nÆ¡i táº¡o ra nguyÃªn tá»‘ nÃ y." },
-            { num: 111, sym: "Rg", vn: "RÆ¡ngen", en: "Roentgenium", mass: "(282)", period: 7, group: 11, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dâ¹ 7sÂ²", shells: [2, 8, 18, 32, 32, 17, 2], disc: "GSI Helmholtz Centre (1994)", fact: "Roentgeni Ä‘Æ°á»£c Ä‘áº·t theo tÃªn Wilhelm Conrad RÃ¶ntgen, ngÆ°á»i phÃ¡t hiá»‡n tia X; khÃ´ng pháº£i â€œphÃ¡t minhâ€ ra tia X." },
-            { num: 112, sym: "Cn", vn: "Copernici", en: "Copernicium", mass: "(285)", period: 7, group: 12, block: "d", cat: "Chuyá»ƒn tiáº¿p", catKey: "transition", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ²", shells: [2, 8, 18, 32, 32, 18, 2], disc: "GSI Helmholtz Centre (1996)", fact: "Copernici Ä‘Æ°á»£c Ä‘áº·t tÃªn Ä‘á»ƒ vinh danh Nicolaus Copernicus, ngÆ°á»i Ä‘Ã£ phÃ¡t triá»ƒn mÃ´ hÃ¬nh nháº­t tÃ¢m; lá»‹ch sá»­ thiÃªn vÄƒn há»c sau Ä‘Ã³ má»›i cá»§ng cá»‘ mÃ´ hÃ¬nh báº±ng quan sÃ¡t vÃ  lÃ½ thuyáº¿t." },
-            { num: 113, sym: "Nh", vn: "Nihoni", en: "Nihonium", mass: "(286)", period: 7, group: 13, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ² 7pÂ¹", shells: [2, 8, 18, 32, 32, 18, 3], disc: "RIKEN Japan (2004)", fact: "Nihoni Ä‘Æ°á»£c Ä‘áº·t tÃªn tá»« â€œNihonâ€, tÃªn tiáº¿ng Nháº­t cá»§a Nháº­t Báº£n. Viá»‡c tá»•ng há»£p Ä‘Æ°á»£c bÃ¡o cÃ¡o bá»Ÿi nhÃ³m RIKEN vÃ  viá»‡c cÃ´ng nháº­n khÃ¡m phÃ¡ diá»…n ra theo quy trÃ¬nh quá»‘c táº¿." },
-            { num: 114, sym: "Fl", vn: "Flerovi", en: "Flerovium", mass: "(289)", period: 7, group: 14, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ² 7pÂ²", shells: [2, 8, 18, 32, 32, 18, 4], disc: "JINR Russia (1998)", fact: "Äáº·t theo PhÃ²ng thÃ­ nghiá»‡m Flerov vá» pháº£n á»©ng háº¡t nhÃ¢n táº¡i Dubna." },
-            { num: 115, sym: "Mc", vn: "Moskovi", en: "Moscovium", mass: "(290)", period: 7, group: 15, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ² 7pÂ³", shells: [2, 8, 18, 32, 32, 18, 5], disc: "JINR / LLNL (2003)", fact: "Äáº·t tÃªn vinh danh thá»§ Ä‘Ã´ Moskva (Moscow) cá»§a nÆ°á»›c Nga." },
-            { num: 116, sym: "Lv", vn: "Livermori", en: "Livermorium", mass: "(293)", period: 7, group: 16, block: "p", cat: "Kim loáº¡i sau chuyá»ƒn tiáº¿p", catKey: "post-transition", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ² 7pâ´", shells: [2, 8, 18, 32, 32, 18, 6], disc: "JINR / LLNL (2000)", fact: "Äáº·t tÃªn vinh danh PhÃ²ng thÃ­ nghiá»‡m Quá»‘c gia Lawrence Livermore táº¡i Má»¹." },
-            { num: 117, sym: "Ts", vn: "Tennessine", en: "Tennessine", mass: "(294)", period: 7, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ² 7pâµ", shells: [2, 8, 18, 32, 32, 18, 7], disc: "JINR / ORNL / LLNL (2010)", fact: "NguyÃªn tá»‘ thuá»™c nhÃ³m Halogen siÃªu náº·ng tá»•ng há»£p nhÃ¢n táº¡o." },
-            { num: 118, sym: "Og", vn: "Oganesson", en: "Oganesson", mass: "(294)", period: 7, group: 18, block: "p", cat: "KhÃ­ hiáº¿m", catKey: "noble", config: "[Rn] 5fÂ¹â´ 6dÂ¹â° 7sÂ² 7pâ¶", shells: [2, 8, 18, 32, 32, 18, 8], disc: "JINR / LLNL (2002)", fact: "Oganesson cÃ³ sá»‘ hiá»‡u nguyÃªn tá»­ cao nháº¥t trong báº£ng tuáº§n hoÃ n hiá»‡n Ä‘Æ°á»£c cÃ´ng nháº­n. Do chá»‰ táº¡o ra Ä‘Æ°á»£c ráº¥t Ã­t nguyÃªn tá»­, nhiá»u tÃ­nh cháº¥t váº­t lÃ½ cá»§a nÃ³ váº«n lÃ  dá»± Ä‘oÃ¡n." }
+            { num: 1, sym: "H", vn: "Hydro", en: "Hydrogen", mass: "1.008", period: 1, group: 1, block: "s", cat: "Phi kim", catKey: "nonmetal", config: "1s¹", shells: [1], disc: "Henry Cavendish (1766)", fact: "Hydro là nguyên tố phổ biến nhất trong vật chất thông thường của vũ trụ, chiếm khoảng 75% khối lượng vật chất baryon. Nó là nhiên liệu trong phản ứng nhiệt hạch của các sao." },
+            { num: 2, sym: "He", vn: "Heli", en: "Helium", mass: "4.0026", period: 1, group: 18, block: "s", cat: "Khí hiếm", catKey: "noble", config: "1s²", shells: [2], disc: "Pierre Janssen (1868)", fact: "Được phát hiện trên Mặt Trời trước khi tìm thấy trên Trái Đất. Không thể bị đóng băng ở áp suất khí quyển." },
+            { num: 3, sym: "Li", vn: "Liti", en: "Lithium", mass: "6.94", period: 2, group: 1, block: "s", cat: "Kim loại kiềm", catKey: "alkali", config: "[He] 2s¹", shells: [2, 1], disc: "Johan Arfwedson (1817)", fact: "Kim loại nhẹ nhất thế giới, nổi trên dầu. Trái tim cung cấp năng lượng cho pin smartphone & xe điện." },
+            { num: 4, sym: "Be", vn: "Beri", en: "Beryllium", mass: "9.0122", period: 2, group: 2, block: "s", cat: "Kiềm thổ", catKey: "alkaline", config: "[He] 2s²", shells: [2, 2], disc: "Louis Vauquelin (1798)", fact: "Beri là kim loại nhẹ, cứng và độc khi hít phải bụi. Trong đá emerald, beri thuộc cấu trúc khoáng beryl; sắc xanh chủ yếu do tạp chất crom và/hoặc vanadi." },
+            { num: 5, sym: "B", vn: "Bo", en: "Boron", mass: "10.81", period: 2, group: 13, block: "p", cat: "Á kim", catKey: "metalloid", config: "[He] 2s² 2p¹", shells: [2, 3], disc: "Joseph Gay-Lussac (1808)", fact: "Boron carbide (B₄C), một hợp chất của bo, được dùng làm vật liệu giáp nhẹ và trong các ứng dụng hấp thụ nơtron; đây không phải là áo giáp làm từ bo nguyên chất." },
+            { num: 6, sym: "C", vn: "Cacbon", en: "Carbon", mass: "12.011", period: 2, group: 14, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[He] 2s² 2p²", shells: [2, 4], disc: "Thời cổ đại", fact: "Cacbon là nền tảng hóa học của sự sống hữu cơ. Các dạng thù hình gồm than chì mềm và kim cương — một trong những vật liệu tự nhiên cứng nhất." },
+            { num: 7, sym: "N", vn: "Nitơ", en: "Nitrogen", mass: "14.007", period: 2, group: 15, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[He] 2s² 2p³", shells: [2, 5], disc: "Daniel Rutherford (1772)", fact: "Nitơ chiếm khoảng 78% thể tích không khí khô. Nitơ lỏng ở gần −196°C được dùng làm chất làm lạnh sâu và có thể gây bỏng lạnh nghiêm trọng." },
+            { num: 8, sym: "O", vn: "Oxi", en: "Oxygen", mass: "15.999", period: 2, group: 16, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[He] 2s² 2p⁴", shells: [2, 6], disc: "Carl Wilhelm Scheele (1774)", fact: "Duy trì sự sống và sự cháy. Chiếm 21% không khí và gần một nửa khối lượng vỏ Trái Đất." },
+            { num: 9, sym: "F", vn: "Flo", en: "Fluorine", mass: "18.998", period: 2, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[He] 2s² 2p⁵", shells: [2, 7], disc: "Henri Moissan (1886)", fact: "Flo nguyên tố là chất khí cực kỳ phản ứng và độc. Kem đánh răng thường chứa các hợp chất fluoride với lượng được kiểm soát để giúp ngăn ngừa sâu răng, không phải bột flo nguyên tố." },
+            { num: 10, sym: "Ne", vn: "Neon", en: "Neon", mass: "20.180", period: 2, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[He] 2s² 2p⁶", shells: [2, 8], disc: "William Ramsay (1898)", fact: "Phát ra ánh sáng màu đỏ cam rực rỡ khi có dòng điện chạy qua, tạo nên các biển quảng cáo neon về đêm." },
+            { num: 11, sym: "Na", vn: "Natri", en: "Sodium", mass: "22.990", period: 3, group: 1, block: "s", cat: "Kim loại kiềm", catKey: "alkali", config: "[Ne] 3s¹", shells: [2, 8, 1], disc: "Humphry Davy (1807)", fact: "Natri là kim loại mềm có thể cắt bằng dao và phản ứng rất mạnh với nước; trong một số điều kiện phản ứng có thể bùng cháy hoặc nổ. Natri cũng có trong muối ăn NaCl." },
+            { num: 12, sym: "Mg", vn: "Magie", en: "Magnesium", mass: "24.305", period: 3, group: 2, block: "s", cat: "Kiềm thổ", catKey: "alkaline", config: "[Ne] 3s²", shells: [2, 8, 2], disc: "Joseph Black (1755)", fact: "Cháy với ánh sáng chói lóa mắt. Trái tim của chất diệp lục giúp cây xanh quang hợp năng lượng." },
+            { num: 13, sym: "Al", vn: "Nhôm", en: "Aluminium", mass: "26.982", period: 3, group: 13, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Ne] 3s² 3p¹", shells: [2, 8, 3], disc: "Hans Christian Ørsted (1825)", fact: "Kim loại phổ biến nhất vỏ Trái Đất. Nhẹ, không gỉ, là vật liệu không thể thiếu chế tạo máy bay." },
+            { num: 14, sym: "Si", vn: "Silic", en: "Silicon", mass: "28.085", period: 3, group: 14, block: "p", cat: "Á kim", catKey: "metalloid", config: "[Ne] 3s² 3p²", shells: [2, 8, 4], disc: "Jöns Jacob Berzelius (1824)", fact: "Linh hồn của Thung lũng Silicon! Vật liệu bán dẫn tạo nên toàn bộ vi xử lý máy tính hiện đại." },
+            { num: 15, sym: "P", vn: "Photpho", en: "Phosphorus", mass: "30.974", period: 3, group: 15, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[Ne] 3s² 3p³", shells: [2, 8, 5], disc: "Hennig Brand (1669)", fact: "Photpho trắng phát sáng trong đêm, photpho đỏ được dùng ở đầu que diêm an toàn." },
+            { num: 16, sym: "S", vn: "Lưu huỳnh", en: "Sulfur", mass: "32.06", period: 3, group: 16, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[Ne] 3s² 3p⁴", shells: [2, 8, 6], disc: "Thời cổ đại", fact: "Có màu vàng chanh rực rỡ và mùi trứng thối đặc trưng khi kết hợp với Hydro thành H2S." },
+            { num: 17, sym: "Cl", vn: "Clo", en: "Chlorine", mass: "35.45", period: 3, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Ne] 3s² 3p⁵", shells: [2, 8, 7], disc: "Carl Wilhelm Scheele (1774)", fact: "Khí độc màu vàng lục, được dùng phổ biến để khử trùng làm sạch nước bể bơi." },
+            { num: 18, sym: "Ar", vn: "Argon", en: "Argon", mass: "39.95", period: 3, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[Ne] 3s² 3p⁶", shells: [2, 8, 8], disc: "Lord Rayleigh (1894)", fact: "Argon là khí chiếm tỷ lệ lớn thứ ba trong khí quyển Trái Đất, sau nitơ và oxy. Argon được dùng trong một số bóng đèn và làm khí bảo vệ khi hàn." },
+            { num: 19, sym: "K", vn: "Kali", en: "Potassium", mass: "39.098", period: 4, group: 1, block: "s", cat: "Kim loại kiềm", catKey: "alkali", config: "[Ar] 4s¹", shells: [2, 8, 8, 1], disc: "Humphry Davy (1807)", fact: "Khoáng chất thiết yếu cho tim mạch và dây thần kinh. Có rất nhiều trong chuối tươi." },
+            { num: 20, sym: "Ca", vn: "Canxi", en: "Calcium", mass: "40.078", period: 4, group: 2, block: "s", cat: "Kiềm thổ", catKey: "alkaline", config: "[Ar] 4s²", shells: [2, 8, 8, 2], disc: "Humphry Davy (1808)", fact: "Thành phần cấu tạo nên xương, răng và vỏ sò vỏ ốc. Giúp cơ thể đứng vững chắc." },
+            { num: 21, sym: "Sc", vn: "Scandi", en: "Scandium", mass: "44.956", period: 4, group: 3, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d¹ 4s²", shells: [2, 8, 9, 2], disc: "Lars Fredrik Nilson (1879)", fact: "Hợp kim Scandi-Nhôm siêu nhẹ bền dùng chế tạo gậy bóng chày và khung xe đạp đua đắt tiền." },
+            { num: 22, sym: "Ti", vn: "Titan", en: "Titanium", mass: "47.867", period: 4, group: 4, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d² 4s²", shells: [2, 8, 10, 2], disc: "William Gregor (1791)", fact: "Titan có tỷ lệ bền trên khối lượng cao và khả năng tương thích sinh học tốt nhờ lớp oxit bề mặt ổn định; vì vậy nó được dùng trong một số implant y tế." },
+            { num: 23, sym: "V", vn: "Vanadi", en: "Vanadium", mass: "50.942", period: 4, group: 5, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d³ 4s²", shells: [2, 8, 11, 2], disc: "Andrés Manuel del Río (1801)", fact: "Pha vào thép giúp tạo độ đàn hồi dẻo dai cực cao cho lò xo ô tô và dụng cụ cơ khí." },
+            { num: 24, sym: "Cr", vn: "Crom", en: "Chromium", mass: "51.996", period: 4, group: 6, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d⁵ 4s¹", shells: [2, 8, 13, 1], disc: "Louis Vauquelin (1797)", fact: "Crom là kim loại cứng, chống ăn mòn tốt khi được dùng trong hợp kim hoặc lớp mạ. Không nên gọi nó là kim loại cứng nhất thế giới theo nghĩa tuyệt đối." },
+            { num: 25, sym: "Mn", vn: "Mangan", en: "Manganese", mass: "54.938", period: 4, group: 7, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d⁵ 4s²", shells: [2, 8, 13, 2], disc: "Johan Gottlieb Gahn (1774)", fact: "Thành phần quan trọng để luyện thép không gỉ chắc chắn và sản xuất vỏ lon nước ngọt." },
+            { num: 26, sym: "Fe", vn: "Sắt", en: "Iron", mass: "55.845", period: 4, group: 8, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d⁶ 4s²", shells: [2, 8, 14, 2], disc: "Thời cổ đại", fact: "Kim loại phổ biến nhất nền văn minh con người! Giúp máu có màu đỏ nhờ protein Hemoglobin." },
+            { num: 27, sym: "Co", vn: "Coban", en: "Cobalt", mass: "58.933", period: 4, group: 9, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d⁷ 4s²", shells: [2, 8, 15, 2], disc: "Georg Brandt (1735)", fact: "Tạo nên sắc xanh lam Coban tuyệt đẹp cho gốm sứ cổ truyền và kính màu nghệ thuật." },
+            { num: 28, sym: "Ni", vn: "Niken", en: "Nickel", mass: "58.693", period: 4, group: 10, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d⁸ 4s²", shells: [2, 8, 16, 2], disc: "Axel Fredrik Cronstedt (1751)", fact: "Niken được dùng trong thép không gỉ, hợp kim chịu nhiệt, mạ kim loại và một số loại tiền xu; một số hợp chất niken có thể gây dị ứng hoặc độc tính." },
+            { num: 29, sym: "Cu", vn: "Đồng", en: "Copper", mass: "63.546", period: 4, group: 11, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d¹⁰ 4s¹", shells: [2, 8, 18, 1], disc: "Thời cổ đại", fact: "Đồng là một trong những kim loại được con người sử dụng sớm nhất. Trong các kim loại nguyên chất, bạc dẫn điện tốt hơn đồng; đồng vẫn được dùng rộng rãi làm dây dẫn điện." },
+            { num: 30, sym: "Zn", vn: "Kẽm", en: "Zinc", mass: "65.38", period: 4, group: 12, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Ar] 3d¹⁰ 4s²", shells: [2, 8, 18, 2], disc: "Andreas Sigismund Marggraf (1746)", fact: "Dùng để mạ tôn chống gỉ và kết hợp với Đồng tạo nên hợp kim Đồng thau sáng bóng." },
+            { num: 31, sym: "Ga", vn: "Gali", en: "Gallium", mass: "69.723", period: 4, group: 13, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Ar] 3d¹⁰ 4s² 4p¹", shells: [2, 8, 18, 3], disc: "Émile Lecoq de Boisbaudran (1875)", fact: "Gali nguyên chất nóng chảy ở khoảng 29,76°C nên có thể bắt đầu tan trong bàn tay ấm. Không nên để gali tiếp xúc với nhôm vì có thể làm nhôm giòn." },
+            { num: 32, sym: "Ge", vn: "Germani", en: "Germanium", mass: "72.630", period: 4, group: 14, block: "p", cat: "Á kim", catKey: "metalloid", config: "[Ar] 3d¹⁰ 4s² 4p²", shells: [2, 8, 18, 4], disc: "Clemens Winkler (1886)", fact: "Gecmani là chất bán dẫn, được dùng trong một số linh kiện điện tử, cảm biến hồng ngoại và hệ thống quang học sợi quang." },
+            { num: 33, sym: "As", vn: "Asen", en: "Arsenic", mass: "74.922", period: 4, group: 15, block: "p", cat: "Á kim", catKey: "metalloid", config: "[Ar] 3d¹⁰ 4s² 4p³", shells: [2, 8, 18, 5], disc: "Albertus Magnus (1250)", fact: "Asen nguyên tố thường có dạng rắn xám bạc, giòn và có ánh kim. Một số hợp chất asen rất độc; độc tính phụ thuộc dạng hóa học và mức phơi nhiễm." },
+            { num: 34, sym: "Se", vn: "Selen", en: "Selenium", mass: "78.971", period: 4, group: 16, block: "p", cat: "Phi kim", catKey: "nonmetal", config: "[Ar] 3d¹⁰ 4s² 4p⁴", shells: [2, 8, 18, 6], disc: "Jöns Jacob Berzelius (1817)", fact: "Dẫn điện tốt hơn khi có ánh sáng chiếu vào, linh hồn của các bộ cảm biến quang học máy ảnh." },
+            { num: 35, sym: "Br", vn: "Brom", en: "Bromine", mass: "79.904", period: 4, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Ar] 3d¹⁰ 4s² 4p⁵", shells: [2, 8, 18, 7], disc: "Antoine Jérôme Balard (1826)", fact: "Brom là phi kim ở dạng lỏng gần nhiệt độ phòng; chất lỏng có màu nâu đỏ và hơi brom có tính ăn mòn, độc, mùi hắc." },
+            { num: 36, sym: "Kr", vn: "Kripton", en: "Krypton", mass: "83.798", period: 4, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[Ar] 3d¹⁰ 4s² 4p⁶", shells: [2, 8, 18, 8], disc: "William Ramsay (1898)", fact: "Đồng vị krypton-86 từng được dùng để định nghĩa mét từ năm 1960 đến năm 1983 thông qua bước sóng của vạch phổ màu cam đỏ." },
+            { num: 37, sym: "Rb", vn: "Rubidi", en: "Rubidium", mass: "85.468", period: 5, group: 1, block: "s", cat: "Kim loại kiềm", catKey: "alkali", config: "[Kr] 5s¹", shells: [2, 8, 18, 8, 1], disc: "Robert Bunsen (1861)", fact: "Tạo nên ngọn lửa màu đỏ tím quyến rũ. Dùng trong đồng hồ nguyên tử chính xác cao." },
+            { num: 38, sym: "Sr", vn: "Stronti", en: "Strontium", mass: "87.62", period: 5, group: 2, block: "s", cat: "Kiềm thổ", catKey: "alkaline", config: "[Kr] 5s²", shells: [2, 8, 18, 8, 2], disc: "Adair Crawford (1790; mô tả khoáng strontianite)", fact: "Muối stronti tạo màu đỏ trong pháo hoa. Stronti cũng được dùng trong một số vật liệu gốm và ứng dụng công nghiệp." },
+            { num: 39, sym: "Y", vn: "Ytri", en: "Yttrium", mass: "88.906", period: 5, group: 3, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d¹ 5s²", shells: [2, 8, 18, 9, 2], disc: "Johan Gadolin (1794)", fact: "Thành phần quan trọng chế tạo vật liệu siêu dẫn nhiệt độ cao và đèn LED thắp sáng." },
+            { num: 40, sym: "Zr", vn: "Zirconi", en: "Zirconium", mass: "91.224", period: 5, group: 4, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d² 5s²", shells: [2, 8, 18, 10, 2], disc: "Martin Heinrich Klaproth (1789)", fact: "Zirconi có khả năng chống ăn mòn tốt. Đá cubic zirconia là tinh thể zirconium dioxide (ZrO₂) tổng hợp, được dùng làm đá mô phỏng kim cương; nó không phải kim cương thật." },
+            { num: 41, sym: "Nb", vn: "Niobi", en: "Niobium", mass: "92.906", period: 5, group: 5, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d⁴ 5s¹", shells: [2, 8, 18, 12, 1], disc: "Charles Hatchett (1801)", fact: "Niobi được dùng trong một số hợp kim siêu dẫn, trong đó có vật liệu cho nam châm siêu dẫn của máy MRI." },
+            { num: 42, sym: "Mo", vn: "Molibden", en: "Molybdenum", mass: "95.95", period: 5, group: 6, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d⁵ 5s¹", shells: [2, 8, 18, 13, 1], disc: "Carl Wilhelm Scheele (1778)", fact: "Molypden giúp tăng độ bền và khả năng chịu nhiệt của nhiều loại thép, siêu hợp kim và một số chi tiết làm việc ở nhiệt độ cao." },
+            { num: 43, sym: "Tc", vn: "Tecneti", en: "Technetium", mass: "(97)", period: 5, group: 7, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d⁵ 5s²", shells: [2, 8, 18, 13, 2], disc: "Emilio Segrè & Carlo Perrier (1937)", fact: "Nguyên tố nhân tạo đầu tiên do con người tổng hợp! Dùng trong đồng vị phóng xạ y học." },
+            { num: 44, sym: "Ru", vn: "Ruteni", en: "Ruthenium", mass: "101.07", period: 5, group: 8, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d⁷ 5s¹", shells: [2, 8, 18, 15, 1], disc: "Karl Ernst Claus (1844)", fact: "Kim loại quý hiếm nhóm Bạch kim, dùng phủ vi mạch linh kiện điện tử siêu bền." },
+            { num: 45, sym: "Rh", vn: "Rodi", en: "Rhodium", mass: "102.91", period: 5, group: 9, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d⁸ 5s¹", shells: [2, 8, 18, 16, 1], disc: "William Hyde Wollaston (1803)", fact: "Rodi là kim loại nhóm platin có giá trị cao và được dùng làm chất xúc tác trong bộ xử lý khí thải ô tô; giá của nó biến động và không luôn đắt hơn vàng." },
+            { num: 46, sym: "Pd", vn: "Paladi", en: "Palladium", mass: "106.42", period: 5, group: 10, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d¹⁰", shells: [2, 8, 18, 18], disc: "William Hyde Wollaston (1803)", fact: "Palladi có thể hấp thụ hydro với lượng lớn so với thể tích kim loại trong những điều kiện phù hợp; con số cụ thể phụ thuộc điều kiện và cách đo." },
+            { num: 47, sym: "Ag", vn: "Bạc", en: "Silver", mass: "107.87", period: 5, group: 11, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d¹⁰ 5s¹", shells: [2, 8, 18, 18, 1], disc: "Thời cổ đại", fact: "Dẫn điện và dẫn nhiệt tốt nhất trong tất cả kim loại. Có tính diệt khuẩn tự nhiên cao." },
+            { num: 48, sym: "Cd", vn: "Cadimi", en: "Cadmium", mass: "112.41", period: 5, group: 12, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Kr] 4d¹⁰ 5s²", shells: [2, 8, 18, 18, 2], disc: "Karl Samuel Leberecht Hermann (1817)", fact: "Từng làm pin Ni-Cd xạc lại được, nhưng rất độc hại nên đang bị thay thế dần." },
+            { num: 49, sym: "In", vn: "Indi", en: "Indium", mass: "114.82", period: 5, group: 13, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Kr] 4d¹⁰ 5s² 5p¹", shells: [2, 8, 18, 18, 3], disc: "Ferdinand Reich & Hieronymous Theodor Richter (1863)", fact: "Indium tin oxide (ITO) là vật liệu dẫn điện trong suốt được dùng phổ biến trong màn hình cảm ứng và màn hình phẳng, dù không phải mọi màn hình đều dùng ITO." },
+            { num: 50, sym: "Sn", vn: "Thiếc", en: "Tin", mass: "118.71", period: 5, group: 14, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Kr] 4d¹⁰ 5s² 5p²", shells: [2, 8, 18, 18, 4], disc: "Thời cổ đại", fact: "Thiếc kết hợp với đồng tạo thành đồng thiếc (bronze), hợp kim có vai trò quan trọng trong Thời đại Đồ đồng. Đồng thau (brass) chủ yếu là hợp kim đồng–kẽm." },
+            { num: 51, sym: "Sb", vn: "Antimon", en: "Antimony", mass: "121.76", period: 5, group: 15, block: "p", cat: "Á kim", catKey: "metalloid", config: "[Kr] 4d¹⁰ 5s² 5p³", shells: [2, 8, 18, 18, 5], disc: "Thời cổ đại", fact: "Thời Ai Cập cổ đại được nghiền mịn làm phấn kẻ mắt quyến rũ cho các Nữ hoàng." },
+            { num: 52, sym: "Te", vn: "Telu", en: "Tellurium", mass: "127.60", period: 5, group: 16, block: "p", cat: "Á kim", catKey: "metalloid", config: "[Kr] 4d¹⁰ 5s² 5p⁴", shells: [2, 8, 18, 18, 6], disc: "Franz-Joseph Müller von Reichenstein (1782)", fact: "Rất hiếm trên Trái Đất. Dùng chế tạo pin mặt trời quang điện hiệu suất cao." },
+            { num: 53, sym: "I", vn: "Iốt", en: "Iodine", mass: "126.90", period: 5, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Kr] 4d¹⁰ 5s² 5p⁵", shells: [2, 8, 18, 18, 7], disc: "Bernard Courtois (1811)", fact: "Iốt được bổ sung vào muối ăn dưới dạng hợp chất iốt để phòng thiếu iốt. Iốt rắn có thể thăng hoa tạo hơi màu tím." },
+            { num: 54, sym: "Xe", vn: "Xenon", en: "Xenon", mass: "131.29", period: 5, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[Kr] 4d¹⁰ 5s² 5p⁶", shells: [2, 8, 18, 18, 8], disc: "William Ramsay & Morris Travers (1898)", fact: "Khí trơ phát ánh sáng xanh lam cực sáng, dùng làm đèn pha ô tô siêu sáng và động cơ đẩy Ion vũ trụ." },
+            { num: 55, sym: "Cs", vn: "Cesi", en: "Caesium", mass: "132.91", period: 6, group: 1, block: "s", cat: "Kim loại kiềm", catKey: "alkali", config: "[Xe] 6s¹", shells: [2, 8, 18, 18, 8, 1], disc: "Robert Bunsen & Gustav Kirchhoff (1860)", fact: "Cesi là kim loại kiềm phản ứng rất mạnh. Tần số chuyển tiếp siêu tinh tế của nguyên tử cesi-133 được dùng để định nghĩa giây SI." },
+            { num: 56, sym: "Ba", vn: "Bari", en: "Barium", mass: "137.33", period: 6, group: 2, block: "s", cat: "Kiềm thổ", catKey: "alkaline", config: "[Xe] 6s²", shells: [2, 8, 18, 18, 8, 2], disc: "Humphry Davy (1808)", fact: "Tạo màu xanh lá cây rực rỡ cho pháo hoa nghệ thuật đêm hội." },
+            { num: 57, sym: "La", vn: "Lantan", en: "Lanthanum", mass: "138.91", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 5d¹ 6s²", shells: [2, 8, 18, 18, 9, 2], disc: "Carl Gustaf Mosander (1839)", fact: "Lantan là nguyên tố mở đầu dãy lantan trong cách sắp xếp bảng tuần hoàn phổ biến. Một số hợp chất lantan được dùng trong kính quang học và vật liệu xúc tác." },
+            { num: 58, sym: "Ce", vn: "Ceri", en: "Cerium", mass: "140.12", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹ 5d¹ 6s²", shells: [2, 8, 18, 19, 9, 2], disc: "Martin Heinrich Klaproth (1803)", fact: "Tạo ra tia lửa khi cọ xát, dùng làm đá lửa trong bật lửa gas hàng ngày." },
+            { num: 59, sym: "Pr", vn: "Praseodim", en: "Praseodymium", mass: "140.91", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f³ 6s²", shells: [2, 8, 18, 21, 8, 2], disc: "Carl Auer von Welsbach (1885)", fact: "Nhuộm màu vàng chanh nhạt xinh đẹp cho thủy tinh và kính bảo hộ thợ hàn." },
+            { num: 60, sym: "Nd", vn: "Neodim", en: "Neodymium", mass: "144.24", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f⁴ 6s²", shells: [2, 8, 18, 22, 8, 2], disc: "Carl Auer von Welsbach (1885)", fact: "Nam châm neodymi–sắt–bo (Nd₂Fe₁₄B) có lực từ rất mạnh so với kích thước; lực kéo thực tế phụ thuộc kích thước, hình dạng và điều kiện tiếp xúc của nam châm." },
+            { num: 61, sym: "Pm", vn: "Prometi", en: "Promethium", mass: "(145)", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f⁵ 6s²", shells: [2, 8, 18, 23, 8, 2], disc: "Jacob A. Marinsky, Lawrence E. Glendenin & Charles D. Coryell (1945)", fact: "Prometi là nguyên tố lantan duy nhất không có đồng vị bền; mọi đồng vị của nó đều phóng xạ. Một số đồng vị được dùng trong nguồn beta và nghiên cứu." },
+            { num: 62, sym: "Sm", vn: "Samari", en: "Samarium", mass: "150.36", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f⁶ 6s²", shells: [2, 8, 18, 24, 8, 2], disc: "Émile Lecoq de Boisbaudran (1879)", fact: "Nam châm samari–coban giữ được tính năng từ trong điều kiện nhiệt độ cao hơn nhiều loại nam châm khác, nên dùng trong động cơ và thiết bị kỹ thuật." },
+            { num: 63, sym: "Eu", vn: "Europi", en: "Europium", mass: "151.96", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f⁷ 6s²", shells: [2, 8, 18, 25, 8, 2], disc: "Eugène-Anatole Demarçay (1901)", fact: "Phát huỳnh quang đỏ rực dưới tia cực tím, dùng in chất chống giả trên tờ tiền Euro." },
+            { num: 64, sym: "Gd", vn: "Gadolini", en: "Gadolinium", mass: "157.25", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f⁷ 5d¹ 6s²", shells: [2, 8, 18, 25, 9, 2], disc: "Jean Charles Galissard de Marignac (1880)", fact: "Thuốc cản quang tiêm vào cơ thể giúp hình ảnh chụp MRI sắc nét rõ ràng." },
+            { num: 65, sym: "Tb", vn: "Terbi", en: "Terbium", mass: "158.93", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f⁹ 6s²", shells: [2, 8, 18, 27, 8, 2], disc: "Carl Gustaf Mosander (1843)", fact: "Phát quang màu xanh lá cây rực rỡ trong màn hình tivi và bóng đèn tiết kiệm điện." },
+            { num: 66, sym: "Dy", vn: "Disprosi", en: "Dysprosium", mass: "162.50", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹⁰ 6s²", shells: [2, 8, 18, 28, 8, 2], disc: "Paul-Émile Lecoq de Boisbaudran (1886)", fact: "Disprosi được dùng trong một số nam châm vĩnh cửu hiệu năng cao để cải thiện khả năng giữ từ tính ở nhiệt độ cao." },
+            { num: 67, sym: "Ho", vn: "Holmi", en: "Holmium", mass: "164.93", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹¹ 6s²", shells: [2, 8, 18, 29, 8, 2], disc: "Per Teodor Cleve (1879)", fact: "Holmi có mômen từ nguyên tử lớn nhất trong các nguyên tố tự nhiên và thể hiện tính chất từ đặc biệt; mô tả này cụ thể hơn việc gọi nó là “nguyên tố từ tính mạnh nhất” trong mọi hoàn cảnh." },
+            { num: 68, sym: "Er", vn: "Erbi", en: "Erbium", mass: "167.26", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹² 6s²", shells: [2, 8, 18, 30, 8, 2], disc: "Carl Gustaf Mosander (1843)", fact: "Erbi tạo màu hồng trong một số loại thủy tinh và được dùng làm chất pha tạp khuếch đại tín hiệu trong sợi quang." },
+            { num: 69, sym: "Tm", vn: "Tuli", en: "Thulium", mass: "168.93", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹³ 6s²", shells: [2, 8, 18, 31, 8, 2], disc: "Per Teodor Cleve (1879)", fact: "Nguyên tố hiếm nhất trong họ Lantan, dùng chế tạo máy X-quang xách tay gọn nhẹ." },
+            { num: 70, sym: "Yb", vn: "Yterbi", en: "Ytterbium", mass: "173.05", period: 6, group: 3, block: "f", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹⁴ 6s²", shells: [2, 8, 18, 32, 8, 2], disc: "Jean Charles Galissard de Marignac (1878)", fact: "Dùng làm đồng hồ nguyên tử Yterbi chính xác cao gấp hàng chục lần đồng hồ Cesi." },
+            { num: 71, sym: "Lu", vn: "Luteti", en: "Lutetium", mass: "174.97", period: 6, group: 3, block: "d", cat: "Họ Lantan", catKey: "lanthanide", config: "[Xe] 4f¹⁴ 5d¹ 6s²", shells: [2, 8, 18, 32, 9, 2], disc: "Georges Urbain & Carl Auer von Welsbach (1907; độc lập)", fact: "Luteti được dùng trong một số chất xúc tác và tinh thể phát hiện bức xạ, chẳng hạn vật liệu tinh thể chứa luteti dùng trong máy PET." },
+            { num: 72, sym: "Hf", vn: "Hafni", en: "Hafnium", mass: "178.49", period: 6, group: 4, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d² 6s²", shells: [2, 8, 18, 32, 10, 2], disc: "Dirk Coster & George de Hevesy (1923)", fact: "Hấp thụ nơtron cực tốt, dùng làm thanh khống chế an toàn trong tàu ngầm hạt nhân." },
+            { num: 73, sym: "Ta", vn: "Tantan", en: "Tantalum", mass: "180.95", period: 6, group: 5, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d³ 6s²", shells: [2, 8, 18, 32, 11, 2], disc: "Anders Gustaf Ekeberg (1802)", fact: "Tantan có khả năng chống ăn mòn rất tốt trong nhiều môi trường hóa học, nhưng không trơ với mọi axit và mọi điều kiện. Nó được dùng trong tụ điện và hợp kim." },
+            { num: 74, sym: "W", vn: "Vonfram", en: "Tungsten", mass: "183.84", period: 6, group: 6, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d⁴ 6s²", shells: [2, 8, 18, 32, 12, 2], disc: "Carl Wilhelm Scheele (1781)", fact: "Vonfram có nhiệt độ nóng chảy cao nhất trong các kim loại tinh khiết thông dụng đã biết (khoảng 3422°C) và từng được dùng làm dây tóc bóng đèn sợi đốt." },
+            { num: 75, sym: "Re", vn: "Reni", en: "Rhenium", mass: "186.21", period: 6, group: 7, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d⁵ 6s²", shells: [2, 8, 18, 32, 13, 2], disc: "Walter Noddack, Ida Tacke & Otto Berg (1925)", fact: "Reni được Walter Noddack, Ida Tacke và Otto Berg xác định năm 1925. Đây là nguyên tố hiếm, được dùng trong một số siêu hợp kim chịu nhiệt cho tua-bin." },
+            { num: 76, sym: "Os", vn: "Osmi", en: "Osmium", mass: "190.23", period: 6, group: 8, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d⁶ 6s²", shells: [2, 8, 18, 32, 14, 2], disc: "Smithson Tennant (1803)", fact: "Osmi có khối lượng riêng thuộc nhóm cao nhất trong các nguyên tố đã biết, gần với iridi; thứ tự chính xác phụ thuộc dữ liệu và điều kiện đo." },
+            { num: 77, sym: "Ir", vn: "Iridi", en: "Iridium", mass: "192.22", period: 6, group: 9, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d⁷ 6s²", shells: [2, 8, 18, 32, 15, 2], disc: "Smithson Tennant (1803)", fact: "Iridi rất bền với ăn mòn. Dị thường iridi ở lớp ranh giới K–Pg là một bằng chứng quan trọng ủng hộ giả thuyết va chạm thiên thạch liên quan đến sự kiện tuyệt chủng cuối kỷ Phấn Trắng." },
+            { num: 78, sym: "Pt", vn: "Bạch kim", en: "Platinum", mass: "195.08", period: 6, group: 10, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d⁹ 6s¹", shells: [2, 8, 18, 32, 17, 1], disc: "Antonio de Ulloa (1735)", fact: "Bạch kim là kim loại quý, có khả năng chống ăn mòn và hoạt tính xúc tác hữu ích; nó được dùng trong trang sức, thiết bị phòng thí nghiệm và bộ xúc tác." },
+            { num: 79, sym: "Au", vn: "Vàng", en: "Gold", mass: "196.97", period: 6, group: 11, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s¹", shells: [2, 8, 18, 32, 18, 1], disc: "Thời cổ đại", fact: "Vua của các kim loại! Dễ dát mỏng tới mức 1 gram vàng dát ra được lá rộng 1 mét vuông." },
+            { num: 80, sym: "Hg", vn: "Thủy ngân", en: "Mercury", mass: "200.59", period: 6, group: 12, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s²", shells: [2, 8, 18, 32, 18, 2], disc: "Thời cổ đại", fact: "Thủy ngân là kim loại lỏng ở nhiệt độ phòng thông thường. Trước đây nó được dùng trong nhiệt kế, nhưng nhiều ứng dụng đã bị thay thế do độc tính." },
+            { num: 81, sym: "Tl", vn: "Tali", en: "Thallium", mass: "204.38", period: 6, group: 13, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p¹", shells: [2, 8, 18, 32, 18, 3], disc: "William Crookes (1861)", fact: "Tali và nhiều hợp chất của nó rất độc. Không nên mô tả nguyên tố kim loại là “không màu, không mùi”; các đặc điểm đó có thể áp dụng cho một số hợp chất." },
+            { num: 82, sym: "Pb", vn: "Chì", en: "Lead", mass: "207.2", period: 6, group: 14, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p²", shells: [2, 8, 18, 32, 18, 4], disc: "Thời cổ đại", fact: "Chì có thể làm suy giảm tia X và tia gamma khi dùng với độ dày phù hợp, nhưng không chặn hiệu quả mọi loại bức xạ và cần được sử dụng theo yêu cầu an toàn." },
+            { num: 83, sym: "Bi", vn: "Bismut", en: "Bismuth", mass: "208.98", period: 6, group: 15, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p³", shells: [2, 8, 18, 32, 18, 5], disc: "Marie & Pierre Curie (1898)", fact: "Tạo nên tinh thể ngũ sắc óng ánh như bậc thang tương lai tuyệt đẹp." },
+            { num: 84, sym: "Po", vn: "Poloni", en: "Polonium", mass: "(209)", period: 6, group: 16, block: "p", cat: "Á kim", catKey: "metalloid", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁴", shells: [2, 8, 18, 32, 18, 6], disc: "Marie Curie (1898)", fact: "Poloni được Marie và Pierre Curie phát hiện năm 1898 và đặt tên để gợi nhắc đến Ba Lan (Poland), quê hương của Marie Curie." },
+            { num: 85, sym: "At", vn: "Astatin", en: "Astatine", mass: "(210)", period: 6, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁵", shells: [2, 8, 18, 32, 18, 7], disc: "Dale R. Corson, Kenneth R. MacKenzie & Emilio Segrè (1940)", fact: "Astatin cực kỳ hiếm trong tự nhiên và có tính phóng xạ; tổng lượng hiện diện trong vỏ Trái Đất tại một thời điểm chỉ là ước tính và thay đổi theo mô hình." },
+            { num: 86, sym: "Rn", vn: "Radon", en: "Radon", mass: "(222)", period: 6, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[Xe] 4f¹⁴ 5d¹⁰ 6s² 6p⁶", shells: [2, 8, 18, 32, 18, 8], disc: "Friedrich Ernst Dorn (1900)", fact: "Radon là khí hiếm không có đồng vị bền; nó có thể tích tụ trong nhà từ đất đá bên dưới, đặc biệt nếu thông gió kém. Phơi nhiễm radon kéo dài làm tăng nguy cơ ung thư phổi." },
+            { num: 87, sym: "Fr", vn: "Francium", en: "Francium", mass: "(223)", period: 7, group: 1, block: "s", cat: "Kim loại kiềm", catKey: "alkali", config: "[Rn] 7s¹", shells: [2, 8, 18, 32, 18, 8, 1], disc: "Marguerite Perey (1939)", fact: "Đồng vị francium-223 có chu kỳ bán rã khoảng 22 phút; các đồng vị khác có chu kỳ bán rã khác nhau." },
+            { num: 88, sym: "Ra", vn: "Radi", en: "Radium", mass: "(226)", period: 7, group: 2, block: "s", cat: "Kiềm thổ", catKey: "alkaline", config: "[Rn] 7s²", shells: [2, 8, 18, 32, 18, 8, 2], disc: "Marie Curie (1898)", fact: "Radium là chất phóng xạ. Ánh sáng xanh lục của sơn dạ quang trên nhiều mặt đồng hồ cổ chủ yếu đến từ chất phát quang như kẽm sulfide bị bức xạ kích thích, không phải màu xanh lục tự phát của radium nguyên chất." },
+            { num: 89, sym: "Ac", vn: "Actini", en: "Actinium", mass: "(227)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 6d¹ 7s²", shells: [2, 8, 18, 32, 18, 9, 2], disc: "André-Louis Debierne (1899)", fact: "Mở đầu họ Actini phóng xạ, phát ra luồng ánh sáng xanh lam mờ ảo do ion hóa không khí." },
+            { num: 90, sym: "Th", vn: "Thori", en: "Thorium", mass: "232.04", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 6d² 7s²", shells: [2, 8, 18, 32, 18, 10, 2], disc: "Jöns Jacob Berzelius (1829)", fact: "Thorium có thể được dùng trong chu trình nhiên liệu hạt nhân. Mức độ an toàn phụ thuộc thiết kế lò, chu trình nhiên liệu, vận hành và xử lý chất thải; không có căn cứ để nói nó luôn “an toàn gấp nhiều lần” uranium." },
+            { num: 91, sym: "Pa", vn: "Protactini", en: "Protactinium", mass: "231.04", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f² 6d¹ 7s²", shells: [2, 8, 18, 32, 20, 9, 2], disc: "Kasimir Fajans & Oswald Göhring (1913; đồng vị ngắn sống, khi đó gọi là brevium)", fact: "Protactini là nguyên tố phóng xạ hiếm. Đồng vị protactini-231 phân rã alpha thành actini-227." },
+            { num: 92, sym: "U", vn: "Uran", en: "Uranium", mass: "238.03", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f³ 6d¹ 7s²", shells: [2, 8, 18, 32, 21, 9, 2], disc: "Martin Heinrich Klaproth (1789)", fact: "Uranium-235 có thể duy trì phản ứng phân hạch dây chuyền; nhiên liệu của nhiều nhà máy điện hạt nhân chứa uranium đã được làm giàu." },
+            { num: 93, sym: "Np", vn: "Neptuni", en: "Neptunium", mass: "(237)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f⁴ 6d¹ 7s²", shells: [2, 8, 18, 32, 22, 9, 2], disc: "Edwin McMillan & Philip H. Abelson (1940)", fact: "Neptuni là nguyên tố siêu urani đầu tiên được tạo ra có chủ đích trong một thí nghiệm tổng hợp năm 1940." },
+            { num: 94, sym: "Pu", vn: "Plutoni", en: "Plutonium", mass: "(244)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f⁶ 7s²", shells: [2, 8, 18, 32, 24, 8, 2], disc: "Glenn T. Seaborg, Edwin M. McMillan, Joseph W. Kennedy & Arthur C. Wahl (1940)", fact: "Một số đồng vị plutoni được dùng trong vũ khí hạt nhân; plutoni-238 cũng được dùng làm nguồn nhiệt cho máy phát nhiệt điện đồng vị phóng xạ trên một số tàu thăm dò không gian, gồm Voyager." },
+            { num: 95, sym: "Am", vn: "Americi", en: "Americium", mass: "(243)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f⁷ 7s²", shells: [2, 8, 18, 32, 25, 8, 2], disc: "Glenn T. Seaborg và nhóm nghiên cứu (1944)", fact: "Có mặt ngay trong nhà bạn! Dùng làm cảm biến phát hiện khói báo cháy tự động." },
+            { num: 96, sym: "Cm", vn: "Curi", en: "Curium", mass: "(247)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f⁷ 6d¹ 7s²", shells: [2, 8, 18, 32, 25, 9, 2], disc: "Glenn T. Seaborg, Ralph A. James & Albert Ghiorso (1944)", fact: "Đặt tên tôn vinh vĩ nhân Marie và Pierre Curie. Phát ra nhiệt năng rất mạnh khi phân rã." },
+            { num: 97, sym: "Bk", vn: "Berkeli", en: "Berkelium", mass: "(247)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f⁹ 7s²", shells: [2, 8, 18, 32, 27, 8, 2], disc: "Stanley G. Thompson, Albert Ghiorso & Glenn T. Seaborg (1949)", fact: "Đặt theo tên thành phố Berkeley, California nơi nó được tổng hợp." },
+            { num: 98, sym: "Cf", vn: "Californi", en: "Californium", mass: "(251)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f¹⁰ 7s²", shells: [2, 8, 18, 32, 28, 8, 2], disc: "Stanley G. Thompson, Kenneth Street Jr., Albert Ghiorso & Glenn T. Seaborg (1950)", fact: "Nguồn phát nơtron siêu mạnh dùng khởi động lò phản ứng hạt nhân và rà soát quặng mỏ." },
+            { num: 99, sym: "Es", vn: "Einsteni", en: "Einsteinium", mass: "(252)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f¹¹ 7s²", shells: [2, 8, 18, 32, 29, 8, 2], disc: "Albert Ghiorso và nhóm nghiên cứu (1952)", fact: "Phát hiện trong tro bụi vụ thử bom nhiệt hạch đầu tiên, đặt tên vinh danh Albert Einstein." },
+            { num: 100, sym: "Fm", vn: "Fermi", en: "Fermium", mass: "(257)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f¹² 7s²", shells: [2, 8, 18, 32, 30, 8, 2], disc: "Albert Ghiorso và nhóm nghiên cứu (1952)", fact: "Đặt tên vinh danh nhà vật lý hạt nhân thiên tài Enrico Fermi." },
+            { num: 101, sym: "Md", vn: "Mendelevi", en: "Mendelevium", mass: "(258)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f¹³ 7s²", shells: [2, 8, 18, 32, 31, 8, 2], disc: "Albert Ghiorso và nhóm nghiên cứu (1955)", fact: "Tôn vinh Dmitri Mendeleev - người cha phát minh ra Bảng tuần hoàn nguyên tố hóa học!" },
+            { num: 102, sym: "No", vn: "Nobeli", en: "Nobelium", mass: "(259)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f¹⁴ 7s²", shells: [2, 8, 18, 32, 32, 8, 2], disc: "Joint Institute for Nuclear Research (1966)", fact: "Đặt tên vinh danh Alfred Nobel - người sáng lập giải thưởng Nobel danh giá." },
+            { num: 103, sym: "Lr", vn: "Lawrenci", en: "Lawrencium", mass: "(262)", period: 7, group: 3, block: "f", cat: "Họ Actini", catKey: "actinide", config: "[Rn] 5f¹⁴ 7s² 7p¹", shells: [2, 8, 18, 32, 32, 8, 3], disc: "Albert Ghiorso và nhóm nghiên cứu (1961)", fact: "Lawrenci là nguyên tố phóng xạ tổng hợp, chỉ tạo ra được số lượng nguyên tử rất nhỏ. Cấu hình electron trạng thái cơ bản thường được ghi là [Rn] 5f¹⁴ 7s² 7p¹; cách xếp khối của nó có tính đặc thù." },
+            { num: 104, sym: "Rf", vn: "Rơteri", en: "Rutherfordium", mass: "(267)", period: 7, group: 4, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d² 7s²", shells: [2, 8, 18, 32, 32, 10, 2], disc: "Dubna / Berkeley (1964)", fact: "Rutherfordi được đặt tên để vinh danh Ernest Rutherford, người có đóng góp nền tảng cho mô hình nguyên tử hạt nhân." },
+            { num: 105, sym: "Db", vn: "Dubni", en: "Dubnium", mass: "(268)", period: 7, group: 5, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d³ 7s²", shells: [2, 8, 18, 32, 32, 11, 2], disc: "Dubna / Berkeley (1968)", fact: "Đặt theo tên thành phố Dubna tại Nga - trung tâm nghiên cứu hạt nhân thế giới." },
+            { num: 106, sym: "Sg", vn: "Xiborgi", en: "Seaborgium", mass: "(269)", period: 7, group: 6, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d⁴ 7s²", shells: [2, 8, 18, 32, 32, 12, 2], disc: "Lawrence Berkeley Lab (1974)", fact: "Nguyên tố đầu tiên được đặt theo tên một nhà khoa học còn sống thời bấy giờ (Glenn Seaborg)." },
+            { num: 107, sym: "Bh", vn: "Bori", en: "Bohrium", mass: "(270)", period: 7, group: 7, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d⁵ 7s²", shells: [2, 8, 18, 32, 32, 13, 2], disc: "GSI Helmholtz Centre (1981)", fact: "Vinh danh Niels Bohr - nhà vật lý xây dựng mô hình các lớp vỏ electron nguyên tử." },
+            { num: 108, sym: "Hs", vn: "Hassi", en: "Hassium", mass: "(269)", period: 7, group: 8, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d⁶ 7s²", shells: [2, 8, 18, 32, 32, 14, 2], disc: "GSI Helmholtz Centre (1984)", fact: "Đặt tên theo bang Hesse của nước Đức." },
+            { num: 109, sym: "Mt", vn: "Maitneri", en: "Meitnerium", mass: "(277)", period: 7, group: 9, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d⁷ 7s²", shells: [2, 8, 18, 32, 32, 15, 2], disc: "GSI Helmholtz Centre (1982)", fact: "Vinh danh Lise Meitner - nữ bác học đồng phát minh ra phản ứng phân hạch hạt nhân." },
+            { num: 110, sym: "Ds", vn: "Darmstati", en: "Darmstadtium", mass: "(281)", period: 7, group: 10, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d⁸ 7s²", shells: [2, 8, 18, 32, 32, 16, 2], disc: "GSI Helmholtz Centre (1994)", fact: "Đặt theo tên thành phố Darmstadt của Đức nơi tạo ra nguyên tố này." },
+            { num: 111, sym: "Rg", vn: "Rơngen", en: "Roentgenium", mass: "(282)", period: 7, group: 11, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d⁹ 7s²", shells: [2, 8, 18, 32, 32, 17, 2], disc: "GSI Helmholtz Centre (1994)", fact: "Roentgeni được đặt theo tên Wilhelm Conrad Röntgen, người phát hiện tia X; không phải “phát minh” ra tia X." },
+            { num: 112, sym: "Cn", vn: "Copernici", en: "Copernicium", mass: "(285)", period: 7, group: 12, block: "d", cat: "Chuyển tiếp", catKey: "transition", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s²", shells: [2, 8, 18, 32, 32, 18, 2], disc: "GSI Helmholtz Centre (1996)", fact: "Copernici được đặt tên để vinh danh Nicolaus Copernicus, người đã phát triển mô hình nhật tâm; lịch sử thiên văn học sau đó mới củng cố mô hình bằng quan sát và lý thuyết." },
+            { num: 113, sym: "Nh", vn: "Nihoni", en: "Nihonium", mass: "(286)", period: 7, group: 13, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p¹", shells: [2, 8, 18, 32, 32, 18, 3], disc: "RIKEN Japan (2004)", fact: "Nihoni được đặt tên từ “Nihon”, tên tiếng Nhật của Nhật Bản. Việc tổng hợp được báo cáo bởi nhóm RIKEN và việc công nhận khám phá diễn ra theo quy trình quốc tế." },
+            { num: 114, sym: "Fl", vn: "Flerovi", en: "Flerovium", mass: "(289)", period: 7, group: 14, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p²", shells: [2, 8, 18, 32, 32, 18, 4], disc: "JINR Russia (1998)", fact: "Đặt theo Phòng thí nghiệm Flerov về phản ứng hạt nhân tại Dubna." },
+            { num: 115, sym: "Mc", vn: "Moskovi", en: "Moscovium", mass: "(290)", period: 7, group: 15, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p³", shells: [2, 8, 18, 32, 32, 18, 5], disc: "JINR / LLNL (2003)", fact: "Đặt tên vinh danh thủ đô Moskva (Moscow) của nước Nga." },
+            { num: 116, sym: "Lv", vn: "Livermori", en: "Livermorium", mass: "(293)", period: 7, group: 16, block: "p", cat: "Kim loại sau chuyển tiếp", catKey: "post-transition", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁴", shells: [2, 8, 18, 32, 32, 18, 6], disc: "JINR / LLNL (2000)", fact: "Đặt tên vinh danh Phòng thí nghiệm Quốc gia Lawrence Livermore tại Mỹ." },
+            { num: 117, sym: "Ts", vn: "Tennessine", en: "Tennessine", mass: "(294)", period: 7, group: 17, block: "p", cat: "Halogen", catKey: "halogen", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁵", shells: [2, 8, 18, 32, 32, 18, 7], disc: "JINR / ORNL / LLNL (2010)", fact: "Nguyên tố thuộc nhóm Halogen siêu nặng tổng hợp nhân tạo." },
+            { num: 118, sym: "Og", vn: "Oganesson", en: "Oganesson", mass: "(294)", period: 7, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", shells: [2, 8, 18, 32, 32, 18, 8], disc: "JINR / LLNL (2002)", fact: "Oganesson có số hiệu nguyên tử cao nhất trong bảng tuần hoàn hiện được công nhận. Do chỉ tạo ra được rất ít nguyên tử, nhiều tính chất vật lý của nó vẫn là dự đoán." }
         ];
 
         /* ===================================================================
@@ -1492,7 +1532,7 @@
             const button = document.getElementById('btn-speak');
             if (!button) return;
             button.classList.toggle('is-speaking', !!isSpeaking);
-            button.title = isSpeaking ? 'Äang Ä‘á»c â€” báº¥m Ä‘á»ƒ dá»«ng' : 'Äá»c thuyáº¿t minh PokÃ©dex';
+            button.title = isSpeaking ? 'Đang đọc — bấm để dừng' : 'Đọc thuyết minh Pokédex';
             button.setAttribute('aria-label', button.title);
         }
 
@@ -1502,7 +1542,7 @@
             if (synth && typeof synth.cancel === 'function') synth.cancel();
             activeSpeechUtterance = null;
             setSpeechButtonState(false);
-            if (announce) showControllerNotice('ÄÃ£ dá»«ng Ä‘á»c thuyáº¿t minh.');
+            if (announce) showControllerNotice('Đã dừng đọc thuyết minh.');
         }
 
         /* Generate the 18-column grid slots */
@@ -1554,7 +1594,7 @@
             gridMap['7-3'] = { placeholder: 'actinide', visible: filterCat === "ALL" || filterCat === "actinide" };
 
             // Update status string
-            document.getElementById('grid-status-txt').innerText = `ÄANG HIá»‚N THá»Š: ${matchCount} / 118 NGUYÃŠN Tá»`;
+            document.getElementById('grid-status-txt').innerText = `ĐANG HIỂN THỊ: ${matchCount} / 118 NGUYÊN TỐ`;
 
             // Render Periods 1 to 7
             for (let r = 1; r <= 7; r++) {
@@ -1577,7 +1617,7 @@
                 if (c === 1) {
                     const label = document.createElement('div');
                     label.className = "col-span-2 text-[9px] text-cyan-400 font-bold flex items-center justify-end pr-1 font-mono";
-                    label.innerText = "Há»Œ LANTAN âž”";
+                    label.innerText = "HỌ LANTAN ➔";
                     gridContainer.appendChild(label);
                     c++; // Skip col 2
                 } else {
@@ -1591,7 +1631,7 @@
                 if (c === 1) {
                     const label = document.createElement('div');
                     label.className = "col-span-2 text-[9px] text-pink-400 font-bold flex items-center justify-end pr-1 font-mono";
-                    label.innerText = "Há»Œ ACTINI âž”";
+                    label.innerText = "HỌ ACTINI ➔";
                     gridContainer.appendChild(label);
                     c++; // Skip col 2
                 } else {
@@ -1610,15 +1650,15 @@
 
             if (item.placeholder) {
                 const isLanthanide = item.placeholder === 'lanthanide';
-                const familyName = isLanthanide ? 'Há»Œ LANTAN' : 'Há»Œ ACTINI';
-                const range = isLanthanide ? '57â€“71' : '89â€“103';
+                const familyName = isLanthanide ? 'HỌ LANTAN' : 'HỌ ACTINI';
+                const range = isLanthanide ? '57–71' : '89–103';
                 const firstElement = isLanthanide ? 57 : 89;
                 cell.className = `pt-cell p-0.5 rounded border text-center flex flex-col justify-center items-center cat-${item.placeholder} ${item.visible ? '' : 'opacity-20 grayscale pointer-events-none'}`;
                 cell.style.borderColor = isLanthanide ? '#67e8f9' : '#f9a8d4';
                 cell.innerHTML = `<div class="text-[7px] md:text-[8px] font-bold leading-tight">${range}</div><div class="text-[6px] md:text-[7px] font-bold leading-tight">${familyName}</div>`;
-                cell.title = `${familyName} (${range}) â€” báº¥m Ä‘á»ƒ xem nguyÃªn tá»‘ Ä‘áº§u tiÃªn`;
+                cell.title = `${familyName} (${range}) — bấm để xem nguyên tố đầu tiên`;
                 cell.addEventListener('click', () => {
-                    PokÃ©dexAudio.scanChime();
+                    PokédexAudio.scanChime();
                     selectElementByNumber(firstElement);
                 });
                 gridContainer.appendChild(cell);
@@ -1640,7 +1680,7 @@
             `;
 
             cell.addEventListener('click', () => {
-                PokÃ©dexAudio.scanChime();
+                PokédexAudio.scanChime();
                 selectElementByNumber(el.num);
             });
 
@@ -1730,9 +1770,9 @@
 
             if (target) {
                 selectElementByNumber(target.num);
-                showControllerNotice(`ÄÃ£ chá»n ${target.vn} (${target.sym}) â€” Ã´ sá»‘ ${target.num}.`, 900);
+                showControllerNotice(`Đã chọn ${target.vn} (${target.sym}) — ô số ${target.num}.`, 900);
             } else {
-                showControllerNotice(direction === 'up' || direction === 'down' ? 'KhÃ´ng cÃ³ nguyÃªn tá»‘ theo hÆ°á»›ng Ä‘Ã³ trong pháº§n Ä‘ang hiá»ƒn thá»‹.' : 'KhÃ´ng cÃ³ nguyÃªn tá»‘ khÃ¡c Ä‘á»ƒ chuyá»ƒn tá»›i theo bá»™ lá»c hiá»‡n táº¡i.', 1400);
+                showControllerNotice(direction === 'up' || direction === 'down' ? 'Không có nguyên tố theo hướng đó trong phần đang hiển thị.' : 'Không có nguyên tố khác để chuyển tới theo bộ lọc hiện tại.', 1400);
             }
         }
 
@@ -1743,13 +1783,13 @@
             document.getElementById('disp-sym-large').innerText = el.sym;
             document.getElementById('disp-name-vn').innerText = el.vn.toUpperCase();
             document.getElementById('disp-name-en').innerText = el.en;
-            document.getElementById('disp-atomic-badge').innerText = `Ã” Sá»: ${el.num}`;
+            document.getElementById('disp-atomic-badge').innerText = `Ô SỐ: ${el.num}`;
             document.getElementById('disp-category-badge').innerText = el.cat.toUpperCase();
             
             document.getElementById('disp-config-full').innerText = el.config;
             document.getElementById('disp-mass').innerText = massDisplay(el);
-            document.getElementById('disp-mass').title = isReferenceIsotopeMass(el) ? 'Sá»‘ trong ngoáº·c lÃ  sá»‘ khá»‘i cá»§a Ä‘á»“ng vá»‹ tham chiáº¿u theo báº£ng NIST, khÃ´ng pháº£i nguyÃªn tá»­ khá»‘i tiÃªu chuáº©n.' : 'NguyÃªn tá»­ khá»‘i tÆ°Æ¡ng Ä‘á»‘i Ä‘Æ°á»£c trÃ¬nh bÃ y theo Ä‘Æ¡n vá»‹ u.';
-            document.getElementById('disp-position').innerText = `Chu ká»³ ${el.period}, NhÃ³m ${el.group}${el.group <= 2 || el.group >= 13 ? 'A' : 'B'} (Khá»‘i ${el.block})`;
+            document.getElementById('disp-mass').title = isReferenceIsotopeMass(el) ? 'Số trong ngoặc là số khối của đồng vị tham chiếu theo bảng NIST, không phải nguyên tử khối tiêu chuẩn.' : 'Nguyên tử khối tương đối được trình bày theo đơn vị u.';
+            document.getElementById('disp-position').innerText = `Chu kỳ ${el.period}, Nhóm ${el.group}${el.group <= 2 || el.group >= 13 ? 'A' : 'B'} (Khối ${el.block})`;
             
             // Format Electron Shells String
             const shellNames = ['K', 'L', 'M', 'N', 'O', 'P', 'Q'];
@@ -1877,7 +1917,7 @@
             const slug = elementPhotoSlug(el);
             img.onload = () => { img.style.display = 'block'; fallback.classList.add('hidden'); };
             img.onerror = () => { img.style.display = 'none'; fallback.classList.remove('hidden'); };
-            img.alt = `áº¢nh thá»±c táº¿ cá»§a nguyÃªn tá»‘ ${el.en}, ${el.sym}`;
+            img.alt = `Ảnh thực tế của nguyên tố ${el.en}, ${el.sym}`;
             fallback.classList.add('hidden');
             img.style.display = 'block';
             img.src = `https://images-of-elements.com/${slug}.jpg`;
@@ -1897,7 +1937,7 @@
             else if (el.catKey === "noble") mainColor = "#db2777";
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center w-full h-full">
-                  <svg viewBox="0 0 100 100" class="w-28 h-28 drop-shadow-[0_0_15px_${mainColor}]" role="img" aria-label="Minh há»a nguyÃªn tá»‘ ${el.en}">
+                  <svg viewBox="0 0 100 100" class="w-28 h-28 drop-shadow-[0_0_15px_${mainColor}]" role="img" aria-label="Minh họa nguyên tố ${el.en}">
                     <polygon points="50,15 85,35 85,75 50,95 15,75 15,35" fill="none" stroke="${mainColor}" stroke-width="2"/>
                     <polygon points="50,25 75,40 75,70 50,85 25,70 25,40" fill="${mainColor}" fill-opacity=".25" stroke="${mainColor}"/>
                     <circle cx="50" cy="55" r="12" fill="${mainColor}"/>
@@ -1991,23 +2031,23 @@
            =================================================================== */
         // Unlock Web Audio on a real gesture; browsers block autoplay by design.
         document.addEventListener('pointerdown', (event) => {
-            if (PokÃ©dexAudio.unlocked) return;
+            if (PokédexAudio.unlocked) return;
             // No visible audio controls remain; any ordinary user gesture can unlock audio.
-            PokÃ©dexAudio.unlock();
+            PokédexAudio.unlock();
         }, { passive: true });
         document.addEventListener('keydown', (event) => {
-            if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(event.key)) PokÃ©dexAudio.unlock();
+            if (['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Enter',' '].includes(event.key)) PokédexAudio.unlock();
         }, { once: true });
         // Audio controls are intentionally hidden; music and SFX run with defaults after the first user gesture.
-        PokÃ©dexAudio.updateControls();
-        if (window.YT && window.YT.Player) PokÃ©dexAudio.createAsgorePlayer();
+        PokédexAudio.updateControls();
+        if (window.YT && window.YT.Player) PokédexAudio.createAsgorePlayer();
 
         // Soft UI confirmation for secondary buttons/filters; avoid double-playing custom battle sounds.
         document.addEventListener('click', event => {
             const button = event.target && event.target.closest('button');
             if (!button || button.disabled) return;
             if (button.matches('.run-away-btn,.lifeline-btn,#btn-random,#blue-lens,#btn-speak,#dpad-left,#dpad-right,#dpad-up,#dpad-down,.filter-chip,.quiz-option,.trainer-btn,#wild-cutscene-start,#battle-close,#btn-train,#btn-key-clear,#btn-key-enter,#btn-direct-go,[data-key]')) return;
-            PokÃ©dexAudio.playSfx('ui');
+            PokédexAudio.playSfx('ui');
         });
 
         // Search Input
@@ -2019,7 +2059,7 @@
         // Filter Category Chips
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                PokÃ©dexAudio.playSfx('filter');
+                PokédexAudio.playSfx('filter');
                 filterBtns.forEach(b => b.classList.remove('active', 'bg-[#39ff14]', 'text-black'));
                 btn.classList.add('active', 'bg-[#39ff14]', 'text-black');
                 renderPeriodicTable(btn.getAttribute('data-cat'), searchInput.value);
@@ -2028,19 +2068,19 @@
 
         // D-pad follows the visible periodic-table geometry rather than adding/subtracting 18.
         document.getElementById('dpad-left').addEventListener('click', () => {
-            PokÃ©dexAudio.playBeep(450, 0.04);
+            PokédexAudio.playBeep(450, 0.04);
             navigateDPad('left');
         });
         document.getElementById('dpad-right').addEventListener('click', () => {
-            PokÃ©dexAudio.playBeep(450, 0.04);
+            PokédexAudio.playBeep(450, 0.04);
             navigateDPad('right');
         });
         document.getElementById('dpad-up').addEventListener('click', () => {
-            PokÃ©dexAudio.playBeep(550, 0.04);
+            PokédexAudio.playBeep(550, 0.04);
             navigateDPad('up');
         });
         document.getElementById('dpad-down').addEventListener('click', () => {
-            PokÃ©dexAudio.playBeep(350, 0.04);
+            PokédexAudio.playBeep(350, 0.04);
             navigateDPad('down');
         });
 
@@ -2053,25 +2093,25 @@
             if (keys[event.key]) {
                 event.preventDefault();
                 const navTone = { left: 450, right: 450, up: 550, down: 350 }[keys[event.key]];
-                PokÃ©dexAudio.playBeep(navTone, 0.04);
+                PokédexAudio.playBeep(navTone, 0.04);
                 navigateDPad(keys[event.key]);
             }
         });
 
         // Random Button
         document.getElementById('btn-random').addEventListener('click', () => {
-            PokÃ©dexAudio.scanChime();
+            PokédexAudio.scanChime();
             const randNum = Math.floor(Math.random() * 118) + 1;
             selectElementByNumber(randNum);
         });
 
         // Big blue lens and microphone/read-aloud button share the same reliable narration path.
         document.getElementById('blue-lens').addEventListener('click', () => {
-            PokÃ©dexAudio.scanChime();
+            PokédexAudio.scanChime();
             speakElementDetails();
         });
         document.getElementById('btn-speak').addEventListener('click', () => {
-            PokÃ©dexAudio.playBeep(700, 0.05);
+            PokédexAudio.playBeep(700, 0.05);
             if (activeSpeechUtterance || (window.speechSynthesis && window.speechSynthesis.speaking)) {
                 stopElementSpeech(true);
             } else {
@@ -2083,14 +2123,14 @@
             const synth = window.speechSynthesis;
             const Utterance = window.SpeechSynthesisUtterance || window.webkitSpeechSynthesisUtterance;
             if (!synth || typeof synth.speak !== 'function' || typeof Utterance !== 'function') {
-                showControllerNotice('TrÃ¬nh duyá»‡t nÃ y khÃ´ng há»— trá»£ Ä‘á»c thuyáº¿t minh. HÃ£y thá»­ Chrome hoáº·c Edge báº£n má»›i.', 3600);
+                showControllerNotice('Trình duyệt này không hỗ trợ đọc thuyết minh. Hãy thử Chrome hoặc Edge bản mới.', 3600);
                 return;
             }
 
             const el = RAW_ELEMENTS[currentElementIndex];
             const shellNames = ['K', 'L', 'M', 'N', 'O', 'P', 'Q'];
             const shellText = el.shells.map((count, i) => `${shellNames[i]} ${count}`).join(', ');
-            const text = `NguyÃªn tá»‘ ${el.vn}, tiáº¿ng Anh ${el.en}, kÃ½ hiá»‡u ${el.sym}, sá»‘ hiá»‡u nguyÃªn tá»­ ${el.num}. PhÃ¢n loáº¡i: ${el.cat}. Chu ká»³ ${el.period}, nhÃ³m ${el.group}, khá»‘i ${el.block}. Cáº¥u hÃ¬nh electron: ${el.config}. PhÃ¢n bá»‘ electron theo lá»›p: ${shellText}. Khá»‘i lÆ°á»£ng hoáº·c sá»‘ khá»‘i tham chiáº¿u: ${massDisplay(el)}. PhÃ¡t hiá»‡n: ${el.disc}. ${el.fact}`;
+            const text = `Nguyên tố ${el.vn}, tiếng Anh ${el.en}, ký hiệu ${el.sym}, số hiệu nguyên tử ${el.num}. Phân loại: ${el.cat}. Chu kỳ ${el.period}, nhóm ${el.group}, khối ${el.block}. Cấu hình electron: ${el.config}. Phân bố electron theo lớp: ${shellText}. Khối lượng hoặc số khối tham chiếu: ${massDisplay(el)}. Phát hiện: ${el.disc}. ${el.fact}`;
             const requestId = ++speechRequestId;
             try {
                 synth.cancel();
@@ -2107,37 +2147,37 @@
                 utterance.onstart = () => {
                     if (requestId !== speechRequestId) return;
                     setSpeechButtonState(true);
-                    showControllerNotice(`Äang Ä‘á»c há»“ sÆ¡ ${el.vn} (${el.sym})â€¦`, 1600);
+                    showControllerNotice(`Đang đọc hồ sơ ${el.vn} (${el.sym})…`, 1600);
                 };
                 utterance.onend = () => {
                     if (requestId !== speechRequestId) return;
                     activeSpeechUtterance = null;
                     setSpeechButtonState(false);
-                    showControllerNotice(`ÄÃ£ Ä‘á»c xong ${el.vn} (${el.sym}).`, 1400);
+                    showControllerNotice(`Đã đọc xong ${el.vn} (${el.sym}).`, 1400);
                 };
                 utterance.onerror = event => {
                     if (requestId !== speechRequestId || ['canceled', 'interrupted'].includes(event.error)) return;
                     activeSpeechUtterance = null;
                     setSpeechButtonState(false);
-                    showControllerNotice('KhÃ´ng phÃ¡t Ä‘Æ°á»£c giá»ng Ä‘á»c. HÃ£y kiá»ƒm tra Ã¢m lÆ°á»£ng thiáº¿t bá»‹ hoáº·c giá»ng Ä‘á»c tiáº¿ng Viá»‡t cá»§a trÃ¬nh duyá»‡t.', 3600);
+                    showControllerNotice('Không phát được giọng đọc. Hãy kiểm tra âm lượng thiết bị hoặc giọng đọc tiếng Việt của trình duyệt.', 3600);
                 };
                 synth.resume?.();
                 synth.speak(utterance);
                 setSpeechButtonState(true);
                 if (!vietnameseVoice && voices.length) {
-                    showControllerNotice('KhÃ´ng tÃ¬m tháº¥y giá»ng Viá»‡t Ä‘Ã£ cÃ i; Ä‘ang thá»­ giá»ng máº·c Ä‘á»‹nh cá»§a trÃ¬nh duyá»‡t.', 2500);
+                    showControllerNotice('Không tìm thấy giọng Việt đã cài; đang thử giọng mặc định của trình duyệt.', 2500);
                 }
             } catch (error) {
                 activeSpeechUtterance = null;
                 setSpeechButtonState(false);
-                showControllerNotice('KhÃ´ng thá»ƒ khá»Ÿi cháº¡y thuyáº¿t minh trong trÃ¬nh duyá»‡t nÃ y.', 3200);
+                showControllerNotice('Không thể khởi chạy thuyết minh trong trình duyệt này.', 3200);
             }
         }
 
         // Numpad Keypad Controller
         numpadBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                PokÃ©dexAudio.playBeep(650, 0.04);
+                PokédexAudio.playBeep(650, 0.04);
                 const key = btn.getAttribute('data-key');
                 if (activeNumBuffer.length < 3) {
                     activeNumBuffer += key;
@@ -2147,13 +2187,13 @@
         });
 
         document.getElementById('btn-key-clear').addEventListener('click', () => {
-            PokÃ©dexAudio.playBeep(300, 0.05);
+            PokédexAudio.playBeep(300, 0.05);
             activeNumBuffer = "";
             document.getElementById('direct-num-input').value = "";
         });
 
         document.getElementById('btn-key-enter').addEventListener('click', () => {
-            PokÃ©dexAudio.scanChime();
+            PokédexAudio.scanChime();
             const num = parseInt(activeNumBuffer || document.getElementById('direct-num-input').value, 10);
             if (num >= 1 && num <= 118) {
                 selectElementByNumber(num);
@@ -2234,7 +2274,7 @@
         }
         function creatureSkill(el){
           const form=elementCreatureForm(el);
-          return form==='gas'?'GIÃ“ Cáº®T':form==='liquid'?'SLIME BÃ™NG Ná»”':'TINH THá»‚ XUNG KÃCH';
+          return form==='gas'?'GIÓ CẮT':form==='liquid'?'SLIME BÙNG NỔ':'TINH THỂ XUNG KÍCH';
         }
         function creatureSVG(el, size='battle', level=getCreatureLevel(el)) {
           // Three genuinely different silhouettes: liquid slime, gas tornado-cat, solid knight.
@@ -2242,7 +2282,7 @@
           const p = getElementCreaturePalette(el);
           const c = p.c, shade = p.accent, light = p.light;
           // Dark material colours need a high-contrast outline and face so the sprite
-          // stays readable against the dark PokÃ©dex/battle backgrounds. Keep the inner
+          // stays readable against the dark Pokédex/battle backgrounds. Keep the inner
           // shading navy so a white outline does not turn the whole creature white.
           const rgb = c.match(/[0-9a-f]{2}/gi)?.map(v => parseInt(v, 16)) || [128,128,128];
           const perceivedBrightness = (0.2126*rgb[0] + 0.7152*rgb[1] + 0.0722*rgb[2]) / 255;
@@ -2352,10 +2392,10 @@
             <rect class="sprite-pixel pixel-c" x="15" y="64" width="2" height="2" fill="${shade}"/>
             ${evolved ? `<rect class="sprite-pixel pixel-d" x="75" y="67" width="3" height="3" fill="${light}"/>` : ''}
           </g>`;
-          return `<svg class="creature-svg ${evolved?'is-evolved':''} ${form}-form ${form==='solid'?'knight-form':form==='gas'?'tornado-cat-form':'slime-form'}" viewBox="0 0 96 92" role="img" aria-label="${form==='liquid'?'Slime':form==='gas'?'Tháº§n giÃ³ Ä‘áº§u mÃ¨o':'Hiá»‡p sÄ©'} nguyÃªn tá»‘ ${el.vn}${evolved?', dáº¡ng tiáº¿n hÃ³a':''}" shape-rendering="crispEdges" style="image-rendering:pixelated">${particles}${art}</svg>`;
+          return `<svg class="creature-svg ${evolved?'is-evolved':''} ${form}-form ${form==='solid'?'knight-form':form==='gas'?'tornado-cat-form':'slime-form'}" viewBox="0 0 96 92" role="img" aria-label="${form==='liquid'?'Slime':form==='gas'?'Thần gió đầu mèo':'Hiệp sĩ'} nguyên tố ${el.vn}${evolved?', dạng tiến hóa':''}" shape-rendering="crispEdges" style="image-rendering:pixelated">${particles}${art}</svg>`;
         }
         // Every element gets its own 20-question bank, generated from the data
-        // displayed in its PokÃ©dex inspector. Each bank is shuffled per cycle,
+        // displayed in its Pokédex inspector. Each bank is shuffled per cycle,
         // and answer choices are independently shuffled as well.
         function quizShuffle(list){
           const a=list.slice();
@@ -2367,28 +2407,28 @@
         }
         function shellDistribution(el){
           const names=['K','L','M','N','O','P','Q'];
-          return el.shells.map((n,i)=>`${names[i]||`Lá»›p ${i+1}`}: ${n}`).join(' | ');
+          return el.shells.map((n,i)=>`${names[i]||`Lớp ${i+1}`}: ${n}`).join(' | ');
         }
         function outerShellName(el){
           const names=['K','L','M','N','O','P','Q'];
-          return names[el.shells.length-1] || `Lá»›p ${el.shells.length}`;
+          return names[el.shells.length-1] || `Lớp ${el.shells.length}`;
         }
         function discoveryYear(el){
           const match=String(el.disc).match(/\((\d{4})\)/);
-          return match ? match[1] : 'KhÃ´ng ghi nÄƒm cá»¥ thá»ƒ';
+          return match ? match[1] : 'Không ghi năm cụ thể';
         }
         function shortenFact(el){
-          const fact=String(el.fact||'ChÆ°a cÃ³ ghi chÃº trong há»“ sÆ¡.').replace(/\s+/g,' ').trim();
-          return fact.length>108 ? fact.slice(0,105).trimEnd()+'â€¦' : fact;
+          const fact=String(el.fact||'Chưa có ghi chú trong hồ sơ.').replace(/\s+/g,' ').trim();
+          return fact.length>108 ? fact.slice(0,105).trimEnd()+'…' : fact;
         }
         function formatBlock(block){
-          return ({s:'Khá»‘i s',p:'Khá»‘i p',d:'Khá»‘i d',f:'Khá»‘i f'})[block] || `Khá»‘i ${block}`;
+          return ({s:'Khối s',p:'Khối p',d:'Khối d',f:'Khối f'})[block] || `Khối ${block}`;
         }
         // NIST notation: values in parentheses are mass numbers of reference isotopes,
         // not standard atomic weights. For standard weights, the value is shown in u.
         function isReferenceIsotopeMass(el){ return /^\(\d+\)$/.test(String(el.mass)); }
-        function massDisplay(el){ return isReferenceIsotopeMass(el) ? `${el.mass} (sá»‘ khá»‘i)` : `${el.mass} u`; }
-        function massQuestionValue(el){ return isReferenceIsotopeMass(el) ? `${el.mass} (sá»‘ khá»‘i Ä‘á»“ng vá»‹ tham chiáº¿u)` : `${el.mass} u`; }
+        function massDisplay(el){ return isReferenceIsotopeMass(el) ? `${el.mass} (số khối)` : `${el.mass} u`; }
+        function massQuestionValue(el){ return isReferenceIsotopeMass(el) ? `${el.mass} (số khối đồng vị tham chiếu)` : `${el.mass} u`; }
         function elementValues(mapper, currentEl){
           return RAW_ELEMENTS.filter(e=>e.num!==currentEl.num).map(mapper);
         }
@@ -2426,30 +2466,30 @@
           const firstCounts=elementValues(e=>String(e.shells[0]),el);
           const discoverers=elementValues(e=>e.disc,el);
           const years=elementValues(e=>discoveryYear(e),el);
-          const locations=elementValues(e=>`Chu ká»³ ${e.period} Â· NhÃ³m ${e.group} Â· ${formatBlock(e.block)}`,el);
+          const locations=elementValues(e=>`Chu kỳ ${e.period} · Nhóm ${e.group} · ${formatBlock(e.block)}`,el);
           const facts=elementValues(e=>shortenFact(e),el);
-          const identities=elementValues(e=>`${e.num} â€” ${e.sym} (${e.en})`,el);
+          const identities=elementValues(e=>`${e.num} — ${e.sym} (${e.en})`,el);
           return [
-            makeElementQuestion(el,`Sá»‘ hiá»‡u nguyÃªn tá»­ cá»§a ${el.vn} lÃ  bao nhiÃªu?`,el.num,nums),
-            makeElementQuestion(el,`KÃ½ hiá»‡u hÃ³a há»c cá»§a ${el.vn} lÃ  gÃ¬?`,el.sym,symbols),
-            makeElementQuestion(el,`TÃªn tiáº¿ng Anh tÆ°Æ¡ng á»©ng vá»›i ${el.sym} lÃ  gÃ¬?`,el.en,englishNames),
-            makeElementQuestion(el,`TÃªn tiáº¿ng Viá»‡t cá»§a nguyÃªn tá»‘ ${el.en} trong PokÃ©dex lÃ  gÃ¬?`,el.vn,vietnameseNames),
-            makeElementQuestion(el,`${el.vn} Ä‘Æ°á»£c xáº¿p vÃ o nhÃ³m phÃ¢n loáº¡i nÃ o trong há»“ sÆ¡?`,el.cat,categories),
-            makeElementQuestion(el,`${el.vn} náº±m á»Ÿ chu ká»³ máº¥y cá»§a báº£ng tuáº§n hoÃ n?`,el.period,periods),
-            makeElementQuestion(el,`${el.vn} náº±m á»Ÿ nhÃ³m máº¥y cá»§a báº£ng tuáº§n hoÃ n?`,el.group,groups),
-            makeElementQuestion(el,`${el.vn} thuá»™c khá»‘i electron nÃ o?`,formatBlock(el.block),blocks),
-            makeElementQuestion(el,`GiÃ¡ trá»‹ khá»‘i lÆ°á»£ng nguyÃªn tá»­ hoáº·c sá»‘ khá»‘i tham chiáº¿u Ä‘Æ°á»£c ghi cho ${el.vn} lÃ  bao nhiÃªu?`,massQuestionValue(el),masses),
-            makeElementQuestion(el,`Cáº¥u hÃ¬nh electron Ä‘Æ°á»£c ghi trong há»“ sÆ¡ cá»§a ${el.vn} lÃ  gÃ¬?`,el.config,configs),
-            makeElementQuestion(el,`PhÃ¢n bá»‘ electron theo cÃ¡c lá»›p K, L, Mâ€¦ cá»§a ${el.vn} lÃ  gÃ¬?`,shellDistribution(el),shellMaps),
-            makeElementQuestion(el,`NguyÃªn tá»­ ${el.vn} cÃ³ bao nhiÃªu lá»›p electron Ä‘Æ°á»£c Ä‘iá»n trong mÃ´ hÃ¬nh?`,el.shells.length,shellCounts),
-            makeElementQuestion(el,`Lá»›p electron ngoÃ i cÃ¹ng cá»§a ${el.vn} Ä‘Æ°á»£c gá»i lÃ  lá»›p nÃ o?`,outerShellName(el),outerLabels),
-            makeElementQuestion(el,`Lá»›p electron ngoÃ i cÃ¹ng cá»§a ${el.vn} cÃ³ bao nhiÃªu electron theo dá»¯ liá»‡u PokÃ©dex?`,el.shells[el.shells.length-1],outerCounts),
-            makeElementQuestion(el,`Lá»›p K cá»§a ${el.vn} cÃ³ bao nhiÃªu electron theo phÃ¢n bá»‘ trong há»“ sÆ¡?`,el.shells[0],firstCounts),
-            makeElementQuestion(el,`Má»¥c â€œNgÆ°á»i phÃ¡t hiá»‡nâ€ cá»§a ${el.vn} ghi ai hoáº·c ghi nháº­n nÃ o?`,el.disc,discoverers),
-            makeElementQuestion(el,`NÄƒm Ä‘Æ°á»£c ghi trong má»¥c phÃ¡t hiá»‡n cá»§a ${el.vn} lÃ  nÄƒm nÃ o?`,discoveryYear(el),years),
-            makeElementQuestion(el,`Tá»• há»£p vá»‹ trÃ­ nÃ o khá»›p vá»›i ${el.vn}?`,`Chu ká»³ ${el.period} Â· NhÃ³m ${el.group} Â· ${formatBlock(el.block)}`,locations),
-            makeElementQuestion(el,`Máº©u PokÃ©dex lore/fun fact nÃ o Ä‘Æ°á»£c ghi cho ${el.vn}?`,shortenFact(el),facts),
-            makeElementQuestion(el,`Cáº·p sá»‘ hiá»‡u nguyÃªn tá»­ â€” kÃ½ hiá»‡u â€” tÃªn tiáº¿ng Anh nÃ o khá»›p vá»›i ${el.vn}?`,`${el.num} â€” ${el.sym} (${el.en})`,identities)
+            makeElementQuestion(el,`Số hiệu nguyên tử của ${el.vn} là bao nhiêu?`,el.num,nums),
+            makeElementQuestion(el,`Ký hiệu hóa học của ${el.vn} là gì?`,el.sym,symbols),
+            makeElementQuestion(el,`Tên tiếng Anh tương ứng với ${el.sym} là gì?`,el.en,englishNames),
+            makeElementQuestion(el,`Tên tiếng Việt của nguyên tố ${el.en} trong Pokédex là gì?`,el.vn,vietnameseNames),
+            makeElementQuestion(el,`${el.vn} được xếp vào nhóm phân loại nào trong hồ sơ?`,el.cat,categories),
+            makeElementQuestion(el,`${el.vn} nằm ở chu kỳ mấy của bảng tuần hoàn?`,el.period,periods),
+            makeElementQuestion(el,`${el.vn} nằm ở nhóm mấy của bảng tuần hoàn?`,el.group,groups),
+            makeElementQuestion(el,`${el.vn} thuộc khối electron nào?`,formatBlock(el.block),blocks),
+            makeElementQuestion(el,`Giá trị khối lượng nguyên tử hoặc số khối tham chiếu được ghi cho ${el.vn} là bao nhiêu?`,massQuestionValue(el),masses),
+            makeElementQuestion(el,`Cấu hình electron được ghi trong hồ sơ của ${el.vn} là gì?`,el.config,configs),
+            makeElementQuestion(el,`Phân bố electron theo các lớp K, L, M… của ${el.vn} là gì?`,shellDistribution(el),shellMaps),
+            makeElementQuestion(el,`Nguyên tử ${el.vn} có bao nhiêu lớp electron được điền trong mô hình?`,el.shells.length,shellCounts),
+            makeElementQuestion(el,`Lớp electron ngoài cùng của ${el.vn} được gọi là lớp nào?`,outerShellName(el),outerLabels),
+            makeElementQuestion(el,`Lớp electron ngoài cùng của ${el.vn} có bao nhiêu electron theo dữ liệu Pokédex?`,el.shells[el.shells.length-1],outerCounts),
+            makeElementQuestion(el,`Lớp K của ${el.vn} có bao nhiêu electron theo phân bố trong hồ sơ?`,el.shells[0],firstCounts),
+            makeElementQuestion(el,`Mục “Người phát hiện” của ${el.vn} ghi ai hoặc ghi nhận nào?`,el.disc,discoverers),
+            makeElementQuestion(el,`Năm được ghi trong mục phát hiện của ${el.vn} là năm nào?`,discoveryYear(el),years),
+            makeElementQuestion(el,`Tổ hợp vị trí nào khớp với ${el.vn}?`,`Chu kỳ ${el.period} · Nhóm ${el.group} · ${formatBlock(el.block)}`,locations),
+            makeElementQuestion(el,`Mẩu Pokédex lore/fun fact nào được ghi cho ${el.vn}?`,shortenFact(el),facts),
+            makeElementQuestion(el,`Cặp số hiệu nguyên tử — ký hiệu — tên tiếng Anh nào khớp với ${el.vn}?`,`${el.num} — ${el.sym} (${el.en})`,identities)
           ];
         }
         const elementQuizBanks = new Map();
@@ -2496,10 +2536,10 @@
           creature.classList.toggle('evolved',level>=5);
           setEvolvedAppearance(creature,el,level,8);
           document.getElementById('creature-fact').textContent=el.fact;
-          document.getElementById('creature-name').textContent=`${el.vn.toUpperCase()}-MON${level>=5?' â€¢ Dáº NG TIáº¾N HÃ“A':''}`;
+          document.getElementById('creature-name').textContent=`${el.vn.toUpperCase()}-MON${level>=5?' • DẠNG TIẾN HÓA':''}`;
           document.getElementById('creature-level').textContent=`LEVEL ${level} / 5`;
           document.getElementById('creature-level-fill').style.width=`${level*20}%`;
-          document.getElementById('creature-evolution-note').textContent=(level>=5?'âœ¨ ÄÃƒ TIáº¾N HÃ“A! HP tá»‘i Ä‘a 7 + quyá»n loáº¡i 1 Ä‘Ã¡p Ã¡n sai má»—i tráº­n. ':'')+'Bá»™ cÃ¢u há»i riÃªng gá»“m 20 cÃ¢u; cÃ¢u há»i vÃ  Ä‘Ã¡p Ã¡n Ä‘Æ°á»£c xÃ¡o trá»™n. '+(level>=5?'Particle phÃ¡t sÃ¡ng Ä‘ang bay quanh Elementomon.':'Tháº¯ng 5 tráº­n Ä‘á»ƒ Ä‘áº¡t cáº¥p 5 vÃ  tiáº¿n hÃ³a!');
+          document.getElementById('creature-evolution-note').textContent=(level>=5?'✨ ĐÃ TIẾN HÓA! HP tối đa 7 + quyền loại 1 đáp án sai mỗi trận. ':'')+'Bộ câu hỏi riêng gồm 20 câu; câu hỏi và đáp án được xáo trộn. '+(level>=5?'Particle phát sáng đang bay quanh Elementomon.':'Thắng 5 trận để đạt cấp 5 và tiến hóa!');
         }
         let currentBattle=null;
         let wildEncounterTimer=null;
@@ -2522,29 +2562,29 @@
         }
         function scheduleWildFootsteps(){
           clearWildFootsteps();
-          [300,610,900].forEach(delay=>wildFootstepTimers.push(setTimeout(()=>{ if(currentBattle && !currentBattle.introComplete) PokÃ©dexAudio.playSfx('step'); },delay)));
+          [300,610,900].forEach(delay=>wildFootstepTimers.push(setTimeout(()=>{ if(currentBattle && !currentBattle.introComplete) PokédexAudio.playSfx('step'); },delay)));
         }
         function renderBattleActions(){
           if(!currentBattle) return;
           const actions=document.getElementById('battle-result-actions');
           actions.innerHTML='';
           const run=document.createElement('button');
-          run.type='button'; run.className='run-away-btn'; run.textContent='ðŸƒ CHáº Y TRá»N';
-          run.title='Rá»i tráº­n Ä‘áº¥u mÃ  khÃ´ng nháº­n thÆ°á»Ÿng vÃ  khÃ´ng bá»‹ máº¥t HP';
+          run.type='button'; run.className='run-away-btn'; run.textContent='🏃 CHẠY TRỐN';
+          run.title='Rời trận đấu mà không nhận thưởng và không bị mất HP';
           run.addEventListener('click',runAwayFromBattle);
           actions.appendChild(run);
           if(currentBattle.playerLevel>=5 && !currentBattle.lifelineUsed){
-            const lifeline=document.createElement('button'); lifeline.type='button'; lifeline.className='lifeline-btn'; lifeline.textContent='âœ‚ LOáº I 1 ÄÃP ÃN SAI';
+            const lifeline=document.createElement('button'); lifeline.type='button'; lifeline.className='lifeline-btn'; lifeline.textContent='✂ LOẠI 1 ĐÁP ÁN SAI';
             lifeline.addEventListener('click',useBattleLifeline); actions.appendChild(lifeline);
           } else if(currentBattle.playerLevel>=5 && currentBattle.lifelineUsed){
-            const used=document.createElement('span'); used.className='text-[10px] text-cyan-200'; used.textContent='âœ‚ Quyá»n loáº¡i Ä‘Ã¡p Ã¡n Ä‘Ã£ dÃ¹ng'; actions.appendChild(used);
+            const used=document.createElement('span'); used.className='text-[10px] text-cyan-200'; used.textContent='✂ Quyền loại đáp án đã dùng'; actions.appendChild(used);
           }
         }
         function renderBattleQuestion(){
           if(!currentBattle) return;
           currentBattle.question=questionFor(currentBattle.player);
           currentBattle.answered=false;
-          document.getElementById('battle-question').textContent=`CÃ‚U ${currentBattle.question.questionNumber||1}/20 Â· ${currentBattle.question[0]}`;
+          document.getElementById('battle-question').textContent=`CÂU ${currentBattle.question.questionNumber||1}/20 · ${currentBattle.question[0]}`;
           const options=document.getElementById('battle-options'); options.innerHTML='';
           currentBattle.question[1].forEach((answer,i)=>{
             const b=document.createElement('button');
@@ -2555,13 +2595,13 @@
         }
         function runAwayFromBattle(){
           if(!currentBattle || currentBattle.answered || currentBattle.ending) return;
-          PokÃ©dexAudio.playSfx('flee');
+          PokédexAudio.playSfx('flee');
           currentBattle.ending=true;
           document.querySelectorAll('#battle-options .quiz-option').forEach(b=>b.disabled=true);
-          document.getElementById('battle-question').textContent='ÄÃƒ Rá»œI KHá»ŽI TRáº¬N Äáº¤U';
+          document.getElementById('battle-question').textContent='ĐÃ RỜI KHỎI TRẬN ĐẤU';
           document.getElementById('battle-options').innerHTML='';
           document.getElementById('battle-result-actions').innerHTML='';
-          document.getElementById('battle-dialogue').textContent=`ðŸƒ Báº¡n vÃ  ${currentBattle.player.vn} Ä‘Ã£ cháº¡y thoÃ¡t an toÃ n! KhÃ´ng máº¥t HP, khÃ´ng nháº­n kinh nghiá»‡m vÃ  khÃ´ng thay Ä‘á»•i cáº¥p Ä‘á»™.`;
+          document.getElementById('battle-dialogue').textContent=`🏃 Bạn và ${currentBattle.player.vn} đã chạy thoát an toàn! Không mất HP, không nhận kinh nghiệm và không thay đổi cấp độ.`;
           const player=document.getElementById('battle-player-emoji');
           player.style.transition='transform .35s ease, opacity .35s ease';
           player.style.transform='translateX(-40px)'; player.style.opacity='.25';
@@ -2573,10 +2613,10 @@
           const wrongButtons=[...document.querySelectorAll('#battle-options .quiz-option')].filter(button=>Number(button.dataset.choiceIndex)!==correctIndex && !button.classList.contains('lifeline-removed'));
           if(!wrongButtons.length) return;
           const removed=wrongButtons[Math.floor(Math.random()*wrongButtons.length)];
-          removed.classList.add('lifeline-removed'); removed.disabled=true; removed.setAttribute('aria-label','ÄÃ¡p Ã¡n sai Ä‘Ã£ bá»‹ loáº¡i');
+          removed.classList.add('lifeline-removed'); removed.disabled=true; removed.setAttribute('aria-label','Đáp án sai đã bị loại');
           currentBattle.lifelineUsed=true;
-          PokÃ©dexAudio.playSfx('lifeline');
-          document.getElementById('battle-dialogue').textContent='âœ¨ Tiáº¿n hÃ³a kÃ­ch hoáº¡t: Ä‘Ã£ loáº¡i bá» 1 Ä‘Ã¡p Ã¡n sai! Quyá»n nÃ y chá»‰ dÃ¹ng má»™t láº§n trong tráº­n.';
+          PokédexAudio.playSfx('lifeline');
+          document.getElementById('battle-dialogue').textContent='✨ Tiến hóa kích hoạt: đã loại bỏ 1 đáp án sai! Quyền này chỉ dùng một lần trong trận.';
           renderBattleActions();
         }
         function updateBattleHP(){
@@ -2592,7 +2632,7 @@
           clearWildSequenceTimers();
           clearWildTransitionMotion();
           document.body.classList.remove('battle-active');
-          PokÃ©dexAudio.setMusicMode('explore');
+          PokédexAudio.setMusicMode('explore');
           document.getElementById('battle-modal').classList.remove('open');
           const particleLayer=document.getElementById('battle-particle-layer'); if(particleLayer) particleLayer.innerHTML='';
           document.getElementById('battle-move-label').classList.remove('active');
@@ -2605,8 +2645,8 @@
           clearWildSequenceTimers();
           clearWildTransitionMotion();
           const player=RAW_ELEMENTS[currentElementIndex];
-          PokÃ©dexAudio.setMusicMode('encounter');
-          PokÃ©dexAudio.playSfx('encounter');
+          PokédexAudio.setMusicMode('encounter');
+          PokédexAudio.playSfx('encounter');
           let enemy=RAW_ELEMENTS[Math.floor(Math.random()*RAW_ELEMENTS.length)];
           while(enemy.num===player.num) enemy=RAW_ELEMENTS[Math.floor(Math.random()*RAW_ELEMENTS.length)];
           const playerLevel=getCreatureLevel(player), enemyLevel=1+Math.floor(Math.random()*4);
@@ -2618,7 +2658,7 @@
           document.body.classList.add('battle-active');
           const battleModal=document.getElementById('battle-modal');
           battleModal.classList.add('open');
-          // The training button lives in the other PokÃ©dex panel, but the encounter scene
+          // The training button lives in the other Pokédex panel, but the encounter scene
           // renders on the main CRT. Bring that CRT into view so the cutscene is never
           // running outside the viewport after the browser scrolls to the clicked button.
           const battleScreen=battleModal.closest('.crt-monitor');
@@ -2641,7 +2681,7 @@
           document.getElementById('battle-player-level').textContent=`Lv. ${playerLevel}`;
           document.getElementById('battle-enemy-level').textContent=`Lv. ${enemyLevel}`;
           updateBattleHP();
-          document.getElementById('battle-dialogue').textContent=`${enemy.vn} xuáº¥t hiá»‡n! ${player.vn} cÃ³ ${playerMaxHP} HP, Ä‘á»‘i thá»§ cÃ³ ${enemyMaxHP} HP. Tráº£ lá»i Ä‘Ãºng Ä‘á»ƒ gÃ¢y 1 sÃ¡t thÆ°Æ¡ng; sai sáº½ bá»‹ pháº£n cÃ´ng!${playerLevel>=5?' Elementomon Ä‘Ã£ tiáº¿n hÃ³a: cÃ³ particle phÃ¡t sÃ¡ng vÃ  quyá»n loáº¡i 1 Ä‘Ã¡p Ã¡n sai.':''}`;
+          document.getElementById('battle-dialogue').textContent=`${enemy.vn} xuất hiện! ${player.vn} có ${playerMaxHP} HP, đối thủ có ${enemyMaxHP} HP. Trả lời đúng để gây 1 sát thương; sai sẽ bị phản công!${playerLevel>=5?' Elementomon đã tiến hóa: có particle phát sáng và quyền loại 1 đáp án sai.':''}`;
           document.getElementById('battle-result-actions').innerHTML='';
           document.getElementById('battle-question').textContent='';
           document.getElementById('battle-options').innerHTML='';
@@ -2655,9 +2695,9 @@
           wildCutsceneSprite.innerHTML=creatureSVG(enemy,'battle',enemyLevel);
           setEvolvedAppearance(playerCutsceneSprite,player,playerLevel,8);
           setEvolvedAppearance(wildCutsceneSprite,enemy,enemyLevel,8);
-          document.getElementById('wild-cutscene-name').textContent='??? â€¢ Äang áº©n náº¥p';
-          document.getElementById('wild-cutscene-title').textContent='ÄANG KHÃM PHÃ...';
-          document.getElementById('wild-cutscene-message').textContent=`${player.vn} Ä‘ang thong tháº£ Ä‘i qua bÃ£i cá»...`;
+          document.getElementById('wild-cutscene-name').textContent='??? • Đang ẩn nấp';
+          document.getElementById('wild-cutscene-title').textContent='ĐANG KHÁM PHÁ...';
+          document.getElementById('wild-cutscene-message').textContent=`${player.vn} đang thong thả đi qua bãi cỏ...`;
           void cutscene.offsetWidth;
           cutscene.classList.add('active'); cutscene.setAttribute('aria-hidden','false');
           currentBattle.introComplete=false;
@@ -2665,27 +2705,27 @@
           wildBushTimer=setTimeout(()=>{
             if(!currentBattle || currentBattle.introComplete) return;
             cutscene.classList.add('bush-shaking');
-            PokÃ©dexAudio.playSfx('rustle');
-            document.getElementById('wild-cutscene-title').textContent='Bá»¤I CÃ‚Y ÄANG RUNG!';
-            document.getElementById('wild-cutscene-message').textContent=`${player.vn} khá»±ng láº¡i... Bá»¥i cÃ¢y phÃ­a trÆ°á»›c bá»—ng rung lÃªn sá»™t soáº¡t!`;
+            PokédexAudio.playSfx('rustle');
+            document.getElementById('wild-cutscene-title').textContent='BỤI CÂY ĐANG RUNG!';
+            document.getElementById('wild-cutscene-message').textContent=`${player.vn} khựng lại... Bụi cây phía trước bỗng rung lên sột soạt!`;
           },1050);
           // Second beat: a wild creature jumps up and comes out from behind the bush.
           wildEmergenceTimer=setTimeout(()=>{
             if(!currentBattle || currentBattle.introComplete) return;
             cutscene.classList.add('emerging');
-            PokÃ©dexAudio.playSfx('emerge');
-            document.getElementById('wild-cutscene-title').textContent='CÃ“ GÃŒ ÄÃ“ ÄANG XUáº¤T HIá»†N...';
-            document.getElementById('wild-cutscene-message').textContent=`CÃ³ thá»© gÃ¬ Ä‘Ã³ Ä‘ang chui ra khá»i bá»¥i cÃ¢y...`;
+            PokédexAudio.playSfx('emerge');
+            document.getElementById('wild-cutscene-title').textContent='CÓ GÌ ĐÓ ĐANG XUẤT HIỆN...';
+            document.getElementById('wild-cutscene-message').textContent=`Có thứ gì đó đang chui ra khỏi bụi cây...`;
           },1900);
           // Only after the wild Elementomon has finished emerging do the exclamation marks appear.
           wildEncounterReactionTimer=setTimeout(()=>{
             if(!currentBattle || currentBattle.introComplete) return;
             clearWildFootsteps();
-            PokÃ©dexAudio.playSfx('notice');
+            PokédexAudio.playSfx('notice');
             cutscene.classList.add('noticed');
-            document.getElementById('wild-cutscene-title').textContent='ÄÃƒ PHÃT HIá»†N ELEMENTOMON HOANG DÃƒ!';
-            document.getElementById('wild-cutscene-name').textContent=`${enemy.vn} hoang dÃ£ â€¢ Lv. ${enemyLevel}`;
-            document.getElementById('wild-cutscene-message').textContent=`ÄÃ£ phÃ¡t hiá»‡n ra 1 ${enemy.vn} hoang dÃ£!`;
+            document.getElementById('wild-cutscene-title').textContent='ĐÃ PHÁT HIỆN ELEMENTOMON HOANG DÃ!';
+            document.getElementById('wild-cutscene-name').textContent=`${enemy.vn} hoang dã • Lv. ${enemyLevel}`;
+            document.getElementById('wild-cutscene-message').textContent=`Đã phát hiện ra 1 ${enemy.vn} hoang dã!`;
           },3150);
           // Let the reaction linger for a moment before transitioning into battle.
           wildEncounterTimer=setTimeout(beginWildBattle,4650);
@@ -2716,7 +2756,7 @@
                  [p.c,p.light,p.accent];
         }
         function animateBattleHit(attacker, target){
-          PokÃ©dexAudio.playSfx('attack');
+          PokédexAudio.playSfx('attack');
           const field=document.getElementById('battlefield'), effect=document.getElementById('battle-effect');
           const projectile=document.getElementById('battle-projectile'), moveLabel=document.getElementById('battle-move-label');
           field.classList.remove('move-player','move-enemy','hit-player','hit-enemy');
@@ -2736,7 +2776,7 @@
           setTimeout(()=>{
             if(!currentBattle)return;
             field.classList.add(target==='player'?'hit-player':'hit-enemy');
-            PokÃ©dexAudio.playSfx('hit');
+            PokédexAudio.playSfx('hit');
             spawnBattleParticles(target,9,palette,'impact');
             effect.textContent='-1';
             effect.style.left=target==='enemy'?'73%':'24%';
@@ -2756,15 +2796,15 @@
           const runButton=document.querySelector('#battle-result-actions .run-away-btn'); if(runButton) runButton.disabled=true;
           const correct=choice===currentBattle.question[2];
           if(correct){
-            PokÃ©dexAudio.playSfx('correct');
+            PokédexAudio.playSfx('correct');
             currentBattle.enemyHP=Math.max(0,currentBattle.enemyHP-1);
             animateBattleHit('player','enemy');
-            document.getElementById('battle-dialogue').textContent=`ChÃ­nh xÃ¡c! ${currentBattle.player.vn} tung ká»¹ nÄƒng gÃ¢y 1 sÃ¡t thÆ°Æ¡ng!`;
+            document.getElementById('battle-dialogue').textContent=`Chính xác! ${currentBattle.player.vn} tung kỹ năng gây 1 sát thương!`;
           } else {
-            PokÃ©dexAudio.playSfx('wrong');
+            PokédexAudio.playSfx('wrong');
             currentBattle.playerHP=Math.max(0,currentBattle.playerHP-1);
             animateBattleHit('enemy','player');
-            document.getElementById('battle-dialogue').textContent=`ChÆ°a Ä‘Ãºng! ÄÃ¡p Ã¡n: ${currentBattle.question[1][currentBattle.question[2]]}. ${currentBattle.enemy.vn} pháº£n cÃ´ng gÃ¢y 1 sÃ¡t thÆ°Æ¡ng!`;
+            document.getElementById('battle-dialogue').textContent=`Chưa đúng! Đáp án: ${currentBattle.question[1][currentBattle.question[2]]}. ${currentBattle.enemy.vn} phản công gây 1 sát thương!`;
           }
           setTimeout(()=>{ if(currentBattle) updateBattleHP(); },440);
           if(currentBattle.enemyHP<=0){
@@ -2772,7 +2812,7 @@
             if(old<5) creatureLevels[el.num]=old+1;
             updateCreatureCard();
             if(getCreatureLevel(el)===5&&old<5){
-              PokÃ©dexAudio.playSfx('evolution');
+              PokédexAudio.playSfx('evolution');
               spawnBattleParticles('player',16,['#fff3a6','#ffafcf','#9beaff',getElementCreaturePalette(el).c],'evolution');
               document.getElementById('element-creature').classList.add('evolved');
               currentBattle.playerLevel=5; currentBattle.playerMaxHP=7; currentBattle.playerHP=7;
@@ -2782,20 +2822,20 @@
               document.getElementById('battle-player-level').textContent='Lv. 5';
               updateBattleHP();
             }
-            PokÃ©dexAudio.setMusicMode('explore');
-            PokÃ©dexAudio.playSfx('win');
-            document.getElementById('battle-dialogue').textContent=`ðŸ† Báº¡n tháº¯ng! ${el.vn} tÄƒng cáº¥p ${old} â†’ ${getCreatureLevel(el)}${getCreatureLevel(el)===5&&old<5?' vÃ  TIáº¾N HÃ“A!':''}. Äang quay vá» PokÃ©dex...`;
-            document.getElementById('battle-question').textContent='TRáº¬N Äáº¤U Káº¾T THÃšC â€” Báº N THáº®NG!';
+            PokédexAudio.setMusicMode('explore');
+            PokédexAudio.playSfx('win');
+            document.getElementById('battle-dialogue').textContent=`🏆 Bạn thắng! ${el.vn} tăng cấp ${old} → ${getCreatureLevel(el)}${getCreatureLevel(el)===5&&old<5?' và TIẾN HÓA!':''}. Đang quay về Pokédex...`;
+            document.getElementById('battle-question').textContent='TRẬN ĐẤU KẾT THÚC — BẠN THẮNG!';
             document.getElementById('battle-options').innerHTML='';
             document.getElementById('battle-result-actions').innerHTML='';
             setTimeout(leaveBattle,1500);
             return;
           }
           if(currentBattle.playerHP<=0){
-            PokÃ©dexAudio.setMusicMode('explore');
-            PokÃ©dexAudio.playSfx('lose');
-            document.getElementById('battle-dialogue').textContent='ðŸ’¥ Báº¡n Ä‘Ã£ háº¿t HP vÃ  thua tráº­n. Cáº¥p Ä‘á»™ khÃ´ng thay Ä‘á»•i. Äang quay vá» PokÃ©dex...';
-            document.getElementById('battle-question').textContent='TRáº¬N Äáº¤U Káº¾T THÃšC â€” Báº N THUA!';
+            PokédexAudio.setMusicMode('explore');
+            PokédexAudio.playSfx('lose');
+            document.getElementById('battle-dialogue').textContent='💥 Bạn đã hết HP và thua trận. Cấp độ không thay đổi. Đang quay về Pokédex...';
+            document.getElementById('battle-question').textContent='TRẬN ĐẤU KẾT THÚC — BẠN THUA!';
             document.getElementById('battle-options').innerHTML='';
             document.getElementById('battle-result-actions').innerHTML='';
             setTimeout(leaveBattle,1500);
@@ -2848,8 +2888,8 @@
           clearWildSequenceTimers();
           currentBattle.introComplete=true;
           currentBattle.transitionStarted=true;
-          PokÃ©dexAudio.setMusicMode('battle');
-          PokÃ©dexAudio.playSfx('battleStart');
+          PokédexAudio.setMusicMode('battle');
+          PokédexAudio.playSfx('battleStart');
           transitionClones.forEach(item=>{
             if(item.targetSprite){
               // Cross-fade to the real Battle sprite at the exact destination bounds.
@@ -2868,7 +2908,7 @@
           // They are only unhidden after the cutscene has fully faded away.
           cutscene.classList.add('leaving');
           cutscene.setAttribute('aria-hidden','true');
-          document.getElementById('battle-dialogue').textContent=`${currentBattle.enemy.vn} hoang dÃ£ muá»‘n chiáº¿n Ä‘áº¥u! Tráº£ lá»i cÃ¢u há»i Ä‘á»ƒ táº¥n cÃ´ng. Chá»n CHáº Y TRá»N náº¿u muá»‘n rá»i tráº­n.`;
+          document.getElementById('battle-dialogue').textContent=`${currentBattle.enemy.vn} hoang dã muốn chiến đấu! Trả lời câu hỏi để tấn công. Chọn CHẠY TRỐN nếu muốn rời trận.`;
           setTimeout(()=>{
             if(!currentBattle) return;
             cutscene.classList.remove('leaving','active','noticed','bush-shaking','emerging','transitioning');
@@ -2885,8 +2925,8 @@
             cutscene.classList.add('transitioning');
             const title=document.getElementById('wild-cutscene-title');
             const message=document.getElementById('wild-cutscene-message');
-            if(title) title.textContent='Sáº´N SÃ€NG CHIáº¾N Äáº¤U!';
-            if(message) message.textContent=`${currentBattle.player.vn} vÃ  ${currentBattle.enemy.vn} tiáº¿n vÃ o vá»‹ trÃ­ chiáº¿n Ä‘áº¥u...`;
+            if(title) title.textContent='SẴN SÀNG CHIẾN ĐẤU!';
+            if(message) message.textContent=`${currentBattle.player.vn} và ${currentBattle.enemy.vn} tiến vào vị trí chiến đấu...`;
             const button=document.getElementById('wild-cutscene-start');
             if(button) button.disabled=true;
             const playerSource=cutscene.querySelector('.wild-cutscene-player');
@@ -2901,9 +2941,9 @@
             if(playerClone) transitionClones.push(playerClone);
             if(enemyClone) transitionClones.push(enemyClone);
             wildTransitionItems=transitionClones;
-            PokÃ©dexAudio.playSfx('step');
-            wildFootstepTimers.push(setTimeout(()=>{if(currentBattle)PokÃ©dexAudio.playSfx('step');},250));
-            wildFootstepTimers.push(setTimeout(()=>{if(currentBattle)PokÃ©dexAudio.playSfx('step');},520));
+            PokédexAudio.playSfx('step');
+            wildFootstepTimers.push(setTimeout(()=>{if(currentBattle)PokédexAudio.playSfx('step');},250));
+            wildFootstepTimers.push(setTimeout(()=>{if(currentBattle)PokédexAudio.playSfx('step');},520));
             wildTransitionResizeHandler=()=>{
               if(!wildTransitionItems.length) return;
               updateWildTransitionTargets();
@@ -2919,8 +2959,8 @@
           completeWildBattleTransition([]);
         }
         document.getElementById('btn-train').addEventListener('click',startTrainingBattle);
-        document.getElementById('wild-cutscene-start').addEventListener('click',()=>{PokÃ©dexAudio.playSfx('ui');beginWildBattle(true);});
-        document.getElementById('battle-close').addEventListener('click',()=>{PokÃ©dexAudio.playSfx('close');leaveBattle();});
+        document.getElementById('wild-cutscene-start').addEventListener('click',()=>{PokédexAudio.playSfx('ui');beginWildBattle(true);});
+        document.getElementById('battle-close').addEventListener('click',()=>{PokédexAudio.playSfx('close');leaveBattle();});
         document.getElementById('battle-modal').addEventListener('click',e=>{if(e.target.id==='battle-modal')leaveBattle();});
 
         /* ===================================================================
@@ -2928,7 +2968,7 @@
            =================================================================== */
         window.onload = function() {
             renderPeriodicTable();
-            PokÃ©dexAudio.updateControls();
+            PokédexAudio.updateControls();
             updateInspectorDisplay();
         };
     </script>
