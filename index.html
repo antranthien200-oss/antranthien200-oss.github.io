@@ -614,6 +614,28 @@ body, button, input, textarea, select {
   overflow-wrap: anywhere;
   word-break: normal;
 }
+
+/* Periodic-table typography: keep English/symbols pixelated, Vietnamese readable. */
+#ptable-grid > .element-cell,
+#ptable-grid > button,
+#ptable-grid > div {
+  font-family: 'Chakra Petch', Arial, sans-serif;
+}
+#ptable-grid .font-pixel,
+#ptable-grid .element-symbol,
+#ptable-grid .element-number,
+#ptable-grid .element-cell-symbol {
+  font-family: 'Press Start 2P', cursive !important;
+}
+#ptable-grid .element-symbol,
+#ptable-grid .element-cell-symbol {
+  line-height: 1.5;
+}
+#ptable-grid .element-cell-name-vn,
+#ptable-grid .element-vn-name {
+  font-family: 'Chakra Petch', Arial, sans-serif !important;
+}
+
 /* Keep Vietnamese labels readable instead of forcing pixel glyphs. */
 #disp-atomic-badge {
   font-family: 'Chakra Petch', Arial, sans-serif !important;
