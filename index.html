@@ -399,6 +399,16 @@
         #battle-modal .quiz-option{font-family:'Chakra Petch',sans-serif;font-size:12px;line-height:1.15;font-weight:800;background:#f1f5f9;color:#172235;border:2px solid #475569;border-radius:4px;padding:8px;text-align:left;cursor:pointer}
         #battle-modal .quiz-option:hover{background:#dbeafe}
         #battle-modal .quiz-option:disabled{opacity:.7;cursor:default}
+        #battle-modal .quiz-option.answer-correct,
+        #battle-modal .quiz-option.answer-correct:disabled {
+            background:#16a34a !important;color:#f0fdf4 !important;border-color:#86efac !important;
+            box-shadow:0 0 14px rgba(34,197,94,.42);opacity:1 !important;
+        }
+        #battle-modal .quiz-option.answer-wrong,
+        #battle-modal .quiz-option.answer-wrong:disabled {
+            background:#dc2626 !important;color:#fff7f7 !important;border-color:#fca5a5 !important;
+            box-shadow:0 0 14px rgba(239,68,68,.42);opacity:1 !important;
+        }
         #battle-modal #battle-result-actions{flex:none;margin:0}
         #battle-modal #battle-close{display:none}
 
@@ -3220,11 +3230,21 @@ body, button, input, textarea, select {
             projectile.classList.remove('shot-wind','shot-slime','shot-crystal');
           },1030);
         }
+        function highlightQuizAnswers(choice, correctIndex) {
+          document.querySelectorAll('#battle-options .quiz-option').forEach(function(button) {
+            const index = Number(button.dataset.choiceIndex);
+            button.classList.remove('answer-correct', 'answer-wrong');
+            if (index === correctIndex) button.classList.add('answer-correct');
+            if (choice !== correctIndex && index === choice) button.classList.add('answer-wrong');
+          });
+        }
+
         function answerBattle(choice){
           if(!currentBattle||currentBattle.answered)return;
           if(currentBattle.hardcore){ answerHardcoreBattle(choice); return; }
           currentBattle.answered=true;
-          document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
+          document.querySelectorAll('#battle-options .quiz-option').forEach(b=>b.disabled=true);
+          highlightQuizAnswers(choice, currentBattle.question[2]);
           const runButton=document.querySelector('#battle-result-actions .run-away-btn'); if(runButton) runButton.disabled=true;
           const correct=choice===currentBattle.question[2];
           if(correct){
@@ -3239,43 +3259,49 @@ body, button, input, textarea, select {
             document.getElementById('battle-dialogue').textContent=`Chưa đúng! Đáp án: ${currentBattle.question[1][currentBattle.question[2]]}. ${currentBattle.enemy.vn} phản công gây 1 sát thương!`;
           }
           setTimeout(()=>{ if(currentBattle) updateBattleHP(); },440);
-          if(currentBattle.enemyHP<=0){
-            const el=currentBattle.player, old=getCreatureLevel(el);
-            if(old<5) creatureLevels[el.num]=old+1;
-            persistElementomonProgress();
-            updateCreatureCard();
-            if(getCreatureLevel(el)===5&&old<5){
-              PokédexAudio.playSfx('evolution');
-              spawnBattleParticles('player',16,['#fff3a6','#ffafcf','#9beaff',getElementCreaturePalette(el).c],'evolution');
-              document.getElementById('element-creature').classList.add('evolved');
-              currentBattle.playerLevel=5; currentBattle.playerMaxHP=7; currentBattle.playerHP=7;
-              const evolvedBattleSprite=document.getElementById('battle-player-emoji');
-              evolvedBattleSprite.innerHTML=creatureSVG(el,'battle',5);
-              setEvolvedAppearance(evolvedBattleSprite,el,5,12);
-              document.getElementById('battle-player-level').textContent='Lv. 5';
-              updateBattleHP();
+
+          // Keep the answer colours visible for four seconds before advancing or ending the battle.
+          setTimeout(()=>{
+            if(!currentBattle)return;
+            if(currentBattle.enemyHP<=0){
+              const el=currentBattle.player, old=getCreatureLevel(el);
+              if(old<5) creatureLevels[el.num]=old+1;
+              persistElementomonProgress();
+              updateCreatureCard();
+              if(getCreatureLevel(el)===5&&old<5){
+                PokédexAudio.playSfx('evolution');
+                spawnBattleParticles('player',16,['#fff3a6','#ffafcf','#9beaff',getElementCreaturePalette(el).c],'evolution');
+                document.getElementById('element-creature').classList.add('evolved');
+                currentBattle.playerLevel=5; currentBattle.playerMaxHP=7; currentBattle.playerHP=7;
+                const evolvedBattleSprite=document.getElementById('battle-player-emoji');
+                evolvedBattleSprite.innerHTML=creatureSVG(el,'battle',5);
+                setEvolvedAppearance(evolvedBattleSprite,el,5,12);
+                document.getElementById('battle-player-level').textContent='Lv. 5';
+                updateBattleHP();
+              }
+              PokédexAudio.setMusicMode('explore');
+              PokédexAudio.playSfx('win');
+              document.getElementById('battle-dialogue').textContent=`🏆 Bạn thắng! ${el.vn} tăng cấp ${old} → ${getCreatureLevel(el)}${getCreatureLevel(el)===5&&old<5?' và TIẾN HÓA!':''}. Đang quay về Pokédex...`;
+              document.getElementById('battle-question').textContent='TRẬN ĐẤU KẾT THÚC — BẠN THẮNG!';
+              document.getElementById('battle-options').innerHTML='';
+              document.getElementById('battle-result-actions').innerHTML='';
+              setTimeout(leaveBattle,1500);
+              return;
             }
-            PokédexAudio.setMusicMode('explore');
-            PokédexAudio.playSfx('win');
-            document.getElementById('battle-dialogue').textContent=`🏆 Bạn thắng! ${el.vn} tăng cấp ${old} → ${getCreatureLevel(el)}${getCreatureLevel(el)===5&&old<5?' và TIẾN HÓA!':''}. Đang quay về Pokédex...`;
-            document.getElementById('battle-question').textContent='TRẬN ĐẤU KẾT THÚC — BẠN THẮNG!';
-            document.getElementById('battle-options').innerHTML='';
-            document.getElementById('battle-result-actions').innerHTML='';
-            setTimeout(leaveBattle,1500);
-            return;
-          }
-          if(currentBattle.playerHP<=0){
-            PokédexAudio.setMusicMode('explore');
-            PokédexAudio.playSfx('lose');
-            document.getElementById('battle-dialogue').textContent='💥 Bạn đã hết HP và thua trận. Cấp độ không thay đổi. Đang quay về Pokédex...';
-            document.getElementById('battle-question').textContent='TRẬN ĐẤU KẾT THÚC — BẠN THUA!';
-            document.getElementById('battle-options').innerHTML='';
-            document.getElementById('battle-result-actions').innerHTML='';
-            setTimeout(leaveBattle,1500);
-            return;
-          }
-          setTimeout(()=>{ if(currentBattle){ renderBattleQuestion(); } },650);
+            if(currentBattle.playerHP<=0){
+              PokédexAudio.setMusicMode('explore');
+              PokédexAudio.playSfx('lose');
+              document.getElementById('battle-dialogue').textContent='💥 Bạn đã hết HP và thua trận. Cấp độ không thay đổi. Đang quay về Pokédex...';
+              document.getElementById('battle-question').textContent='TRẬN ĐẤU KẾT THÚC — BẠN THUA!';
+              document.getElementById('battle-options').innerHTML='';
+              document.getElementById('battle-result-actions').innerHTML='';
+              setTimeout(leaveBattle,1500);
+              return;
+            }
+            renderBattleQuestion();
+          },4000);
         }
+        
         function createBattleTransitionClone(sourceCombatant, sourceSprite, targetSprite){
           if(!sourceCombatant || !sourceSprite || !targetSprite) return null;
           const sourceRect=sourceCombatant.getBoundingClientRect();
@@ -3524,6 +3550,7 @@ body, button, input, textarea, select {
             if(!currentBattle||!currentBattle.hardcore||currentBattle.answered||currentBattle.ending)return;
             currentBattle.answered=true;
             document.querySelectorAll('#battle-options .quiz-option').forEach(function(b){b.disabled=true;});
+            highlightQuizAnswers(choice, currentBattle.question[2]);
             const correct=choice===currentBattle.question[2];
             const field=document.getElementById('battlefield');
             if(correct){
@@ -3538,12 +3565,16 @@ body, button, input, textarea, select {
             updateBattleHP();
             window.setTimeout(function(){
                 field.classList.remove('move-player','move-enemy','hit-player','hit-enemy');
+            },650);
+            // Leave the chosen and correct answers highlighted for four seconds.
+            window.setTimeout(function(){
                 if(!currentBattle||!currentBattle.hardcore)return;
                 if(currentBattle.enemyHP<=0)finishHardcoreBattle(true);
                 else if(currentBattle.playerHP<=0)finishHardcoreBattle(false);
                 else renderHardcoreQuestion();
-            },650);
+            },4000);
         }
+        
         function startHardcoreBattle() {
             closeHomeMenu(); clearWildSequenceTimers(); clearWildTransitionMotion();
             const student={num:-1,sym:'STU',vn:'Học sinh',en:'Student'};
