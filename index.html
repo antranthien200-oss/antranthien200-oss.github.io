@@ -756,7 +756,7 @@ body, button, input, textarea, select {
                     </div>
 
                     <!-- PERIODIC TABLE 18-COLUMN INTERACTIVE GRID -->
-                    <div class="flex-grow my-2 overflow-auto crt-scrollbar bg-black/80 rounded-lg p-2 border border-[#39ff14]/30 flex flex-col justify-center">
+                    <div class="flex-grow my-2 overflow-auto crt-scrollbar bg-black/80 rounded-lg px-1 py-2 border border-[#39ff14]/30 flex flex-col justify-center">
                         <div id="ptable-grid" class="flex flex-col gap-1 w-full min-w-0 text-center">
                             <!-- Dynamic Element Cells injected here via JS -->
                         </div>
@@ -1657,14 +1657,14 @@ body, button, input, textarea, select {
             document.getElementById('grid-status-txt').innerText = `ĐANG HIỂN THỊ: ${matchCount} / 118 NGUYÊN TỐ`;
 
             // Render each header/period as its own grid row so labels can never shift element cells.
-            const rowTemplate = "64px 22px repeat(18, minmax(0, 1fr))";
+            const rowTemplate = "38px 18px repeat(18, minmax(0, 1fr))";
             const traditionalGroups = ["IA","IIA","IIIB","IVB","VB","VIB","VIIB","VIIIB","VIIIB","VIIIB","IB","IIB","IIIA","IVA","VA","VIA","VIIA","VIIIA"];
 
             function makeTableRow() {
                 const row = document.createElement('div');
                 row.style.display = "grid";
                 row.style.gridTemplateColumns = rowTemplate;
-                row.style.columnGap = "4px";
+                row.style.columnGap = "2px";
                 row.style.alignItems = "stretch";
                 row.style.width = "100%";
                 return row;
@@ -1676,7 +1676,7 @@ body, button, input, textarea, select {
                 label.style.minWidth = "0";
                 label.style.display = "flex";
                 label.style.alignItems = "center";
-                label.style.justifyContent = "center";
+                label.style.justifyContent = (text === "Cột →" || text === "Nhóm →" || text === "Chu kỳ ↓") ? "flex-start" : "center";
                 label.textContent = text;
                 return label;
             }
