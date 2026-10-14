@@ -961,8 +961,22 @@ body, button, input, textarea, select {
             </div>
 
             <!-- RIGHT CRT INSPECTOR MONITOR -->
-            <div id="right-inspector-monitor" class="crt-monitor rounded-2xl p-4 flex flex-col h-[560px] md:h-[610px] justify-between border-2 border-cyan-900 mb-3">
+            <div id="right-inspector-monitor" class="crt-monitor relative rounded-2xl p-4 flex flex-col h-[560px] md:h-[610px] justify-between border-2 border-cyan-900 mb-3">
                 <div class="crt-scanline"></div>
+
+                <!-- Atomic-radius trend view temporarily covers this monitor; the original element view remains unchanged beneath it. -->
+                <div id="radius-trend-panel" class="hidden absolute inset-0 z-50 rounded-xl border border-cyan-400/50 bg-[#02070d] p-3 md:p-4 flex flex-col gap-2 overflow-hidden" role="region" aria-live="polite" aria-hidden="true">
+                    <div class="flex items-start justify-between gap-3 border-b border-cyan-400/40 pb-2">
+                        <div class="min-w-0">
+                            <div class="text-[10px] font-mono tracking-widest text-cyan-300">ATOMIC RADIUS • pm</div>
+                            <h2 id="radius-trend-title" class="font-pixel text-sm md:text-base leading-relaxed text-yellow-200 mt-1">BIỂU ĐỒ BÁN KÍNH NGUYÊN TỬ</h2>
+                        </div>
+                        <button id="radius-trend-close" type="button" class="shrink-0 rounded-md border border-cyan-400/60 bg-cyan-950/70 px-2 py-2 text-[10px] md:text-xs font-bold text-cyan-100 hover:bg-cyan-800" aria-label="Đóng biểu đồ và quay lại hồ sơ nguyên tử">✕ QUAY LẠI</button>
+                    </div>
+                    <p id="radius-trend-summary" class="text-[11px] md:text-xs text-cyan-100 leading-relaxed">Chọn một nhóm hoặc chu kì trong bảng tuần hoàn.</p>
+                    <div id="radius-trend-chart" class="flex-1 min-h-0 overflow-auto rounded-lg border border-cyan-500/20 bg-black/50 p-2"></div>
+                    <div id="radius-trend-note" class="text-[10px] md:text-[11px] leading-relaxed text-slate-300">Trục ngang đi theo chiều điện tích hạt nhân tăng dần.</div>
+                </div>
 
                 <!-- Top Element Header -->
                 <div class="flex justify-between items-start border-b border-cyan-500/40 pb-2 z-10">
@@ -1752,13 +1766,35 @@ body, button, input, textarea, select {
                 return label;
             }
 
+            function makeTrendClickable(label, kind, value, description) {
+                label.classList.add("radius-trend-trigger");
+                label.style.cursor = "pointer";
+                label.setAttribute("role", "button");
+                label.setAttribute("tabindex", "0");
+                label.setAttribute("aria-label", description + " — mở biểu đồ bán kính nguyên tử");
+                label.title = description + " — bấm để xem biểu đồ bán kính";
+                const openTrend = () => showAtomicRadiusTrend(kind, value, description);
+                label.addEventListener("click", openTrend);
+                label.addEventListener("keydown", event => {
+                    if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openTrend();
+                    }
+                });
+                label.addEventListener("mouseenter", () => { label.style.color = "#39ff14"; label.style.textShadow = "0 0 7px rgba(57,255,20,.45)"; });
+                label.addEventListener("mouseleave", () => { label.style.color = ""; label.style.textShadow = ""; });
+                return label;
+            }
+
             // Header row 1: column numbers 1–18.
             const columnHeaderRow = makeTableRow();
             columnHeaderRow.appendChild(makeTableLabel("Cột →", "text-[10px] md:text-xs text-[#39ff14] font-chakra font-bold whitespace-nowrap"));
             columnHeaderRow.appendChild(makeTableLabel(""));
             for (let c = 1; c <= 18; c++) {
-                const label = makeTableLabel(String(c), "text-xs md:text-sm text-yellow-100 font-bold font-chakra");
-                label.title = `Cột ${c}`;
+                const label = makeTrendClickable(
+                    makeTableLabel(String(c), "text-xs md:text-sm text-yellow-100 font-bold font-chakra"),
+                    "group", c, `Nhóm ${c} (cột ${c})`
+                );
                 columnHeaderRow.appendChild(label);
             }
             gridContainer.appendChild(columnHeaderRow);
@@ -1768,8 +1804,10 @@ body, button, input, textarea, select {
             groupHeaderRow.appendChild(makeTableLabel("Nhóm →", "text-[10px] md:text-xs text-[#39ff14] font-chakra font-bold whitespace-nowrap"));
             groupHeaderRow.appendChild(makeTableLabel(""));
             traditionalGroups.forEach((group, index) => {
-                const label = makeTableLabel(group, "text-[10px] md:text-sm text-cyan-50 font-bold font-chakra whitespace-nowrap");
-                label.title = `Nhóm ${index + 1}: ${group}`;
+                const label = makeTrendClickable(
+                    makeTableLabel(group, "text-[10px] md:text-sm text-cyan-50 font-bold font-chakra whitespace-nowrap"),
+                    "group", index + 1, `Nhóm ${index + 1} (${group})`
+                );
                 groupHeaderRow.appendChild(label);
             });
             gridContainer.appendChild(groupHeaderRow);
@@ -1782,8 +1820,10 @@ body, button, input, textarea, select {
                     r === 1 ? "Chu kỳ ↓" : "",
                     "text-[9px] md:text-[11px] text-cyan-100 font-bold font-chakra whitespace-nowrap"
                 ));
-                const periodLabel = makeTableLabel(String(r), "text-xs md:text-sm text-cyan-100 font-bold font-chakra");
-                periodLabel.title = `Chu kỳ ${r}`;
+                const periodLabel = makeTrendClickable(
+                    makeTableLabel(String(r), "text-xs md:text-sm text-cyan-100 font-bold font-chakra"),
+                    "period", r, `Chu kỳ ${r}`
+                );
                 row.appendChild(periodLabel);
 
                 for (let c = 1; c <= 18; c++) {
@@ -1801,10 +1841,10 @@ body, button, input, textarea, select {
             const lanthanideRow = makeTableRow();
             lanthanideRow.appendChild(makeTableLabel(""));
             lanthanideRow.appendChild(makeTableLabel(""));
-            const lanthanideLabel = makeTableLabel(
+            const lanthanideLabel = makeTrendClickable(makeTableLabel(
                 "HỌ LANTAN ➔",
                 "text-[7px] md:text-[9px] text-cyan-400 font-bold font-mono whitespace-nowrap"
-            );
+            ), "family", "lanthanide", "Họ Lantan");
             lanthanideLabel.style.gridColumn = "span 2";
             lanthanideLabel.style.justifyContent = "flex-end";
             lanthanideRow.appendChild(lanthanideLabel);
@@ -1817,10 +1857,10 @@ body, button, input, textarea, select {
             const actinideRow = makeTableRow();
             actinideRow.appendChild(makeTableLabel(""));
             actinideRow.appendChild(makeTableLabel(""));
-            const actinideLabel = makeTableLabel(
+            const actinideLabel = makeTrendClickable(makeTableLabel(
                 "HỌ ACTINI ➔",
                 "text-[7px] md:text-[9px] text-pink-400 font-bold font-mono whitespace-nowrap"
-            );
+            ), "family", "actinide", "Họ Actini");
             actinideLabel.style.gridColumn = "span 2";
             actinideLabel.style.justifyContent = "flex-end";
             actinideRow.appendChild(actinideLabel);
@@ -1887,6 +1927,7 @@ body, button, input, textarea, select {
                     stopElementSpeech(false);
                 }
                 currentElementIndex = idx;
+                hideAtomicRadiusTrend();
                 updateInspectorDisplay();
                 const activeFilter = document.querySelector('.filter-chip.active');
                 renderPeriodicTable(activeFilter ? activeFilter.getAttribute('data-cat') : 'ALL', searchInput.value);
@@ -2021,6 +2062,128 @@ body, button, input, textarea, select {
             const info = atomicRadiusInfo(el);
             return Number.isFinite(info.value) ? `${info.value} pm · ${info.kind}` : info.kind;
         }
+
+        function escapeRadiusChartText(value) {
+            return String(value).replace(/&/g, "&amp;").replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        }
+
+        function hideAtomicRadiusTrend() {
+            const panel = document.getElementById("radius-trend-panel");
+            if (!panel) return;
+            panel.classList.add("hidden");
+            panel.setAttribute("aria-hidden", "true");
+        }
+
+        function showAtomicRadiusTrend(type, value, description) {
+            const panel = document.getElementById("radius-trend-panel");
+            const chart = document.getElementById("radius-trend-chart");
+            const title = document.getElementById("radius-trend-title");
+            const summary = document.getElementById("radius-trend-summary");
+            const note = document.getElementById("radius-trend-note");
+            if (!panel || !chart || !title || !summary || !note) return;
+
+            let subjects = [];
+            if (type === "period") {
+                subjects = RAW_ELEMENTS.filter(el => el.period === Number(value));
+            } else if (type === "group") {
+                // Match the numbered columns in the main table; f-block rows are graphed separately below.
+                subjects = RAW_ELEMENTS.filter(el => el.group === Number(value) &&
+                    !((el.num >= 57 && el.num <= 71) || (el.num >= 89 && el.num <= 103)));
+            } else if (type === "family" && value === "lanthanide") {
+                subjects = RAW_ELEMENTS.filter(el => el.num >= 57 && el.num <= 71);
+            } else if (type === "family" && value === "actinide") {
+                subjects = RAW_ELEMENTS.filter(el => el.num >= 89 && el.num <= 103);
+            }
+
+            // Direction follows increasing nuclear charge Z (atomic number), not increasing radius.
+            const points = subjects.map(el => {
+                const radius = atomicRadiusInfo(el);
+                return { el, value: radius.value, kind: radius.kind };
+            }).filter(point => Number.isFinite(point.value))
+              .sort((a, b) => a.el.num - b.el.num);
+
+            title.textContent = (description || "Nhóm nguyên tố").toUpperCase() + " • Z TĂNG DẦN";
+            summary.textContent = points.length + " / " + subjects.length +
+                " nguyên tố có dữ liệu bán kính. Trục ngang: số hiệu nguyên tử Z tăng dần; trục dọc: bán kính (pm).";
+            chart.innerHTML = "";
+
+            if (!points.length) {
+                chart.innerHTML = '<div class="p-5 text-sm text-amber-200">Chưa có dữ liệu bán kính đáng tin cậy để vẽ biểu đồ cho mục này.</div>';
+                note.textContent = "Nguyên tố chưa có số liệu đáng tin cậy sẽ được bỏ qua, không tự nội suy.";
+            } else {
+                const width = Math.max(600, points.length * 46 + 82);
+                const height = 340;
+                const left = 54, right = 18, top = 24, bottom = 64;
+                const plotWidth = width - left - right;
+                const plotHeight = height - top - bottom;
+                const minValue = Math.min.apply(null, points.map(point => point.value));
+                const maxValue = Math.max.apply(null, points.map(point => point.value));
+                let yMin = Math.floor(minValue / 25) * 25;
+                let yMax = Math.ceil(maxValue / 25) * 25;
+                if (yMax <= yMin) yMax = yMin + 25;
+                const range = yMax - yMin;
+                const xAt = index => points.length === 1 ? left + plotWidth / 2 :
+                    left + index * plotWidth / (points.length - 1);
+                const yAt = radius => top + (yMax - radius) * plotHeight / range;
+                const grid = [];
+
+                for (let tick = 0; tick <= 4; tick++) {
+                    const v = yMin + range * tick / 4;
+                    const y = yAt(v);
+                    grid.push('<line x1="' + left + '" y1="' + y.toFixed(2) + '" x2="' +
+                        (width - right) + '" y2="' + y.toFixed(2) +
+                        '" stroke="rgba(148,163,184,.19)" stroke-width="1"/>');
+                    grid.push('<text x="' + (left - 8) + '" y="' + (y + 4).toFixed(2) +
+                        '" fill="#a5f3fc" font-size="10" text-anchor="end">' + Math.round(v) + '</text>');
+                }
+                grid.push('<line x1="' + left + '" y1="' + top + '" x2="' + left +
+                    '" y2="' + (height - bottom) + '" stroke="#67e8f9" stroke-opacity=".65"/>');
+                grid.push('<line x1="' + left + '" y1="' + (height - bottom) + '" x2="' +
+                    (width - right) + '" y2="' + (height - bottom) + '" stroke="#67e8f9" stroke-opacity=".65"/>');
+
+                const coords = points.map((point, index) =>
+                    xAt(index).toFixed(2) + "," + yAt(point.value).toFixed(2)).join(" ");
+                grid.push('<polyline points="' + coords +
+                    '" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>');
+
+                points.forEach((point, index) => {
+                    const x = xAt(index), y = yAt(point.value);
+                    const color = point.kind.indexOf("Thực nghiệm") >= 0 ||
+                        point.kind.indexOf("Tham khảo thực nghiệm") >= 0 ? "#39ff14" : "#fb923c";
+                    const tip = escapeRadiusChartText(point.el.en + " (#" + point.el.num + ") — " +
+                        point.value + " pm — " + point.kind);
+                    grid.push('<circle cx="' + x.toFixed(2) + '" cy="' + y.toFixed(2) +
+                        '" r="4" fill="' + color + '" stroke="#02070d" stroke-width="1.5"><title>' +
+                        tip + '</title></circle>');
+                    grid.push('<text x="' + x.toFixed(2) + '" y="' + Math.max(13, y - 8).toFixed(2) +
+                        '" fill="#fef3c7" font-size="10" text-anchor="middle">' + point.value + '</text>');
+                    grid.push('<text x="' + x.toFixed(2) + '" y="' + (height - bottom + 18) +
+                        '" fill="#e0f2fe" font-size="11" font-weight="700" text-anchor="middle">' +
+                        escapeRadiusChartText(point.el.sym) + '</text>');
+                    grid.push('<text x="' + x.toFixed(2) + '" y="' + (height - bottom + 32) +
+                        '" fill="#94a3b8" font-size="9" text-anchor="middle">' + point.el.num + '</text>');
+                });
+                // Arrow emphasizes increasing nuclear charge from left to right.
+                grid.push('<path d="M ' + (width-right-10) + ' ' + (height-bottom) +
+                    ' l 8 0 l -4 -4 m 4 4 l -4 4" fill="none" stroke="#67e8f9" stroke-width="1.5"/>');
+                grid.push('<text x="' + (left + plotWidth / 2) + '" y="' + (height - 5) +
+                    '" fill="#67e8f9" font-size="10" text-anchor="middle">Số hiệu nguyên tử Z • điện tích hạt nhân tăng →</text>');
+                chart.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-label="' +
+                    escapeRadiusChartText("Biểu đồ bán kính nguyên tử " + description + " theo điện tích hạt nhân tăng dần") +
+                    '" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height +
+                    '" style="display:block;max-width:none">' + grid.join("") + '</svg>';
+                chart.scrollLeft = 0;
+                note.innerHTML = '<span style="color:#39ff14">●</span> Thực nghiệm / nguồn tham chiếu &nbsp; ' +
+                    '<span style="color:#fb923c">●</span> Tính toán / ước tính. ' +
+                    'Loại dữ liệu được ghi trong chú giải khi rê chuột lên mỗi điểm.';
+            }
+
+            panel.classList.remove("hidden");
+            panel.setAttribute("aria-hidden", "false");
+        }
+
+        document.getElementById("radius-trend-close").addEventListener("click", hideAtomicRadiusTrend);
 
         function updateInspectorDisplay() {
             const el = RAW_ELEMENTS[currentElementIndex];
