@@ -690,9 +690,13 @@ body, button, input, textarea, select {
 
 
 /* Elementomon home hub */
-#home-overlay{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:clamp(10px,3vw,28px);background:rgba(3,8,18,.91);backdrop-filter:blur(12px);overflow:auto}
+#home-overlay{position:fixed;left:0;top:0;width:0;height:0;z-index:10001;display:none;align-items:stretch;justify-content:stretch;padding:8px;background:rgba(3,8,18,.94);backdrop-filter:blur(8px);overflow:hidden;border-radius:12px;box-sizing:border-box}
 #home-overlay.open{display:flex}
-#home-dialogue{position:relative;width:min(1080px,100%);max-height:92vh;overflow:auto;border:2px solid #3e9dc4;border-radius:22px;background:radial-gradient(ellipse at 15% 0%,#153a54,transparent 40%),linear-gradient(145deg,#111b2e,#080e1c 75%);box-shadow:0 24px 90px #000b;padding:clamp(16px,3vw,30px);color:#e7f5ff}
+#home-dialogue{position:relative;width:100%;height:100%;max-height:100%;overflow:auto;border:2px solid #3e9dc4;border-radius:16px;background:radial-gradient(ellipse at 15% 0%,#153a54,transparent 40%),linear-gradient(145deg,#111b2e,#080e1c 75%);box-shadow:0 10px 35px #000b;padding:clamp(10px,1.5vw,20px);color:#e7f5ff}
+#home-dialogue .home-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#home-dialogue .home-route-card{min-height:76px;padding:10px;gap:8px}
+#home-dialogue .home-route-emoji{width:36px;height:36px;font-size:20px}
+@media(max-width:520px){#home-dialogue .home-grid{grid-template-columns:1fr}#home-dialogue .home-route-card{min-height:64px}}
 .home-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
 .home-brand{font-family:'Press Start 2P',monospace;font-size:clamp(12px,2.1vw,20px);line-height:1.7;color:#f7de80}
 .home-subtitle{font-family:'Chakra Petch',sans-serif;color:#8cb6d2;font-size:12px;letter-spacing:.1em}
@@ -3403,8 +3407,18 @@ body, button, input, textarea, select {
             viewedElementNumbers.add(el.num);
             persistElementomonProgress();
         }
+        function positionHomeMenuOnFirstScreen() {
+            const screens = document.querySelectorAll('.crt-monitor');
+            const screen = screens && screens.length ? screens[0] : null;
+            if (!screen) return;
+            const rect = screen.getBoundingClientRect();
+            homeOverlay.style.left = Math.round(rect.left) + 'px';
+            homeOverlay.style.top = Math.round(rect.top) + 'px';
+            homeOverlay.style.width = Math.round(rect.width) + 'px';
+            homeOverlay.style.height = Math.round(rect.height) + 'px';
+        }
         function closeHomeMenu() { homeOverlay.classList.remove('open'); homeOverlay.setAttribute('aria-hidden','true'); }
-        function openHomeMenu(route) { renderHomeView(route || 'home'); homeOverlay.classList.add('open'); homeOverlay.setAttribute('aria-hidden','false'); }
+        function openHomeMenu(route) { positionHomeMenuOnFirstScreen(); renderHomeView(route || 'home'); homeOverlay.classList.add('open'); homeOverlay.setAttribute('aria-hidden','false'); }
         function homeHeader(title, subtitle) {
             return '<header class="home-header"><div><div class="home-brand">ELEMENTOMON</div><div class="home-subtitle">' + title + ' · ' + subtitle + '</div></div><button class="home-icon-btn home-close" type="button" data-home-close aria-label="Đóng menu">✕</button></header>';
         }
@@ -3555,6 +3569,8 @@ body, button, input, textarea, select {
             renderHardcoreQuestion();
         }
         document.getElementById('btn-home').addEventListener('click',function(){PokédexAudio.playSfx('ui');openHomeMenu('home');});
+        window.addEventListener('resize',function(){if(homeOverlay.classList.contains('open'))positionHomeMenuOnFirstScreen();});
+        window.addEventListener('scroll',function(){if(homeOverlay.classList.contains('open'))positionHomeMenuOnFirstScreen();},{passive:true});
         homeOverlay.addEventListener('click',function(event){
             if(event.target===homeOverlay){closeHomeMenu();return;}
             const routeButton=event.target.closest('[data-home-route]');
