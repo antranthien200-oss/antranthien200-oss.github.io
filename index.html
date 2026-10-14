@@ -746,7 +746,7 @@ body, button, input, textarea, select {
 
                     <!-- PERIODIC TABLE 18-COLUMN INTERACTIVE GRID -->
                     <div class="flex-grow my-2 overflow-auto crt-scrollbar bg-black/80 rounded-lg p-2 border border-[#39ff14]/30 flex flex-col justify-center">
-                        <div id="ptable-grid" class="grid grid-cols-[42px_repeat(18,minmax(0,1fr))] gap-1 min-w-[820px] text-center">
+                        <div id="ptable-grid" class="grid grid-cols-[42px_22px_repeat(18,minmax(0,1fr))] gap-1 min-w-[850px] text-center">
                             <!-- Dynamic Element Cells injected here via JS -->
                         </div>
                     </div>
@@ -1650,6 +1650,9 @@ body, button, input, textarea, select {
             columnLabel.className = "text-[8px] text-[#39ff14]/80 font-mono flex items-center justify-center whitespace-nowrap";
             columnLabel.textContent = "Cột →";
             gridContainer.appendChild(columnLabel);
+            const columnGutterSpacer = document.createElement('div');
+            columnGutterSpacer.className = "pointer-events-none";
+            gridContainer.appendChild(columnGutterSpacer);
             for (let c = 1; c <= 18; c++) {
                 const label = document.createElement('div');
                 label.className = "text-[9px] md:text-[10px] text-yellow-300 font-bold font-mono flex items-center justify-center";
@@ -1663,6 +1666,9 @@ body, button, input, textarea, select {
             groupLabel.className = "text-[8px] text-[#39ff14]/80 font-mono flex items-center justify-center whitespace-nowrap";
             groupLabel.textContent = "Nhóm →";
             gridContainer.appendChild(groupLabel);
+            const groupGutterSpacer = document.createElement('div');
+            groupGutterSpacer.className = "pointer-events-none";
+            gridContainer.appendChild(groupGutterSpacer);
             const traditionalGroups = ["IA","IIA","IIIB","IVB","VB","VIB","VIIB","VIIIB","VIIIB","VIIIB","IB","IIB","IIIA","IVA","VA","VIA","VIIA","VIIIA"];
             traditionalGroups.forEach((group, index) => {
                 const label = document.createElement('div');
@@ -1672,10 +1678,27 @@ body, button, input, textarea, select {
                 gridContainer.appendChild(label);
             });
 
-            // Render Periods 1 to 7, with period numbers in a dedicated left gutter.
+            // One vertical cycle marker spans the seven main-table periods.
+            const cycleDirectionLabel = document.createElement('div');
+            cycleDirectionLabel.className = "text-[8px] text-cyan-300 font-bold font-mono flex flex-col items-center justify-center gap-1 border-r border-cyan-400/30";
+            cycleDirectionLabel.style.gridColumn = "1";
+            cycleDirectionLabel.style.gridRow = "3 / span 7";
+            const cycleDirectionText = document.createElement('span');
+            cycleDirectionText.textContent = "CHU KỲ";
+            cycleDirectionText.style.writingMode = "vertical-rl";
+            cycleDirectionText.style.transform = "rotate(180deg)";
+            cycleDirectionLabel.appendChild(cycleDirectionText);
+            const cycleDirectionArrow = document.createElement('span');
+            cycleDirectionArrow.className = "text-sm";
+            cycleDirectionArrow.textContent = "↓";
+            cycleDirectionLabel.appendChild(cycleDirectionArrow);
+            gridContainer.appendChild(cycleDirectionLabel);
+
+            // Render Periods 1 to 7, with period numbers in the second gutter.
             for (let r = 1; r <= 7; r++) {
                 const periodLabel = document.createElement('div');
                 periodLabel.className = "text-[9px] md:text-[10px] text-cyan-300 font-bold font-mono flex items-center justify-center";
+                periodLabel.style.gridColumn = "2";
                 periodLabel.textContent = r;
                 periodLabel.title = `Chu kỳ ${r}`;
                 gridContainer.appendChild(periodLabel);
@@ -1685,16 +1708,21 @@ body, button, input, textarea, select {
                 }
             }
 
-            // Render Spacer Row 8, including the left gutter.
-            for (let c = 0; c <= 18; c++) {
+            // Render Spacer Row 8 across all 20 grid columns.
+            for (let c = 0; c <= 19; c++) {
                 const spacer = document.createElement('div');
                 spacer.className = "h-2 col-span-1";
                 gridContainer.appendChild(spacer);
             }
 
-            // Render Row 9 (Lanthanides 57-71), keeping the period label in the gutter.
+            // Render the detached lanthanide row, aligned with the element columns.
+            const lanGutterSpacer = document.createElement('div');
+            lanGutterSpacer.className = "pointer-events-none";
+            gridContainer.appendChild(lanGutterSpacer);
             const lanPeriod = document.createElement('div');
             lanPeriod.className = "text-[9px] text-cyan-300 font-bold font-mono flex items-center justify-center";
+            lanPeriod.style.gridColumn = "2";
+            lanPeriod.style.gridRow = "11";
             lanPeriod.textContent = "6";
             lanPeriod.title = "Chu kỳ 6";
             gridContainer.appendChild(lanPeriod);
@@ -1711,9 +1739,14 @@ body, button, input, textarea, select {
                 }
             }
 
-            // Render Row 10 (Actinides 89-103).
+            // Render the detached actinide row.
+            const actGutterSpacer = document.createElement('div');
+            actGutterSpacer.className = "pointer-events-none";
+            gridContainer.appendChild(actGutterSpacer);
             const actPeriod = document.createElement('div');
             actPeriod.className = "text-[9px] text-pink-300 font-bold font-mono flex items-center justify-center";
+            actPeriod.style.gridColumn = "2";
+            actPeriod.style.gridRow = "12";
             actPeriod.textContent = "7";
             actPeriod.title = "Chu kỳ 7";
             gridContainer.appendChild(actPeriod);
