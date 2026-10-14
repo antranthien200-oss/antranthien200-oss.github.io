@@ -746,7 +746,7 @@ body, button, input, textarea, select {
 
                     <!-- PERIODIC TABLE 18-COLUMN INTERACTIVE GRID -->
                     <div class="flex-grow my-2 overflow-auto crt-scrollbar bg-black/80 rounded-lg p-2 border border-[#39ff14]/30 flex flex-col justify-center">
-                        <div id="ptable-grid" class="grid grid-cols-[24px_repeat(18,minmax(0,1fr))] gap-1 min-w-[800px] text-center">
+                        <div id="ptable-grid" class="grid grid-cols-[42px_repeat(18,minmax(0,1fr))] gap-1 min-w-[820px] text-center">
                             <!-- Dynamic Element Cells injected here via JS -->
                         </div>
                     </div>
@@ -1645,18 +1645,32 @@ body, button, input, textarea, select {
             // Update status string
             document.getElementById('grid-status-txt').innerText = `ĐANG HIỂN THỊ: ${matchCount} / 118 NGUYÊN TỐ`;
 
-            // Group header: columns 1–18 (IUPAC numbering).
-            const corner = document.createElement('div');
-            corner.className = "text-[8px] text-[#39ff14]/70 font-mono flex items-end justify-center";
-            corner.textContent = "NHÓM";
-            gridContainer.appendChild(corner);
+            // Header row 1: column numbers 1–18, matching the reference table.
+            const columnLabel = document.createElement('div');
+            columnLabel.className = "text-[8px] text-[#39ff14]/80 font-mono flex items-center justify-center whitespace-nowrap";
+            columnLabel.textContent = "Cột →";
+            gridContainer.appendChild(columnLabel);
             for (let c = 1; c <= 18; c++) {
                 const label = document.createElement('div');
                 label.className = "text-[9px] md:text-[10px] text-yellow-300 font-bold font-mono flex items-center justify-center";
                 label.textContent = c;
-                label.title = `Nhóm ${c}`;
+                label.title = `Cột ${c}`;
                 gridContainer.appendChild(label);
             }
+
+            // Header row 2: traditional A/B group symbols shown under the column numbers.
+            const groupLabel = document.createElement('div');
+            groupLabel.className = "text-[8px] text-[#39ff14]/80 font-mono flex items-center justify-center whitespace-nowrap";
+            groupLabel.textContent = "Nhóm →";
+            gridContainer.appendChild(groupLabel);
+            const traditionalGroups = ["IA","IIA","IIIB","IVB","VB","VIB","VIIB","VIIIB","VIIIB","VIIIB","IB","IIB","IIIA","IVA","VA","VIA","VIIA","VIIIA"];
+            traditionalGroups.forEach((group, index) => {
+                const label = document.createElement('div');
+                label.className = "text-[7px] md:text-[8px] text-cyan-300 font-bold font-mono flex items-center justify-center whitespace-nowrap";
+                label.textContent = group;
+                label.title = `Nhóm ${index + 1}: ${group}`;
+                gridContainer.appendChild(label);
+            });
 
             // Render Periods 1 to 7, with period numbers in a dedicated left gutter.
             for (let r = 1; r <= 7; r++) {
