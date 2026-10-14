@@ -2371,14 +2371,7 @@ body, button, input, textarea, select {
             PokédexAudio.scanChime();
             speakElementDetails();
         });
-        document.getElementById('btn-speak').addEventListener('click', () => {
-            PokédexAudio.playBeep(700, 0.05);
-            if (activeSpeechUtterance || (window.speechSynthesis && window.speechSynthesis.speaking)) {
-                stopElementSpeech(true);
-            } else {
-                speakElementDetails();
-            }
-        });
+        // The old microphone button is now the Home menu button; the blue lens still reads element details.
 
         function speakElementDetails() {
             const synth = window.speechSynthesis;
