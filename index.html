@@ -733,6 +733,20 @@ body, button, input, textarea, select {
 .home-gallery-symbol{font-family:'Press Start 2P',monospace;color:#9ee9ff;font-size:12px}
 .home-gallery-name{font-size:12px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
 .home-gallery-number{font-size:10px;color:#829bb5;margin-top:3px}
+.home-gallery-flashcard{display:flex;flex-direction:column;align-items:center;justify-content:space-between;gap:10px;min-height:0;height:calc(100% - 72px);padding:4px 0 0}
+.home-gallery-frame{display:grid;grid-template-columns:42px minmax(0,1fr) 42px;align-items:center;gap:8px;width:100%;max-width:620px;margin:auto}
+.home-gallery-arrow{display:grid;place-items:center;width:42px;height:48px;border:1px solid #4e91b6;border-radius:12px;background:linear-gradient(145deg,#183852,#0b1b2b);color:#dff7ff;font-size:25px;font-weight:900;cursor:pointer;box-shadow:0 3px 0 #07111d;transition:background .15s,transform .15s}
+.home-gallery-arrow:hover{background:#1e5675;transform:translateY(-1px)}
+.home-gallery-picture{position:relative;display:grid;place-items:center;width:100%;height:clamp(150px,30vh,240px);min-width:0;overflow:hidden;border:1px solid #315a78;border-radius:14px;background:radial-gradient(ellipse at center,#263f58,#0a1220 72%);box-shadow:inset 0 0 28px #0008}
+.home-gallery-picture img{display:block;max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+.home-gallery-picture .home-gallery-symbol{font-size:clamp(18px,3vw,28px)}
+.home-gallery-card-title{font-family:'Chakra Petch',sans-serif;color:#fff1a8;font-weight:900;font-size:clamp(18px,2.4vw,25px);line-height:1.25;text-align:center;overflow-wrap:anywhere}
+.home-gallery-card-subtitle{font-size:12px;line-height:1.45;color:#a6c9e2;text-align:center}
+.home-gallery-count{font-size:11px;letter-spacing:.12em;color:#81e5ff;text-align:center;font-weight:900}
+.home-gallery-progress{width:min(360px,100%);height:5px;overflow:hidden;border-radius:99px;background:#1c3042;margin:0 auto}
+.home-gallery-progress-fill{height:100%;background:linear-gradient(90deg,#36b8e2,#8ce9c2);border-radius:99px;transition:width .15s}
+.home-gallery-hint{color:#7f9bb4;font-size:10px;text-align:center}
+@media(max-width:520px){.home-gallery-flashcard{gap:8px}.home-gallery-frame{grid-template-columns:34px minmax(0,1fr) 34px;gap:5px}.home-gallery-arrow{width:34px;height:42px;font-size:21px}.home-gallery-picture{height:clamp(130px,27vh,200px)}}
 .home-achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .home-achievement{border:1px solid #35536d;border-radius:13px;background:#0d1929;padding:14px;min-width:0}
 .home-achievement.unlocked{border-color:#a98b45;background:linear-gradient(135deg,#2a281f,#101928)}
@@ -3455,13 +3469,36 @@ body, button, input, textarea, select {
         function homeNav(title, desc, emoji, route) {
             return '<button type="button" class="home-route-card" data-home-route="' + route + '"><span class="home-route-emoji">' + emoji + '</span><span><span class="home-route-title block">' + title + '</span><span class="home-route-desc block">' + desc + '</span></span><span class="ml-auto text-cyan-200 text-xl">›</span></button>';
         }
+        let galleryIndex = 0;
+        let currentHomeRoute = 'home';
+        function renderGallery(index) {
+            const total = RAW_ELEMENTS.length;
+            if (!total) return;
+            galleryIndex = ((Number(index) || 0) % total + total) % total;
+            currentHomeRoute = 'gallery';
+            const el = RAW_ELEMENTS[galleryIndex];
+            const imageNumber = String(el.num).padStart(3, '0');
+            const progress = Math.round((galleryIndex + 1) / total * 100);
+            homeDialogue.innerHTML = homeHeader('GALLERY','REAL ELEMENT COLLECTION') +
+                '<div class="home-content-actions"><div><h2 class="home-section-title">BỘ SƯU TẬP ẢNH THỰC TẾ</h2><p class="home-muted">Dùng nút trái/phải hoặc phím mũi tên để xem từng ảnh.</p></div><button class="home-back" data-home-route="home">← MENU CHÍNH</button></div>' +
+                '<div class="home-gallery-flashcard">' +
+                  '<div class="home-gallery-count">ELEMENT PHOTO · ' + String(galleryIndex + 1).padStart(3, '0') + ' / ' + total + '</div>' +
+                  '<div class="home-gallery-frame">' +
+                    '<button type="button" class="home-gallery-arrow" data-gallery-prev aria-label="Xem nguyên tố trước" title="Nguyên tố trước">‹</button>' +
+                    '<div class="home-gallery-picture"><img src="https://images-of-elements.com/' + elementPhotoSlug(el) + '.jpg" alt="Ảnh thực tế của ' + el.en + '" title="' + el.en + '" /><span class="home-gallery-symbol" hidden>' + el.sym + '</span></div>' +
+                    '<button type="button" class="home-gallery-arrow" data-gallery-next aria-label="Xem nguyên tố tiếp theo" title="Nguyên tố tiếp theo">›</button>' +
+                  '</div>' +
+                  '<div class="home-gallery-card-title">' + el.vn + '</div>' +
+                  '<div class="home-gallery-card-subtitle">#' + imageNumber + ' · ' + el.sym + ' · ' + el.en + '</div>' +
+                  '<div class="home-gallery-progress"><div class="home-gallery-progress-fill" style="width:' + progress + '%"></div></div>' +
+                  '<div class="home-gallery-hint">ẢNH ' + (galleryIndex + 1) + ' TRÊN ' + total + ' · BẤM ← / → ĐỂ CHUYỂN</div>' +
+                '</div>';
+        }
+
         function renderHomeView(route) {
+            currentHomeRoute = route;
             if (route === 'gallery') {
-                let cards = '';
-                RAW_ELEMENTS.forEach(function(el) {
-                    cards += '<button type="button" class="home-gallery-card" data-gallery-element="' + el.num + '" title="Mở hồ sơ ' + el.vn + '"><span class="home-gallery-photo"><img loading="lazy" src="https://images-of-elements.com/' + elementPhotoSlug(el) + '.jpg" alt="Mẫu thực tế của ' + el.en + '"><span class="home-gallery-symbol" hidden>' + el.sym + '</span></span><span class="home-gallery-name block">' + el.vn + '</span><span class="home-gallery-number block">#' + String(el.num).padStart(3,'0') + ' · ' + el.sym + '</span></button>';
-                });
-                homeDialogue.innerHTML = homeHeader('GALLERY','REAL ELEMENT COLLECTION') + '<div class="home-content-actions"><div><h2 class="home-section-title">BỘ SƯU TẬP ẢNH THỰC TẾ</h2><p class="home-muted">Chọn một nguyên tố để mở hồ sơ. Ảnh dùng cùng nguồn ảnh thực tế trong Pokédex.</p></div><button class="home-back" data-home-route="home">← MENU CHÍNH</button></div><div class="home-gallery-grid">' + cards + '</div>';
+                renderGallery(galleryIndex);
                 return;
             }
             if (route === 'achievement') {
@@ -3608,6 +3645,10 @@ body, button, input, textarea, select {
         window.addEventListener('scroll',function(){if(homeOverlay.classList.contains('open'))positionHomeMenuOnFirstScreen();},{passive:true});
         homeOverlay.addEventListener('click',function(event){
             if(event.target===homeOverlay){closeHomeMenu();return;}
+            const previousGalleryButton=event.target.closest('[data-gallery-prev]');
+            if(previousGalleryButton){renderGallery(galleryIndex-1);return;}
+            const nextGalleryButton=event.target.closest('[data-gallery-next]');
+            if(nextGalleryButton){renderGallery(galleryIndex+1);return;}
             const routeButton=event.target.closest('[data-home-route]');
             if(routeButton){
                 const route=routeButton.getAttribute('data-home-route');
@@ -3632,7 +3673,10 @@ body, button, input, textarea, select {
             if(event.target.closest('[data-hardcore-home]')){leaveBattle();openHomeMenu('home');}
         });
         document.addEventListener('keydown',function(event){
-            if(event.key==='Escape'&&homeOverlay.classList.contains('open'))closeHomeMenu();
+            if(!homeOverlay.classList.contains('open'))return;
+            if(event.key==='Escape'){closeHomeMenu();return;}
+            if(currentHomeRoute==='gallery'&&event.key==='ArrowLeft'){event.preventDefault();renderGallery(galleryIndex-1);return;}
+            if(currentHomeRoute==='gallery'&&event.key==='ArrowRight'){event.preventDefault();renderGallery(galleryIndex+1);}
         });
 
         /* ===================================================================
