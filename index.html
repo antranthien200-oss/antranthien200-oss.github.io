@@ -334,6 +334,8 @@
         #right-inspector-monitor::-webkit-scrollbar-track { background:#101b2b; }
         #right-inspector-monitor::-webkit-scrollbar-thumb { background:#2f8db8; border-radius:8px; }
         #right-inspector-monitor > :not(.crt-scanline) { flex-shrink:0; }
+        /* Treat the radius chart as a replacement screen, not a translucent layer over element details. */
+        #right-inspector-monitor.radius-trend-active > :not(#radius-trend-panel):not(.crt-scanline) { display:none !important; }
         #disp-specimen-render { min-height:0; }
         .real-image-stage { background-image: radial-gradient(ellipse at center, rgba(55,130,165,.12), transparent 68%); }
         #disp-real-element-image { display:block; max-width:100%; width:auto; height:auto; max-height:125px; object-fit:contain; background:transparent; filter:drop-shadow(0 5px 12px rgba(75,210,255,.16)); }
@@ -2074,6 +2076,8 @@ body, button, input, textarea, select {
 
         function hideAtomicRadiusTrend() {
             const panel = document.getElementById("radius-trend-panel");
+            const monitor = document.getElementById("right-inspector-monitor");
+            if (monitor) monitor.classList.remove("radius-trend-active");
             if (!panel) return;
             panel.classList.add("hidden");
             panel.setAttribute("aria-hidden", "true");
@@ -2183,6 +2187,9 @@ body, button, input, textarea, select {
                     'Loại dữ liệu được ghi trong chú giải khi rê chuột lên mỗi điểm.';
             }
 
+            // Hide the element-info contents while the chart is active, then restore them on close.
+            const monitor = document.getElementById("right-inspector-monitor");
+            if (monitor) monitor.classList.add("radius-trend-active");
             panel.classList.remove("hidden");
             panel.setAttribute("aria-hidden", "false");
         }
