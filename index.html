@@ -2666,7 +2666,7 @@ body, button, input, textarea, select {
           document.getElementById('creature-name').textContent=`${el.vn.toUpperCase()}-MON${level>=5?' • DẠNG TIẾN HÓA':''}`;
           document.getElementById('creature-level').textContent=`LEVEL ${level} / 5`;
           document.getElementById('creature-level-fill').style.width=`${level*20}%`;
-          document.getElementById('creature-evolution-note').textContent=(level>=5?'✨ ĐÃ TIẾN HÓA! HP tối đa 7 + quyền loại 1 đáp án sai mỗi trận. ':'')+'Bộ câu hỏi riêng gồm 20 câu; câu hỏi và đáp án được xáo trộn. '+(level>=5?'Particle phát sáng đang bay quanh Elementomon.':'Thắng 5 trận để đạt cấp 5 và tiến hóa!');
+          document.getElementById('creature-evolution-note').textContent=(level>=5?'✨ ĐÃ TIẾN HÓA! HP tối đa 7 + quyền loại 1 đáp án sai mỗi trận. ':'')+''+(level>=5?'Particle phát sáng đang bay quanh Elementomon.':'Thắng 5 trận để đạt cấp 5 và tiến hóa!');
         }
         let currentBattle=null;
         let wildEncounterTimer=null;
