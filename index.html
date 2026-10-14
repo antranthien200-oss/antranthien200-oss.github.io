@@ -1939,8 +1939,8 @@ body, button, input, textarea, select {
           null, null, null, 108, null, null, null, null, null, null,
           null, null, null, null, null, null, null, null, null, null,
           null, null, null, null, null, null, null, null, null, null,
-          null, null, null, null, 127, 120, 348, null, null, null,
-          null, null, null, null, null, 176, 96, 95, 186, null,
+          null, null, null, null, 127, 120, 348, null, 195, 180,
+          180, 175, 175, 175, 175, 176, 96, 95, 186, null,
           null, null, null, 131, 126, 121, 119, 118, 113, 112,
           118, 130, null, null, null, null, null, null 
         ];
@@ -1950,7 +1950,8 @@ body, button, input, textarea, select {
             const calculated = ATOMIC_RADIUS_CALCULATED_PM[el.num - 1];
             if (Number.isFinite(calculated)) {
                 const kind = el.num >= 104 && el.num <= 112 ? "Cộng hoá trị (ước tính)" :
-                    (el.num === 96 ? "Tham khảo thực nghiệm" : "Tính toán");
+                    (el.num >= 89 && el.num <= 95 ? "Thực nghiệm (nguồn tham chiếu)" :
+                    (el.num === 96 ? "Tham khảo thực nghiệm" : "Tính toán"));
                 return { value: calculated, kind };
             }
             return { value: null, kind: "Chưa có dữ liệu công bố trong nguồn tham chiếu" };
