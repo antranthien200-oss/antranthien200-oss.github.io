@@ -159,6 +159,12 @@
             100% { transform: scale(1.18); }
         }
 
+        /* Four simplified periodic-table categories */
+        .cat-metal { background-color: #ea580c; color: #fff; }
+        .cat-transition { background-color: #dc2626; color: #fff; }
+        .cat-nonmetal { background-color: #16a34a; color: #fff; }
+        .cat-noble { background-color: #db2777; color: #fff; }
+
         /* Element Category Colors */
         .cat-alkali { background-color: #ea580c; color: #fff; }
         .cat-alkaline { background-color: #d97706; color: #fff; }
@@ -731,11 +737,9 @@ body, button, input, textarea, select {
                         <!-- Filter Chips -->
                         <div class="flex items-center gap-1 overflow-x-auto crt-scrollbar py-1 text-[10px]">
                             <button class="filter-chip active px-2 py-1 bg-[#39ff14] text-black font-bold rounded border border-[#39ff14]" data-cat="ALL">TẤT CẢ</button>
-                            <button class="filter-chip px-2 py-1 bg-orange-600 text-white rounded border border-orange-400" data-cat="alkali">KIỀM</button>
-                            <button class="filter-chip px-2 py-1 bg-amber-600 text-white rounded border border-amber-400" data-cat="alkaline">KIỀM THỔ</button>
-                            <button class="filter-chip px-2 py-1 bg-red-600 text-white rounded border border-red-400" data-cat="transition">CHUYỂN TIẾP</button>
+                            <button class="filter-chip px-2 py-1 bg-orange-600 text-white rounded border border-orange-400" data-cat="metal">KIM LOẠI</button>
+                            <button class="filter-chip px-2 py-1 bg-red-600 text-white rounded border border-red-400" data-cat="transition">KIM LOẠI CHUYỂN TIẾP</button>
                             <button class="filter-chip px-2 py-1 bg-emerald-600 text-white rounded border border-emerald-400" data-cat="nonmetal">PHI KIM</button>
-                            <button class="filter-chip px-2 py-1 bg-purple-600 text-white rounded border border-purple-400" data-cat="halogen">HALOGEN</button>
                             <button class="filter-chip px-2 py-1 bg-pink-600 text-white rounded border border-pink-400" data-cat="noble">KHÍ HIẾM</button>
                         </div>
                     </div>
@@ -1521,6 +1525,23 @@ body, button, input, textarea, select {
             { num: 118, sym: "Og", vn: "Oganesson", en: "Oganesson", mass: "(294)", period: 7, group: 18, block: "p", cat: "Khí hiếm", catKey: "noble", config: "[Rn] 5f¹⁴ 6d¹⁰ 7s² 7p⁶", shells: [2, 8, 18, 32, 32, 18, 8], disc: "JINR / LLNL (2002)", fact: "Oganesson có số hiệu nguyên tử cao nhất trong bảng tuần hoàn hiện được công nhận. Do chỉ tạo ra được rất ít nguyên tử, nhiều tính chất vật lý của nó vẫn là dự đoán." }
         ];
 
+        // Simplified four-way classification for the periodic-table filters.
+        // Transition metals and noble gases stay separate; the remaining metal families
+        // are grouped as metals, while metalloids/halogens join the broad nonmetal group.
+        RAW_ELEMENTS.forEach(el => {
+            if (el.catKey === 'transition') {
+                el.cat = 'Kim loại chuyển tiếp';
+            } else if (el.catKey === 'noble') {
+                el.cat = 'Khí hiếm';
+            } else if (['nonmetal', 'halogen', 'metalloid'].includes(el.catKey)) {
+                el.catKey = 'nonmetal';
+                el.cat = 'Phi kim';
+            } else {
+                el.catKey = 'metal';
+                el.cat = 'Kim loại';
+            }
+        });
+
         /* ===================================================================
            3. APPLICATION STATE & CONTROLLER LOGIC
            =================================================================== */
@@ -1618,8 +1639,8 @@ body, button, input, textarea, select {
 
             // Family placeholders in the two gaps of the main periodic table.
             // Clicking them opens the first element of the corresponding f-block row.
-            gridMap['6-3'] = { placeholder: 'lanthanide', visible: filterCat === "ALL" || filterCat === "lanthanide" };
-            gridMap['7-3'] = { placeholder: 'actinide', visible: filterCat === "ALL" || filterCat === "actinide" };
+            gridMap['6-3'] = { placeholder: 'lanthanide', visible: filterCat === "ALL" || filterCat === "metal" };
+            gridMap['7-3'] = { placeholder: 'actinide', visible: filterCat === "ALL" || filterCat === "metal" };
 
             // Update status string
             document.getElementById('grid-status-txt').innerText = `ĐANG HIỂN THỊ: ${matchCount} / 118 NGUYÊN TỐ`;
