@@ -968,7 +968,11 @@ body, button, input, textarea, select {
                         <span class="text-gray-400 text-[10px] block">LỚP ELECTRON (K, L, M...):</span>
                         <span id="disp-shells" class="text-green-300 font-bold">K: 1</span>
                     </div>
-                    <div class="col-span-2 border-t border-cyan-500/20 pt-1">
+                    <div class="border-t border-cyan-500/20 pt-1">
+                        <span class="text-gray-400 text-[10px] block">BÁN KÍNH NGUYÊN TỬ:</span>
+                        <span id="disp-radius" class="text-cyan-100 font-bold">— pm</span>
+                    </div>
+                    <div class="border-t border-cyan-500/20 pt-1">
                         <span class="text-gray-400 text-[10px] block">NGƯỜI PHÁT HIỆN & NĂM:</span>
                         <span id="disp-discoverer" class="text-yellow-200">Henry Cavendish (1766)</span>
                     </div>
@@ -1895,6 +1899,25 @@ body, button, input, textarea, select {
             }
         }
 
+        // Empirical atomic-radius reference values (pm), following SciToolbox's cited
+        // atomic-radius dataset. Missing values are shown explicitly rather than guessed.
+        const ATOMIC_RADIUS_PM = [
+          25, null, 145, 105, 85, 70, 65, 60, 50, null,
+          180, 150, 125, 110, 100, 100, 100, 71, 220, 180,
+          160, 140, 135, 140, 140, 140, 135, 135, 135, 135,
+          130, 125, 115, 115, 115, null, 235, 200, 180, 155,
+          145, 145, 135, 130, 135, 140, 160, 155, 155, 145,
+          145, 140, 140, null, 260, 215, 195, 185, 185, 185,
+          185, 185, 185, 180, 175, 175, 175, 175, 175, 175,
+          155, 145, 135, 135, 130, 135, 135, 135, 150, 190,
+          180, 160, 190, null, null, null, 215, 195, 180, 180,
+          175, 175, 175, 175
+        ];
+        function atomicRadiusDisplay(el) {
+            const value = ATOMIC_RADIUS_PM[el.num - 1];
+            return Number.isFinite(value) ? `${value} pm` : "Chưa có dữ liệu tin cậy";
+        }
+
         function updateInspectorDisplay() {
             const el = RAW_ELEMENTS[currentElementIndex];
 
@@ -1915,6 +1938,8 @@ body, button, input, textarea, select {
             const shellStr = el.shells.map((val, i) => `${shellNames[i]}: ${val}`).join(' | ');
             document.getElementById('disp-shells').innerText = shellStr;
             
+            document.getElementById('disp-radius').innerText = atomicRadiusDisplay(el);
+            document.getElementById('disp-radius').title = 'Bán kính nguyên tử thực nghiệm (pm); các giá trị phụ thuộc định nghĩa và phương pháp đo.';
             document.getElementById('disp-discoverer').innerText = el.disc;
             document.getElementById('direct-num-input').value = el.num;
 
