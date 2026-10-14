@@ -2152,7 +2152,7 @@ body, button, input, textarea, select {
             }).filter(point => Number.isFinite(point.value))
               .sort((a, b) => a.el.num - b.el.num);
 
-            title.textContent = (description || "Nhóm nguyên tố").toUpperCase() + " • Z TĂNG DẦN";
+            title.textContent = ("BIỂU ĐỒ BÁN KÍNH NGUYÊN TỬ CỦA " + (description || "NHÓM NGUYÊN TỐ")).toLocaleUpperCase('vi-VN') + " • Z TĂNG DẦN";
             summary.textContent = points.length + " / " + subjects.length +
                 " nguyên tố có dữ liệu bán kính. Trục ngang: số hiệu nguyên tử Z tăng dần; trục dọc: bán kính (pm).";
             chart.innerHTML = "";
@@ -2746,7 +2746,10 @@ body, button, input, textarea, select {
         }
         function creatureSkill(el){
           const form=elementCreatureForm(el);
-          return form==='gas'?'GIÓ CẮT':form==='liquid'?'SLIME BÙNG NỔ':'TINH THỂ XUNG KÍCH';
+          const elementName=(el.vn || el.en || el.sym || 'NGUYÊN TỐ').toLocaleUpperCase('vi-VN');
+          if(form==='gas') return 'KHÍ ' + elementName;
+          if(form==='liquid') return 'NHỎ GIỌT ' + elementName;
+          return 'NẮM ĐẤM ' + elementName;
         }
         function creatureSVG(el, size='battle', level=getCreatureLevel(el)) {
           // Three genuinely different silhouettes: liquid slime, gas tornado-cat, solid knight.
@@ -3066,6 +3069,19 @@ body, button, input, textarea, select {
             b.addEventListener('click',()=>answerBattle(i)); options.appendChild(b);
           });
           renderBattleActions();
+        }
+        function runAwayFromHardcore(){
+          if(!currentBattle || !currentBattle.hardcore || currentBattle.ending) return;
+          PokédexAudio.playSfx('flee');
+          currentBattle.ending=true;
+          document.querySelectorAll('#battle-options .quiz-option').forEach(b=>b.disabled=true);
+          document.getElementById('battle-question').textContent='ĐANG RÚT LUI...';
+          document.getElementById('battle-options').innerHTML='';
+          document.getElementById('battle-result-actions').innerHTML='';
+          document.getElementById('battle-dialogue').textContent='🏃 Bạn đã chạy trốn khỏi trận đấu với Mr.Win. Đang quay về menu chính...';
+          const player=document.getElementById('battle-player-emoji');
+          if(player){player.style.transition='transform .35s ease, opacity .35s ease';player.style.transform='translateX(-40px)';player.style.opacity='.25';}
+          setTimeout(()=>{if(currentBattle){leaveBattle();openHomeMenu('home');}},550);
         }
         function runAwayFromBattle(){
           if(!currentBattle || currentBattle.answered || currentBattle.ending) return;
@@ -3585,7 +3601,9 @@ body, button, input, textarea, select {
                 const b=document.createElement('button'); b.type='button'; b.className='quiz-option'; b.textContent=answer; b.dataset.choiceIndex=String(i);
                 b.addEventListener('click',function(){answerBattle(i);}); options.appendChild(b);
             });
-            document.getElementById('battle-result-actions').innerHTML='';
+            const actions=document.getElementById('battle-result-actions');
+            actions.innerHTML='<button type="button" class="run-away-btn" id="hardcore-run-away" title="Rời trận với Mr.Win và quay về menu chính">🏃 CHẠY TRỐN</button>';
+            actions.querySelector('#hardcore-run-away').addEventListener('click',runAwayFromHardcore);
         }
         function finishHardcoreBattle(didWin) {
             if(!currentBattle||!currentBattle.hardcore||currentBattle.ending)return;
@@ -3607,6 +3625,7 @@ body, button, input, textarea, select {
             if(!currentBattle||!currentBattle.hardcore||currentBattle.answered||currentBattle.ending)return;
             currentBattle.answered=true;
             document.querySelectorAll('#battle-options .quiz-option').forEach(function(b){b.disabled=true;});
+            const escapeButton=document.getElementById('hardcore-run-away'); if(escapeButton) escapeButton.disabled=true;
             highlightQuizAnswers(choice, currentBattle.question[2]);
             const correct=choice===currentBattle.question[2];
             const field=document.getElementById('battlefield');
