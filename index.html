@@ -1678,27 +1678,20 @@ body, button, input, textarea, select {
                 gridContainer.appendChild(label);
             });
 
-            // One vertical cycle marker spans the seven main-table periods.
+            // Match the reference: horizontal "Chu kỳ ↓" at the upper-left of period 1.
             const cycleDirectionLabel = document.createElement('div');
-            cycleDirectionLabel.className = "text-[8px] text-cyan-300 font-bold font-mono flex flex-col items-center justify-center gap-1 border-r border-cyan-400/30";
+            cycleDirectionLabel.className = "text-[7px] text-cyan-300 font-bold font-mono flex items-center justify-center whitespace-nowrap";
             cycleDirectionLabel.style.gridColumn = "1";
-            cycleDirectionLabel.style.gridRow = "3 / span 7";
-            const cycleDirectionText = document.createElement('span');
-            cycleDirectionText.textContent = "CHU KỲ";
-            cycleDirectionText.style.writingMode = "vertical-rl";
-            cycleDirectionText.style.transform = "rotate(180deg)";
-            cycleDirectionLabel.appendChild(cycleDirectionText);
-            const cycleDirectionArrow = document.createElement('span');
-            cycleDirectionArrow.className = "text-sm";
-            cycleDirectionArrow.textContent = "↓";
-            cycleDirectionLabel.appendChild(cycleDirectionArrow);
+            cycleDirectionLabel.style.gridRow = "3";
+            cycleDirectionLabel.textContent = "Chu kỳ ↓";
             gridContainer.appendChild(cycleDirectionLabel);
 
-            // Render Periods 1 to 7, with period numbers in the second gutter.
+            // Period numbers 1–7 sit beside the left-side cycle label.
             for (let r = 1; r <= 7; r++) {
                 const periodLabel = document.createElement('div');
                 periodLabel.className = "text-[9px] md:text-[10px] text-cyan-300 font-bold font-mono flex items-center justify-center";
                 periodLabel.style.gridColumn = "2";
+                periodLabel.style.gridRow = String(r + 2);
                 periodLabel.textContent = r;
                 periodLabel.title = `Chu kỳ ${r}`;
                 gridContainer.appendChild(periodLabel);
