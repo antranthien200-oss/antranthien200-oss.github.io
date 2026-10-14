@@ -606,9 +606,9 @@
         .audio-dock input[type=range]{width:78px;accent-color:#55c8f2;cursor:pointer}
         #audio-status{margin-left:auto;color:#7fa0bb;font:9px 'Share Tech Mono',monospace;min-width:135px;text-align:right}
         /* Keep the official YouTube player rendered in-viewport so playback is not blocked as an off-screen/hidden embed. It remains visually imperceptible and has no pointer controls. */
-        #asgore-player-hidden{position:fixed!important;right:0!important;bottom:0!important;left:auto!important;top:auto!important;width:200px!important;height:200px!important;overflow:hidden!important;opacity:.001!important;pointer-events:none!important;z-index:2!important;display:block!important;visibility:visible!important}
-        #asgore-youtube-player{display:block!important;width:200px!important;height:200px!important;background:#050a13;overflow:hidden}
-        #asgore-youtube-player iframe{display:block!important;width:200px!important;height:200px!important;border:0}
+        #asgore-player-hidden,#once-player-hidden{position:fixed!important;right:0!important;bottom:0!important;left:auto!important;top:auto!important;width:200px!important;height:200px!important;overflow:hidden!important;opacity:.001!important;pointer-events:none!important;z-index:2!important;display:block!important;visibility:visible!important}
+        #asgore-youtube-player,#once-youtube-player{display:block!important;width:200px!important;height:200px!important;background:#050a13;overflow:hidden}
+        #asgore-youtube-player iframe,#once-youtube-player iframe{display:block!important;width:200px!important;height:200px!important;border:0}
         @media(max-width:700px){.audio-dock{gap:5px;padding:6px}.audio-dock button{padding:6px;font-size:9px}#audio-status{width:100%;text-align:left;margin-left:0}}
 
     
@@ -965,6 +965,9 @@ body, button, input, textarea, select {
             <div id="asgore-player-hidden" aria-hidden="true">
                 <div id="asgore-youtube-player" title="Official ASGORE soundtrack player"></div>
             </div>
+            <div id="once-player-hidden" aria-hidden="true">
+                <div id="once-youtube-player" title="Official Once Upon a Time soundtrack player"></div>
+            </div>
 
             <!-- RIGHT CRT INSPECTOR MONITOR -->
             <div id="right-inspector-monitor" class="crt-monitor relative rounded-2xl p-4 flex flex-col h-[560px] md:h-[610px] justify-between border-2 border-cyan-900 mb-3">
@@ -1145,6 +1148,7 @@ body, button, input, textarea, select {
             musicVolume: 0.273, sfxVolume: 0.4225, unlocked: false,
             pendingMusicMode: null, musicLoop: 0, musicTickMs: 250,
             asgorePlayer: null, asgorePlayerReady: false, asgorePlayPending: false,
+            oncePlayer: null, oncePlayerReady: false, oncePlayPending: false,
             restartAsgoreOnPlay: false, volumePercent: 65,
             init() {
                 if (this.ctx) return true;
@@ -1275,13 +1279,73 @@ body, button, input, textarea, select {
                     }
                 });
             },
+            createOncePlayer() {
+                if (this.oncePlayer || !window.YT || !window.YT.Player) return;
+                const target = document.getElementById('once-youtube-player');
+                if (!target) return;
+                this.oncePlayer = new YT.Player('once-youtube-player', {
+                    width: '200', height: '200', videoId: '0AQMAth2gio', // Official Toby Fox upload: 001. Once Upon a Time (UNDERTALE Soundtrack)
+                    playerVars: { autoplay: 0, controls: 0, playsinline: 1, rel: 0, enablejsapi: 1, iv_load_policy: 3, modestbranding: 1, loop: 1, playlist: '0AQMAth2gio' },
+                    events: {
+                        onReady: (event) => {
+                            this.oncePlayerReady = true;
+                            event.target.setVolume(this.volumePercent);
+                            if (!this.musicEnabled || this.musicMode === 'battle' || this.volumePercent === 0) event.target.mute();
+                            if (this.musicMode !== 'battle' && this.musicEnabled && this.oncePlayPending) this.startOnceMusic();
+                            this.updateControls();
+                        },
+                        onStateChange: (event) => {
+                            if (event.data === YT.PlayerState.CUED && this.musicMode !== 'battle' && this.musicEnabled && this.oncePlayPending) this.startOnceMusic();
+                            if (event.data === YT.PlayerState.ENDED && this.musicMode !== 'battle' && this.musicEnabled) {
+                                try { event.target.seekTo(0, true); event.target.playVideo(); } catch (e) {}
+                            }
+                            this.updateControls();
+                        },
+                        onError: (event) => {
+                            this.oncePlayPending = false;
+                            this.updateControls('Không phát được Once Upon a Time (YouTube error ' + event.data + '). Kiểm tra kết nối mạng.');
+                        }
+                    }
+                });
+            },
             showAsgorePlayer(show) {
-                // The large Battle BGM card was removed. Keep only the background API player host.
+                // The hidden player stays rendered so YouTube can deliver audio reliably.
                 const host = document.getElementById('asgore-player-hidden');
                 if (host) host.setAttribute('aria-hidden', 'true');
             },
+            pauseOnceMusic() {
+                this.oncePlayPending = false;
+                if (this.oncePlayerReady && this.oncePlayer) {
+                    try { this.oncePlayer.pauseVideo(); } catch (e) {}
+                }
+            },
+            startOnceMusic() {
+                if (this.musicMode === 'battle' || !this.musicEnabled) return;
+                this.oncePlayPending = true;
+                if (this.musicTimer) clearInterval(this.musicTimer);
+                this.musicTimer = null;
+                if (this.ctx && this.musicBus) {
+                    this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
+                    this.musicBus.gain.setTargetAtTime(0.0001, this.ctx.currentTime, .05);
+                }
+                if (!this.oncePlayerReady || !this.oncePlayer) {
+                    this.updateControls('ĐANG TẢI ONCE UPON A TIME…');
+                    return;
+                }
+                try {
+                    this.oncePlayer.setVolume(this.volumePercent);
+                    if (this.volumePercent > 0) this.oncePlayer.unMute(); else this.oncePlayer.mute();
+                    const playing = window.YT && YT.PlayerState && this.oncePlayer.getPlayerState() === YT.PlayerState.PLAYING;
+                    if (!playing) this.oncePlayer.playVideo();
+                    this.oncePlayPending = false;
+                    this.updateControls('BGM: ONCE UPON A TIME • TOBY FOX');
+                } catch (e) {
+                    this.updateControls('Không phát được Once Upon a Time tự động; hãy bấm NHẠC để thử lại.');
+                }
+            },
             startAsgoreMusic() {
                 if (this.musicMode !== 'battle' || !this.musicEnabled) return;
+                this.pauseOnceMusic();
                 this.showAsgorePlayer(true);
                 this.asgorePlayPending = true;
                 if (this.ctx && this.musicBus) {
@@ -1316,90 +1380,15 @@ body, button, input, textarea, select {
             scanChime() { this.playSfx('scan'); },
             startMusic() {
                 if (this.musicMode === 'battle') { this.startAsgoreMusic(); return; }
-                if (!this.musicEnabled || !this.init() || !this.ctx) return;
-                if (this.ctx.state === 'suspended') this.ctx.resume().catch(() => {});
-                if (this.musicTimer) return;
-                this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
-                this.musicBus.gain.setTargetAtTime(this.musicVolume, this.ctx.currentTime, .22);
-                this.musicStep = 0;
-                this.musicLoop = 0;
-                this.pendingMusicMode = null;
-
-                // Four-bar, 120 BPM chiptune themes. Each step is an eighth note;
-                // melody, bass, harmony and arpeggio follow the same chord progression.
-                // Frequencies are intentionally tuned to simple major/minor progressions,
-                // rather than switching unrelated notes on every timer tick.
-                const tracks = {
-                    explore: {
-                        leadA:[659,0,784,659,523,0,587,659, 784,0,880,784,659,0,587,0, 523,0,659,784,880,0,784,659, 587,0,659,587,523,0,440,0],
-                        leadB:[659,784,880,0,784,659,587,0, 784,880,1047,880,784,0,659,0, 698,0,784,880,784,659,587,0, 523,587,659,0,587,523,440,0],
-                        bass:[130.81,0,130.81,0,98.00,0,98.00,0,110.00,0,110.00,0,87.31,0,87.31,0],
-                        chords:[[261.63,329.63,392.00],[196.00,246.94,392.00],[220.00,261.63,329.63],[174.61,220.00,261.63]],
-                        arp:[392,493.88,587.33,659.25], leadVol:.075, bassVol:.095
-                    },
-                    encounter: {
-                        leadA:[440,0,523.25,440,329.63,0,392,440, 523.25,0,587.33,523.25,440,0,392,0, 349.23,0,440,587.33,440,0,392,349.23, 392,0,440,392,329.63,0,293.66,0],
-                        leadB:[440,523.25,587.33,0,523.25,440,392,0, 523.25,587.33,659.25,587.33,523.25,0,440,0, 349.23,0,440,587.33,440,392,349.23,0, 329.63,392,440,0,392,329.63,293.66,0],
-                        bass:[110,0,110,0,87.31,0,87.31,0,73.42,0,73.42,0,82.41,0,82.41,0],
-                        chords:[[220,261.63,329.63],[174.61,220,261.63],[146.83,174.61,220],[164.81,196,246.94]],
-                        arp:[329.63,392,440,523.25], leadVol:.064, bassVol:.082
-                    },
-                    battle: {
-                        leadA:[880,0,880,698.46,880,0,587.33,0, 698.46,0,698.46,587.33,698.46,0,466.16,0, 880,0,880,698.46,880,0,1046.5,0, 784,0,659.25,784,587.33,0,523.25,0],
-                        leadB:[880,698.46,880,0,587.33,880,698.46,0, 698.46,587.33,698.46,0,466.16,698.46,587.33,0, 880,698.46,880,0,1046.5,880,698.46,0, 784,659.25,784,0,587.33,523.25,587.33,0],
-                        bass:[146.83,0,146.83,146.83,116.54,0,116.54,0,174.61,0,174.61,174.61,130.81,0,130.81,0],
-                        chords:[[293.66,349.23,440],[233.08,293.66,349.23],[174.61,220,261.63],[261.63,329.63,392]],
-                        arp:[440,523.25,587.33,698.46], leadVol:.085, bassVol:.105
-                    }
-                };
-                this.musicTimer = setInterval(() => {
-                    if (!this.musicEnabled || !this.ctx || this.ctx.state !== 'running') return;
-
-                    // Change themes only at a bar boundary, avoiding a mid-phrase jump.
-                    if (this.pendingMusicMode && this.musicStep % 8 === 0) {
-                        this.musicMode = this.pendingMusicMode;
-                        this.pendingMusicMode = null;
-                        this.musicStep = 0;
-                        this.musicLoop = 0;
-                    }
-                    const track = tracks[this.musicMode] || tracks.explore;
-                    const step = this.musicStep;
-                    const at = this.ctx.currentTime + .018;
-                    const leadPattern = (this.musicLoop % 2) ? track.leadB : track.leadA;
-                    const lead = leadPattern[step];
-                    if (lead) this.tone(lead, .17, 'square', track.leadVol, {at, bus:'music'});
-
-                    // Root bass on quarter-note beats.
-                    if (step % 2 === 0) {
-                        const bass = track.bass[(step / 2) % track.bass.length];
-                        if (bass) this.tone(bass, .22, 'triangle', track.bassVol, {at, bus:'music'});
-                    }
-
-                    // A soft sustained triad starts each bar (8 eighth-note steps).
-                    if (step % 8 === 0) {
-                        const chord = track.chords[Math.floor(step / 8) % track.chords.length];
-                        chord.forEach((freq, i) => this.tone(freq, .82, 'triangle', i === 0 ? .028 : .021, {at:at + i * .012, bus:'music'}));
-                    }
-
-                    // Light off-beat plucks fill the harmony without overpowering the melody.
-                    if (step % 4 === 2) {
-                        const chord = track.chords[Math.floor(step / 8) % track.chords.length];
-                        const arp = chord[(step === 2 || step === 10 || step === 18 || step === 26) ? 2 : 1];
-                        this.tone(arp || track.arp[Math.floor(step / 8) % track.arp.length], .12, 'triangle', .026, {at:at + .012, bus:'music'});
-                    }
-
-                    this.musicStep++;
-                    if (this.musicStep >= 32) {
-                        this.musicStep = 0;
-                        this.musicLoop++;
-                    }
-                }, this.musicTickMs);
-                this.updateControls();
+                if (!this.musicEnabled) return;
+                this.pauseAsgoreMusic();
+                this.startOnceMusic();
             },
             stopMusic() {
                 if (this.musicTimer) clearInterval(this.musicTimer);
                 this.musicTimer = null;
                 this.pauseAsgoreMusic();
+                this.pauseOnceMusic();
                 if (this.ctx && this.musicBus) {
                     this.musicBus.gain.cancelScheduledValues(this.ctx.currentTime);
                     this.musicBus.gain.setTargetAtTime(0.0001, this.ctx.currentTime, .04);
@@ -1410,6 +1399,7 @@ body, button, input, textarea, select {
                 if (!['explore','encounter','battle'].includes(mode)) return;
                 const previousMode = this.musicMode;
                 if (mode === 'battle') {
+                    this.pauseOnceMusic();
                     this.musicMode = 'battle';
                     this.restartAsgoreOnPlay = true;
                     this.pendingMusicMode = null;
@@ -1472,6 +1462,13 @@ body, button, input, textarea, select {
                 this.sfxVolume = .65 * v;
                 if (this.sfxBus && this.ctx) this.sfxBus.gain.setTargetAtTime(this.sfxEnabled ? this.sfxVolume : 0, this.ctx.currentTime, .04);
                 if (this.musicBus && this.ctx) this.musicBus.gain.setTargetAtTime(this.musicEnabled && this.musicMode !== 'battle' ? this.musicVolume : .0001, this.ctx.currentTime, .04);
+                if (this.oncePlayerReady && this.oncePlayer) {
+                    try {
+                        this.oncePlayer.setVolume(this.volumePercent);
+                        if (this.musicEnabled && this.musicMode !== 'battle' && this.volumePercent > 0) this.oncePlayer.unMute();
+                        else this.oncePlayer.mute();
+                    } catch (e) {}
+                }
                 if (this.asgorePlayerReady && this.asgorePlayer) {
                     try {
                         this.asgorePlayer.setVolume(this.volumePercent);
@@ -1487,13 +1484,13 @@ body, button, input, textarea, select {
                 const status = document.getElementById('audio-status');
                 if (music) { music.textContent = this.musicEnabled ? '♫ NHẠC: BẬT' : '♫ NHẠC: TẮT'; music.setAttribute('aria-pressed', String(this.musicEnabled)); music.classList.toggle('audio-on', this.musicEnabled); }
                 if (sfx) { sfx.textContent = this.sfxEnabled ? '🔊 SFX: BẬT' : '🔇 SFX: TẮT'; sfx.setAttribute('aria-pressed', String(this.sfxEnabled)); sfx.classList.toggle('audio-on', this.sfxEnabled); }
-                if (status) status.textContent = message || (this.musicMode === 'battle' ? (this.musicEnabled ? 'BATTLE BGM: ASGORE • TOBY FOX' : 'BGM TẮT • ASGORE ĐANG TẠM DỪNG') : (this.ctx && this.ctx.state === 'running' ? 'AUDIO READY' : 'BẬT ÂM THANH SAU LẦN BẤM ĐẦU'));
+                if (status) status.textContent = message || (this.musicMode === 'battle' ? (this.musicEnabled ? 'BATTLE BGM: ASGORE • TOBY FOX' : 'BGM TẮT • ASGORE ĐANG TẠM DỪNG') : (!this.musicEnabled ? 'BGM TẮT' : (this.oncePlayerReady ? 'BGM: ONCE UPON A TIME • TOBY FOX' : 'BẬT ÂM THANH SAU LẦN BẤM ĐẦU')));
             }
         };
 
         // Use the officially published Toby Fox upload for battle BGM. The old visible
         // Battle BGM card is removed; the official YouTube API player is kept in a separate host.
-        window.onYouTubeIframeAPIReady = function () { PokédexAudio.createAsgorePlayer(); };
+        window.onYouTubeIframeAPIReady = function () { PokédexAudio.createAsgorePlayer(); PokédexAudio.createOncePlayer(); };
         (function loadYouTubePlayerAPI() {
             if (document.querySelector('script[data-asgore-youtube-api="true"]')) return;
             const tag = document.createElement('script');
