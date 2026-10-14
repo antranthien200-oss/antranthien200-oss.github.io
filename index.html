@@ -2048,12 +2048,20 @@ body, button, input, textarea, select {
            The real photograph remains a separate panel below. */
         function renderSpecimenSVG(el) {
             const container = document.getElementById('disp-specimen-render');
-            let mainColor = "#00f0ff";
-            if (el.catKey === "alkali") mainColor = "#ea580c";
-            else if (el.catKey === "alkaline") mainColor = "#d97706";
-            else if (el.catKey === "transition") mainColor = "#dc2626";
-            else if (el.catKey === "nonmetal") mainColor = "#16a34a";
-            else if (el.catKey === "noble") mainColor = "#db2777";
+            // Match the specimen illustration to the exact fill colour used by the selected table tile.
+            const tileColors = {
+                alkali: "#ea580c",
+                alkaline: "#d97706",
+                transition: "#dc2626",
+                "post-transition": "#2563eb",
+                metalloid: "#0d9488",
+                nonmetal: "#16a34a",
+                halogen: "#9333ea",
+                noble: "#db2777",
+                lanthanide: "#0891b2",
+                actinide: "#be123c"
+            };
+            const mainColor = tileColors[el.catKey] || "#00f0ff";
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center w-full h-full">
                   <svg viewBox="0 0 100 100" class="w-28 h-28 drop-shadow-[0_0_15px_${mainColor}]" role="img" aria-label="Minh họa nguyên tố ${el.en}">
