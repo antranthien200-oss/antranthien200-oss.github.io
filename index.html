@@ -621,6 +621,17 @@ body, button, input, textarea, select {
   word-break: normal;
 }
 
+/* Keep the periodic table centered and fitted to its monitor on desktop.
+   On very narrow screens, preserve horizontal scrolling for readable element tiles. */
+#ptable-grid {
+  width: 100%;
+  min-width: 0;
+  margin-inline: auto;
+}
+@media (max-width: 640px) {
+  #ptable-grid { min-width: 850px; }
+}
+
 /* Periodic-table typography: keep English/symbols pixelated, Vietnamese readable. */
 #ptable-grid > .element-cell,
 #ptable-grid > button,
@@ -689,7 +700,7 @@ body, button, input, textarea, select {
     </div>
 
     <!-- MAIN POKEDEX FOLDING BODY CONTAINER -->
-    <div class="w-full max-w-[1680px] pokedex-case rounded-3xl p-4 md:p-7 flex flex-col lg:flex-row gap-6 relative">
+    <div class="w-full max-w-[1680px] mx-auto pokedex-case rounded-3xl p-4 md:p-7 flex flex-col lg:flex-row gap-6 relative">
         
         <!-- ================================================================= -->
         <!-- LEFT PANEL: MAIN 18-COLUMN PERIODIC TABLE SCREEN -->
@@ -746,7 +757,7 @@ body, button, input, textarea, select {
 
                     <!-- PERIODIC TABLE 18-COLUMN INTERACTIVE GRID -->
                     <div class="flex-grow my-2 overflow-auto crt-scrollbar bg-black/80 rounded-lg p-2 border border-[#39ff14]/30 flex flex-col justify-center">
-                        <div id="ptable-grid" class="flex flex-col gap-1 min-w-[850px] text-center">
+                        <div id="ptable-grid" class="flex flex-col gap-1 w-full min-w-0 text-center">
                             <!-- Dynamic Element Cells injected here via JS -->
                         </div>
                     </div>
