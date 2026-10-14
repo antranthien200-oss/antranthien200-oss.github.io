@@ -1683,10 +1683,10 @@ body, button, input, textarea, select {
 
             // Header row 1: column numbers 1–18.
             const columnHeaderRow = makeTableRow();
-            columnHeaderRow.appendChild(makeTableLabel("Cột →", "text-[9px] md:text-[10px] text-[#39ff14]/90 font-chakra font-bold whitespace-nowrap"));
+            columnHeaderRow.appendChild(makeTableLabel("Cột →", "text-[10px] md:text-xs text-[#39ff14] font-chakra font-bold whitespace-nowrap"));
             columnHeaderRow.appendChild(makeTableLabel(""));
             for (let c = 1; c <= 18; c++) {
-                const label = makeTableLabel(String(c), "text-[10px] md:text-xs text-yellow-200 font-bold font-chakra");
+                const label = makeTableLabel(String(c), "text-xs md:text-sm text-yellow-100 font-bold font-chakra");
                 label.title = `Cột ${c}`;
                 columnHeaderRow.appendChild(label);
             }
@@ -1697,7 +1697,7 @@ body, button, input, textarea, select {
             groupHeaderRow.appendChild(makeTableLabel("Nhóm →", "text-[8px] text-[#39ff14]/80 font-mono whitespace-nowrap"));
             groupHeaderRow.appendChild(makeTableLabel(""));
             traditionalGroups.forEach((group, index) => {
-                const label = makeTableLabel(group, "text-[8px] md:text-[10px] text-cyan-200 font-bold font-chakra whitespace-nowrap");
+                const label = makeTableLabel(group, "text-[9px] md:text-xs text-cyan-100 font-bold font-chakra whitespace-nowrap");
                 label.title = `Nhóm ${index + 1}: ${group}`;
                 groupHeaderRow.appendChild(label);
             });
@@ -1709,9 +1709,9 @@ body, button, input, textarea, select {
                 const row = makeTableRow();
                 row.appendChild(makeTableLabel(
                     r === 1 ? "Chu kỳ ↓" : "",
-                    "text-[8px] md:text-[9px] text-cyan-200 font-bold font-chakra whitespace-nowrap"
+                    "text-[9px] md:text-[11px] text-cyan-100 font-bold font-chakra whitespace-nowrap"
                 ));
-                const periodLabel = makeTableLabel(String(r), "text-[10px] md:text-xs text-cyan-200 font-bold font-chakra");
+                const periodLabel = makeTableLabel(String(r), "text-xs md:text-sm text-cyan-100 font-bold font-chakra");
                 periodLabel.title = `Chu kỳ ${r}`;
                 row.appendChild(periodLabel);
 
