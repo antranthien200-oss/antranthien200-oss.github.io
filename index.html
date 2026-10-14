@@ -688,7 +688,63 @@ body, button, input, textarea, select {
   }
 }
 
-</style>
+
+/* Elementomon home hub */
+#home-overlay{position:fixed;inset:0;z-index:10001;display:none;align-items:center;justify-content:center;padding:clamp(10px,3vw,28px);background:rgba(3,8,18,.91);backdrop-filter:blur(12px);overflow:auto}
+#home-overlay.open{display:flex}
+#home-dialogue{position:relative;width:min(1080px,100%);max-height:92vh;overflow:auto;border:2px solid #3e9dc4;border-radius:22px;background:radial-gradient(ellipse at 15% 0%,#153a54,transparent 40%),linear-gradient(145deg,#111b2e,#080e1c 75%);box-shadow:0 24px 90px #000b;padding:clamp(16px,3vw,30px);color:#e7f5ff}
+.home-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.home-brand{font-family:'Press Start 2P',monospace;font-size:clamp(12px,2.1vw,20px);line-height:1.7;color:#f7de80}
+.home-subtitle{font-family:'Chakra Petch',sans-serif;color:#8cb6d2;font-size:12px;letter-spacing:.1em}
+.home-icon-btn{display:grid;place-items:center;flex:none;width:42px;height:42px;border-radius:12px;border:1px solid #44708e;background:#15253a;color:#e7f7ff;font-size:20px;cursor:pointer}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.home-route-card{display:flex;align-items:center;gap:14px;min-height:108px;width:100%;padding:16px;text-align:left;color:#eaf7ff;border:1px solid #355a7a;border-radius:16px;background:linear-gradient(135deg,#14263b,#0a1424);cursor:pointer;transition:transform .15s,border-color .15s}
+.home-route-card:hover{transform:translateY(-2px);border-color:#78dcff}
+.home-route-emoji{display:grid;place-items:center;flex:none;width:50px;height:50px;border-radius:14px;background:#173854;border:1px solid #397ba0;font-size:26px}
+.home-route-title{font-family:'Press Start 2P',monospace;font-size:clamp(9px,1.4vw,13px);line-height:1.8;color:#f4dc82;overflow-wrap:anywhere}
+.home-route-desc{margin-top:5px;color:#a9c4d8;font-size:13px;line-height:1.4}
+.home-section-title{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.7vw,15px);line-height:1.8;color:#f7df82;margin:0 0 8px}
+.home-muted{color:#a5bfd4;font-size:13px;line-height:1.6}
+.home-back{display:inline-flex;align-items:center;gap:7px;border:1px solid #385d7d;background:#14283d;color:#dff5ff;border-radius:9px;padding:8px 12px;font-weight:700;font-size:12px;cursor:pointer}
+.home-close{border-color:#72415a;color:#ffdbe5;background:#2a1728}
+.home-content-actions{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;align-items:center;margin-bottom:18px}
+.home-feature-btn{border:1px solid #a4e8ff;background:linear-gradient(135deg,#37a8d2,#21628f);color:#fff;border-radius:10px;padding:11px 16px;font-weight:900;cursor:pointer;box-shadow:0 4px 0 #113e61}
+.home-gallery-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.home-gallery-card{overflow:hidden;min-width:0;border:1px solid #2e5977;border-radius:12px;background:#0b1726;color:#dff5ff;text-align:center;padding:8px 5px;cursor:pointer}
+.home-gallery-card:hover{border-color:#82e3ff;background:#122a40}
+.home-gallery-photo{display:grid;place-items:center;width:100%;height:90px;background:radial-gradient(ellipse,#243b52,#0a1220);border-radius:8px;margin-bottom:7px;overflow:hidden}
+.home-gallery-photo img{max-width:100%;max-height:88px;object-fit:contain}
+.home-gallery-symbol{font-family:'Press Start 2P',monospace;color:#9ee9ff;font-size:12px}
+.home-gallery-name{font-size:12px;font-weight:800;line-height:1.3;overflow-wrap:anywhere}
+.home-gallery-number{font-size:10px;color:#829bb5;margin-top:3px}
+.home-achievement-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-achievement{border:1px solid #35536d;border-radius:13px;background:#0d1929;padding:14px;min-width:0}
+.home-achievement.unlocked{border-color:#a98b45;background:linear-gradient(135deg,#2a281f,#101928)}
+.home-achievement-icon{font-size:24px}
+.home-achievement-title{font-weight:900;color:#e4f5ff;margin:6px 0 3px}
+.home-achievement.unlocked .home-achievement-title{color:#ffe597}
+.home-progress-track{height:7px;border-radius:99px;background:#1e3042;overflow:hidden;margin-top:9px}
+.home-progress-fill{height:100%;background:linear-gradient(90deg,#2eadd3,#7de8c0);border-radius:99px}
+.home-element-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.home-element-chip{font-size:11px;padding:5px 8px;border:1px solid #8b7540;background:#2c271b;border-radius:8px;color:#ffeaa6}
+.home-credits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.home-credit-row{padding:13px;border:1px solid #34546f;border-radius:12px;background:#0d1929}
+.home-credit-name{font-weight:900;color:#f4dd8a;font-size:14px}
+.home-credit-desc{font-size:13px;color:#b0c9dc;margin-top:4px;line-height:1.45}
+.home-thankyou{margin-top:22px;padding:18px 10px;text-align:center;border-top:1px solid #34516b;color:#ffe58c;font:clamp(10px,1.7vw,14px)/1.9 'Press Start 2P',monospace;letter-spacing:.06em}
+.hardcore-rules{border:1px solid #466b8a;border-radius:14px;padding:15px;background:#0a1727;margin:15px 0}
+.hardcore-stat-row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.hardcore-stat{padding:12px;border:1px solid #385b78;border-radius:11px;background:#102238;text-align:center}
+.hardcore-stat strong{display:block;color:#ffe58c;font:16px 'Press Start 2P',monospace;margin:8px 0}
+#battle-modal.hardcore-mode #wild-encounter-cutscene{display:none!important}
+#battle-modal.hardcore-mode .battle-sprite:before,#battle-modal.hardcore-mode .battle-sprite:after{display:none!important}
+.hardcore-avatar{display:grid;place-items:center;width:100%;height:100%;font-size:clamp(46px,8vw,74px);filter:drop-shadow(0 4px 3px #0006);line-height:1}
+.hardcore-avatar.student{transform:scaleX(-1)}
+#battle-modal.hardcore-mode .battlefield{background:linear-gradient(#bbd8e9 0%,#e2edf2 50%,#78bd78 50%,#438c51 100%)}
+@media(max-width:650px){.home-grid,.home-achievement-grid,.home-credits{grid-template-columns:1fr}.home-route-card{min-height:84px;padding:12px}.home-gallery-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.home-gallery-photo{height:76px}.home-gallery-photo img{max-height:72px}.home-brand{font-size:11px}}
+@media(prefers-reduced-motion:reduce){.home-route-card{transition:none}}
+
+    </style>
 </head>
 <body class="p-2 md:p-6 flex items-start justify-center">
     <div class="element-doodle-layer" aria-hidden="true">
@@ -701,6 +757,11 @@ body, button, input, textarea, select {
         <span class="element-doodle">👻</span>
         <span class="element-doodle">🐉</span>
     </div>
+
+
+    <section id="home-overlay" aria-hidden="true">
+      <div id="home-dialogue" role="dialog" aria-modal="true" aria-label="Menu Elementomon"></div>
+    </section>
 
     <!-- MAIN POKEDEX FOLDING BODY CONTAINER -->
     <div class="w-full max-w-[1680px] mx-auto pokedex-case rounded-3xl p-4 md:p-7 flex flex-col lg:flex-row gap-6 relative">
@@ -849,8 +910,8 @@ body, button, input, textarea, select {
             <div class="flex justify-between items-center px-1">
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-3">
-                    <button id="btn-speak" class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black border-2 border-gray-600 shadow-2xl flex items-center justify-center active:scale-95 transition" title="Đọc thuyết minh Pokédex">
-                        <svg class="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                    <button id="btn-home" class="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black border-2 border-cyan-700 shadow-2xl flex items-center justify-center active:scale-95 transition" type="button" title="Mở menu chính" aria-label="Mở menu chính">
+                        <svg class="w-6 h-6 text-cyan-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"></path></svg>
                     </button>
                     <button id="btn-random" class="px-3 py-2 bg-yellow-500 hover:bg-yellow-400 text-black font-pixel text-[10px] rounded-lg border-2 border-yellow-600 shadow-lg active:scale-95 transition">
                         🔀 RANDOM
@@ -1963,6 +2024,7 @@ body, button, input, textarea, select {
 
         function updateInspectorDisplay() {
             const el = RAW_ELEMENTS[currentElementIndex];
+            markElementViewed(el);
 
             document.getElementById('disp-target-no').innerText = `#${String(el.num).padStart(3, '0')}`;
             document.getElementById('disp-sym-large').innerText = el.sym;
@@ -2245,7 +2307,7 @@ body, button, input, textarea, select {
         document.addEventListener('click', event => {
             const button = event.target && event.target.closest('button');
             if (!button || button.disabled) return;
-            if (button.matches('.run-away-btn,.lifeline-btn,#btn-random,#blue-lens,#btn-speak,#dpad-left,#dpad-right,#dpad-up,#dpad-down,.filter-chip,.quiz-option,.trainer-btn,#wild-cutscene-start,#battle-close,#btn-train,#btn-key-clear,#btn-key-enter,#btn-direct-go,[data-key]')) return;
+            if (button.matches('.run-away-btn,.lifeline-btn,#btn-random,#blue-lens,#btn-home,#dpad-left,#dpad-right,#dpad-up,#dpad-down,.filter-chip,.quiz-option,.trainer-btn,#wild-cutscene-start,#battle-close,#btn-train,#btn-key-clear,#btn-key-enter,#btn-direct-go,[data-key]')) return;
             PokédexAudio.playSfx('ui');
         });
 
@@ -2412,7 +2474,10 @@ body, button, input, textarea, select {
            Correct answer hits the opponent; a wrong answer means the opponent hits you.
            Each side has 5 HP. Each correct answer deals 1 damage; each wrong answer costs the player 1 HP. A single opponent per battle; only a win increases the selected element level, then the battle screen exits.
            =================================================================== */
-        const creatureLevels = {};
+        let __savedElementomonProgress = {};
+        try { __savedElementomonProgress = JSON.parse(localStorage.getItem('elementomonProgressV1') || '{}') || {}; } catch (error) {}
+        const creatureLevels = Object.assign({}, __savedElementomonProgress.levels || {});
+        const viewedElementNumbers = new Set((__savedElementomonProgress.viewed || []).map(Number).filter(n => n >= 1 && n <= 118));
         // Physical state at ordinary room temperature. Most gases are colourless;
         // fluorine is pale yellow and chlorine is yellow-green. Bromine is red-brown;
         // mercury is silvery. Unknown synthetic-element appearances use a neutral sample colour.
@@ -2766,6 +2831,7 @@ body, button, input, textarea, select {
         function renderBattleActions(){
           if(!currentBattle) return;
           const actions=document.getElementById('battle-result-actions');
+          if(currentBattle.hardcore){ actions.innerHTML=''; return; }
           actions.innerHTML='';
           const run=document.createElement('button');
           run.type='button'; run.className='run-away-btn'; run.textContent='🏃 CHẠY TRỐN';
@@ -2781,6 +2847,7 @@ body, button, input, textarea, select {
         }
         function renderBattleQuestion(){
           if(!currentBattle) return;
+          if(currentBattle.hardcore){ renderHardcoreQuestion(); return; }
           currentBattle.question=questionFor(currentBattle.player);
           currentBattle.answered=false;
           document.getElementById('battle-question').textContent=`CÂU ${currentBattle.question.questionNumber||1}/20 · ${currentBattle.question[0]}`;
@@ -2832,7 +2899,7 @@ body, button, input, textarea, select {
           clearWildTransitionMotion();
           document.body.classList.remove('battle-active');
           PokédexAudio.setMusicMode('explore');
-          document.getElementById('battle-modal').classList.remove('open');
+          document.getElementById('battle-modal').classList.remove('open','hardcore-mode');
           const particleLayer=document.getElementById('battle-particle-layer'); if(particleLayer) particleLayer.innerHTML='';
           document.getElementById('battle-move-label').classList.remove('active');
           const cutscene=document.getElementById('wild-encounter-cutscene'); if(cutscene){cutscene.classList.remove('active','leaving','noticed','bush-shaking','emerging','transitioning');cutscene.setAttribute('aria-hidden','true');const skip=document.getElementById('wild-cutscene-start');if(skip)skip.disabled=false;}
@@ -2856,6 +2923,7 @@ body, button, input, textarea, select {
           document.getElementById('ptable-grid').style.visibility='hidden';
           document.body.classList.add('battle-active');
           const battleModal=document.getElementById('battle-modal');
+          battleModal.classList.remove('hardcore-mode');
           battleModal.classList.add('open');
           // The training button lives in the other Pokédex panel, but the encounter scene
           // renders on the main CRT. Bring that CRT into view so the cutscene is never
@@ -2990,6 +3058,7 @@ body, button, input, textarea, select {
         }
         function answerBattle(choice){
           if(!currentBattle||currentBattle.answered)return;
+          if(currentBattle.hardcore){ answerHardcoreBattle(choice); return; }
           currentBattle.answered=true;
           document.querySelectorAll('.quiz-option').forEach(b=>b.disabled=true);
           const runButton=document.querySelector('#battle-result-actions .run-away-btn'); if(runButton) runButton.disabled=true;
@@ -3009,6 +3078,7 @@ body, button, input, textarea, select {
           if(currentBattle.enemyHP<=0){
             const el=currentBattle.player, old=getCreatureLevel(el);
             if(old<5) creatureLevels[el.num]=old+1;
+            persistElementomonProgress();
             updateCreatureCard();
             if(getCreatureLevel(el)===5&&old<5){
               PokédexAudio.playSfx('evolution');
@@ -3161,6 +3231,202 @@ body, button, input, textarea, select {
         document.getElementById('wild-cutscene-start').addEventListener('click',()=>{PokédexAudio.playSfx('ui');beginWildBattle(true);});
         document.getElementById('battle-close').addEventListener('click',()=>{PokédexAudio.playSfx('close');leaveBattle();});
         document.getElementById('battle-modal').addEventListener('click',e=>{if(e.target.id==='battle-modal')leaveBattle();});
+
+
+        /* HOME MENU, GALLERY, ACHIEVEMENTS, CREDITS AND HARDCORE */
+        const homeOverlay = document.getElementById('home-overlay');
+        const homeDialogue = document.getElementById('home-dialogue');
+        let hardcoreWins = Number(__savedElementomonProgress.hardcoreWins || 0);
+        let hardcoreQuestionPool = [];
+        let hardcoreQuestionCursor = 0;
+        function persistElementomonProgress() {
+            try { localStorage.setItem('elementomonProgressV1', JSON.stringify({levels:creatureLevels,viewed:Array.from(viewedElementNumbers),hardcoreWins:hardcoreWins})); } catch (error) {}
+        }
+        function markElementViewed(el) {
+            if (!el || !el.num || el.num < 1 || el.num > 118 || viewedElementNumbers.has(el.num)) return;
+            viewedElementNumbers.add(el.num);
+            persistElementomonProgress();
+        }
+        function closeHomeMenu() { homeOverlay.classList.remove('open'); homeOverlay.setAttribute('aria-hidden','true'); }
+        function openHomeMenu(route) { renderHomeView(route || 'home'); homeOverlay.classList.add('open'); homeOverlay.setAttribute('aria-hidden','false'); }
+        function homeHeader(title, subtitle) {
+            return '<header class="home-header"><div><div class="home-brand">ELEMENTOMON</div><div class="home-subtitle">' + title + ' · ' + subtitle + '</div></div><button class="home-icon-btn home-close" type="button" data-home-close aria-label="Đóng menu">✕</button></header>';
+        }
+        function homeNav(title, desc, emoji, route) {
+            return '<button type="button" class="home-route-card" data-home-route="' + route + '"><span class="home-route-emoji">' + emoji + '</span><span><span class="home-route-title block">' + title + '</span><span class="home-route-desc block">' + desc + '</span></span><span class="ml-auto text-cyan-200 text-xl">›</span></button>';
+        }
+        function renderHomeView(route) {
+            if (route === 'gallery') {
+                let cards = '';
+                RAW_ELEMENTS.forEach(function(el) {
+                    cards += '<button type="button" class="home-gallery-card" data-gallery-element="' + el.num + '" title="Mở hồ sơ ' + el.vn + '"><span class="home-gallery-photo"><img loading="lazy" src="https://images-of-elements.com/' + elementPhotoSlug(el) + '.jpg" alt="Mẫu thực tế của ' + el.en + '"><span class="home-gallery-symbol" hidden>' + el.sym + '</span></span><span class="home-gallery-name block">' + el.vn + '</span><span class="home-gallery-number block">#' + String(el.num).padStart(3,'0') + ' · ' + el.sym + '</span></button>';
+                });
+                homeDialogue.innerHTML = homeHeader('GALLERY','REAL ELEMENT COLLECTION') + '<div class="home-content-actions"><div><h2 class="home-section-title">BỘ SƯU TẬP ẢNH THỰC TẾ</h2><p class="home-muted">Chọn một nguyên tố để mở hồ sơ. Ảnh dùng cùng nguồn ảnh thực tế trong Pokédex.</p></div><button class="home-back" data-home-route="home">← MENU CHÍNH</button></div><div class="home-gallery-grid">' + cards + '</div>';
+                return;
+            }
+            if (route === 'achievement') {
+                const evolved = RAW_ELEMENTS.filter(function(el){return getCreatureLevel(el)>=5;});
+                const seen = viewedElementNumbers.size, mastered = evolved.length;
+                const list = [
+                    {i:'✨',t:'Lần tiến hóa đầu tiên',d:'Tiến hóa ít nhất một Elementomon lên cấp 5.',p:Math.min(1,mastered),n:1},
+                    {i:'🔎',t:'Nhà sưu tầm nguyên tố',d:'Mở hồ sơ của toàn bộ 118 nguyên tố.',p:seen,n:118},
+                    {i:'🏆',t:'Vượt qua Mr.Win',d:'Đánh bại thầy giáo trong chế độ Hardcore.',p:Math.min(1,hardcoreWins),n:1},
+                    {i:'👑',t:'Master tất cả Elementomon',d:'Tiến hóa toàn bộ 118 Elementomon lên cấp 5.',p:mastered,n:118}
+                ];
+                const cards = list.map(function(b){
+                    const done=b.p>=b.n, pct=Math.round(b.p/b.n*100);
+                    return '<article class="home-achievement '+(done?'unlocked':'')+'"><div class="home-achievement-icon">'+b.i+(done?' ✓':'')+'</div><div class="home-achievement-title">'+b.t+'</div><p class="home-muted">'+b.d+'</p><div class="home-progress-track"><div class="home-progress-fill" style="width:'+pct+'%"></div></div><p class="home-muted mt-2">'+(b.n===1?(done?'ĐÃ MỞ KHÓA':'CHƯA MỞ KHÓA'):b.p+' / '+b.n)+'</p></article>';
+                }).join('');
+                const chips = mastered ? evolved.map(function(el){return '<span class="home-element-chip">'+el.sym+' · '+el.vn+'</span>';}).join('') : '<p class="home-muted">Chưa có Elementomon nào tiến hóa. Thắng trận luyện tập để tăng cấp!</p>';
+                homeDialogue.innerHTML = homeHeader('ACHIEVEMENT','THÀNH TỰU') + '<div class="home-content-actions"><div><h2 class="home-section-title">HÀNH TRÌNH CỦA BẠN</h2><p class="home-muted">Tiến độ được lưu trên trình duyệt này.</p></div><button class="home-back" data-home-route="home">← MENU CHÍNH</button></div><div class="home-achievement-grid">'+cards+'</div><section class="mt-5"><h3 class="home-section-title">ELEMENTOMON ĐÃ TIẾN HÓA ('+mastered+'/118)</h3><div class="home-element-chips">'+chips+'</div></section>';
+                return;
+            }
+            if (route === 'credits') {
+                homeDialogue.innerHTML = homeHeader('CREDITS','NHỮNG NGƯỜI ĐỨNG SAU ELEMENTOMON') + '<div class="home-content-actions"><div><h2 class="home-section-title">ĐƯỢC TẠO NÊN BỞI</h2><p class="home-muted">Cảm ơn cả nhóm đã cùng biến ý tưởng thành trải nghiệm học hóa học.</p></div><button class="home-back" data-home-route="home">← MENU CHÍNH</button></div><div class="home-credits"><article class="home-credit-row"><div class="home-credit-name">Ân</div><div class="home-credit-desc">Làm việc với code</div></article><article class="home-credit-row"><div class="home-credit-name">Nguyệt</div><div class="home-credit-desc">Check thông tin, lên ý tưởng</div></article><article class="home-credit-row"><div class="home-credit-name">Hương</div><div class="home-credit-desc">Check thông tin, lên ý tưởng</div></article><article class="home-credit-row"><div class="home-credit-name">Sang</div><div class="home-credit-desc">Check thông tin, nêu ý tưởng và thuyết trình</div></article></div><div class="home-thankyou">THANK YOU FOR SUPPORTING<br><span style="font:700 14px \'Chakra Petch\',sans-serif;letter-spacing:.12em;color:#a8ddf4">ELEMENTOMON · LEARN THE ELEMENTS, CATCH THEM ALL</span></div>';
+                return;
+            }
+            if (route === 'hardcore') {
+                homeDialogue.innerHTML = homeHeader('HARDCORE','THỬ THÁCH CÙNG MR.WIN') + '<div class="home-content-actions"><div><h2 class="home-section-title">BẠN CÓ THỂ ĐÁNH BẠI THẦY KHÔNG?</h2><p class="home-muted">Lần này chính bạn — một học sinh — là người bước vào trận đấu.</p></div><button class="home-back" data-home-route="home">← MENU CHÍNH</button></div><div class="hardcore-stat-row"><div class="hardcore-stat"><div style="font-size:34px">🧑‍🎓</div><strong>5 HP</strong><span>HỌC SINH · BẠN</span></div><div class="hardcore-stat"><div style="font-size:34px">👨‍🏫</div><strong>50 HP</strong><span>THẦY GIÁO · MR.WIN</span></div></div><div class="hardcore-rules"><h3 class="home-section-title">LUẬT CHƠI</h3><p class="home-muted">• Câu hỏi ngẫu nhiên từ bộ câu hỏi của tất cả 118 nguyên tố.</p><p class="home-muted">• Trả lời đúng: Mr.Win mất 1 HP.</p><p class="home-muted">• Trả lời sai: bạn mất 1 HP.</p><p class="home-muted">• Bạn có 5 HP, thầy có 50 HP. Cố gắng trả lời đúng 50 câu trước khi hết máu!</p></div><button class="home-feature-btn w-full" data-start-hardcore>⚔ BẮT ĐẦU HARDCORE</button>';
+                return;
+            }
+            homeDialogue.innerHTML = homeHeader('MAIN MENU','CHỌN HÀNH TRÌNH CỦA BẠN') + '<div class="mb-5"><h2 class="home-section-title">WELCOME, ELEMENT TRAINER!</h2><p class="home-muted">Khám phá 118 nguyên tố, sưu tầm ảnh thực tế, ghi lại thành tựu và thử sức với Mr.Win.</p></div><div class="home-grid">' +
+                homeNav('ELEMTODEX','Mở bảng tuần hoàn như bình thường.','⚛️','elementodex') +
+                homeNav('GALLERY','Xem lại bộ ảnh thực tế của từng nguyên tử.','🖼️','gallery') +
+                homeNav('ACHIEVEMENT','Theo dõi tiến hóa, khám phá và các thử thách.','🏆','achievement') +
+                homeNav('HARDCORE','Học sinh 5 HP đối đầu Mr.Win 50 HP.','⚔️','hardcore') +
+                homeNav('CREDITS','Những người cùng xây dựng Elementomon.','💿','credits') + '</div><div class="home-thankyou">THANK YOU FOR SUPPORTING</div>';
+        }
+        function openElementodex() {
+            closeHomeMenu();
+            const casing=document.querySelector('.pokedex-case');
+            if(casing)casing.scrollIntoView({block:'start',behavior:'smooth'});
+        }
+        function showGalleryFallback(img) {
+            img.style.display='none';
+            const fallback=img.parentElement&&img.parentElement.querySelector('.home-gallery-symbol');
+            if(fallback)fallback.hidden=false;
+        }
+        function nextHardcoreQuestion() {
+            if(!hardcoreQuestionPool.length||hardcoreQuestionCursor>=hardcoreQuestionPool.length){
+                hardcoreQuestionPool=[];
+                RAW_ELEMENTS.forEach(function(el){buildElementQuestionSet(el).forEach(function(q){hardcoreQuestionPool.push({q:q,el:el});});});
+                hardcoreQuestionPool=quizShuffle(hardcoreQuestionPool);
+                hardcoreQuestionCursor=0;
+            }
+            return hardcoreQuestionPool[hardcoreQuestionCursor++];
+        }
+        function renderHardcoreQuestion() {
+            if(!currentBattle||!currentBattle.hardcore)return;
+            const item=nextHardcoreQuestion();
+            currentBattle.question=item.q;
+            currentBattle.questionElement=item.el;
+            currentBattle.hardcoreAsked++;
+            currentBattle.answered=false;
+            document.getElementById('battle-question').textContent='HARDCORE · '+item.el.vn.toUpperCase()+' ('+item.el.sym+') · CÂU '+currentBattle.hardcoreAsked+': '+item.q[0];
+            const options=document.getElementById('battle-options'); options.innerHTML='';
+            item.q[1].forEach(function(answer,i){
+                const b=document.createElement('button'); b.type='button'; b.className='quiz-option'; b.textContent=answer; b.dataset.choiceIndex=String(i);
+                b.addEventListener('click',function(){answerBattle(i);}); options.appendChild(b);
+            });
+            document.getElementById('battle-result-actions').innerHTML='';
+        }
+        function finishHardcoreBattle(didWin) {
+            if(!currentBattle||!currentBattle.hardcore||currentBattle.ending)return;
+            currentBattle.ending=true;
+            document.querySelectorAll('#battle-options .quiz-option').forEach(function(b){b.disabled=true;});
+            document.getElementById('battle-options').innerHTML='';
+            document.getElementById('battle-question').textContent=didWin?'🏆 HARDCORE CLEARED!':'💥 HARDCORE FAILED';
+            if(didWin){
+                hardcoreWins++; persistElementomonProgress(); PokédexAudio.playSfx('win');
+                document.getElementById('battle-dialogue').textContent='Bạn đã trả lời đúng 50 câu và đánh bại Mr.Win! Thành tựu Hardcore đã được ghi nhận.';
+            }else{
+                PokédexAudio.playSfx('lose');
+                document.getElementById('battle-dialogue').textContent='Bạn đã hết HP trước khi đánh bại Mr.Win. Ôn lại các nguyên tố rồi thử lại nhé!';
+            }
+            document.getElementById('battle-result-actions').innerHTML='<button type="button" class="home-feature-btn" data-retry-hardcore>↻ CHƠI LẠI</button><button type="button" class="home-back" data-hardcore-home>⌂ VỀ MENU CHÍNH</button>';
+            updateBattleHP();
+        }
+        function answerHardcoreBattle(choice) {
+            if(!currentBattle||!currentBattle.hardcore||currentBattle.answered||currentBattle.ending)return;
+            currentBattle.answered=true;
+            document.querySelectorAll('#battle-options .quiz-option').forEach(function(b){b.disabled=true;});
+            const correct=choice===currentBattle.question[2];
+            const field=document.getElementById('battlefield');
+            if(correct){
+                PokédexAudio.playSfx('correct'); currentBattle.enemyHP=Math.max(0,currentBattle.enemyHP-1);
+                document.getElementById('battle-dialogue').textContent='Chính xác! Mr.Win mất 1 HP.';
+                field.classList.add('move-player','hit-enemy');
+            }else{
+                PokédexAudio.playSfx('wrong'); currentBattle.playerHP=Math.max(0,currentBattle.playerHP-1);
+                document.getElementById('battle-dialogue').textContent='Chưa đúng! Đáp án: '+currentBattle.question[1][currentBattle.question[2]]+'. Bạn mất 1 HP.';
+                field.classList.add('move-enemy','hit-player');
+            }
+            updateBattleHP();
+            window.setTimeout(function(){
+                field.classList.remove('move-player','move-enemy','hit-player','hit-enemy');
+                if(!currentBattle||!currentBattle.hardcore)return;
+                if(currentBattle.enemyHP<=0)finishHardcoreBattle(true);
+                else if(currentBattle.playerHP<=0)finishHardcoreBattle(false);
+                else renderHardcoreQuestion();
+            },650);
+        }
+        function startHardcoreBattle() {
+            closeHomeMenu(); clearWildSequenceTimers(); clearWildTransitionMotion();
+            const student={num:-1,sym:'STU',vn:'Học sinh',en:'Student'};
+            const teacher={num:-2,sym:'MRW',vn:'Mr.Win',en:'Mr.Win'};
+            currentBattle={player:student,enemy:teacher,playerHP:5,enemyHP:50,playerMaxHP:5,enemyMaxHP:50,answered:false,question:null,playerLevel:0,enemyLevel:0,lifelineUsed:false,ending:false,introComplete:true,transitionStarted:true,hardcore:true,hardcoreAsked:0};
+            PokédexAudio.setMusicMode('battle'); PokédexAudio.playSfx('encounter');
+            document.body.classList.add('battle-active');
+            const modal=document.getElementById('battle-modal'); modal.classList.add('open','hardcore-mode');
+            document.getElementById('ptable-grid').style.visibility='hidden';
+            const cutscene=document.getElementById('wild-encounter-cutscene');
+            cutscene.classList.remove('active','leaving','noticed','bush-shaking','emerging','transitioning'); cutscene.setAttribute('aria-hidden','true');
+            const playerNode=document.getElementById('battle-player-emoji'), enemyNode=document.getElementById('battle-enemy-emoji');
+            playerNode.innerHTML='<div class="hardcore-avatar student" aria-label="Học sinh">🧑‍🎓</div>';
+            enemyNode.innerHTML='<div class="hardcore-avatar" aria-label="Thầy giáo Mr.Win">👨‍🏫</div>';
+            playerNode.style.transform=''; playerNode.style.opacity=''; playerNode.style.transition='';
+            enemyNode.style.transform=''; enemyNode.style.opacity=''; enemyNode.style.transition='';
+            document.getElementById('battle-player-name').textContent='HỌC SINH';
+            document.getElementById('battle-enemy-name').textContent='MR.WIN';
+            document.getElementById('battle-player-level').textContent='STUDENT';
+            document.getElementById('battle-enemy-level').textContent='TEACHER';
+            document.getElementById('battle-particle-layer').innerHTML='';
+            document.getElementById('battle-move-label').classList.remove('active');
+            document.getElementById('battle-dialogue').textContent='Mr.Win bước vào lớp! Trả lời đúng để trừ máu thầy; mỗi câu sai sẽ khiến bạn mất 1 HP.';
+            document.getElementById('battle-result-actions').innerHTML='';
+            updateBattleHP();
+            const screen=modal.closest('.crt-monitor'); if(screen)screen.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
+            renderHardcoreQuestion();
+        }
+        document.getElementById('btn-home').addEventListener('click',function(){PokédexAudio.playSfx('ui');openHomeMenu('home');});
+        homeOverlay.addEventListener('click',function(event){
+            if(event.target===homeOverlay){closeHomeMenu();return;}
+            const routeButton=event.target.closest('[data-home-route]');
+            if(routeButton){
+                const route=routeButton.getAttribute('data-home-route');
+                if(route==='elementodex')openElementodex(); else renderHomeView(route);
+                return;
+            }
+            if(event.target.closest('[data-home-close]')){closeHomeMenu();return;}
+            if(event.target.closest('[data-start-hardcore]')){startHardcoreBattle();return;}
+            const galleryCard=event.target.closest('[data-gallery-element]');
+            if(galleryCard){
+                const number=Number(galleryCard.getAttribute('data-gallery-element'));
+                closeHomeMenu(); selectElementByNumber(number);
+                const inspector=document.getElementById('right-inspector-monitor');
+                if(inspector)inspector.scrollIntoView({block:'center',behavior:'smooth'});
+            }
+        });
+        document.addEventListener('error',function(event){
+            if(event.target&&event.target.matches&&event.target.matches('.home-gallery-photo img'))showGalleryFallback(event.target);
+        },true);
+        document.addEventListener('click',function(event){
+            if(event.target.closest('[data-retry-hardcore]')){startHardcoreBattle();return;}
+            if(event.target.closest('[data-hardcore-home]')){leaveBattle();openHomeMenu('home');}
+        });
+        document.addEventListener('keydown',function(event){
+            if(event.key==='Escape'&&homeOverlay.classList.contains('open'))closeHomeMenu();
+        });
 
         /* ===================================================================
            6. INITIALIZATION ON WINDOW LOAD
