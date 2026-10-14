@@ -2048,14 +2048,20 @@ body, button, input, textarea, select {
            The real photograph remains a separate panel below. */
         function renderSpecimenSVG(el) {
             const container = document.getElementById('disp-specimen-render');
-            // Match the four category colours used by the simplified periodic-table tiles.
+            // Resolve the same four-way category shown on the periodic table.
+            // Use the normalized visible category instead of legacy element-family keys,
+            // so older labels such as halogen/lanthanide cannot leave a blue specimen.
+            const categoryKey = el.cat === "Kim loại chuyển tiếp" ? "transition"
+                : el.cat === "Phi kim" ? "nonmetal"
+                : el.cat === "Khí hiếm" ? "noble"
+                : "metal";
             const tileColors = {
                 metal: "#ea580c",
                 transition: "#dc2626",
                 nonmetal: "#16a34a",
                 noble: "#db2777"
             };
-            const mainColor = tileColors[el.catKey] || "#ea580c";
+            const mainColor = tileColors[categoryKey];
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center w-full h-full">
                   <svg viewBox="0 0 100 100" class="w-28 h-28 drop-shadow-[0_0_15px_${mainColor}]" role="img" aria-label="Minh họa nguyên tố ${el.en}">
