@@ -2048,20 +2048,14 @@ body, button, input, textarea, select {
            The real photograph remains a separate panel below. */
         function renderSpecimenSVG(el) {
             const container = document.getElementById('disp-specimen-render');
-            // Match the specimen illustration to the exact fill colour used by the selected table tile.
+            // Match the four category colours used by the simplified periodic-table tiles.
             const tileColors = {
-                alkali: "#ea580c",
-                alkaline: "#d97706",
+                metal: "#ea580c",
                 transition: "#dc2626",
-                "post-transition": "#2563eb",
-                metalloid: "#0d9488",
                 nonmetal: "#16a34a",
-                halogen: "#9333ea",
-                noble: "#db2777",
-                lanthanide: "#0891b2",
-                actinide: "#be123c"
+                noble: "#db2777"
             };
-            const mainColor = tileColors[el.catKey] || "#00f0ff";
+            const mainColor = tileColors[el.catKey] || "#ea580c";
             container.innerHTML = `
                 <div class="flex flex-col items-center justify-center w-full h-full">
                   <svg viewBox="0 0 100 100" class="w-28 h-28 drop-shadow-[0_0_15px_${mainColor}]" role="img" aria-label="Minh họa nguyên tố ${el.en}">
