@@ -586,6 +586,18 @@
         @media(max-width:520px){#wild-encounter-cutscene{gap:5px;padding:7px}.wild-cutscene-stage{min-height:clamp(116px,24vh,170px);max-height:36vh}.wild-cutscene-combatant{width:clamp(66px,22cqw,96px);bottom:9%}.wild-cutscene-player{left:2%}.wild-cutscene-wild{right:6%}.wild-cutscene-bush{left:66%}.wild-cutscene-message{min-height:35px;padding:6px 7px}#wild-cutscene-start{right:6px;top:6px}.wild-cutscene-cloud{scale:.6}.wild-cutscene-wind{height:2px}}
         @media(max-height:620px){#wild-encounter-cutscene{gap:4px;padding:6px}.wild-cutscene-stage{min-height:110px;max-height:35vh}.wild-cutscene-label{font-size:clamp(8px,1.4vw,12px);line-height:1.35}.wild-cutscene-message{min-height:30px;padding:5px 7px}.wild-cutscene-combatant{width:clamp(64px,17cqw,100px)}}
         @media(prefers-reduced-motion:reduce){#wild-encounter-cutscene.active,#wild-encounter-cutscene:before,#wild-encounter-cutscene:after,.wild-cutscene-ground,.wild-cutscene-pixel,.wild-cutscene-cloud,.wild-cutscene-wind,.wild-cutscene-bush,.wild-bush-leaf,.wild-cutscene-stage:before,.wild-cutscene-stage:after,#wild-cutscene-start{animation:none!important}#wild-encounter-cutscene.active .wild-cutscene-player{animation:wildPlayerEnter .35s linear .02s forwards!important}#wild-encounter-cutscene.emerging .wild-cutscene-wild{visibility:visible;animation:wildPokemonEmerge .45s linear forwards!important}#wild-encounter-cutscene.bush-shaking .wild-cutscene-player .wild-cutscene-exclamation,#wild-encounter-cutscene.noticed .wild-cutscene-exclamation{animation:none!important;opacity:1!important;transform:translate(-50%,0) scale(1)!important}}
+        /* Anti-cheat: block access to element facts while any battle is active. */
+        #anti-cheat-stop-overlay{display:none;position:absolute;inset:0;z-index:80;align-items:center;justify-content:center;flex-direction:column;gap:14px;padding:20px;text-align:center;overflow:hidden;border-radius:14px;background:radial-gradient(circle at center,rgba(72,12,20,.78),rgba(2,7,13,.98) 72%);box-sizing:border-box}
+        body.battle-active #anti-cheat-stop-overlay{display:flex}
+        #anti-cheat-stop-overlay .anti-cheat-warning{font-family:'Press Start 2P',monospace;font-size:clamp(10px,1.5vw,15px);line-height:1.9;letter-spacing:.08em;color:#ffb8b8;text-shadow:0 0 12px rgba(255,40,50,.65)}
+        #anti-cheat-stop-overlay .anti-cheat-subtitle{max-width:34ch;font-family:'Chakra Petch',sans-serif;font-size:clamp(12px,1.5vw,16px);line-height:1.5;color:#d6e5f2}
+        #anti-cheat-stop-overlay .anti-cheat-sign{display:grid;place-items:center;width:clamp(132px,19vw,188px);aspect-ratio:1;background:#f4f5f7;clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);filter:drop-shadow(0 0 16px rgba(255,30,40,.45));}
+        #anti-cheat-stop-overlay .anti-cheat-sign-inner{display:grid;place-items:center;width:91%;height:91%;background:linear-gradient(145deg,#f13c42,#b40019);clip-path:polygon(30% 0,70% 0,100% 30%,100% 70%,70% 100%,30% 100%,0 70%,0 30%);color:white;font-family:'Chakra Petch',sans-serif;font-weight:1000;font-size:clamp(28px,5vw,48px);letter-spacing:.04em;text-shadow:0 2px 0 #8e0010,0 0 9px #ff7b7b}
+        #anti-cheat-stop-overlay .anti-cheat-status{display:inline-flex;align-items:center;gap:8px;border:1px solid #a92c3e;background:#3a0f1a;border-radius:999px;padding:7px 12px;color:#ffc5cc;font-size:10px;font-weight:900;letter-spacing:.12em}
+        #anti-cheat-stop-overlay .anti-cheat-light{width:8px;height:8px;border-radius:50%;background:#ff394d;box-shadow:0 0 10px #ff263d;animation:antiCheatPulse 1s steps(2,end) infinite}
+        @keyframes antiCheatPulse{50%{opacity:.35}}
+        @media(prefers-reduced-motion:reduce){#anti-cheat-stop-overlay .anti-cheat-light{animation:none}}
+        
         /* Pause the animated wallpaper while the battle/cutscene owns the display. */
         body.battle-active::before{animation-play-state:paused!important}
         body.battle-active .element-doodle{animation-play-state:paused!important}
@@ -996,6 +1008,14 @@ body, button, input, textarea, select {
             <!-- RIGHT CRT INSPECTOR MONITOR -->
             <div id="right-inspector-monitor" class="crt-monitor relative rounded-2xl p-4 flex flex-col h-[560px] md:h-[610px] justify-between border-2 border-cyan-900 mb-3">
                 <div class="crt-scanline"></div>
+
+                <!-- Anti-cheat screen blocks reference information throughout battles and encounter cutscenes. -->
+                <div id="anti-cheat-stop-overlay" role="status" aria-live="polite" aria-label="Anti-cheat đang khóa thông tin nguyên tố">
+                    <div class="anti-cheat-warning">ANTI-CHEAT</div>
+                    <div class="anti-cheat-sign" aria-hidden="true"><div class="anti-cheat-sign-inner">STOP</div></div>
+                    <div class="anti-cheat-status"><span class="anti-cheat-light"></span> BATTLE MODE ACTIVE</div>
+                    <div class="anti-cheat-subtitle">Thông tin nguyên tố đang bị khóa trong trận đấu.<br>Hãy tập trung trả lời câu hỏi!</div>
+                </div>
 
                 <!-- Atomic-radius trend view temporarily covers this monitor; the original element view remains unchanged beneath it. -->
                 <div id="radius-trend-panel" class="hidden absolute inset-0 z-50 rounded-xl border border-cyan-400/50 bg-[#02070d] p-3 md:p-4 flex flex-col gap-2 overflow-hidden" role="region" aria-live="polite" aria-hidden="true">
