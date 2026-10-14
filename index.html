@@ -1909,6 +1909,12 @@ body, button, input, textarea, select {
 // The dataset compiles element properties from NIST Physical Reference Data; missing values
 // are intentionally null and displayed as unavailable rather than guessed or interpolated.
 // Source: https://scitoolbox.com/periodic-table/atomic-radius/
+        // Primary values: empirical atomic radii (pm), from SciToolbox's cited dataset.
+        // For missing empirical values, use published calculated/covalent estimates where available.
+        // Different radius definitions are not interchangeable; the UI marks fallback values.
+        // Sources: https://scitoolbox.com/periodic-table/atomic-radius/
+        // https://periodic-table.cheminfo.org/data
+        // https://en.wikipedia.org/wiki/Atomic_radii_of_the_elements_(data_page)
         const ATOMIC_RADIUS_PM = [
           25, null, 145, 105, 85, 70, 65, 60, 50, null,
           180, 150, 125, 110, 100, 100, 100, 71, 220, 180,
@@ -1924,9 +1930,34 @@ body, button, input, textarea, select {
           null, null, null, null, null, null, null, null, null, null,
           null, null, null, null
         ];
+        const ATOMIC_RADIUS_CALCULATED_PM = [
+          null, 31, null, null, null, null, null, null, null, 38,
+          null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, 88, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null,
+          null, null, null, 108, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, null, null, null, null, null, null,
+          null, null, null, null, 127, 120, 348, null, null, null,
+          null, null, null, null, null, 176, 96, 95, 186, null,
+          null, null, null, 131, 126, 121, 119, 118, 113, 112,
+          118, 130, null, null, null, null, null, null 
+        ];
+        function atomicRadiusInfo(el) {
+            const empirical = ATOMIC_RADIUS_PM[el.num - 1];
+            if (Number.isFinite(empirical)) return { value: empirical, kind: "Thực nghiệm" };
+            const calculated = ATOMIC_RADIUS_CALCULATED_PM[el.num - 1];
+            if (Number.isFinite(calculated)) {
+                const kind = el.num >= 104 && el.num <= 112 ? "Cộng hoá trị (ước tính)" :
+                    (el.num === 96 ? "Tham khảo thực nghiệm" : "Tính toán");
+                return { value: calculated, kind };
+            }
+            return { value: null, kind: "Chưa có dữ liệu công bố trong nguồn tham chiếu" };
+        }
         function atomicRadiusDisplay(el) {
-            const value = ATOMIC_RADIUS_PM[el.num - 1];
-            return Number.isFinite(value) ? `${value} pm` : "Chưa có dữ liệu tin cậy";
+            const info = atomicRadiusInfo(el);
+            return Number.isFinite(info.value) ? `${info.value} pm · ${info.kind}` : info.kind;
         }
 
         function updateInspectorDisplay() {
@@ -1949,12 +1980,12 @@ body, button, input, textarea, select {
             const shellStr = el.shells.map((val, i) => `${shellNames[i]}: ${val}`).join(' | ');
             document.getElementById('disp-shells').innerText = shellStr;
             
-                        const radiusValue = ATOMIC_RADIUS_PM[el.num - 1];
+                        const radiusInfo = atomicRadiusInfo(el);
             const radiusNode = document.getElementById('disp-radius');
             radiusNode.innerText = atomicRadiusDisplay(el);
-            radiusNode.title = Number.isFinite(radiusValue)
-                ? 'Bán kính nguyên tử thực nghiệm (pm), theo bộ dữ liệu SciToolbox; bán kính có thể khác nhau tùy định nghĩa và phương pháp đo. Nguồn: https://scitoolbox.com/periodic-table/atomic-radius/'
-                : 'Nguồn tham chiếu hiện không báo giá trị bán kính thực nghiệm cho nguyên tố này; không tự ước đoán hoặc nội suy.';
+            radiusNode.title = Number.isFinite(radiusInfo.value)
+                ? `Bán kính nguyên tử: ${radiusInfo.kind}, đơn vị pm. Giá trị phụ thuộc định nghĩa và phương pháp đo. Nguồn: https://scitoolbox.com/periodic-table/atomic-radius/ và https://periodic-table.cheminfo.org/data`
+                : 'Nguồn tham chiếu hiện chưa cung cấp giá trị đáng tin cậy; không tự ước đoán.';
             document.getElementById('disp-discoverer').innerText = el.disc;
             document.getElementById('direct-num-input').value = el.num;
 
