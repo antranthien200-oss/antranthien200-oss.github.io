@@ -746,7 +746,7 @@ body, button, input, textarea, select {
 
                     <!-- PERIODIC TABLE 18-COLUMN INTERACTIVE GRID -->
                     <div class="flex-grow my-2 overflow-auto crt-scrollbar bg-black/80 rounded-lg p-2 border border-[#39ff14]/30 flex flex-col justify-center">
-                        <div id="ptable-grid" class="grid grid-cols-18 gap-1 min-w-[760px] text-center">
+                        <div id="ptable-grid" class="grid grid-cols-[24px_repeat(18,minmax(0,1fr))] gap-1 min-w-[800px] text-center">
                             <!-- Dynamic Element Cells injected here via JS -->
                         </div>
                     </div>
@@ -1645,22 +1645,45 @@ body, button, input, textarea, select {
             // Update status string
             document.getElementById('grid-status-txt').innerText = `ĐANG HIỂN THỊ: ${matchCount} / 118 NGUYÊN TỐ`;
 
-            // Render Periods 1 to 7
+            // Group header: columns 1–18 (IUPAC numbering).
+            const corner = document.createElement('div');
+            corner.className = "text-[8px] text-[#39ff14]/70 font-mono flex items-end justify-center";
+            corner.textContent = "NHÓM";
+            gridContainer.appendChild(corner);
+            for (let c = 1; c <= 18; c++) {
+                const label = document.createElement('div');
+                label.className = "text-[9px] md:text-[10px] text-yellow-300 font-bold font-mono flex items-center justify-center";
+                label.textContent = c;
+                label.title = `Nhóm ${c}`;
+                gridContainer.appendChild(label);
+            }
+
+            // Render Periods 1 to 7, with period numbers in a dedicated left gutter.
             for (let r = 1; r <= 7; r++) {
+                const periodLabel = document.createElement('div');
+                periodLabel.className = "text-[9px] md:text-[10px] text-cyan-300 font-bold font-mono flex items-center justify-center";
+                periodLabel.textContent = r;
+                periodLabel.title = `Chu kỳ ${r}`;
+                gridContainer.appendChild(periodLabel);
                 for (let c = 1; c <= 18; c++) {
-                    const item = gridMap[`${r}-${c}`];
+                    const item = gridMap[`${r-${c}`];
                     createCell(item);
                 }
             }
 
-            // Render Spacer Row 8
-            for (let c = 1; c <= 18; c++) {
+            // Render Spacer Row 8, including the left gutter.
+            for (let c = 0; c <= 18; c++) {
                 const spacer = document.createElement('div');
                 spacer.className = "h-2 col-span-1";
                 gridContainer.appendChild(spacer);
             }
 
-            // Render Row 9 (Lanthanides 57-71)
+            // Render Row 9 (Lanthanides 57-71), keeping the period label in the gutter.
+            const lanPeriod = document.createElement('div');
+            lanPeriod.className = "text-[9px] text-cyan-300 font-bold font-mono flex items-center justify-center";
+            lanPeriod.textContent = "6";
+            lanPeriod.title = "Chu kỳ 6";
+            gridContainer.appendChild(lanPeriod);
             for (let c = 1; c <= 18; c++) {
                 const item = gridMap[`9-${c}`];
                 if (c === 1) {
@@ -1674,7 +1697,12 @@ body, button, input, textarea, select {
                 }
             }
 
-            // Render Row 10 (Actinides 89-103)
+            // Render Row 10 (Actinides 89-103).
+            const actPeriod = document.createElement('div');
+            actPeriod.className = "text-[9px] text-pink-300 font-bold font-mono flex items-center justify-center";
+            actPeriod.textContent = "7";
+            actPeriod.title = "Chu kỳ 7";
+            gridContainer.appendChild(actPeriod);
             for (let c = 1; c <= 18; c++) {
                 const item = gridMap[`10-${c}`];
                 if (c === 1) {
