@@ -425,7 +425,7 @@ function useAttack(f,kind){
  }
  if(kind==='awaken'){
   if(f.char==='ten'&&f.awakened){f.tenBase=!f.tenBase;setMotion(f,'megumiSwitch',.45,f.face,t);showToast(f.tenBase?'TEN SHADOWS · BASE TECHNIQUES':'INSANITY · AWAKENED SHIKIGAMI',900);updateHud();return}
-  if(f.meter<100||f.awakened)return;f.awakened=true;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:15));f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':'brother';f.tenBase=false;f.awakeTimer=f.char==='restless'?80:60;f.jackpot=false;f.gambleVisuals=0;f.gambleAttempts=0;f.domainStunGuaranteed=f.char==='restless'&&dist(f,t)<600;if(f.char==='restless'&&f.domainStunGuaranteed){t.stun=Math.max(t.stun,1.1);t.invuln=0}f.domainType='';f.domainTimer=0;setMotion(f,f.char==='honored'?'gojoAwaken':f.char==='vessel'?'sukunaAwaken':'hakariDomain',1.35,f.face,t);burst(f.x,f.y,c.accent,48,7);game.shake=13;showToast(c.awakening,1600);popText(f.x,f.y-65,c.awakeName,'#ffde89',25);return;
+  if(f.meter<100||f.awakened)return;f.awakened=true;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:15));f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':'brother';f.tenBase=false;f.awakeTimer=f.char==='restless'?80:60;f.jackpot=false;f.gambleVisuals=0;f.gambleAttempts=0;f.domainStunGuaranteed=f.char==='restless'&&dist(f,t)<600;if(f.char==='restless'&&f.domainStunGuaranteed){t.stun=Math.max(t.stun,1.1);t.invuln=0}f.domainType='';f.domainTimer=0;setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken'})[f.char]||'awakening',1.35,f.face,t);burst(f.x,f.y,c.accent,48,7);game.shake=13;showToast(c.awakening,1600);popText(f.x,f.y-65,c.awakeName,'#ffde89',25);return;
  }
  if(kind==='special'){
   if(f.specialCd>0)return;
@@ -438,7 +438,7 @@ function useAttack(f,kind){
   if(f.char==='vessel'&&f.awakened){const a=aimedAngle(f);setMotion(f,'sukunaCleave',.85,a,t);if(targetInAim(f,t,145,.72,a)){f.attackAnim=.85;showToast('CLEAVE · GRAB',350);schedule(()=>{if(!t.dead&&targetInAim(f,t,165,.9,a)){const dmg=Math.max(10,t.hp*.4);damage(t,dmg,f,{stun:.7,kx:Math.cos(a)*11,ky:Math.sin(a)*11,unblockable:true,big:true,color:'#f14b60',ignoreInvuln:true});burstLine(f,t,'#ff435d',18);burst(t.x,t.y,'#ff435d',26,7);popText(t.x,t.y-70,'CLEAVE','#ff6678',22)}},220)}else showToast('CLEAVE · TOO FAR',500);f.specialCd=12;return}
   if(f.char==='ten'){
    if(f.shadowTimer>0){f.shadowTimer=0;f.specialCd=10;setMotion(f,'megumiShadowExit',.45,f.face,t);burst(f.x,f.y,'#111a2c',20,4);return}
-   f.shadowTimer=1.15;f.specialCd=10;setMotion(f,'megumiShadowDive',1.15,f.face,t);f.vx*=.55;f.vy*=.55;burst(f.x,f.y,'#101725',18,3);return;
+   f.shadowTimer=1.15;f.specialCd=.45;setMotion(f,'megumiShadowDive',1.15,f.face,t);f.vx*=.55;f.vy*=.55;burst(f.x,f.y,'#101725',18,3);return;
   }
   if(f.char==='perfection'){
    f.soulMode=(f.soulMode+1)%3;f.specialCd=.22;const mode=['NORMAL','BLADE MODE','CLUB MODE'][f.soulMode];setMotion(f,'mahitoMorph',.45,f.face,t);burst(f.x,f.y,'#82d7c5',16,4);popText(f.x,f.y-54,mode,'#a8f0de',15);return;
