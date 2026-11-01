@@ -144,7 +144,7 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const lerp=(a,b,t)=>a+(b-a)*t;
 const keys=new Set();let mouse={x:W*.7,y:H*.5,down:false};
-addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys.add(k);if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause()});
+addEventListener('keydown',e=>{let k=e.key.toLowerCase();keys.add(k);if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause();if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if(k==='q'){useAttack(player,'dash');keys.delete(k)}else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}}});
 addEventListener('keyup',e=>keys.delete(e.key.toLowerCase()));
 addEventListener('blur',()=>{keys.clear();mouse.down=false;if(player)player.block=false});
 canvas.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
@@ -290,7 +290,7 @@ function useAttack(f,kind){
  // Hakari can combine Shutter Doors with Fever Breaker's windup for Fever Crush.
  if(f.char==='restless'&&!f.jackpot&&idx===1&&f.feverWindow>0){if(d<190){damage(t,8,f,{stun:.22,color:'#d8a6ff'});schedule(()=>{if(!t.dead&&dist(f,t)<160)damage(t,12,f,{stun:.75,kx:Math.cos(f.face)*11,ky:Math.sin(f.face)*11,big:true,unblockable:true,color:'#d8a6ff'})},180);popText(t.x,t.y-58,'FEVER CRUSH','#e9c7ff',17)}f.feverWindow=0;f.skillCd[1]=15;f.skillCd[3]=23;registerGambleVisual(f);return}
  // Divergent Fist has a deliberate second press window for Black Flash.
- if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){f.blackFlashWindow=0;f.skillCd[2]=18;const back=Math.cos(Math.atan2(t.y-f.y,t.x-f.x)-f.face)<-.25;const dmg=back&&f.blackFlashChain<3?7:10;damage(t,dmg,f,{stun:.45,kx:back?0:Math.cos(f.face)*13,ky:back?0:Math.sin(f.face)*13,unblockable:true,big:true,color:'#ffcf72'});popText(t.x,t.y-70,'BLACK FLASH','#ffe5a2',22);burst(t.x,t.y,'#fff0bb',24,7);if(back&&f.blackFlashChain<3){f.blackFlashChain++;f.blackFlashWindow=.58;f.skillCd[2]=0;showToast('BLACK FLASH CHAIN ×'+(f.blackFlashChain+1),600)}else f.blackFlashChain=0;return}
+ if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){f.blackFlashWindow=0;f.skillCd[2]=18;const back=Math.cos(Math.atan2(t.y-f.y,t.x-f.x)-f.face)<-.25;const dmg=back&&f.blackFlashChain<3?7:10;t.invuln=0;damage(t,dmg,f,{stun:.45,kx:back?0:Math.cos(f.face)*13,ky:back?0:Math.sin(f.face)*13,unblockable:true,big:true,color:'#ffcf72'});popText(t.x,t.y-70,'BLACK FLASH','#ffe5a2',22);burst(t.x,t.y,'#fff0bb',24,7);if(back&&f.blackFlashChain<3){f.blackFlashChain++;f.blackFlashWindow=.58;f.skillCd[2]=0;showToast('BLACK FLASH CHAIN ×'+(f.blackFlashChain+1),600)}else f.blackFlashChain=0;return}
  if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';
  if(f.char==='honored'){
   if(!f.awakened){
