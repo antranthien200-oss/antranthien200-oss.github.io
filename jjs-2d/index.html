@@ -72,6 +72,41 @@
   #pause button{margin-top:8px}
   #hitFlash{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle,transparent 45%,#ff344b55 100%)}
   @media(max-width:640px){.toprow{left:8px;right:8px;top:8px}.fighter-card{width:42vw;padding:8px}.fighter-name{font-size:10px}.fighter-sub{font-size:8px}#roundLabel{top:83px}.controls{display:none}.bottom{bottom:9px}.slot{width:61px;height:54px}.slot .slotname{font-size:8px}#modeTag{display:none}.menu-grid{grid-template-columns:1fr}.roster{grid-template-columns:repeat(3,1fr)}.fighter-pick{min-height:103px}}
+
+/* JJS cinematic title screen */
+#menu{position:fixed;inset:0;display:flex;align-items:stretch;justify-content:center;overflow:hidden;background:#060914;z-index:5;color:#fff}
+.menu-art{position:absolute;inset:-2%;background-image:url('./menu-bg.webp');background-size:cover;background-position:center center;transform:scale(1.025);animation:menuDrift 24s ease-in-out infinite alternate;filter:saturate(1.06)}
+.menu-art:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(2,6,18,.08),rgba(3,6,17,.46) 38%,rgba(3,6,17,.62) 50%,rgba(3,6,17,.42) 64%,rgba(2,6,18,.06)),linear-gradient(180deg,rgba(2,5,14,.45),transparent 23%,transparent 72%,rgba(2,5,14,.62))}
+.menu-screen-shade{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 48%,rgba(5,8,18,.22),transparent 38%),linear-gradient(180deg,rgba(5,8,18,.3),transparent 25%,transparent 76%,rgba(5,8,18,.45));pointer-events:none}
+.menu-topline{position:absolute;z-index:2;left:clamp(16px,3.1vw,44px);right:clamp(16px,3.1vw,44px);top:clamp(14px,2.6vh,28px);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.menu-brand{display:flex;align-items:center;gap:10px;color:#dbe7f8;font-size:9px;letter-spacing:.22em;font-weight:950;text-shadow:0 2px 8px #000}
+.menu-brand-mark{width:28px;height:28px;display:grid;place-items:center;border:1px solid #ffffff66;background:#08101dc9;color:#fff;border-radius:7px;font-size:17px}
+.menu-version{color:#d5dced;font-size:10px;font-weight:950;letter-spacing:.17em;text-shadow:0 2px 8px #000}.menu-version i{font-style:normal;color:#ff5268}.menu-version b{margin-left:8px;color:#b7c5d9;font-size:8px;letter-spacing:.12em}
+.menu-main{position:relative;z-index:2;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:52px 16px 48px;gap:clamp(12px,2.5vh,24px)}
+.menu-logo{text-align:center;filter:drop-shadow(0 5px 18px #000b);margin-top:-1vh}.menu-kicker{color:#bac7dc;font-size:9px;letter-spacing:.32em;font-weight:950;text-shadow:0 2px 8px #000}
+.menu-title{font-size:clamp(82px,13vw,150px);font-weight:1000;letter-spacing:-.095em;line-height:.78;color:#f8faff;text-shadow:0 4px 0 #25334b,0 8px 25px #000d,0 0 35px #a9c7ff65;transform:skew(-6deg)}
+.menu-subtitle{margin-top:13px;font-size:clamp(10px,1.3vw,15px);font-weight:950;letter-spacing:.38em;color:#fff;text-shadow:0 3px 10px #000}
+.menu-title-rule{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;color:#c7d3e7;font-size:8px;letter-spacing:.25em;font-weight:900}.menu-title-rule span{height:1px;width:42px;background:linear-gradient(90deg,transparent,#fff)}.menu-title-rule span:last-child{transform:scaleX(-1)}
+.menu-actions{display:grid;gap:8px;width:min(330px,78vw)}
+.menu-button{appearance:none;position:relative;display:grid;grid-template-columns:34px 1fr;grid-template-rows:1fr 12px;align-items:center;text-align:left;min-height:55px;padding:8px 16px;border:1px solid #dbe8ff62;border-radius:4px;background:linear-gradient(110deg,rgba(7,13,25,.94),rgba(18,25,42,.82));color:#f6f8ff;box-shadow:0 8px 24px #0006,inset 0 0 18px #ffffff08;cursor:pointer;transition:transform .16s,border-color .16s,filter .16s;backdrop-filter:blur(7px)}
+.menu-button:hover{transform:translateY(-2px) scale(1.015);border-color:#fff;filter:brightness(1.2)}.menu-button .button-icon{grid-row:1/3;grid-column:1;font-size:23px;text-align:center;color:#c6d9ff;text-shadow:0 0 12px #6eaaff}.menu-button>span:nth-child(2){font-weight:1000;font-size:12px;letter-spacing:.16em}.menu-button small{font-size:7px;font-weight:800;letter-spacing:.19em;color:#9baac2}
+.menu-button.play{border-color:#ff7b91;background:linear-gradient(105deg,rgba(120,24,54,.96),rgba(40,19,58,.94));box-shadow:0 0 24px #e832663f,inset 0 0 19px #ffb0c01a}.menu-button.play .button-icon{color:#fff}
+.menu-selected{width:min(330px,78vw);padding:10px 14px 9px;border:1px solid #ffffff42;border-radius:4px;background:rgba(5,10,20,.72);box-shadow:0 7px 20px #0006;backdrop-filter:blur(8px)}
+.selected-caption{font-size:7px;color:#8fa4c2;letter-spacing:.26em;font-weight:900}.selected-main{display:flex;align-items:center;gap:9px;margin-top:4px;font-size:11px;font-weight:1000;letter-spacing:.1em}.selected-icon{font-size:19px}
+.selected-skin-line{display:flex;justify-content:space-between;margin-top:4px;color:#93a5be;font-size:8px;letter-spacing:.15em}.selected-skin-line b{color:#f5d9a0}
+.menu-bottomline{position:absolute;z-index:2;bottom:clamp(12px,2.7vh,28px);left:12px;right:12px;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;color:#c0cde0;font-size:8px;font-weight:900;letter-spacing:.17em;text-shadow:0 2px 8px #000}.menu-bottomline i{font-style:normal;color:#ff7187}
+.menu-sub{position:absolute;z-index:8;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,5,13,.7);backdrop-filter:blur(10px)}.menu-sub[hidden]{display:none!important}
+.menu-sub-panel{width:min(780px,94vw);max-height:min(88vh,760px);overflow:auto;padding:clamp(18px,3vw,28px);border:1px solid #ffffff55;border-radius:9px;background:linear-gradient(145deg,rgba(14,22,38,.97),rgba(6,11,21,.97));box-shadow:0 24px 90px #000c}
+.menu-sub-head{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:19px}.menu-sub-head h2{font-size:clamp(23px,4vw,35px);letter-spacing:.05em;margin:5px 0 4px}.menu-sub-head p{margin:0;color:#aebcd1;font-size:11px}
+.menu-close{border:1px solid #ffffff44;border-radius:5px;background:#ffffff10;color:#fff;width:34px;height:34px;font-size:24px;cursor:pointer}
+.menu-sub-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}.menu-option{min-width:0;min-height:145px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:14px;border:1px solid #ffffff30;border-radius:6px;background:linear-gradient(145deg,#ffffff0c,#ffffff04);color:#fff;text-align:left;cursor:pointer;transition:.15s}
+.menu-option:hover{border-color:#c5dfff;background:#ffffff12;transform:translateY(-2px)}.menu-option.selected{border-color:#ff687e;box-shadow:inset 0 0 0 1px #ff687e70,0 0 22px #f24d7040;background:linear-gradient(145deg,#ff536e20,#ffffff08)}
+.option-icon{font-size:35px;margin-bottom:8px;filter:drop-shadow(0 4px 8px #000)}.option-name{font-size:11px;font-weight:1000;letter-spacing:.09em}.option-desc{font-size:9px;line-height:1.4;color:#aebbd0;margin-top:5px}
+.skin-swatches{display:flex;gap:5px;margin:5px 0 10px}.skin-swatches i{width:28px;height:9px;border:1px solid #ffffff55;border-radius:3px;display:block}
+.menu-sub-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ffffff20;margin-top:19px;padding-top:14px}.menu-sub-footer>span{color:#abb9ce;font-size:8px;font-weight:900;letter-spacing:.13em}
+.menu-done{border:1px solid #ff7688;border-radius:4px;background:linear-gradient(100deg,#a82c4c,#59233f);color:#fff;padding:10px 20px;font-size:9px;font-weight:1000;letter-spacing:.2em;cursor:pointer}.menu-done span{margin-left:14px;font-size:14px}
+@keyframes menuDrift{from{transform:scale(1.025) translate3d(-.3%,0,0)}to{transform:scale(1.07) translate3d(.3%,-.2%,0)}}
+@media(max-width:640px){.menu-brand{font-size:7px;letter-spacing:.12em}.menu-version b{display:none}.menu-main{gap:12px;padding-top:55px;padding-bottom:58px}.menu-title{font-size:clamp(78px,20vw,112px)}.menu-actions,.menu-selected{width:min(300px,82vw)}.menu-button{min-height:49px}.menu-sub-cards{grid-template-columns:1fr}.menu-option{min-height:105px}.menu-option .option-icon{font-size:27px;margin-bottom:4px}.menu-sub-footer{align-items:flex-start;flex-direction:column}.menu-done{width:100%}.menu-bottomline{font-size:7px;gap:6px;letter-spacing:.1em}}
 </style>
 </head>
 <body>
@@ -107,27 +142,22 @@
   <div id="modeTag">JJS-INSPIRED · 2D ARENA TEST</div>
 </div>
 <div id="menu">
-  <div class="menu-panel">
-    <div class="eyebrow">TZE'S SHENANIGANS · FAN-MADE 2D FIGHTER</div>
-    <h1>JUJUTSU<br><span>SHENANIGANS</span></h1>
-    <div class="lead">A fan-made 2D JJS battleground. Pick one of the original core fighters, chain M1s, use their named techniques, break the street apart, and build your awakening meter.</div>
-    <div class="menu-grid">
-      <div>
-        <div class="select-title">SELECT YOUR FIGHTER</div>
-        <div class="roster" id="roster">
-          <button class="fighter-pick selected" data-char="honored"><div class="portrait">🕶️</div><strong>THE HONORED ONE</strong><small>Space · Limitless</small></button>
-          <button class="fighter-pick" data-char="vessel"><div class="portrait">🥊</div><strong>VESSEL</strong><small>Yuji · King of Curses awakening</small></button>
-          <button class="fighter-pick" data-char="restless"><div class="portrait">🎰</div><strong>RESTLESS GAMBLER</strong><small>Hakari · Idle Death Gamble</small></button>
-        </div>
-      </div>
-      <div class="details">
-        <h2 id="pickName">THE HONORED ONE</h2><p id="pickDesc">A rare talent who bends space itself. Keep your distance, then crush the opponent with a devastating finisher.</p>
-        <div class="move-list" id="pickMoves"><div class="move"><b>1 · BLUE</b>Attracting orb</div><div class="move"><b>2 · RED</b>Repulsive blast</div><div class="move"><b>3 · LAPS</b>Spatial pull</div><div class="move"><b>4 · HOLLOW</b>Massive energy beam</div></div>
-        <button class="primary" id="startBtn">ENTER THE BATTLE</button>
-        <div class="footnote">Controls: WASD · LEFT CLICK · 1–4 · Q · F · R · G<br>Vessel awakens into King of Curses. Hakari must build to Jackpot during Idle Death Gamble.</div>
-      </div>
+  <div class="menu-art" aria-hidden="true"></div><div class="menu-screen-shade" aria-hidden="true"></div>
+  <div class="menu-topline"><div class="menu-brand"><span class="menu-brand-mark">呪</span><span>CURSED ENERGY BATTLEGROUND</span></div><div class="menu-version">JJS <i>2D</i> <b>FAN PROJECT</b></div></div>
+  <main class="menu-main">
+    <div class="menu-logo"><div class="menu-kicker">THE BATTLE OF THE STRONGEST</div><div class="menu-title">JJS</div><div class="menu-subtitle">JUJUTSU SHENANIGANS</div><div class="menu-title-rule"><span></span><b>2D BATTLEGROUND</b><span></span></div></div>
+    <div class="menu-actions">
+      <button class="menu-button play" id="startBtn"><span class="button-icon">▶</span><span>PLAY</span><small>ENTER THE BATTLE</small></button>
+      <button class="menu-button" id="switchCharBtn"><span class="button-icon">⇄</span><span>SWITCH CHARACTER</span><small>CHOOSE YOUR FIGHTER</small></button>
+      <button class="menu-button" id="switchSkinBtn"><span class="button-icon">◈</span><span>SWITCH SKIN</span><small>CHANGE YOUR LOOK</small></button>
     </div>
-  </div>
+    <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-skin-line"><span>SKIN</span><b id="currentSkinName">BLINDFOLDED</b></div></div>
+  </main>
+  <div class="menu-bottomline"><span>WASD MOVE</span><i>·</i><span>MOUSE AIM</span><i>·</i><span>LEFT CLICK ATTACK</span><i>·</i><span>1–4 SKILLS</span></div>
+  <div id="menuSub" class="menu-sub" hidden><section class="menu-sub-panel">
+    <div class="menu-sub-head"><div><div class="menu-kicker" id="menuSubKicker">FIGHTER ROSTER</div><h2 id="menuSubTitle">SWITCH CHARACTER</h2><p id="menuSubHint">Choose your fighter for the next match.</p></div><button id="menuSubClose" class="menu-close" aria-label="Close">×</button></div>
+    <div id="menuSubCards" class="menu-sub-cards"></div><div class="menu-sub-footer"><span id="menuSubSelected">SELECTED: THE HONORED ONE</span><button id="menuSubDone" class="menu-done">DONE <span>→</span></button></div>
+  </section></div>
 </div>
 <div id="pause"><div class="pausebox"><h2>PAUSED</h2><p>Catch your breath. The fight is still waiting.</p><button class="primary" id="resumeBtn">RESUME · ESC</button><button class="primary" id="restartBtn" style="background:linear-gradient(100deg,#53677d,#35465b);box-shadow:none">RESTART MATCH</button><button class="primary" id="menuBtn" style="background:linear-gradient(100deg,#303d50,#202a39);box-shadow:none">CHARACTER SELECT</button></div></div>
 <script>
@@ -165,9 +195,49 @@ const CHARS={
   special:'DOOR GUARD',specialDesc:'Raise shutter doors to counter melee for 0.6 seconds; projectiles break the doors.',awakeSpecial:'RHYTHM',awakeSpecialDesc:'Dance to build a permanent stackable speed boost and accelerate cooldowns.',awakening:'IDLE DEATH GAMBLE',awakeName:'JACKPOT'}
 };
 let selected='honored';
-const pickButtons=[...document.querySelectorAll('.fighter-pick')];
-function updatePick(){const c=CHARS[selected];$('pickName').textContent=c.name;$('pickDesc').textContent=c.desc;$('pickMoves').innerHTML='<div class="moveheading">BASE KIT</div>'+c.moves.map((m,i)=>`<div class="move"><b>${i+1} · ${m[0]}</b>${m[1]}</div>`).join('')+`<div class="move"><b>R · ${c.special}</b>${c.specialDesc}</div><div class="moveheading">AWAKENING · ${c.awakening}</div>`+c.awakeMoves.map((m,i)=>`<div class="move"><b>${i+1} · ${m[0]}</b>${m[1]}</div>`).join('')+`<div class="move"><b>R · ${c.awakeSpecial}</b>${c.awakeSpecialDesc}</div>`;pickButtons.forEach(b=>b.classList.toggle('selected',b.dataset.char===selected))}
-pickButtons.forEach(b=>b.addEventListener('click',()=>{selected=b.dataset.char;updatePick()}));updatePick();
+const CHAR_ICONS={honored:'🕶️',vessel:'🥊',restless:'🎰'};
+const SKINS={
+ honored:[
+  {name:'BLINDFOLDED',desc:'Classic Limitless uniform with the blindfold.',hair:'#eef3ff',coat:'#19253b',accent:'#4cb8f4',skin:'#f1c7a9',eyeStyle:'blindfold'},
+  {name:'SIX EYES',desc:'Unsealed eyes glowing with Limitless energy.',hair:'#f7f8ff',coat:'#202b43',accent:'#71dcff',skin:'#f1c7a9',eyeStyle:'sixeyes'},
+  {name:'DARK TECH',desc:'A darker combat uniform with silver-blue details.',hair:'#dfe9ff',coat:'#111722',accent:'#9ac8ff',skin:'#e9bea5',eyeStyle:'sixeyes'}
+ ],
+ vessel:[
+  {name:'TOKYO STUDENT',desc:'Yuji’s familiar school uniform.',hair:'#e9a36b',coat:'#c34e4e',accent:'#f3bb67',skin:'#c98968',markings:false},
+  {name:'KING OF CURSES',desc:'Sukuna markings and a crimson-black palette.',hair:'#e6b2a4',coat:'#542335',accent:'#f04e66',skin:'#c98968',markings:true},
+  {name:'BLACK FLASH',desc:'Dark combat outfit charged with cursed energy.',hair:'#e69c5e',coat:'#171c28',accent:'#c4d4e8',skin:'#c98968',markings:false}
+ ],
+ restless:[
+  {name:'GAMBLER',desc:'Hakari’s everyday look.',hair:'#24263c',coat:'#343955',accent:'#d9a4ff',skin:'#e0b49b'},
+  {name:'JACKPOT',desc:'Bright pale outfit with jackpot-green energy.',hair:'#e8e8f2',coat:'#e4d8c7',accent:'#65f69b',skin:'#e0b49b'},
+  {name:'STREET KING',desc:'Dark streetwear with violet highlights.',hair:'#1d2233',coat:'#18202d',accent:'#bb91ff',skin:'#d9a98f'}
+ ]
+};
+const skinSelections={honored:0,vessel:0,restless:0};
+let menuView='';
+function getFighterLook(f){const list=SKINS[f.char]||[];const idx=f.team==='player'?(f.skinIndex||0):0;return Object.assign({},CHARS[f.char],list[idx]||list[0]||{})}
+function updateMenuSummary(){const skin=SKINS[selected][skinSelections[selected]||0];$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentSkinName').textContent=skin.name}
+function showMenuSub(view){menuView=view;$('menuSub').hidden=false;renderMenuSub()}
+function closeMenuSub(){$('menuSub').hidden=true;menuView=''}
+function renderMenuSub(){
+ const isCharacter=menuView==='character';
+ $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':'APPEARANCE';
+ $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':'SWITCH SKIN';
+ $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':'Choose a different look for '+CHARS[selected].name+'.';
+ let html='';
+ if(isCharacter){html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('')}
+ else{html=SKINS[selected].map((s,i)=>'<button class="menu-option '+((skinSelections[selected]||0)===i?'selected':'')+'" data-skin="'+i+'"><span class="skin-swatches"><i style="background:'+s.hair+'"></i><i style="background:'+s.coat+'"></i><i style="background:'+s.accent+'"></i><i style="background:'+s.skin+'"></i></span><span class="option-name">'+s.name+'</span><span class="option-desc">'+s.desc+'</span></button>').join('')}
+ $('menuSubCards').innerHTML=html;
+ $('menuSubSelected').textContent=isCharacter?'SELECTED: '+CHARS[selected].name:'SELECTED SKIN: '+SKINS[selected][skinSelections[selected]||0].name;
+ document.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selected=btn.dataset.character;updateMenuSummary();renderMenuSub()}));
+ document.querySelectorAll('[data-skin]').forEach(btn=>btn.addEventListener('click',()=>{skinSelections[selected]=Number(btn.dataset.skin);if(player&&!game.started)player.skinIndex=skinSelections[selected];updateMenuSummary();renderMenuSub()}));
+}
+$('switchCharBtn').addEventListener('click',()=>showMenuSub('character'));
+$('switchSkinBtn').addEventListener('click',()=>showMenuSub('skin'));
+$('menuSubClose').addEventListener('click',closeMenuSub);
+$('menuSubDone').addEventListener('click',closeMenuSub);
+updateMenuSummary();
+
 let game={started:false,paused:false,over:false,shake:0,last:0,time:0,round:1,kills:0,toastTimer:0,enemyRespawn:0};
 const scheduledTasks=[];
 function schedule(fn,delayMs){scheduledTasks.push({at:game.time+Math.max(0,delayMs)/1000,fn});}
@@ -181,7 +251,7 @@ const destructibles=[
  {x:620,y:930,w:100,h:100,hp:3,color:'#c9c4b9'},{x:1160,y:1040,w:100,h:100,hp:3,color:'#b9c1c7'},{x:1700,y:870,w:90,h:90,hp:3,color:'#d0c6b8'},{x:1020,y:220,w:100,h:90,hp:3,color:'#c7c2b8'}
 ].map((o,i)=>({...o,id:i,alive:true}));
 const particles=[],projectiles=[],debris=[],texts=[],doorTraps=[];
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,stun:0,invuln:0,attackAnim:0,attackType:'',jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,skinIndex:team==='player'?(skinSelections[char]||0):0,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,stun:0,invuln:0,attackAnim:0,attackType:'',jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0}};
 let player,enemy;
 function resetMatch(){scheduledTasks.length=0;player=makeFighter('player',selected,950,750);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1260,750);game.over=false;game.enemyRespawn=0;game.kills=0;game.time=0;game.shake=0;particles.length=0;projectiles.length=0;debris.length=0;texts.length=0;doorTraps.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});updateHud()}
 function startGame(){resetMatch();game.started=true;game.paused=false;$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
@@ -412,7 +482,7 @@ function drawMap(){ctx.fillStyle='#b5b8b5';ctx.fillRect(0,0,W,H);let left=camera
  for(const o of destructibles){if(!o.alive)continue;ctx.fillStyle='#0002';ctx.fillRect(o.x+7,o.y+9,o.w,o.h);ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.fillStyle='#f4f1e8';ctx.fillRect(o.x+5,o.y+5,o.w-10,7);ctx.fillStyle='#8d9297';ctx.fillRect(o.x+10,o.y+o.h-14,o.w-20,7);ctx.strokeStyle='#858b91';ctx.lineWidth=2;ctx.strokeRect(o.x,o.y,o.w,o.h);if(o.hp<3){ctx.strokeStyle='#454b52';ctx.beginPath();ctx.moveTo(o.x+20,o.y+10);ctx.lineTo(o.x+45,o.y+40);ctx.lineTo(o.x+32,o.y+65);ctx.stroke()}}
  ctx.restore();
 }
-function drawFighter(f){if(f.dead)return;let x=sx(f.x),y=sy(f.y)-f.jump*3;let c=CHARS[f.char],isP=f.team==='player';ctx.save();ctx.translate(x,y);if(f.flash>0)ctx.globalAlpha=.45+Math.sin(game.time*70)*.3;
+function drawFighter(f){if(f.dead)return;let x=sx(f.x),y=sy(f.y)-f.jump*3;let c=getFighterLook(f),isP=f.team==='player';ctx.save();ctx.translate(x,y);if(f.flash>0)ctx.globalAlpha=.45+Math.sin(game.time*70)*.3;
  // aura and shadow
  ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(0,16,24,12,0,0,Math.PI*2);ctx.fill();if(f.awakened){ctx.strokeStyle=f.jackpot?'#65f69b':(f.char==='vessel'?'#f0445a':c.accent);ctx.globalAlpha=.4+Math.sin(game.time*12)*.2;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,34+Math.sin(game.time*9)*4,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=1}
  // face direction points right at angle 0; char faces direction
@@ -425,7 +495,7 @@ function drawFighter(f){if(f.dead)return;let x=sx(f.x),y=sy(f.y)-f.jump*3;let c=
  let arm= f.attackAnim>0?14:0;ctx.fillStyle=c.skin;ctx.fillRect(8,-13,10+arm,9);ctx.fillRect(-18,-12,8,9);ctx.fillStyle=c.coat;ctx.fillRect(5,-17,13+arm,5);
  // head
  ctx.fillStyle=c.skin;ctx.fillRect(-11,-34,22,20);ctx.fillStyle=c.hair;ctx.fillRect(-13,-40,26,11);ctx.fillRect(-15,-35,7,13);ctx.fillRect(8,-37,8,13);ctx.fillRect(-8,-43,9,7);ctx.fillRect(1,-44,9,8);
- if(f.char==='honored'){ctx.fillStyle='#101521';ctx.fillRect(-12,-29,24,7);ctx.fillStyle='#31445b';ctx.fillRect(-11,-28,22,3)}else if(f.char==='vessel'&&f.awakened){ctx.fillStyle='#32121b';ctx.fillRect(-10,-34,3,10);ctx.fillRect(7,-34,3,10);ctx.fillRect(-8,-25,16,3);ctx.fillStyle='#f14855';ctx.fillRect(-8,-23,3,2);ctx.fillRect(5,-23,3,2)}else{ctx.fillStyle='#241d1e';ctx.fillRect(-8,-24,4,2);ctx.fillRect(4,-24,4,2)}
+ if(f.char==='honored'&&c.eyeStyle==='blindfold'){ctx.fillStyle='#101521';ctx.fillRect(-12,-29,24,7);ctx.fillStyle='#31445b';ctx.fillRect(-11,-28,22,3)}else if(f.char==='honored'){ctx.fillStyle='#eaf8ff';ctx.fillRect(-8,-26,5,3);ctx.fillRect(4,-26,5,3);ctx.fillStyle='#56cfff';ctx.fillRect(-7,-26,2,2);ctx.fillRect(5,-26,2,2)}else if(f.char==='vessel'&&(f.awakened||c.markings)){ctx.fillStyle='#32121b';ctx.fillRect(-10,-34,3,10);ctx.fillRect(7,-34,3,10);ctx.fillRect(-8,-25,16,3);ctx.fillStyle='#f14855';ctx.fillRect(-8,-23,3,2);ctx.fillRect(5,-23,3,2)}else{ctx.fillStyle='#241d1e';ctx.fillRect(-8,-24,4,2);ctx.fillRect(4,-24,4,2)}
  if(f.block){ctx.strokeStyle='#c8eeff';ctx.lineWidth=3;ctx.globalAlpha=.8;ctx.beginPath();ctx.arc(0,-2,31,-.95,.95);ctx.stroke()}
  ctx.restore();
  // overhead label and health bar
