@@ -589,7 +589,7 @@ function drawFighter(f){
  // shadow and ground contact
  ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(0,16,24,12,0,0,Math.PI*2);ctx.fill();
  if(f.awakened){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':(f.char==='vessel'?'#f0445a':c.accent);ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,0,34+Math.sin(game.time*9)*4,0,Math.PI*2);ctx.stroke();ctx.restore()}
- drawMotionVfx(f,m,progress,c);
+ drawMotionVfx(f,name,progress,c);
  // blocky legs articulated at the hip; kicks have independent silhouettes
  drawLimb(-7,5,22,10,backLeg,'#202b38');drawLimb(7,5,22,10,frontLeg,'#263347');
  ctx.fillStyle='#111923';ctx.fillRect(-16,19+walk,15,7);ctx.fillRect(2,19-walk,16,7);
