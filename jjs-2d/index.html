@@ -342,208 +342,59 @@ function registerGambleVisual(f){
 }
 function endAwakening(f){const hadJackpot=f.jackpot;f.awakened=false;f.awakeMode='';f.jackpot=false;f.awakeTimer=0;f.domainType='';f.domainTimer=0;if(hadJackpot){f.meter=Math.min(100,40+f.consecutiveJackpots*25);f.consecutiveJackpots++}else if(f.char==='restless')f.consecutiveJackpots=0;showToast(hadJackpot?'JACKPOT ENDED · METER REFUNDED':'AWAKENING ENDED',900)}
 function useAttack(f,kind){
- if(!f||f.dead)return;
- const c=CHARS[f.char],t=targetOf(f);
- if(kind==='dash'){
-  if(f.dashCd>0)return;
-  const aim=aimedAt(f),dx=aim.x-f.x,dy=aim.y-f.y,l=Math.hypot(dx,dy)||1;
-  if(f.stun>0){f.stun=0;f.invuln=.24}
-  f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;
-  setMotion(f,'dash',.22,Math.atan2(dy,dx),t);burst(f.x,f.y,'#d7e8fa',9,3.5);return;
- }
- if(kind==='block'){if(f.stun<=0)f.block=true;return}
- if(f.block||f.stun>0)return;
- const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);
- if(Number.isFinite(angle))f.face=angle;
-
- // Four-hit basic combo; Sukuna's awakened M1 becomes a fast ranged slash.
+ if(f.dead||f.block)return;const c=CHARS[f.char],t=targetOf(f);
+ if(kind==='dash'){if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1;if(f.stun>0){f.stun=0;f.invuln=.24}f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
+ if(f.stun>0)return;
  if(kind==='m1'){
-  if(f.attackCd>0)return;
-  f.combo=f.comboTimer>0?(f.combo%4)+1:1;f.comboTimer=.85;
-  f.attackCd=f.combo===4?.65:.26;f.attackAnim=.24;f.attackType='punch';
-  if(f.char==='vessel'&&f.awakened){
-   setMotion(f,'sukunaM1',.3,angle,t);
-   if(targetInAim(f,t,190,.98,angle)){
-    for(let i=0;i<3;i++)schedule(()=>{if(!t.dead&&targetInAim(f,t,195,1.02,angle)){damage(t,1.2,f,{stun:.07,color:'#f04b62',damageType:'bullet',ignoreInvuln:true});burstLine(f,t,'#ff6075',4)}},i*70);
-   }
-   return;
-  }
-  setMotion(f,'m1_'+f.combo,.24,angle,t);
-  const range=68,da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<.95;
-  if(!t.dead&&dist(f,t)<range&&inArc){
-   const fin=f.combo===4,dmg=[3,3,4,4][f.combo-1];
-   damage(t,dmg,f,{stun:fin?.65:.35,kx:Math.cos(angle)*(fin?13:5),ky:Math.sin(angle)*(fin?13:5),big:fin,color:fin?'#ffdfba':'#fff'});
-   if(fin){addDebris(t.x,t.y,'#c6cbd2',14);f.meter=clamp(f.meter+6,0,100)}
-  }else burst(f.x+Math.cos(angle)*40,f.y+Math.sin(angle)*40,'#e8eaf0',3,2);
-  return;
+  if(f.attackCd>0)return;f.combo=f.comboTimer>0?(f.combo%4)+1:1;f.comboTimer=.85;f.attackCd=f.combo===4?.65:.26;f.attackAnim=.23;f.attackType='punch';const aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);setMotion(f,'m1_'+f.combo,.24,f.face,t);let angle=f.face,range=f.char==='vessel'&&f.awakened?190:67;if(f.char==='vessel'&&f.awakened){const a=Math.atan2(t.y-f.y,t.x-f.x);setMotion(f,'sukunaM1',.28,a,t);if(dist(f,t)<range){damage(t,3.5,f,{stun:.14,kx:Math.cos(a)*3,ky:Math.sin(a)*3,color:'#f04b62',damageType:'bullet'});burstLine(f,t,'#f04b62',4);for(let k=0;k<2;k++)schedule(()=>{if(!t.dead&&dist(f,t)<range)burstLine(f,t,'#ff6075',5)},k*55)}return}let d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<.95;if(f.char==='vessel'&&f.awakened){if(d<range){damage(t,3.5,f,{stun:.12,color:'#f04b62',damageType:'bullet'});burstLine(f,t,'#f04b62',4)}return}if(d<range&&inArc){let fin=f.combo===4,dmg=[3,3,4,4][f.combo-1];damage(t,dmg,f,{stun:fin?.65:.35,kx:Math.cos(angle)*(fin?13:5),ky:Math.sin(angle)*(fin?13:5),big:fin,color:fin?'#ffdfba':'#fff'});if(fin){addDebris(t.x,t.y,'#c6cbd2',14);f.meter=clamp(f.meter+6,0,100)}}else burst(f.x+Math.cos(angle)*40,f.y+Math.sin(angle)*40,'#e8eaf0',3,2);return;
  }
-
- // Gojo's 0.2-second domain route: brief sure-hit, then the three-stage rush.
+ if(kind==='block'){f.block=true;return}
  if(kind==='domain02'){
   if(f.char!=='honored'||f.meter<100||f.awakened)return;
-  f.awakened=true;f.meter=0;f.awakeMode='sixeyes';f.awakeTimer=8;f.hp=Math.min(f.maxHp,f.hp+25);
-  f.domainType='void';f.domainTimer=.2;f.domainTick=.05;setMotion(f,'gojoDomain02',1.15,angle,t);
-  t.stun=Math.max(t.stun,7);t.invuln=0;burst(f.x,f.y,'#a8aaff',46,7);game.shake=12;showToast('0.2 SECOND DOMAIN',1300);
-  for(let phase=0;phase<3;phase++)schedule(()=>{
-   if(f.dead||t.dead||!game.started)return;
-   const a=Math.atan2(t.y-f.y,t.x-f.x),name='gojo02Rush'+(phase+1);
-   setMotion(f,name,phase===1?2.1:1.55,a,t);f.invuln=.65;f.vx+=Math.cos(a)*(phase===0?9:phase===1?13:11);f.vy+=Math.sin(a)*(phase===0?9:phase===1?13:11);
-   for(let k=0;k<(phase===1?6:5);k++)schedule(()=>{if(!t.dead&&dist(f,t)<240){damage(t,phase===1?3.2:2.5,f,{stun:.16,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,unblockable:true,color:'#dce5ff',ignoreInvuln:true});burst(t.x,t.y,'#dce5ff',3,2)}},k*190);
-  },phase===0?240:phase===1?2250:4550);
-  schedule(()=>{f.awakened=false;f.awakeMode='';f.awakeTimer=0;f.domainType='';f.domainTimer=0;showToast('0.2 DOMAIN · BURNT OUT',900)},7300);return;
+  f.awakened=true;f.meter=0;f.awakeMode='sixeyes';f.awakeTimer=8;f.hp=Math.min(f.maxHp,f.hp+25);f.domainType='void';f.domainTimer=.2;f.domainTick=.05;setMotion(f,'gojoDomain02',1.15,f.face,t);t.stun=Math.max(t.stun,7);t.invuln=0;
+  burst(f.x,f.y,'#a8aaff',46,7);game.shake=12;showToast('0.2 SECOND DOMAIN',1300);
+  for(let phase=0;phase<3;phase++)schedule(()=>{if(f.dead||!game.started)return;setMotion(f,'gojo02Rush'+(phase+1),phase===1?2.1:1.55,Math.atan2(t.y-f.y,t.x-f.x),t);f.invuln=.65;const a=Math.atan2(t.y-f.y,t.x-f.x);f.vx+=Math.cos(a)*(phase===0?9:phase===1?13:11);f.vy+=Math.sin(a)*(phase===0?9:phase===1?13:11);for(let k=0;k<(phase===1?6:5);k++)schedule(()=>{if(!t.dead&&dist(f,t)<240){damage(t,phase===1?3.2:2.5,f,{stun:.16,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,unblockable:true,color:'#dce5ff',ignoreInvuln:true});burst(t.x,t.y,'#dce5ff',3,2)}},k*190)},phase===0?240:phase===1?2250:4550);
+  schedule(()=>{f.awakened=false;f.awakeMode='';f.awakeTimer=0;f.domainType='';f.domainTimer=0;showToast('0.2 DOMAIN · BURNT OUT',900)},7300);return
  }
-
  if(kind==='awaken'){
-  if(f.meter<100||f.awakened)return;
-  f.awakened=true;f.meter=0;
-  f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:15));
-  f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':'sixeyes';
-  f.awakeTimer=f.char==='restless'?80:60;f.jackpot=false;f.gambleVisuals=0;f.gambleAttempts=0;
-  f.domainStunGuaranteed=f.char==='restless'&&dist(f,t)<600;
-  if(f.char==='restless'&&f.domainStunGuaranteed){t.stun=Math.max(t.stun,1.1);t.invuln=0}
-  f.domainType='';f.domainTimer=0;
-  setMotion(f,f.char==='honored'?'gojoAwaken':f.char==='vessel'?'sukunaAwaken':'hakariDomain',1.35,angle,t);
-  burst(f.x,f.y,c.accent,48,7);game.shake=13;showToast(c.awakening,1600);popText(f.x,f.y-65,c.awakeName,'#ffde89',25);return;
+  if(f.meter<100||f.awakened)return;f.awakened=true;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:15));f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':'sixeyes';f.awakeTimer=f.char==='restless'?80:60;f.jackpot=false;f.gambleVisuals=0;f.gambleAttempts=0;f.domainStunGuaranteed=f.char==='restless'&&dist(f,t)<600;if(f.char==='restless'&&f.domainStunGuaranteed){t.stun=Math.max(t.stun,1.1);t.invuln=0}f.domainType='';f.domainTimer=0;setMotion(f,f.char==='honored'?'gojoAwaken':f.char==='vessel'?'sukunaAwaken':'hakariDomain',1.35,f.face,t);burst(f.x,f.y,c.accent,48,7);game.shake=13;showToast(c.awakening,1600);popText(f.x,f.y-65,c.awakeName,'#ffde89',25);return;
  }
-
  if(kind==='special'){
   if(f.specialCd>0)return;
+  // Gojo: Limitless. It is a targeted reposition, with an aerial kick variant.
   if(f.char==='honored'){
-   if(f.meter<6)return;f.meter-=6;
-   if(!t.dead&&dist(f,t)<560){
-    const a=Math.atan2(t.y-f.y,t.x-f.x);f.face=a;
-    if(f.gojoRapidFinishUntil>game.time){
-     setMotion(f,'gojoFaceGrater',.95,a,t);f.x=t.x-Math.cos(a)*40;f.y=t.y-Math.sin(a)*40;t.stun=Math.max(t.stun,.9);
-     schedule(()=>{if(!t.dead){t.x=f.x+Math.cos(a)*55;t.y=f.y+Math.sin(a)*55}},260);
-     schedule(()=>{if(!t.dead&&dist(f,t)<175){damage(t,10.2,f,{stun:.7,kx:Math.cos(a)*14,ky:Math.sin(a)*14,unblockable:true,big:true,color:'#d8f3ff'});popText(t.x,t.y-60,'FACE GRATER','#e9f8ff',15)}},700);
-    }else{
-     setMotion(f,'gojoLimitless',.58,a,t);f.x=t.x-Math.cos(a)*45;f.y=t.y-Math.sin(a)*45;burst(t.x,t.y,'#d8f3ff',20,4);
-     if(t.jump>.25){damage(t,8,f,{stun:.5,kx:Math.cos(a)*7,ky:Math.sin(a)*7,unblockable:true,color:'#cbeaff'});popText(t.x,t.y-60,'LIMITLESS KICK','#e9f8ff',15)}else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13);
-    }
-   }else{setMotion(f,'gojoLimitless',.4,angle,t);f.x=clamp(aim.x,45,WORLD.w-45);f.y=clamp(aim.y,45,WORLD.h-45);burst(f.x,f.y,'#d8f3ff',16,4)}
-   f.specialCd=15;return;
+   if(f.meter<6)return;f.meter-=6;const aim=aimedAt(f);let target=t;if(dist(f,target)<560){let a=Math.atan2(target.y-f.y,target.x-f.x);f.face=a;if(f.gojoRapidFinishUntil>game.time){setMotion(f,'gojoFaceGrater',.95,a,target);f.x=target.x-Math.cos(a)*40;f.y=target.y-Math.sin(a)*40;target.stun=Math.max(target.stun,.9);schedule(()=>{if(!target.dead){target.x=f.x+Math.cos(a)*55;target.y=f.y+Math.sin(a)*55}},260);schedule(()=>{if(!target.dead&&dist(f,target)<175){damage(target,10.2,f,{stun:.7,kx:Math.cos(a)*14,ky:Math.sin(a)*14,unblockable:true,big:true,color:'#d8f3ff'});popText(target.x,target.y-60,'FACE GRATER','#e9f8ff',15)}},700)}else{setMotion(f,'gojoLimitless',.58,a,target);f.x=target.x-Math.cos(a)*45;f.y=target.y-Math.sin(a)*45;burst(target.x,target.y,'#d8f3ff',20,4);if(target.jump>.25){damage(target,8,f,{stun:.5,kx:Math.cos(a)*7,ky:Math.sin(a)*7,unblockable:true,color:'#cbeaff'});popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15)}else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13)}}else{setMotion(f,'gojoLimitless',.4,Math.atan2(aim.y-f.y,aim.x-f.x),target);f.x=aim.x;f.y=aim.y;burst(f.x,f.y,'#d8f3ff',16,4)}f.specialCd=15;return;
   }
-  if(f.char==='vessel'&&!f.awakened){
-   if(f.attackAnim>.05){f.attackAnim=0;f.attackType='';setMotion(f,'yujiFeint',.28,angle,t);f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',650);return}
-   const prop=destructibles.find(o=>o.alive&&dist(f,{x:o.x+o.w/2,y:o.y+o.h/2})<115);
-   if(prop&&f.meter>=3){f.meter-=3;prop.alive=false;addDebris(prop.x+prop.w/2,prop.y+prop.h/2,prop.color,10);projectiles.push({x:f.x+Math.cos(angle)*25,y:f.y+Math.sin(angle)*25,vx:Math.cos(angle)*12,vy:Math.sin(angle)*12,r:18,life:1.4,owner:f,kind:'throwable',damage:15,color:'#c5c9d0'});setMotion(f,'yujiFeint',.3,angle,t)}else{setMotion(f,'yujiFeint',.28,angle,t);showToast('COMBAT INSTINCTS · FEINT',550)}
-   f.specialCd=2;return;
-  }
-  if(f.char==='vessel'&&f.awakened){
-   setMotion(f,'sukunaCleave',.85,angle,t);
-   if(targetInAim(f,t,145,.72,angle)){showToast('CLEAVE · GRAB',350);t.stun=Math.max(t.stun,.65);schedule(()=>{if(!t.dead&&targetInAim(f,t,165,.9,angle)){const dmg=Math.max(10,t.hp*.4);damage(t,dmg,f,{stun:.7,kx:Math.cos(angle)*11,ky:Math.sin(angle)*11,unblockable:true,big:true,color:'#f14b60',ignoreInvuln:true});burstLine(f,t,'#ff435d',18);burst(t.x,t.y,'#ff435d',26,7);popText(t.x,t.y-70,'CLEAVE','#ff6678',22)}},400)}else showToast('CLEAVE · TOO FAR',500);
-   f.specialCd=12;return;
-  }
-  if(f.char==='restless'&&!f.jackpot){setMotion(f,'hakariDoorGuard',.65,angle,t);f.counterWindow=.6;f.counterKind='door';f.specialCd=16;burst(f.x,f.y,'#d9a4ff',12,3);showToast('DOOR GUARD',500);return}
-  if(f.char==='restless'&&f.jackpot){setMotion(f,'hakariRhythm',.9,angle,t);f.rhythmStacks++;f.specialCd=8;f.skillCd=f.skillCd.map(v=>Math.max(0,v-.6));burst(f.x,f.y,'#6aff9b',18,4);popText(f.x,f.y-58,'RHYTHM ×'+f.rhythmStacks,'#8affb0',16);return}
+  // Yuji: Combat Instincts cancels a wind-up; nearby props can be punched forward.
+  if(f.char==='vessel'&&!f.awakened){const prop=destructibles.find(o=>o.alive&&dist(f,{x:o.x+o.w/2,y:o.y+o.h/2})<115);if(f.attackAnim>.05){f.attackAnim=0;f.attackType='';setMotion(f,'yujiFeint',.28,f.face,t);f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',650);return}if(prop){if(f.meter<3)return;f.meter-=3;prop.alive=false;addDebris(prop.x+prop.w/2,prop.y+prop.h/2,prop.color,10);let a=f.face;projectiles.push({x:f.x+Math.cos(a)*25,y:f.y+Math.sin(a)*25,vx:Math.cos(a)*12,vy:Math.sin(a)*12,r:18,life:1.4,owner:f,kind:'throwable',damage:15,color:'#c5c9d0'});f.specialCd=2;return}f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',550);return}
+  if(f.char==='vessel'&&f.awakened){const a=aimedAngle(f);setMotion(f,'sukunaCleave',.85,a,t);if(targetInAim(f,t,145,.72,a)){f.attackAnim=.85;showToast('CLEAVE · GRAB',350);schedule(()=>{if(!t.dead&&targetInAim(f,t,165,.9,a)){const dmg=Math.max(10,t.hp*.4);damage(t,dmg,f,{stun:.7,kx:Math.cos(a)*11,ky:Math.sin(a)*11,unblockable:true,big:true,color:'#f14b60',ignoreInvuln:true});burstLine(f,t,'#ff435d',18);burst(t.x,t.y,'#ff435d',26,7);popText(t.x,t.y-70,'CLEAVE','#ff6678',22)}},220)}else showToast('CLEAVE · TOO FAR',500);f.specialCd=12;return}
+  // Hakari: Door Guard counters melee; bullets break the doors without hurting him.
+  if(f.char==='restless'&&!f.jackpot){setMotion(f,'hakariDoorGuard',.65,f.face,t);f.counterWindow=.6;f.counterKind='door';f.specialCd=16;burst(f.x,f.y,'#d9a4ff',12,3);showToast('DOOR GUARD',500);return}
+  if(f.char==='restless'&&f.jackpot){setMotion(f,'hakariRhythm',.9,f.face,t);f.rhythmStacks++;f.specialCd=8;f.skillCd=f.skillCd.map(v=>Math.max(0,v-.6));f.vx*=1.05;f.vy*=1.05;burst(f.x,f.y,'#6aff9b',18,4);popText(f.x,f.y-58,'RHYTHM ×'+f.rhythmStacks,'#8affb0',16);return}
  }
-
- const idx=Number(kind)-1;if(idx<0||idx>3)return;
- // Black Flash is a timed second press of Divergent Fist and overrides its ordinary cooldown.
- if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){
-  setMotion(f,'yujiBlackFlash',.58,angle,t);f.blackFlashWindow=0;f.skillCd[2]=18;
-  const back=Math.cos(Math.atan2(t.y-f.y,t.x-f.x)-angle)<-.25,dmg=back&&f.blackFlashChain<3?7:10;t.invuln=0;
-  damage(t,dmg,f,{stun:.45,kx:back?0:Math.cos(angle)*13,ky:back?0:Math.sin(angle)*13,unblockable:true,big:true,color:'#ffcf72'});
-  popText(t.x,t.y-70,'BLACK FLASH','#ffe5a2',22);burst(t.x,t.y,'#fff0bb',24,7);
-  if(back&&f.blackFlashChain<3){f.blackFlashChain++;f.blackFlashWindow=.58;f.skillCd[2]=0;showToast('BLACK FLASH CHAIN ×'+(f.blackFlashChain+1),600)}else f.blackFlashChain=0;
-  return;
- }
- if(f.skillCd[idx]>0)return;
- setSkillMotion(f,idx,angle,t);
-
- // HAKARI: Shutter Doors during the Reserve Balls flight creates the combined door variant.
- if(f.char==='restless'&&!f.jackpot&&idx===1&&f.reserveBallWindow>0){
-  const ball=projectiles.find(p=>p.owner===f&&p.kind==='ball'&&p.life>0);
-  if(ball){ball.attachDoors=true;ball.doorOwner=f;f.reserveBallWindow=0;f.skillCd[1]=15;setMotion(f,'hakariDoors',.65,angle,t);showToast('RESERVE DOORS VARIANT',650);registerGambleVisual(f);return}
- }
- // FEVER CRUSH: use Shutter Doors during Fever Breaker's short follow-up window.
- if(f.char==='restless'&&!f.jackpot&&idx===1&&f.feverWindow>0){
-  if(!t.dead&&dist(f,t)<190){damage(t,8,f,{stun:.22,color:'#d8a6ff'});setMotion(f,'hakariStomp',.7,angle,t);schedule(()=>{if(!t.dead&&dist(f,t)<175)damage(t,12,f,{stun:.75,kx:Math.cos(angle)*11,ky:Math.sin(angle)*11,big:true,unblockable:true,color:'#d8a6ff'})},300);popText(t.x,t.y-58,'FEVER CRUSH','#e9c7ff',17)}
-  f.feverWindow=0;f.skillCd[1]=15;f.skillCd[3]=23;registerGambleVisual(f);return;
- }
-
- const d=dist(f,t);
+ const idx=Number(kind)-1;if(idx<0||idx>3)return;const d=dist(f,t);
+ // Hakari can combine Shutter Doors with Fever Breaker's windup for Fever Crush.
+ if(f.char==='restless'&&!f.jackpot&&idx===1&&f.feverWindow>0){if(d<190){damage(t,8,f,{stun:.22,color:'#d8a6ff'});schedule(()=>{if(!t.dead&&dist(f,t)<160)damage(t,12,f,{stun:.75,kx:Math.cos(f.face)*11,ky:Math.sin(f.face)*11,big:true,unblockable:true,color:'#d8a6ff'})},180);popText(t.x,t.y-58,'FEVER CRUSH','#e9c7ff',17)}f.feverWindow=0;f.skillCd[1]=15;f.skillCd[3]=23;registerGambleVisual(f);return}
+ // Divergent Fist has a deliberate second press window for Black Flash.
+ if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){setMotion(f,'yujiBlackFlash',.58,f.face,t);f.blackFlashWindow=0;f.skillCd[2]=18;const back=Math.cos(Math.atan2(t.y-f.y,t.x-f.x)-f.face)<-.25;const dmg=back&&f.blackFlashChain<3?7:10;t.invuln=0;damage(t,dmg,f,{stun:.45,kx:back?0:Math.cos(f.face)*13,ky:back?0:Math.sin(f.face)*13,unblockable:true,big:true,color:'#ffcf72'});popText(t.x,t.y-70,'BLACK FLASH','#ffe5a2',22);burst(t.x,t.y,'#fff0bb',24,7);if(back&&f.blackFlashChain<3){f.blackFlashChain++;f.blackFlashWindow=.58;f.skillCd[2]=0;showToast('BLACK FLASH CHAIN ×'+(f.blackFlashChain+1),600)}else f.blackFlashChain=0;return}
+ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);
  if(f.char==='honored'){
   if(!f.awakened){
-   if(idx===0){ // Lapse Blue: pull at .8s, suspend, kick at 1.76s.
-    setMotion(f,'gojoBlue',1.95,angle,t);f.skillCd[0]=13;burst(f.x,f.y,'#65d9ff',20,4);
+   if(idx===0){
+    setMotion(f,'gojoBlue',1.95,angle,t);f.skillCd[idx]=13;burst(f.x,f.y,'#65d9ff',20,4);
     if(targetInAim(f,t,260,.72,angle)){
      popText(f.x+Math.cos(angle)*28,f.y+Math.sin(angle)*28,'LAPSE BLUE','#a8edff',12);
-     schedule(()=>{if(t.dead||dist(f,t)>300)return;const a=Math.atan2(f.y-t.y,f.x-t.x);damage(t,5,f,{stun:1,color:'#69d9ff',damageType:'bullet'});t.vx=Math.cos(a)*2.5;t.vy=Math.sin(a)*2.5;t.x=f.x+Math.cos(angle)*48;t.y=f.y+Math.sin(angle)*48;t.jump=.65;t.jumpV=0;burst(t.x,t.y,'#69d9ff',18,4)},800);
+     schedule(()=>{if(t.dead||dist(f,t)>300)return;const pull=Math.atan2(f.y-t.y,f.x-t.x);damage(t,5,f,{stun:1.0,color:'#69d9ff',damageType:'bullet'});t.vx=Math.cos(pull)*2.5;t.vy=Math.sin(pull)*2.5;t.x=f.x+Math.cos(angle)*48;t.y=f.y+Math.sin(angle)*48;t.jump=.65;t.jumpV=0;burst(t.x,t.y,'#69d9ff',18,4);},800);
      schedule(()=>{if(t.dead||dist(f,t)>170)return;f.invuln=.25;damage(t,7.5,f,{stun:.55,kx:Math.cos(angle)*8,ky:Math.sin(angle)*8,unblockable:true,color:'#d9f7ff',ignoreInvuln:true});t.jump=Math.max(t.jump,.55);t.jumpV=Math.max(t.jumpV,2.8);popText(t.x,t.y-55,'BLUE KICK','#d9f7ff',14);burst(t.x,t.y,'#d9f7ff',22,5)},1760);
     }else popText(f.x+Math.cos(angle)*70,f.y+Math.sin(angle)*70,'OUT OF RANGE','#8ce5ff',10);
    }
-   if(idx===1){ // Reversal Red: release after the .51s wind-up.
-    setMotion(f,'gojoRed',.78,angle,t);f.attackAnim=.78;f.skillCd[1]=20;burst(f.x,f.y,'#ff526c',18,3);
+   if(idx===1){
+    setMotion(f,'gojoRed',.78,angle,t);f.attackAnim=.78;burst(f.x,f.y,'#ff526c',18,3);
     schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*32,y:f.y+Math.sin(angle)*32,vx:Math.cos(angle)*13,vy:Math.sin(angle)*13,r:15,life:2.4,maxDistance:540,travelled:0,owner:f,kind:'red',damage:12.5,blockedDamage:6.25,blastRadius:95,color:'#ff526c'})},510);
+    f.skillCd[idx]=20;
    }
-   if(idx===2){ // Rapid Punches: grab, 15-hit barrage, three heavy punches, final launch.
-    setMotion(f,'gojoRapid',4,angle,t);f.attackAnim=4;f.skillCd[2]=15;
-    if(targetInAim(f,t,145,.8,angle)){
-     t.stun=Math.max(t.stun,3.9);t.vx=0;t.vy=0;
-     schedule(()=>{if(!t.dead&&dist(f,t)<180){damage(t,1.25,f,{stun:.4,unblockable:true,color:'#eff7ff',ignoreInvuln:true});popText(t.x,t.y-58,'SPIN KICK!','#eff7ff',14);burst(t.x,t.y,'#eff7ff',12,3)}},500);
-     for(let i=0;i<15;i++)schedule(()=>{if(!t.dead&&dist(f,t)<185)damage(t,.5,f,{stun:.06,unblockable:true,color:'#f5f7ff',ignoreInvuln:true})},620+i*145);
-     for(let i=0;i<3;i++)schedule(()=>{if(!t.dead&&dist(f,t)<190)damage(t,1.5,f,{stun:.12,unblockable:true,color:'#e5efff',ignoreInvuln:true,big:i===2});burst(t.x,t.y,'#f5f7ff',8,3)},2850+i*260);
-     schedule(()=>{if(!t.dead&&dist(f,t)<200){damage(t,4,f,{stun:.85,kx:Math.cos(angle)*15,ky:Math.sin(angle)*15,unblockable:true,color:'#fff',big:true,ignoreInvuln:true});burst(t.x,t.y,'#f5f7ff',30,8);f.gojoRapidFinishUntil=game.time+1.2;popText(t.x,t.y-75,'RAPID PUNCHES','#eff7ff',17)}},3700);
-    }else{f.vx+=Math.cos(angle)*2.5;burst(f.x+Math.cos(angle)*45,f.y+Math.sin(angle)*45,'#e9f5ff',10,3);popText(f.x,f.y-52,'MISS','#d9eaff',12)}
-   }
-   if(idx===3){ // Twofold Kick: first hit .41s, bounce kick 1.09s.
-    setMotion(f,'gojoTwofold',1.4,angle,t);f.skillCd[3]=18;
-    if(targetInAim(f,t,135,.85,angle)){
-     schedule(()=>{if(t.dead||dist(f,t)>155)return;f.invuln=.25;damage(t,6,f,{stun:.62,color:'#e2f1ff',ignoreInvuln:true});t.jump=.7;t.jumpV=2.6;popText(t.x,t.y-48,'FIRST KICK','#e2f1ff',11);burst(t.x,t.y,'#e2f1ff',12,4)},410);
-     schedule(()=>{if(t.dead||dist(f,t)>175)return;damage(t,4,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10-3,unblockable:true,color:'#fff',big:true,ignoreInvuln:true});t.jump=.95;t.jumpV=3.4;burst(t.x,t.y,'#e9f5ff',22,6);popText(t.x,t.y-70,'TWOFOLD KICK','#e2f1ff',15)},1090);
-    }
-   }
-  }else{
-   if(idx===0){setMotion(f,'gojoBlueMax',1.5,angle,t);f.skillCd[0]=17;projectiles.push({x:f.x+Math.cos(angle)*35,y:f.y+Math.sin(angle)*35,vx:0,vy:0,r:30,life:4,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2});burst(f.x,f.y,'#55cfff',25,5);showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
-   if(idx===1){setMotion(f,'gojoRedMax',1.55,angle,t);f.invuln=.25;f.skillCd[1]=30;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})},1210)}
-   if(idx===2){setMotion(f,'gojoPurple',2.75,angle,t);f.invuln=.35;f.skillCd[2]=40;burst(f.x,f.y,'#bd9dff',26,6);showToast('HOLLOW PURPLE · IMAGINARY MASS',900);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*16,vy:Math.sin(angle)*16,r:34,life:3.4,maxDistance:920,travelled:0,owner:f,kind:'hollow',damage:70,color:'#c7a7ff'})},2720)}
-   if(idx===3){setMotion(f,'gojoVoid',1.5,angle,t);f.skillCd[3]=120;showToast('DOMAIN EXPANSION · INFINITE VOID',1400);schedule(()=>{if(f.dead)return;f.domainType='void';f.domainTimer=14;f.domainTick=.3;if(dist(f,t)<290){t.stun=Math.max(t.stun,7);t.invuln=0}burst(f.x,f.y,'#b8b9ff',42,6);game.shake=9},1250)}
-  }
-  return;
- }
-
- if(f.char==='vessel'){
-  if(!f.awakened){
-   if(idx===0){ // Cursed Strikes: sliding dash, six punches, calf kick finisher.
-    setMotion(f,f.jump>.1?'yujiDropkick':'yujiStrikes',2.25,angle,t);f.skillCd[0]=14;registerGambleVisual(f);
-    if(f.jump>.1){if(targetInAim(f,t,190,.9,angle)){f.vx+=Math.cos(angle)*5;damage(t,14,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,big:true,color:'#ffc078'})}return}
-    if(targetInAim(f,t,185,.82,angle)){
-     schedule(()=>{if(!t.dead&&dist(f,t)<200){f.invuln=.45;f.vx+=Math.cos(angle)*7;f.vy+=Math.sin(angle)*7;damage(t,4,f,{stun:.24,color:'#ffb16d',ignoreInvuln:true});burstLine(f,t,'#ffbd77',8)}},600);
-     for(const ms of [1000,1150,1470,1730,1900])schedule(()=>{if(!t.dead&&dist(f,t)<200)damage(t,1.75,f,{stun:.06,kx:Math.cos(angle)*1.3,ky:Math.sin(angle)*1.3,color:'#ffc078',ignoreInvuln:true})},ms);
-     schedule(()=>{if(!t.dead&&dist(f,t)<205){damage(t,3,f,{stun:.65,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,big:true,color:'#ffc078',ignoreInvuln:true});popText(t.x,t.y-65,'CALF KICK','#ffc078',14);burst(t.x,t.y,'#ffc078',22,6)}},2200);
-    }else{f.vx+=Math.cos(angle)*5;popText(f.x,f.y-48,'CURSED STRIKES · MISS','#ffc078',11)}
-   }
-   if(idx===1){ // Crushing Blow: first slam, grab, second slam / launch.
-    setMotion(f,f.jump>.1?'yujiAirCrush':'yujiCrush',1.25,angle,t);f.skillCd[1]=15;
-    if(targetInAim(f,t,f.jump>.1?190:155,.82,angle)){
-     schedule(()=>{if(!t.dead&&dist(f,t)<175){f.invuln=.25;damage(t,6,f,{stun:.38,color:'#ffc078',ignoreInvuln:true});burst(t.x,t.y,'#ffc078',18,5);popText(t.x,t.y-50,'SLAM','#ffc078',12)}},600);
-     schedule(()=>{if(!t.dead&&dist(f,t)<185){damage(t,6,f,{stun:.75,kx:Math.cos(angle)*12,ky:Math.sin(angle)*12-3,big:true,color:'#ffc078',ignoreInvuln:true});t.jump=.8;t.jumpV=3;burst(t.x,t.y,'#ffc078',24,6);popText(t.x,t.y-70,'CRUSHING BLOW','#ffc078',15)}},1200);
-    }else{circleHit(f.x+Math.cos(angle)*68,f.y+Math.sin(angle)*68,55,f,3,{stun:.25,color:'#ffc078'});burst(f.x+Math.cos(angle)*68,f.y+Math.sin(angle)*68,'#ffc078',18,4)}
-   }
-   if(idx===2){ // Divergent Fist: cursed-energy hit follows the ordinary punch.
-    setMotion(f,'yujiDivergent',.8,angle,t);f.skillCd[2]=18;
-    if(targetInAim(f,t,145,.8,angle)){
-     schedule(()=>{if(!t.dead&&dist(f,t)<155){damage(t,5,f,{stun:.16,color:'#ffc078'});burst(t.x,t.y,'#ffbb68',10,3)}},300);
-     schedule(()=>{if(!t.dead&&dist(f,t)<165){damage(t,5,f,{stun:.35,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,color:'#ffc078',ignoreInvuln:true});f.blackFlashWindow=.62;f.flash=.18;popText(f.x,f.y-52,'PRESS 3 AGAIN · BLACK FLASH','#ffe5a2',12);burst(t.x,t.y,'#ffe2ac',14,4)}},500);
-    }else popText(f.x,f.y-48,'DIVERGENT FIST · MISS','#ffc078',11);
-   }
-   if(idx===3){setMotion(f,'yujiManjiCounter',.68,angle,t);f.counterWindow=.6;f.counterKind='manji';f.skillCd[3]=20;f.block=false;burst(f.x,f.y,'#f3bb67',12,3);popText(f.x,f.y-55,'MANJI KICK COUNTER','#f3bb67',12)}
-  }else{
-   if(idx===0){ // Dismantle: 10 ground slashes, cursor-aimed aerial slash.
-    setMotion(f,f.jump>.1?'sukunaAirSlash':'sukunaDismantle',f.jump>.1?1.25:1.15,angle,t);f.skillCd[0]=13;
-    if(f.jump>.1){schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42+28,vx:Math.cos(angle)*18,vy:Math.sin(angle)*18+2,r:27,life:1.7,maxDistance:700,travelled:0,owner:f,kind:'slash',damage:25,color:'#ff6478'})},620);burst(f.x,f.y,'#fa526b',18,5);popText(f.x,f.y-55,'AERIAL DISMANTLE','#ff6478',12)}
-    else if(targetInAim(f,t,310,.98,angle)){for(let i=0;i<10;i++)schedule(()=>{if(!t.dead&&dist(f,t)<330)damage(t,1.75,f,{stun:.05,color:'#fa526b',damageType:'bullet',blockedDamage:1,ignoreInvuln:true})},410+i*70);burstLine(f,t,'#fa526b',20)}
-    else{burstLine(f,{x:f.x+Math.cos(angle)*280,y:f.y+Math.sin(angle)*280},'#fa526b',18);popText(f.x,f.y-55,'DISMANTLE · MISS','#fa526b',12)}
-   }
-   if(idx===1){ // Open: hand flame, arrow fully formed at 2s, fired at 2.7s.
-    setMotion(f,'sukunaOpen',3.8,angle,t);f.invuln=.25;f.skillCd[1]=40;burst(f.x,f.y,'#ff8b37',18,5);showToast('OPEN · FORMING FLAME ARROW',800);
-    schedule(()=>{if(!f.dead)burst(f.x+Math.cos(angle)*28,f.y+Math.sin(angle)*28,'#ff8b37',24,5)},890);
-    schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,'#ffc15d',30,7);popText(f.x+Math.cos(angle)*45,f.y+Math.sin(angle)*45-34,'FLAME ARROW','#ffc15d',14)}},2000);
-    schedule(()=>{if(!f.dead){f.invuln=.75;projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:24,life:2.4,maxDistance:780,travelled:0,owner:f,kind:'fire',damage:30,color:'#ff8b37'})}},2700);
-   }
-   if(idx===2){ // Rush: dash .47, grab, knee at 2.2, slam at 3.5.
-    setMotion(f,'sukunaRush',4,angle,t);f.skillCd[2]=16;
+   if(idx===2){
+    setMotion(f,'sukunaRush',4.0,angle,t);f.skillCd[idx]=15;
     if(targetInAim(f,t,355,.62,angle)){
      schedule(()=>{if(!f.dead){f.invuln=.55;f.vx+=Math.cos(angle)*16;f.vy+=Math.sin(angle)*16;burst(f.x,f.y,'#f54b61',18,6)}},466);
      schedule(()=>{if(!t.dead&&dist(f,t)<210){damage(t,5,f,{stun:.55,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,color:'#ff536b',ignoreInvuln:true});t.vx=Math.cos(angle)*5;t.vy=Math.sin(angle)*5;burst(t.x,t.y,'#ff536b',16,5);popText(t.x,t.y-50,'RUSH · GRAB','#ff8190',12)}},1100);
@@ -551,29 +402,48 @@ function useAttack(f,kind){
      schedule(()=>{if(!t.dead&&dist(f,t)<255){f.jump=.7;f.jumpV=2.5;damage(t,5,f,{stun:.85,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10+3,big:true,color:'#ff536b',ignoreInvuln:true});t.jump=.12;t.jumpV=-1;burst(t.x,t.y,'#ff536b',30,8);game.shake=11;popText(t.x,t.y-65,'RUSH · SLAM','#ff8190',15)}},3500);
     }else{schedule(()=>{f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13},466);popText(f.x,f.y-55,'RUSH · MISS','#ff6478',12)}
    }
-   if(idx===3){ // Shrine: domain scene opens at 1.25s, then sure-hit slashes.
-    setMotion(f,'sukunaShrine',1.5,angle,t);f.skillCd[3]=120;showToast('DOMAIN EXPANSION · MALEVOLENT SHRINE',1400);burst(f.x,f.y,'#f34a60',38,6);
-    schedule(()=>{if(f.dead)return;f.domainType='shrine';f.domainTimer=18;f.domainTick=18/109;burst(f.x,f.y,'#f34a60',55,8);game.shake=10},1250);
+   if(idx===3){
+    setMotion(f,'gojoTwofold',1.4,angle,t);f.skillCd[idx]=18;
+    if(targetInAim(f,t,125,.85,angle)){
+     schedule(()=>{if(t.dead||dist(f,t)>150)return;f.invuln=.25;damage(t,6,f,{stun:.62,color:'#e2f1ff',ignoreInvuln:true});t.jump=.7;t.jumpV=2.6;popText(t.x,t.y-48,'FIRST KICK','#e2f1ff',11);burst(t.x,t.y,'#e2f1ff',12,4)},410);
+     schedule(()=>{if(t.dead||dist(f,t)>175)return;damage(t,4,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10-3,unblockable:true,color:'#ffffff',big:true,ignoreInvuln:true});t.jump=.95;t.jumpV=3.4;burst(t.x,t.y,'#e9f5ff',22,6);popText(t.x,t.y-70,'TWOFOLD KICK','#e2f1ff',15)},1090);
+    }else{f.vx+=Math.cos(angle)*2;burst(f.x,f.y,'#e9f5ff',10,3)}
    }
-  }
-  return;
+  }else{
+   if(idx===0){projectiles.push({x:f.x+Math.cos(angle)*35,y:f.y+Math.sin(angle)*35,vx:0,vy:0,r:30,life:4,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2});f.skillCd[idx]=17;burst(f.x,f.y,'#55cfff',25,5);showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
+   if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
+   if(idx===2){f.attackAnim=.75;f.invuln=.22;burst(f.x,f.y,'#bd9dff',26,6);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*16,vy:Math.sin(angle)*16,r:34,life:3.4,maxDistance:920,travelled:0,owner:f,kind:'hollow',damage:70,color:'#c7a7ff'})},620);f.skillCd[idx]=40;game.shake=7}
+   if(idx===3){f.domainType='void';f.domainTimer=14;f.domainTick=.3;f.skillCd[idx]=120;if(dist(f,t)<290){t.stun=Math.max(t.stun,7);t.invuln=0}burst(f.x,f.y,'#b8b9ff',42,6);showToast('DOMAIN EXPANSION · INFINITE VOID',1400);game.shake=9}
+  }return;
  }
-
- // Restless Gambler / Hakari base kit and Jackpot moves.
+ if(f.char==='vessel'){
+  if(!f.awakened){
+   if(idx===0){f.skillCd[idx]=14;f.invuln=.35;f.attackAnim=.9;burst(f.x,f.y,'#ffb16d',14,4);registerGambleVisual(f);if(f.jump>.1){if(targetInAim(f,t,190,.9,angle)){f.vx+=Math.cos(angle)*5;damage(t,14,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,big:true,color:'#ffc078'})}}else if(targetInAim(f,t,165,.8,angle)){f.vx+=Math.cos(angle)*6;damage(t,4,f,{stun:.1,color:'#ffb16d'});repeatDamage(f,t,1.75,6,150,{range:165,stun:.06,color:'#ffb16d',ignoreInvuln:true});schedule(()=>{if(!t.dead&&dist(f,t)<170)damage(t,3,f,{stun:.55,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,color:'#ffc078',big:true,ignoreInvuln:true})},1120)}else popText(f.x,f.y-50,'CURSED STRIKES · WHIFF','#ffc078',11)}
+   if(idx===1){f.skillCd[idx]=15;f.attackAnim=.7;f.invuln=.18;if(targetInAim(f,t,f.jump>.1?185:145,.85,angle)){f.vx+=Math.cos(angle)*(f.jump>.1?9:2);f.vy+=Math.sin(angle)*(f.jump>.1?9:2);schedule(()=>{if(!t.dead&&dist(f,t)<155){damage(t,6,f,{stun:.35,color:'#ffc078',ignoreInvuln:true});burst(t.x,t.y,'#ffc078',12,4);schedule(()=>{if(!t.dead&&dist(f,t)<175){damage(t,6,f,{stun:.7,kx:Math.cos(angle)*11,ky:Math.sin(angle)*11-2,big:true,color:'#ffc078',ignoreInvuln:true});t.jump=Math.max(t.jump,.75);t.jumpV=Math.max(t.jumpV,2.8);popText(t.x,t.y-65,'CRUSHING BLOW','#ffc078',15)}},260)}},180)}else{circleHit(f.x+Math.cos(angle)*72,f.y+Math.sin(angle)*72,68,f,3,{stun:.25,color:'#ffc078'});burst(f.x+Math.cos(angle)*72,f.y+Math.sin(angle)*72,'#ffc078',18,4)}}
+   if(idx===2){f.skillCd[idx]=18;f.blackFlashWindow=0;f.attackAnim=.48;if(targetInAim(f,t,140,.8,angle)){damage(t,5,f,{stun:.16,color:'#ffc078'});schedule(()=>{if(!t.dead&&dist(f,t)<150){damage(t,5,f,{stun:.3,kx:Math.cos(angle)*6,ky:Math.sin(angle)*6,color:'#ffc078',ignoreInvuln:true});f.blackFlashWindow=.62;f.flash=.18;popText(f.x,f.y-52,'PRESS 3 AGAIN · BLACK FLASH','#ffe5a2',12)}},230)}else popText(f.x,f.y-48,'TOO FAR','#ffc078',12)}
+   if(idx===3){f.counterWindow=.6;f.counterKind='manji';f.skillCd[idx]=20;f.attackAnim=.35;f.block=false;burst(f.x,f.y,'#f3bb67',12,3);popText(f.x,f.y-55,'MANJI KICK COUNTER','#f3bb67',12)}
+  }else{
+   if(idx===0){f.skillCd[idx]=13;if(f.jump>.1){f.attackAnim=.55;projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42+28,vx:Math.cos(angle)*18,vy:Math.sin(angle)*18+2,r:27,life:1.7,maxDistance:700,travelled:0,owner:f,kind:'slash',damage:25,color:'#ff6478'});burst(f.x,f.y,'#fa526b',18,5);popText(f.x,f.y-55,'AERIAL DISMANTLE','#ff6478',12)}else if(targetInAim(f,t,310,.98,angle)){f.attackAnim=.65;burstLine(f,t,'#fa526b',20);repeatDamage(f,t,1.75,10,85,{range:330,stun:.05,color:'#fa526b',damageType:'bullet',blockedDamage:1,ignoreInvuln:true})}else{burstLine(f,{x:f.x+Math.cos(angle)*280,y:f.y+Math.sin(angle)*280},'#fa526b',18);popText(f.x,f.y-55,'DISMANTLE · MISS','#fa526b',12)}}
+   if(idx===1){setMotion(f,'sukunaOpen',3.8,angle,t);f.invuln=.25;f.attackAnim=3.8;f.skillCd[idx]=40;burst(f.x,f.y,'#ff8b37',24,5);showToast('OPEN · FORMING FLAME ARROW',800);schedule(()=>{if(!f.dead){f.invuln=.75;burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,'#ffb34f',30,7);projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:24,life:2.4,maxDistance:780,travelled:0,owner:f,kind:'fire',damage:30,color:'#ff8b37'})}},2700)}
+   if(idx===2){f.skillCd[idx]=16;f.attackAnim=.9;if(targetInAim(f,t,355,.55,angle)){f.invuln=.42;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;schedule(()=>{if(!t.dead&&dist(f,t)<170){damage(t,5,f,{stun:.35,kx:Math.cos(angle)*5,ky:Math.sin(angle)*5,color:'#ff536b',ignoreInvuln:true});burst(t.x,t.y,'#ff536b',12,4);schedule(()=>{if(!t.dead&&dist(f,t)<190){damage(t,15,f,{stun:.55,kx:Math.cos(angle)*9,ky:Math.sin(angle)*9,color:'#ff536b',ignoreInvuln:true});t.jump=Math.max(t.jump,.8);t.jumpV=Math.max(t.jumpV,3);schedule(()=>{if(!t.dead&&dist(f,t)<205)damage(t,5,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,big:true,color:'#ff536b',ignoreInvuln:true})},260)}},300)}},180)}else popText(f.x,f.y-55,'RUSH · MISS','#ff6478',12)}
+   if(idx===3){setMotion(f,'sukunaShrine',1.5,angle,t);f.skillCd[idx]=120;showToast('DOMAIN EXPANSION · MALEVOLENT SHRINE',1400);burst(f.x,f.y,'#f34a60',38,6);schedule(()=>{if(f.dead)return;f.domainType='shrine';f.domainTimer=18;f.domainTick=.165;burst(f.x,f.y,'#f34a60',55,8);game.shake=10},1250)}
+  }return;
+ }
+ // Restless Gambler: Hakari's base techniques and Jackpot moves.
  if(f.char==='restless'&&!f.jackpot){
-  if(idx===0){setMotion(f,'hakariBall',.45,angle,t);projectiles.push({x:f.x+Math.cos(angle)*28,y:f.y+Math.sin(angle)*28,vx:Math.cos(angle)*14,vy:Math.sin(angle)*14,r:7,life:3.8,maxDistance:520,travelled:0,owner:f,kind:'ball',damage:7.5,color:'#e4e8f5'});f.attackAnim=.3;f.reserveBallWindow=.95;f.skillCd[0]=12;registerGambleVisual(f)}
-  if(idx===1){setMotion(f,'hakariDoors',.65,angle,t);const hit=targetInAim(f,t,205,.95,angle),doorX=hit?t.x:clamp(aim.x,f.x-360,f.x+360),doorY=hit?t.y:clamp(aim.y,f.y-360,f.y+360);doorTraps.push({x:doorX,y:doorY,life:hit?1.1:7,owner:f,hit:hit});if(hit){damage(t,8,f,{stun:.6,kx:Math.cos(angle)*2,ky:Math.sin(angle)*2,color:'#c4ccdc'});f.combo=2;f.comboTimer=1.1;burst(t.x,t.y,'#c4ccdc',18,4)}else{burst(doorX,doorY,'#c4ccdc',12,3);popText(doorX,doorY-28,'SHUTTER DOORS','#e4e8f5',12)}f.skillCd[1]=15;registerGambleVisual(f)}
-  if(idx===2){setMotion(f,f.jump>.1?'hakariStomp':'hakariRough',1.05,angle,t);f.skillCd[2]=14;f.attackAnim=1.05;showToast('ROUGH ENERGY · CHARGING',450);schedule(()=>{if(f.dead)return;if(f.jump>.1){const high=f.jump>.75,cx=f.x,cy=f.y+18;circleHit(cx,cy,140,f,high?16:8,{stun:.65,big:true,unblockable:high,color:'#d8a6ff',push:9});burst(cx,cy,'#d8a6ff',34,7);for(let k=0;k<14;k++){const a=k*Math.PI/7;burst(cx+Math.cos(a)*75,cy+Math.sin(a)*75,'#e5c8ff',1,2)}popText(cx,cy-45,high?'HIGH AIR STOMP':'AIR STOMP','#e3c4ff',13)}else if(targetInAim(f,t,160,.8,angle)){damage(t,12.5,f,{stun:.7,kx:Math.cos(angle)*12,ky:Math.sin(angle)*12,big:true,unblockable:true,color:'#d8a6ff'});burst(t.x,t.y,'#d8a6ff',22,6)}else{burst(f.x+Math.cos(angle)*55,f.y+Math.sin(angle)*55,'#d8a6ff',18,4);popText(f.x,f.y-48,'ROUGH ENERGY · MISS','#d8a6ff',11)}},710)}
-  if(idx===3){setMotion(f,'hakariFever',1.7,angle,t);f.skillCd[3]=23;if(targetInAim(f,t,195,.82,angle)){schedule(()=>{if(!t.dead&&dist(f,t)<205){damage(t,5,f,{stun:.3,color:'#d8a6ff'});t.vx=Math.cos(angle)*6;t.vy=Math.sin(angle)*6;doorTraps.push({x:t.x+Math.cos(angle)*35,y:t.y+Math.sin(angle)*35,life:1.25,owner:f,hit:true});burst(t.x,t.y,'#d8a6ff',18,5)}},450);f.feverWindow=1.4;schedule(()=>{if(!t.dead&&dist(f,t)<270&&f.feverWindow>0){f.invuln=.35;f.vx+=Math.cos(angle)*11;f.vy+=Math.sin(angle)*11;damage(t,10,f,{stun:.75,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,color:'#d8a6ff',ignoreInvuln:true,big:true});registerGambleVisual(f);burst(t.x,t.y,'#d8a6ff',28,7);popText(t.x,t.y-60,'FEVER BREAKER','#e3c4ff',14)}f.feverWindow=0},1320)}else popText(f.x,f.y-48,'FEVER BREAKER · MISS','#d8a6ff',11)}
-  return;
+  if(idx===0){projectiles.push({x:f.x+Math.cos(angle)*28,y:f.y+Math.sin(angle)*28,vx:Math.cos(angle)*14,vy:Math.sin(angle)*14,r:7,life:3.8,maxDistance:520,travelled:0,owner:f,kind:'ball',damage:7.5,color:'#e4e8f5'});f.attackAnim=.3;f.reserveBallWindow=.95;f.skillCd[idx]=12;setMotion(f,'hakariBall',.45,angle,t);registerGambleVisual(f)}
+  if(idx===1){const ballVariant=f.reserveBallWindow>0;const ball=ballVariant?projectiles.find(p=>p.owner===f&&p.kind==='ball'&&p.life>0):null;const hit=targetInAim(f,t,205,.95,angle);const doorX=hit?t.x:clamp(aim.x,f.x-360,f.x+360),doorY=hit?t.y:clamp(aim.y,f.y-360,f.y+360);if(ball){ball.attachDoors=true;ball.doorOwner=f;showToast('RESERVE DOORS VARIANT',650);f.reserveBallWindow=0}else{doorTraps.push({x:doorX,y:doorY,life:hit?1.1:7,owner:f,hit:hit});if(hit){damage(t,8,f,{stun:.6,kx:Math.cos(angle)*2,ky:Math.sin(angle)*2,color:'#c4ccdc'});f.combo=2;f.comboTimer=1.1;burst(t.x,t.y,'#c4ccdc',18,4)}else{burst(doorX,doorY,'#c4ccdc',12,3);popText(doorX,doorY-28,'SHUTTER DOORS','#e4e8f5',12)}}f.attackAnim=.55;setMotion(f,'hakariDoors',.65,angle,t);f.skillCd[idx]=15;registerGambleVisual(f)}
+  if(idx===2){f.skillCd[idx]=14;f.attackAnim=1.0;setMotion(f,f.jump>.1?'hakariStomp':'hakariRough',1.05,angle,t);showToast('ROUGH ENERGY · CHARGING',450);schedule(()=>{if(f.dead)return;if(f.jump>.1){const high=f.jump>.75;const cx=f.x,cy=f.y+18;circleHit(cx,cy,140,f,high?16:8,{stun:.65,big:true,unblockable:high,color:'#d8a6ff',push:9});burst(cx,cy,'#d8a6ff',34,7);for(let k=0;k<14;k++){const a=k*Math.PI/7;burst(cx+Math.cos(a)*75,cy+Math.sin(a)*75,'#e5c8ff',1,2)}popText(cx,cy-45,high?'HIGH AIR STOMP':'AIR STOMP','#e3c4ff',13)}else if(targetInAim(f,t,160,.8,angle)){damage(t,12.5,f,{stun:.7,kx:Math.cos(angle)*12,ky:Math.sin(angle)*12,big:true,unblockable:true,color:'#d8a6ff'});burst(t.x,t.y,'#d8a6ff',22,6)}else{burst(f.x+Math.cos(angle)*55,f.y+Math.sin(angle)*55,'#d8a6ff',18,4);popText(f.x,f.y-48,'ROUGH ENERGY · MISS','#d8a6ff',11)}},710)}
+  if(idx===3){f.skillCd[idx]=23;f.attackAnim=1.7;setMotion(f,'hakariFever',1.7,angle,t);if(targetInAim(f,t,195,.82,angle)){schedule(()=>{if(!t.dead&&dist(f,t)<205){damage(t,5,f,{stun:.3,color:'#d8a6ff'});t.vx=Math.cos(angle)*6;t.vy=Math.sin(angle)*6;doorTraps.push({x:t.x+Math.cos(angle)*35,y:t.y+Math.sin(angle)*35,life:1.25,owner:f,hit:true});burst(t.x,t.y,'#d8a6ff',18,5)}},450);f.feverWindow=1.4;schedule(()=>{if(!t.dead&&dist(f,t)<270&&f.feverWindow>0){f.invuln=.35;f.vx+=Math.cos(angle)*11;f.vy+=Math.sin(angle)*11;damage(t,10,f,{stun:.75,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,color:'#d8a6ff',ignoreInvuln:true,big:true});registerGambleVisual(f);burst(t.x,t.y,'#d8a6ff',28,7);popText(t.x,t.y-60,'FEVER BREAKER','#e3c4ff',14)}f.feverWindow=0},1320)}else popText(f.x,f.y-48,'FEVER BREAKER · MISS','#d8a6ff',11)}return;
  }
  if(f.char==='restless'&&f.jackpot){
-  if(idx===0){setMotion(f,'hakariVolley',1.8,angle,t);f.skillCd[0]=10;if(targetInAim(f,t,185,.9,angle)){damage(t,1.2,f,{stun:.25,color:'#7dffad',ignoreInvuln:true});for(let i=0;i<9;i++)schedule(()=>{if(!t.dead&&dist(f,t)<195)damage(t,2.15,f,{stun:.08,color:'#7dffad',ignoreInvuln:true})},410+i*105);schedule(()=>{if(!t.dead&&dist(f,t)<205)damage(t,8,f,{stun:.7,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,unblockable:true,color:'#7dffad',big:true,ignoreInvuln:true});popText(t.x,t.y-70,'LUCKY VOLLEY','#a8ffc5',16)},1650)}else popText(f.x,f.y-50,'LUCKY VOLLEY · MISS','#7dffad',11)}
-  if(idx===1){setMotion(f,'hakariRushdown',1.8,angle,t);f.skillCd[1]=15;if(targetInAim(f,t,390,.55,angle)){f.invuln=.5;f.vx+=Math.cos(angle)*14;f.vy+=Math.sin(angle)*14;schedule(()=>{if(!t.dead&&dist(f,t)<195){damage(t,14,f,{stun:.45,color:'#7dffad'});popText(t.x,t.y-55,'LEG GRAB','#a8ffc5',12);schedule(()=>{if(!t.dead&&dist(f,t)<220)damage(t,10,f,{stun:.7,kx:Math.cos(angle)*12,ky:Math.sin(angle)*12,unblockable:true,color:'#7dffad',big:true})},420)}},220)}}
-  if(idx===2){setMotion(f,'hakariOverwhelming',1.7,angle,t);f.skillCd[2]=20;if(targetInAim(f,t,285,.65,angle)){f.invuln=.45;f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;damage(t,10,f,{stun:.3,color:'#7dffad'});schedule(()=>{if(!t.dead&&dist(f,t)<255)damage(t,5,f,{stun:.22,color:'#7dffad',ignoreInvuln:true})},180);for(let i=0;i<3;i++)schedule(()=>{if(!t.dead&&dist(f,t)<255)damage(t,5,f,{stun:.18,color:'#7dffad',ignoreInvuln:true})},340+i*135);schedule(()=>{if(!t.dead&&dist(f,t)<270)damage(t,10,f,{stun:.65,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,unblockable:true,color:'#7dffad',big:true,ignoreInvuln:true})},790)}}
-  if(idx===3){setMotion(f,'hakariSurge',1.2,angle,t);f.skillCd[3]=25;if(targetInAim(f,t,260,.7,angle)){f.invuln=.25;f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;damage(t,10,f,{stun:.4,color:'#7dffad'});schedule(()=>{if(!t.dead&&dist(f,t)<240)damage(t,10,f,{stun:.65,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,color:'#7dffad',big:true})},260)}}
+  if(idx===0){f.skillCd[idx]=10;f.attackAnim=1.5;if(targetInAim(f,t,185,.9,angle)){damage(t,1.2,f,{stun:.6,color:'#7dffad',ignoreInvuln:true});for(let i=0;i<9;i++)schedule(()=>{if(!t.dead&&dist(f,t)<195)damage(t,2.15,f,{stun:.08,color:'#7dffad',ignoreInvuln:true})},100+i*105);schedule(()=>{if(!t.dead&&dist(f,t)<205)damage(t,8,f,{stun:.7,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,unblockable:true,color:'#7dffad',big:true,ignoreInvuln:true});popText(t.x,t.y-70,'LUCKY VOLLEY','#a8ffc5',16)},1130)}else{f.vx+=Math.cos(angle)*3;popText(f.x,f.y-50,'LUCKY VOLLEY · MISS','#7dffad',11)}}
+  if(idx===1){f.skillCd[idx]=15;f.attackAnim=1.35;if(targetInAim(f,t,390,.55,angle)){f.invuln=.5;f.vx+=Math.cos(angle)*14;f.vy+=Math.sin(angle)*14;schedule(()=>{if(!t.dead&&dist(f,t)<195){damage(t,14,f,{stun:.45,color:'#7dffad'});t.vx+=Math.cos(angle)*2;t.vy+=Math.sin(angle)*2;popText(t.x,t.y-55,'LEG GRAB','#a8ffc5',12);schedule(()=>{if(!t.dead&&dist(f,t)<220)damage(t,10,f,{stun:.7,kx:Math.cos(angle)*12,ky:Math.sin(angle)*12,unblockable:true,color:'#7dffad',big:true});},420)}},220)}}
+  if(idx===2){f.skillCd[idx]=20;f.attackAnim=1.3;if(targetInAim(f,t,285,.65,angle)){f.invuln=.45;f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;damage(t,10,f,{stun:.3,color:'#7dffad'});schedule(()=>{if(!t.dead&&dist(f,t)<255)damage(t,5,f,{stun:.22,color:'#7dffad',ignoreInvuln:true})},180);for(let i=0;i<3;i++)schedule(()=>{if(!t.dead&&dist(f,t)<255)damage(t,5,f,{stun:.18,color:'#7dffad',ignoreInvuln:true})},340+i*135);schedule(()=>{if(!t.dead&&dist(f,t)<270)damage(t,10,f,{stun:.65,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,unblockable:true,color:'#7dffad',big:true,ignoreInvuln:true})},790)}}
+  if(idx===3){f.skillCd[idx]=25;f.attackAnim=.75;if(targetInAim(f,t,260,.7,angle)){f.invuln=.25;f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;damage(t,10,f,{stun:.4,color:'#7dffad'});schedule(()=>{if(!t.dead&&dist(f,t)<240)damage(t,10,f,{stun:.65,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,color:'#7dffad',big:true})},260)}}
  }
 }
+
 function handleInput(dt){if(!game.started||game.paused||game.over)return;if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(keys.has('w')||keys.has('arrowup'))y--;if(keys.has('s')||keys.has('arrowdown'))y++;if(keys.has('a')||keys.has('arrowleft'))x--;if(keys.has('d')||keys.has('arrowright'))x++;let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.dead){player.vx+=x*.8*dt*60;player.vy+=y*.8*dt*60;if(keys.has('f'))useAttack(player,'block');else player.block=false;if(keys.has(' ' )&&player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}if(keys.has('1')){useAttack(player,'1');keys.delete('1')}if(keys.has('2')){useAttack(player,'2');keys.delete('2')}if(keys.has('3')){useAttack(player,'3');keys.delete('3')}if(keys.has('4')){useAttack(player,'4');keys.delete('4')}if(keys.has('g')&&keys.has('r')&&player.char==='honored'){useAttack(player,'domain02');keys.delete('g');keys.delete('r')}else{if(keys.has('r')){useAttack(player,'special');keys.delete('r')}if(keys.has('g')){useAttack(player,'awaken');keys.delete('g')}}}else player.block=false;
  if(mouse.down){useAttack(player,'m1');mouse.down=false}
