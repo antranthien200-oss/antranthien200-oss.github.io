@@ -227,7 +227,7 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-ar
     <button type="button" class="mobile-btn skill" data-mobile-action="4"><span class="mobile-btn-main">4</span><small>SKILL</small></button>
     <button type="button" class="mobile-btn special" data-mobile-action="special"><span class="mobile-btn-main">R</span><small>SPECIAL</small></button>
     <button type="button" class="mobile-btn awaken" data-mobile-action="awaken"><span class="mobile-btn-main">G</span><small>AWAKEN</small></button>
-    <button type="button" class="mobile-btn" data-mobile-action="jump"><span class="mobile-btn-main">↑</span><small>JUMP · HOLD</small></button>
+    <button type="button" class="mobile-btn" data-mobile-action="jump"><span class="mobile-btn-main">↑</span><small>TAP TO JUMP</small></button>
     <button type="button" class="mobile-btn" data-mobile-action="trash"><span class="mobile-btn-main">E</span><small>TRASH CAN</small></button>
     <button type="button" class="mobile-btn pause" data-mobile-action="pause">Ⅱ <span>PAUSE</span></button>
   </div>
@@ -254,7 +254,7 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-ar
     </div>
     <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-skin-line"><span>SKIN</span><b id="currentSkinName">BLINDFOLDED</b></div></div>
   </main>
-  <div class="menu-bottomline"><span>WASD MOVE</span><i>·</i><span>MOUSE AIM</span><i>·</i><span>CLICK / HOLD M1</span><i>·</i><span>E PICK UP / THROW</span><i>·</i><span>1–4 SKILLS</span></div>
+  <div class="menu-bottomline"><span>WASD MOVE</span><i>·</i><span>MOUSE AIM</span><i>·</i><span>TAP M1</span><i>·</i><span>E PICK UP / THROW</span><i>·</i><span>1–4 SKILLS</span></div>
   <div id="menuSub" class="menu-sub" hidden><section class="menu-sub-panel">
     <div class="menu-sub-head"><div><div class="menu-kicker" id="menuSubKicker">FIGHTER ROSTER</div><h2 id="menuSubTitle">SWITCH CHARACTER</h2><p id="menuSubHint">Choose your fighter for the next match.</p></div><button id="menuSubClose" class="menu-close" aria-label="Close">×</button></div>
     <div id="menuSubCards" class="menu-sub-cards"></div><div class="menu-sub-footer"><span id="menuSubSelected">SELECTED: THE HONORED ONE</span><button id="menuSubDone" class="menu-done">DONE <span>→</span></button></div>
@@ -435,16 +435,17 @@ function mobileAimAtTarget(){
 }
 function mobileButtonAction(action){
  if(!game.started||game.paused||game.over||!player||player.dead)return;
- if(!['trash','pause','jump'].includes(action))mobileAimAtTarget();
+ if(action!=='pause'&&action!=='jump'&&(action!=='trash'||player.carryingTrashCan))mobileAimAtTarget();
  if(action==='m1')useAttack(player,'m1');
  else if(action==='dash')useAttack(player,'dash');
  else if(action==='special')useAttack(player,'special');
  else if(action==='awaken')useAttack(player,'awaken');
+ else if(action==='jump'){if(player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}}
  else if(action==='trash')toggleTrashCan(player);
  else if(action==='pause')togglePause();
  else if(['1','2','3','4'].includes(action))useAttack(player,action);
 }
-const mobileHeldKeys={block:'f',jump:' '};
+const mobileHeldKeys={block:'f'};
 document.querySelectorAll('[data-mobile-action]').forEach(btn=>{
  const action=btn.dataset.mobileAction;
  btn.addEventListener('pointerdown',e=>{
