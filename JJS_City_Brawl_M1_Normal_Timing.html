@@ -818,7 +818,7 @@ function useAttack(f,kind){
   if(f.char==='vessel'&&f.awakened){
    const hit=d<range&&inArc;
    if(hit){damage(t,3.8,f,{stun:fin?.62:.32,invuln:.055,kx:Math.cos(angle)*(fin?7.5:.3),ky:Math.sin(angle)*(fin?7.5:.3),color:'#f04b62',damageType:'bullet'});burstLine(f,t,'#f04b62',6);m1Feedback(f,t,angle,true,false)}
-   else m1Feedback(f,t,angle,false,false);
+   else{m1Feedback(f,t,angle,false,false);damageBuildingAlongRay(f,angle,range)}
    setMotion(f,'sukunaM1',.18,angle,t);return;
   }
   const hit=d<range&&inArc;
@@ -827,7 +827,7 @@ function useAttack(f,kind){
    damage(t,dmg,f,{stun:fin?.72:.34,invuln:fin?.085:.055,kx:Math.cos(angle)*(fin?9.6:.3),ky:Math.sin(angle)*(fin?9.6:.3),color:fin?'#ffdfba':'#fff'});
    m1Feedback(f,t,angle,true,fin);
    if(fin){t.jump=Math.max(t.jump,.16);t.jumpV=Math.max(t.jumpV,1.4);f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'FINISHER','#ffe0ad',12)}
-  }else m1Feedback(f,t,angle,false,fin);
+  }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,range)}
   return;
  }
  if(kind==='block'){if(!f.block)setMotion(f,'blockGesture',.22,f.face,t);f.block=true;return}
