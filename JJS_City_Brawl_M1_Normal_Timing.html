@@ -865,6 +865,8 @@ function useAttack(f,kind){
   popText(f.x,f.y-65,c.awakeName,'#ffde89',25);updateHud();return;
  }
  if(kind==='special'){
+  if(f.char==='ten'&&f.tenNueWindow>0&&f.tenNueProjectile&&f.tenNueProjectile.life>0){const p=f.tenNueProjectile;f.tenNueWindow=0;f.specialCd=10;f.tenNueRideTimer=.72;p.rideOwner=f;setMotion(f,'megumiNueRide',.72,Math.atan2(p.vy,p.vx),targetOf(f));showToast('NUE · RIDE THE SHIKIGAMI',750);return}
+  if(f.char==='ten'&&f.shadowTimer>0){tenExitShadow(f);return}
   if(f.specialCd>0)return;
   // Gojo: Limitless. It is a targeted reposition, with an aerial kick variant.
   if(f.char==='honored'){
