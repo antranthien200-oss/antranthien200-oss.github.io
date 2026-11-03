@@ -768,7 +768,7 @@ function updateTrainingDummy(dt){
  // The dummy is an inert NPC: it never attacks, blocks, counters, or starts a skill.
  trainingDummy.aiDisabled=true;trainingDummy.block=false;trainingDummy.counterWindow=0;trainingDummy.counterKind='';
  trainingDummy.attackAnim=0;trainingDummy.attackType='';trainingDummy.motion=null;trainingDummy.domainWindup=0;trainingDummy.domainTimer=0;trainingDummy.grabTarget=null;trainingDummy.counterWindow=0;trainingDummy.skillCd=[999,999,999,999];trainingDummy.specialCd=999;
- trainingDummy.stun=Math.max(0,trainingDummy.stun-dt);trainingDummy.invuln=Math.max(0,trainingDummy.invuln-dt);trainingDummy.flash=Math.max(0,trainingDummy.flash-dt);
+ trainingDummy.stun=Math.max(0,trainingDummy.stun-dt);trainingDummy.invuln=Math.max(0,trainingDummy.invuln-dt);trainingDummy.flash=Math.max(0,trainingDummy.flash-dt);updateTenEffects(trainingDummy,dt);
  trainingDummy.vx*=Math.pow(.72,dt*60);trainingDummy.vy*=Math.pow(.72,dt*60);
  trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1740,1860);trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1100,1210);
 }
@@ -807,7 +807,7 @@ function drawTrainingDummy(){
 
 function useAttack(f,kind){
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||f.block||game.cutsceneTimer>0)return;const c=CHARS[f.char],t=targetOf(f);
- if(kind==='dash'){if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
+ if(kind==='dash'){if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0)return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind!=='special'&&kind!=='m1'&&kind!=='1'&&kind!=='4')return;
@@ -1066,7 +1066,7 @@ function updateTenEffects(f,dt){
  if(f.tenRabbitSwarm){f.tenRabbitSwarm.life-=dt;if(!f.tenRabbitSwarm.owner||f.tenRabbitSwarm.owner.dead||f.tenRabbitSwarm.owner.stun>.04||f.tenRabbitSwarm.life<=0)f.tenRabbitSwarm=null}
  if(f.tenPoisonTimer>0){f.tenPoisonTimer=Math.max(0,f.tenPoisonTimer-dt);f.tenPoisonTick-=dt;if(f.tenPoisonTick<=0&&f.tenPoisonTimer>0){f.tenPoisonTick=1;const source=f.tenPoisonSource;if(source&&!source.dead&&!f.dead)damage(f,2.9,source,{stun:.025,unblockable:true,ignoreInvuln:true,color:'#9bcf87'})}if(f.tenPoisonTimer<=0)f.tenPoisonSource=null}
  if(f.char!=='ten')return;
- f.tenToadWindow=Math.max(0,(f.tenToadWindow||0)-dt);f.tenNueWindow=Math.max(0,(f.tenNueWindow||0)-dt);
+ f.tenToadWindow=Math.max(0,(f.tenToadWindow||0)-dt);f.tenNueWindow=Math.max(0,(f.tenNueWindow||0)-dt);f.tenToadVisual=Math.max(0,(f.tenToadVisual||0)-dt);if(f.tenElephantMark){f.tenElephantMark.life-=dt;if(f.tenElephantMark.life<=0)f.tenElephantMark=null}
  if(f.tenDogActive){f.tenDogTimer-=dt;if(f.stun>.04||f.tenDogTimer<=0){f.tenDogActive=false;f.tenDogCharges=0;f.tenDogTimer=0;f.skillCd[3]=Math.max(f.skillCd[3]||0,20);burst(f.x,f.y,'#d9e2f1',8,2)}}
  if(f.tenMahoragaRitual>0){if(f.stun>.04||f.dead){f.tenMahoragaRitual=0;f.tenMahoragaTarget=null;popText(f.x,f.y-55,'MAHORAGA RITUAL · INTERRUPTED','#b6c5db',13);burst(f.x,f.y,'#8796ae',10,3)}else{f.tenMahoragaRitual=Math.max(0,f.tenMahoragaRitual-dt);if(f.tenMahoragaRitual===0){f.tenMahoragaActive=12;f.tenMahoragaAttackCd=.7;f.tenMahoragaTarget=null;f.adaptation=0;setMotion(f,'megumiMahoragaSummon',.7,f.face,targetOf(f));popText(f.x,f.y-72,'MAHORAGA · SUMMONED','#e0e6f2',18);burst(f.x,f.y,'#b9c6db',34,7);game.shake=Math.max(game.shake,12)}}}
  if(f.tenMahoragaActive>0){f.tenMahoragaActive=Math.max(0,f.tenMahoragaActive-dt);f.tenMahoragaAttackCd-=dt;if(f.tenMahoragaActive===0){f.tenMahoragaTarget=null;popText(f.x,f.y-55,'MAHORAGA DISMISSED','#c8d0df',12)}else if(f.tenMahoragaAttackCd<=0){const target=tenNearestTarget(f,560);if(target){f.tenMahoragaAttackCd=1.35;f.adaptation=clamp((f.adaptation||0)+1,0,10);const a=Math.atan2(target.y-f.y,target.x-f.x);setMotion(f,'megumiMahoragaStrike',.6,a,target);damage(target,12+Math.min(5,f.adaptation),f,{stun:.62,kx:Math.cos(a)*12,ky:Math.sin(a)*12,big:true,unblockable:true,ignoreInvuln:true,color:'#aebbd0'});burst(target.x,target.y,'#bdcadc',20,5);game.shake=Math.max(game.shake,7);popText(target.x,target.y-66,'ADAPTATION','#dce5f4',12)}else f.tenMahoragaAttackCd=.35}}
@@ -1710,6 +1710,15 @@ function drawTenSummons(){
  const fighters=[player,enemy,trainingDummy].filter(f=>f&&f.char==='ten'&&!f.dead);
  for(const f of fighters){
   const x=sx(f.x),y=sy(f.y),a=f.face||0;
+  if(f.tenToadVisual>0){
+   const px=x-Math.cos(a+Math.PI/2)*42,py=y-Math.sin(a+Math.PI/2)*42;
+   ctx.save();ctx.translate(px,py);ctx.fillStyle='#344a45';ctx.fillRect(-22,-12,42,24);ctx.fillStyle='#8db8a2';ctx.fillRect(-18,-16,34,15);ctx.fillRect(-13,-23,9,9);ctx.fillRect(5,-23,9,9);ctx.fillStyle='#080d13';ctx.fillRect(-11,-19,3,3);ctx.fillRect(8,-19,3,3);ctx.strokeStyle='#d1d7f7';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(18,-2);ctx.quadraticCurveTo(37,Math.sin(game.time*14)*9,55,-18);ctx.stroke();ctx.restore();
+  }
+  if(f.motion&&f.motion.name==='megumiSwarm'&&f.motion.t<1.25){
+   const k=clamp(f.motion.t/1.25,0,1);ctx.save();ctx.globalAlpha=.62*(1-k*.45);
+   for(let side=-1;side<=1;side+=2){const px=x+Math.cos(a+Math.PI/2)*side*(54+16*Math.sin(k*Math.PI)),py=y+Math.sin(a+Math.PI/2)*side*(54+16*Math.sin(k*Math.PI));ctx.fillStyle='#172239';ctx.beginPath();ctx.arc(px,py,19,0,Math.PI*2);ctx.fill();ctx.fillStyle='#a9bbd8';ctx.fillRect(px-13,py-4,26,8);ctx.fillStyle='#e2e9f4';ctx.fillRect(px+7,py-10,5,5)}
+   ctx.restore();
+  }
   if(f.tenDogActive){
    const px=x-Math.cos(a)*45,py=y-Math.sin(a)*45+13;ctx.save();ctx.translate(px,py);ctx.rotate(a);
    ctx.fillStyle='#101827';ctx.fillRect(-25,-10,43,20);ctx.fillRect(6,-18,22,22);ctx.fillRect(16,-25,7,11);ctx.fillRect(5,-22,6,9);
