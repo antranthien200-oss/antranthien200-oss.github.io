@@ -93,7 +93,7 @@
 .menu-button.play{border-color:#ff7b91;background:linear-gradient(105deg,rgba(120,24,54,.96),rgba(40,19,58,.94));box-shadow:0 0 24px #e832663f,inset 0 0 19px #ffb0c01a}.menu-button.play .button-icon{color:#fff}
 .menu-selected{width:min(330px,78vw);padding:10px 14px 9px;border:1px solid #ffffff42;border-radius:4px;background:rgba(5,10,20,.72);box-shadow:0 7px 20px #0006;backdrop-filter:blur(8px)}
 .selected-caption{font-size:7px;color:#8fa4c2;letter-spacing:.26em;font-weight:900}.selected-main{display:flex;align-items:center;gap:9px;margin-top:4px;font-size:11px;font-weight:1000;letter-spacing:.1em}.selected-icon{font-size:19px}
-.selected-skin-line{display:flex;justify-content:space-between;margin-top:4px;color:#93a5be;font-size:8px;letter-spacing:.15em}.selected-skin-line b{color:#f5d9a0}
+.selected-accessory-line{display:flex;justify-content:space-between;gap:8px;margin-top:4px;color:#93a5be;font-size:8px;letter-spacing:.12em}.selected-accessory-line b{color:#f5d9a0;max-width:190px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:right}
 .menu-bottomline{position:absolute;z-index:2;bottom:clamp(12px,2.7vh,28px);left:12px;right:12px;display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;color:#c0cde0;font-size:8px;font-weight:900;letter-spacing:.17em;text-shadow:0 2px 8px #000}.menu-bottomline i{font-style:normal;color:#ff7187}
 .menu-sub{position:absolute;z-index:8;inset:0;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(2,5,13,.7);backdrop-filter:blur(10px)}.menu-sub[hidden]{display:none!important}
 .menu-sub-panel{width:min(780px,94vw);max-height:min(88vh,760px);overflow:auto;padding:clamp(18px,3vw,28px);border:1px solid #ffffff55;border-radius:9px;background:linear-gradient(145deg,rgba(14,22,38,.97),rgba(6,11,21,.97));box-shadow:0 24px 90px #000c}
@@ -102,10 +102,11 @@
 .menu-sub-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}.menu-option{min-width:0;min-height:145px;display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;padding:14px;border:1px solid #ffffff30;border-radius:6px;background:linear-gradient(145deg,#ffffff0c,#ffffff04);color:#fff;text-align:left;cursor:pointer;transition:.15s}
 .menu-option:hover{border-color:#c5dfff;background:#ffffff12;transform:translateY(-2px)}.menu-option.selected{border-color:#ff687e;box-shadow:inset 0 0 0 1px #ff687e70,0 0 22px #f24d7040;background:linear-gradient(145deg,#ff536e20,#ffffff08)}
 .option-icon{font-size:35px;margin-bottom:8px;filter:drop-shadow(0 4px 8px #000)}.option-name{font-size:11px;font-weight:1000;letter-spacing:.09em}.option-desc{font-size:9px;line-height:1.4;color:#aebbd0;margin-top:5px}
-.skin-swatches{display:flex;gap:5px;margin:5px 0 10px}.skin-swatches i{width:28px;height:9px;border:1px solid #ffffff55;border-radius:3px;display:block}
+.accessory-slot-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:-3px 0 14px}.accessory-slot-tabs[hidden]{display:none!important}.accessory-tab{border:1px solid #ffffff2c;border-radius:4px;padding:9px 13px;background:#ffffff0a;color:#bdc9dc;font-size:9px;font-weight:950;letter-spacing:.12em;cursor:pointer}.accessory-tab.active{border-color:#ff7187;background:#ff536e20;color:#fff;box-shadow:inset 0 0 0 1px #ff687e55}.accessory-chip{margin:5px 0 10px;padding:5px 8px;border:1px solid #ffffff25;border-radius:3px;color:#a8bad2;font-size:8px;font-weight:900;letter-spacing:.14em}
 .menu-sub-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ffffff20;margin-top:19px;padding-top:14px}.menu-sub-footer>span{color:#abb9ce;font-size:8px;font-weight:900;letter-spacing:.13em}
 .menu-done{border:1px solid #ff7688;border-radius:4px;background:linear-gradient(100deg,#a82c4c,#59233f);color:#fff;padding:10px 20px;font-size:9px;font-weight:1000;letter-spacing:.2em;cursor:pointer}.menu-done span{margin-left:14px;font-size:14px}
 @keyframes menuDrift{from{transform:scale(1.025) translate3d(-.3%,0,0)}to{transform:scale(1.07) translate3d(.3%,-.2%,0)}}
+@media(max-width:640px){.accessory-slot-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.accessory-tab{padding:10px 6px}}
 @media(max-width:640px){.menu-brand{font-size:7px;letter-spacing:.12em}.menu-version b{display:none}.menu-main{gap:12px;padding-top:55px;padding-bottom:58px}.menu-title{font-size:clamp(78px,20vw,112px)}.menu-actions,.menu-selected{width:min(300px,82vw)}.menu-button{min-height:49px}.menu-sub-cards{grid-template-columns:1fr}.menu-option{min-height:105px}.menu-option .option-icon{font-size:27px;margin-bottom:4px}.menu-sub-footer{align-items:flex-start;flex-direction:column}.menu-done{width:100%}.menu-bottomline{font-size:7px;gap:6px;letter-spacing:.1em}}
 
 /* Awakening cinematic */
@@ -257,7 +258,7 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-ar
     <div class="menu-actions">
       <button class="menu-button play" id="startBtn"><span class="button-icon">▶</span><span>PLAY</span><small>ENTER THE BATTLE</small></button>
       <button class="menu-button" id="switchCharBtn"><span class="button-icon">⇄</span><span>SWITCH CHARACTER</span><small>CHOOSE YOUR FIGHTER</small></button>
-      <button class="menu-button" id="switchSkinBtn"><span class="button-icon">◈</span><span>SWITCH SKIN</span><small>CHANGE YOUR LOOK</small></button>
+      <button class="menu-button" id="switchAccessoriesBtn"><span class="button-icon">✦</span><span>ACCESSORIES</span><small>EQUIP YOUR OWN LOADOUT</small></button>
     </div>
 
     <div class="mobile-setup-wrap">
@@ -268,12 +269,12 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-ar
       </button>
       <div class="mobile-setup-hint" id="mobileSetupHint">Touch controls are OFF · Keyboard and mouse remain available</div>
     </div>
-    <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-skin-line"><span>SKIN</span><b id="currentSkinName">BLINDFOLDED</b></div></div>
+    <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-accessory-line"><span>ACCESSORIES</span><b id="currentAccessoriesSummary">NONE EQUIPPED</b></div></div>
   </main>
   <div class="menu-bottomline"><span>WASD MOVE</span><i>·</i><span>MOUSE AIM</span><i>·</i><span>TAP M1</span><i>·</i><span>E PICK UP / THROW</span><i>·</i><span>1–4 SKILLS</span></div>
   <div id="menuSub" class="menu-sub" hidden><section class="menu-sub-panel">
     <div class="menu-sub-head"><div><div class="menu-kicker" id="menuSubKicker">FIGHTER ROSTER</div><h2 id="menuSubTitle">SWITCH CHARACTER</h2><p id="menuSubHint">Choose your fighter for the next match.</p></div><button id="menuSubClose" class="menu-close" aria-label="Close">×</button></div>
-    <div id="menuSubCards" class="menu-sub-cards"></div><div class="menu-sub-footer"><span id="menuSubSelected">SELECTED: THE HONORED ONE</span><button id="menuSubDone" class="menu-done">DONE <span>→</span></button></div>
+    <div id="menuSubTabs" class="accessory-slot-tabs" hidden></div><div id="menuSubCards" class="menu-sub-cards"></div><div class="menu-sub-footer"><span id="menuSubSelected">SELECTED: THE HONORED ONE</span><button id="menuSubDone" class="menu-done">DONE <span>→</span></button></div>
   </section></div>
 </div>
 <div id="pause"><div class="pausebox"><h2>PAUSED</h2><p>Catch your breath. The fight is still waiting.</p><button class="primary" id="resumeBtn">RESUME · ESC</button><button class="primary" id="restartBtn" style="background:linear-gradient(100deg,#53677d,#35465b);box-shadow:none">RESTART MATCH</button><button class="primary" id="menuBtn" style="background:linear-gradient(100deg,#303d50,#202a39);box-shadow:none">CHARACTER SELECT</button></div></div>
@@ -333,46 +334,66 @@ const CHARS={
 let selected='honored';
 const CHAR_ICONS={honored:'🕶️',vessel:'🥊',restless:'🎰',ten:'🐺',perfection:'🧬',todo:'👏',choso:'🩸'};
 const MAHITO_MODES=[{range:1,damage:1,knockback:1,speed:1,shots:3},{range:1.28,damage:.84,knockback:1.3,speed:1.22,shots:4},{range:.88,damage:1.5,knockback:1.65,speed:.9,shots:2}];
-const SKINS={honored:[
- {name:'BLINDFOLDED',desc:'Classic Limitless uniform with the blindfold.',hair:'#eef3ff',coat:'#19253b',accent:'#4cb8f4',skin:'#f1c7a9',eyeStyle:'blindfold'},
- {name:'SIX EYES',desc:'Unsealed eyes glowing with Limitless energy.',hair:'#f7f8ff',coat:'#202b43',accent:'#71dcff',skin:'#f1c7a9',eyeStyle:'sixeyes'},
- {name:'DARK TECH',desc:'A darker combat uniform with silver-blue details.',hair:'#dfe9ff',coat:'#111722',accent:'#9ac8ff',skin:'#e9bea5',eyeStyle:'sixeyes'}
-],vessel:[
- {name:'TOKYO STUDENT',desc:'Yuji’s familiar school uniform.',hair:'#e9a36b',coat:'#c34e4e',accent:'#f3bb67',skin:'#c98968',markings:false},
- {name:'KING OF CURSES',desc:'Sukuna markings and a crimson-black palette.',hair:'#e6b2a4',coat:'#542335',accent:'#f04e66',skin:'#c98968',markings:true},
- {name:'BLACK FLASH',desc:'Dark combat outfit charged with cursed energy.',hair:'#e69c5e',coat:'#171c28',accent:'#c4d4e8',skin:'#c98968',markings:false}
-],restless:[
- {name:'GAMBLER',desc:'Hakari’s everyday look.',hair:'#24263c',coat:'#343955',accent:'#d9a4ff',skin:'#e0b49b'},
- {name:'JACKPOT',desc:'Bright pale outfit with jackpot-green energy.',hair:'#e8e8f2',coat:'#e4d8c7',accent:'#65f69b',skin:'#e0b49b'},
- {name:'STREET KING',desc:'Dark streetwear with violet highlights.',hair:'#1d2233',coat:'#18202d',accent:'#bb91ff',skin:'#d9a98f'}
-],ten:[
- {name:'TOKYO STUDENT',desc:'Megumi’s dark school uniform.',hair:'#171d2a',coat:'#182333',accent:'#7d9bcb',skin:'#e0bea8'},
- {name:'SHADOW SUMMONER',desc:'Midnight uniform with blue shadow energy.',hair:'#0d1421',coat:'#111827',accent:'#526caa',skin:'#d8b39e'},
- {name:'INSANITY',desc:'Awakened shikigami palette.',hair:'#242a37',coat:'#303849',accent:'#a5d2ed',skin:'#e0bea8'}
-],perfection:[
- {name:'PATCHED SOUL',desc:'Mahito’s pale-blue hair and stitched body.',hair:'#93c7c1',coat:'#25323a',accent:'#79b7ad',skin:'#d5a992'},
- {name:'BLADE FORM',desc:'A darker body with sharp teal highlights.',hair:'#b3d9d2',coat:'#16242a',accent:'#58bcae',skin:'#d5a992'},
- {name:'DISTORTED KILLING',desc:'Transfigured combat form.',hair:'#d2e2dd',coat:'#28333e',accent:'#c2e8dd',skin:'#c99b87'}
-],todo:[
- {name:'KYOTO UNIFORM',desc:'Todo’s standard school uniform.',hair:'#171b26',coat:'#242d3a',accent:'#d5b36d',skin:'#b98267'},
- {name:'BROTHERHOOD',desc:'A warmer palette inspired by False Memories.',hair:'#1c2029',coat:'#40302b',accent:'#e6bc77',skin:'#b98267'},
- {name:'BLACK FLASH',desc:'Dark uniform with golden cursed-energy accents.',hair:'#10151e',coat:'#151d2c',accent:'#f2d07b',skin:'#b98267'}
-],choso:[
- {name:'DEATH PAINTING',desc:'Choso’s dark hair and blood markings.',hair:'#17151a',coat:'#31252c',accent:'#b82e45',skin:'#c68c76',markings:true},
- {name:'WING KING',desc:'A sharper blood-red palette.',hair:'#21171e',coat:'#42222c',accent:'#e34a61',skin:'#c68c76',markings:true},
- {name:'BROTHER',desc:'Muted outfit with crimson details.',hair:'#17151a',coat:'#252833',accent:'#962f43',skin:'#c68c76',markings:true}
-]};
-const skinSelections={honored:0,vessel:0,restless:0};let menuView='';
-function getFighterLook(f){const list=SKINS[f.char]||[];const idx=f.team==='player'?(f.skinIndex||0):0;return Object.assign({},CHARS[f.char],list[idx]||list[0]||{})}
-function updateMenuSummary(){const skin=SKINS[selected][skinSelections[selected]||0];$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentSkinName').textContent=skin.name}
-function showMenuSub(view){menuView=view;$('menuSub').hidden=false;renderMenuSub()}function closeMenuSub(){$('menuSub').hidden=true;menuView=''}
-function renderMenuSub(){const isCharacter=menuView==='character';$('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':'APPEARANCE';$('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':'SWITCH SKIN';$('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':'Choose a different look for '+CHARS[selected].name+'.';let html='';
- if(isCharacter){html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('')}
- else{html=SKINS[selected].map((s,i)=>'<button class="menu-option '+((skinSelections[selected]||0)===i?'selected':'')+'" data-skin="'+i+'"><span class="skin-swatches"><i style="background:'+s.hair+'"></i><i style="background:'+s.coat+'"></i><i style="background:'+s.accent+'"></i><i style="background:'+s.skin+'"></i></span><span class="option-name">'+s.name+'</span><span class="option-desc">'+s.desc+'</span></button>').join('')}
- $('menuSubCards').innerHTML=html;$('menuSubSelected').textContent=isCharacter?'SELECTED: '+CHARS[selected].name:'SELECTED SKIN: '+SKINS[selected][skinSelections[selected]||0].name;
+const ACCESSORY_SLOTS=[
+ {id:'head',label:'HEADWEAR',items:[
+  {id:'spikes-white',name:'WHITE SPIKES',icon:'⚡',desc:'Bright, jagged pixel hair.'},
+  {id:'spikes-black',name:'BLACK SPIKES',icon:'✦',desc:'Dark spiked hair silhouette.'},
+  {id:'crown',name:'CURSED CROWN',icon:'♛',desc:'A gold crown with a cursed gem.'},
+  {id:'halo',name:'FLOATING HALO',icon:'◯',desc:'A small ring hovering above your head.'}
+ ]},
+ {id:'face',label:'FACE',items:[
+  {id:'blindfold',name:'BLINDFOLD',icon:'▰',desc:'A dark wrap across the eyes.'},
+  {id:'shades',name:'DARK SHADES',icon:'🕶️',desc:'Pixel sunglasses with blue lenses.'},
+  {id:'oni-mask',name:'ONI MASK',icon:'👹',desc:'A pale mask covering the lower face.'},
+  {id:'sukuna-marks',name:'CURSE MARKS',icon:'〽',desc:'Crimson markings across the face.'}
+ ]},
+ {id:'neck',label:'NECK & BACK',items:[
+  {id:'red-scarf',name:'RED SCARF',icon:'🧣',desc:'A bright scarf tied around the neck.'},
+  {id:'black-scarf',name:'SHADOW SCARF',icon:'〰',desc:'A dark scarf with a blue edge.'},
+  {id:'gold-chain',name:'GOLD CHAIN',icon:'🔗',desc:'A small pixel chain necklace.'},
+  {id:'raised-collar',name:'RAISED COLLAR',icon:'▥',desc:'A raised dark combat collar.'}
+ ]},
+ {id:'aura',label:'AURA',items:[
+  {id:'blue-flame',name:'BLUE CURSED ENERGY',icon:'💠',desc:'A cool blue energy ring.'},
+  {id:'crimson-flame',name:'CRIMSON ENERGY',icon:'🔥',desc:'A pulsing crimson ring.'},
+  {id:'shadow-smoke',name:'SHADOW SMOKE',icon:'🌑',desc:'Dark wisps orbit your head.'},
+  {id:'jackpot-sparks',name:'JACKPOT SPARKS',icon:'✨',desc:'Golden pixel sparks.'}
+ ]}
+];
+const accessoryLoadouts=Object.fromEntries(Object.keys(CHARS).map(k=>[k,{head:'none',face:'none',neck:'none',aura:'none'}]));
+let accessorySlot='head',menuView='';
+function getFighterLook(f){return CHARS[f.char]||CHARS.honored}
+function getFighterAccessories(f){return f&&f.team==='player'?(accessoryLoadouts[f.char]||{}):{}}
+function findAccessory(slotId,itemId){const slot=ACCESSORY_SLOTS.find(s=>s.id===slotId);return slot&&slot.items.find(item=>item.id===itemId)}
+function getAccessorySummary(char){const loadout=accessoryLoadouts[char]||{};const names=[];for(const slot of ACCESSORY_SLOTS){const item=findAccessory(slot.id,loadout[slot.id]);if(item)names.push(item.name)}return names.length?names.join(' · '):'NONE EQUIPPED'}
+function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentAccessoriesSummary').textContent=getAccessorySummary(selected)}
+function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub()}
+function closeMenuSub(){$('menuSub').hidden=true;menuView=''}
+function renderMenuSub(){
+ const isCharacter=menuView==='character',tabWrap=$('menuSubTabs');
+ $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':'CUSTOMIZATION';
+ $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':'EQUIP ACCESSORIES';
+ $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':'Pick a slot, then equip or remove an accessory. Each slot can hold one item.';
+ tabWrap.hidden=isCharacter;let html='';
+ if(isCharacter){
+  html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('');
+ }else{
+  tabWrap.innerHTML=ACCESSORY_SLOTS.map(s=>'<button class="accessory-tab '+(accessorySlot===s.id?'active':'')+'" data-accessory-slot="'+s.id+'">'+s.label+'</button>').join('');
+  const slot=ACCESSORY_SLOTS.find(s=>s.id===accessorySlot)||ACCESSORY_SLOTS[0],equipped=accessoryLoadouts[selected][slot.id]||'none';
+  const choices=[{id:'none',name:'REMOVE',icon:'✕',desc:'Unequip the current item from this slot.'},...slot.items];
+  html=choices.map(item=>'<button class="menu-option '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'"><span class="option-icon">'+item.icon+'</span><span class="accessory-chip">'+slot.label+'</span><span class="option-name">'+item.name+'</span><span class="option-desc">'+item.desc+'</span></button>').join('');
+ }
+ $('menuSubCards').innerHTML=html;
+ $('menuSubSelected').textContent=isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
  document.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selected=btn.dataset.character;updateMenuSummary();renderMenuSub()}));
- document.querySelectorAll('[data-skin]').forEach(btn=>btn.addEventListener('click',()=>{skinSelections[selected]=Number(btn.dataset.skin);if(player&&!game.started)player.skinIndex=skinSelections[selected];updateMenuSummary();renderMenuSub()}));}
-$('switchCharBtn').addEventListener('click',()=>showMenuSub('character'));$('switchSkinBtn').addEventListener('click',()=>showMenuSub('skin'));$('menuSubClose').addEventListener('click',closeMenuSub);$('menuSubDone').addEventListener('click',closeMenuSub);updateMenuSummary();
+ document.querySelectorAll('[data-accessory-slot]').forEach(btn=>btn.addEventListener('click',()=>{accessorySlot=btn.dataset.accessorySlot;renderMenuSub()}));
+ document.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{accessoryLoadouts[selected][accessorySlot]=btn.dataset.accessory;updateMenuSummary();renderMenuSub()}));
+}
+$('switchCharBtn').addEventListener('click',()=>showMenuSub('character'));
+$('switchAccessoriesBtn').addEventListener('click',()=>showMenuSub('accessory'));
+$('menuSubClose').addEventListener('click',closeMenuSub);
+$('menuSubDone').addEventListener('click',closeMenuSub);
+updateMenuSummary();
 
 let game={started:false,paused:false,over:false,shake:0,hitStop:0,last:0,time:0,round:1,kills:0,toastTimer:0,enemyRespawn:0,cutsceneTimer:0};
 const scheduledTasks=[];
@@ -407,7 +428,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetR
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0});}
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,skinIndex:team==='player'?(skinSelections[char]||0):0,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
@@ -1375,6 +1396,45 @@ function drawPixelatedCircle(x,y,r,palette,cell=2.4){
  }
  ctx.restore();
 }
+function drawAccessoryAura(f,x,y,scale=1){
+ const id=getFighterAccessories(f).aura;if(!id||id==='none')return;
+ const colors={'blue-flame':'#69d8ff','crimson-flame':'#ff526b','shadow-smoke':'#8995b7','jackpot-sparks':'#ffd36e'},color=colors[id]||'#9bdcff';
+ ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);ctx.globalAlpha=.72+.18*Math.sin(game.time*7);ctx.strokeStyle=color;ctx.fillStyle=color;ctx.lineWidth=2;
+ if(id==='jackpot-sparks'){for(let i=0;i<8;i++){const a=game.time*1.2+i*Math.PI/4,rad=23+(i%2)*5,px=Math.cos(a)*rad,py=Math.sin(a)*rad;ctx.fillRect(Math.round(px-2),Math.round(py-2),4,4)}}
+ else{ctx.shadowBlur=10;ctx.shadowColor=color;for(let i=0;i<3;i++){const a=game.time*(id==='shadow-smoke'?-.7:1.1)+i*2.1;ctx.beginPath();ctx.ellipse(0,0,21+i*4,17+i*3,a,0,Math.PI*1.72);ctx.stroke()}if(id==='shadow-smoke'){ctx.globalAlpha=.22;for(let i=0;i<5;i++){const a=game.time+i*1.25;ctx.beginPath();ctx.arc(Math.cos(a)*23,Math.sin(a)*18,5+i%2*3,0,Math.PI*2);ctx.fill()}}}
+ ctx.restore();
+}
+function drawAccessoryOverlays(f,x,y,scale=1){
+ const a=getFighterAccessories(f);if(!Object.values(a).some(v=>v&&v!=='none'))return;
+ ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+ if(a.neck==='red-scarf'||a.neck==='black-scarf'){
+  const col=a.neck==='red-scarf'?'#cf354d':'#202b40',edge=a.neck==='red-scarf'?'#641f32':'#101722';
+  ctx.fillStyle=edge;ctx.fillRect(-15,8,30,9);ctx.fillStyle=col;ctx.fillRect(-14,8,28,6);ctx.fillRect(-10,14,8,8);ctx.fillRect(4,13,8,10);
+ }else if(a.neck==='gold-chain'){
+  ctx.strokeStyle='#8e672f';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,3,13,.2,Math.PI-.2);ctx.stroke();ctx.strokeStyle='#ffd66d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,3,13,.2,Math.PI-.2);ctx.stroke();ctx.fillStyle='#ffe08b';for(let i=-2;i<=2;i++)ctx.fillRect(i*4-1,13-Math.abs(i),3,3);
+ }else if(a.neck==='raised-collar'){
+  ctx.fillStyle='#0e1725';ctx.fillRect(-17,5,7,14);ctx.fillRect(10,5,7,14);ctx.fillStyle='#52647e';ctx.fillRect(-16,6,3,10);ctx.fillRect(13,6,3,10);
+ }
+ if(a.head==='spikes-white'||a.head==='spikes-black'){
+  const col=a.head==='spikes-white'?'#edf4ff':'#101620',edge=a.head==='spikes-white'?'#64758e':'#05080d';
+  ctx.fillStyle=edge;ctx.fillRect(-15,-17,30,7);ctx.fillRect(-13,-22,6,8);ctx.fillRect(-5,-25,7,11);ctx.fillRect(5,-23,6,9);
+  ctx.fillStyle=col;ctx.fillRect(-13,-16,26,4);ctx.fillRect(-11,-21,4,7);ctx.fillRect(-4,-24,5,9);ctx.fillRect(6,-22,4,7);ctx.fillRect(12,-18,3,5);
+ }else if(a.head==='crown'){
+  ctx.fillStyle='#7d4e24';ctx.fillRect(-14,-18,28,9);ctx.fillStyle='#f0bd4f';ctx.fillRect(-13,-20,26,7);ctx.fillRect(-12,-26,5,8);ctx.fillRect(-2,-29,5,11);ctx.fillRect(8,-26,5,8);ctx.fillStyle='#ff637a';ctx.fillRect(-2,-17,5,4);
+ }else if(a.head==='halo'){
+  ctx.save();ctx.strokeStyle='#614b26';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,-23,15,5,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#ffe18b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-23,15,5,0,0,Math.PI*2);ctx.stroke();ctx.restore();
+ }
+ if(a.face==='blindfold'){
+  ctx.fillStyle='#090e18';ctx.fillRect(-16,-7,32,8);ctx.fillStyle='#40516d';ctx.fillRect(-15,-6,30,2);ctx.fillStyle='#111a2a';ctx.fillRect(12,-5,7,4);
+ }else if(a.face==='shades'){
+  ctx.fillStyle='#080d16';ctx.fillRect(-14,-7,12,8);ctx.fillRect(2,-7,12,8);ctx.fillRect(-2,-5,4,3);ctx.fillStyle='#4f9bc8';ctx.fillRect(-12,-5,8,4);ctx.fillRect(4,-5,8,4);
+ }else if(a.face==='oni-mask'){
+  ctx.fillStyle='#566171';ctx.fillRect(-12,1,24,11);ctx.fillStyle='#e3e8ed';ctx.fillRect(-11,0,22,10);ctx.fillStyle='#7d8999';ctx.fillRect(-7,4,3,2);ctx.fillRect(4,4,3,2);ctx.fillStyle='#303b4a';ctx.fillRect(-4,8,8,2);
+ }else if(a.face==='sukuna-marks'){
+  ctx.fillStyle='#a72b43';ctx.fillRect(-12,-8,3,7);ctx.fillRect(-9,-5,3,3);ctx.fillRect(9,-8,3,7);ctx.fillRect(6,-5,3,3);ctx.fillRect(-3,4,6,2);
+ }
+ ctx.restore();
+}
 function drawFloatingHand(x,y,angle,theme,scale=1){
  // Small floating pixel-circle fist: no fingers, glove, shine, or extra details.
  ctx.save();
@@ -1553,7 +1613,7 @@ function drawHeadHands(f){
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c);ctx.restore();
  drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);
  drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale);
- ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();
+ drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();drawAccessoryOverlays(f,x,headY);
  if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
  if(f.transfigureMeter>0){const mw=46,bw=mw*(f.transfigureMeter/100);ctx.save();ctx.fillStyle='#061014cc';ctx.fillRect(x-mw/2,headY-47,mw,7);ctx.fillStyle='#88dfcc';ctx.fillRect(x-mw/2,headY-47,bw,7);ctx.strokeStyle='#d8fff4';ctx.strokeRect(x-mw/2,headY-47,mw,7);ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9fff4';ctx.fillText('SOUL',x,headY-51);ctx.restore();}
@@ -1608,7 +1668,7 @@ function drawDomainHandsignCutin(f,p,accent){
  const hx=X(91),hy=Y(99),settle=clamp((p-.12)/.72,0,1),rise=1-settle;
  // A small featureless pixel-circle head; no eyes, mouth, hair, or extra accessories.
  ctx.fillStyle='#0c1720';ctx.fillRect(hx-28*scale,hy+29*scale,56*scale,6*scale);
- drawPixelatedCircle(hx,hy-16*scale,15*scale,theme,2.25*scale);
+ drawAccessoryAura(f,hx,hy-16*scale,scale);drawPixelatedCircle(hx,hy-16*scale,15*scale,theme,2.25*scale);drawAccessoryOverlays(f,hx,hy-16*scale,scale);
  // The hands float close to the head, matching the game's compact circle-and-fist character style.
  if(meta.type==='gojo'){
   // One raised crossed-finger hand, with the support fist held lower.
