@@ -126,6 +126,56 @@
 @keyframes awakenSlash{0%{opacity:0;transform:rotate(-18deg) scaleX(.08)}24%{opacity:.95}100%{opacity:0;transform:rotate(-18deg) scaleX(1.3)}}
 @keyframes awakenLines{0%{opacity:0;transform:translateX(-18%) rotate(-8deg)}25%{opacity:.8}100%{opacity:0;transform:translateX(18%) rotate(-8deg)}}
 @keyframes awakenText{0%{opacity:0;transform:skewX(-7deg) scale(.66) translateY(22px)}40%{opacity:1;transform:skewX(-7deg) scale(1.04) translateY(0)}100%{opacity:1;transform:skewX(-7deg) scale(1)}}
+
+/* Mobile touch controls */
+.mobile-setup-wrap{width:min(330px,78vw);display:flex;flex-direction:column;align-items:stretch;gap:5px}
+.mobile-setup-button{appearance:none;display:grid;grid-template-columns:34px 1fr;grid-template-rows:1fr 12px;align-items:center;min-height:48px;padding:7px 14px;border:1px solid #73d8ff88;border-radius:4px;background:linear-gradient(110deg,rgba(7,20,34,.96),rgba(14,35,52,.92));color:#f5fbff;text-align:left;cursor:pointer;box-shadow:0 7px 22px #0008,inset 0 0 18px #74d9ff0d;transition:.16s;touch-action:manipulation}
+.mobile-setup-button:hover{border-color:#b7edff;filter:brightness(1.12)}
+.mobile-setup-button[aria-pressed="true"]{border-color:#8dffc2;background:linear-gradient(110deg,rgba(8,42,37,.96),rgba(14,56,48,.93));box-shadow:0 0 20px #52e6a533}
+.mobile-setup-button .mobile-setup-icon{grid-row:1/3;grid-column:1;font-size:22px;color:#8fdfff;text-align:center}
+.mobile-setup-button[aria-pressed="true"] .mobile-setup-icon{color:#8dffc2}
+.mobile-setup-button strong{font-size:10px;letter-spacing:.13em}
+.mobile-setup-button small{font-size:8px;letter-spacing:.1em;color:#a9bed0}
+.mobile-setup-hint{text-align:center;color:#9aabc0;font-size:8px;letter-spacing:.08em}
+#mobileControls{position:fixed;inset:0;z-index:9;display:none;pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none}
+body.mobile-controls-enabled.game-active:not(.game-paused) #mobileControls{display:block}
+body.mobile-controls-enabled.game-active .controls,body.mobile-controls-enabled.game-active #modeTag{display:none}
+body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-area-inset-bottom))}
+#mobileJoystick{position:absolute;left:max(12px,env(safe-area-inset-left));bottom:calc(18px + env(safe-area-inset-bottom));width:clamp(112px,29vw,148px);aspect-ratio:1;border:2px solid #e9f5ff55;border-radius:50%;background:radial-gradient(circle,#d5ebff16 0 34%,#0a1322b8 36% 100%);box-shadow:0 8px 26px #0009,inset 0 0 24px #7dc8ff19;pointer-events:auto;touch-action:none}
+#mobileJoystick:before{content:"";position:absolute;inset:23%;border:1px dashed #eaf5ff36;border-radius:50%}
+.mobile-joy-knob{position:absolute;left:50%;top:50%;width:40%;height:40%;transform:translate(-50%,-50%);border-radius:50%;border:2px solid #d9f0ffba;background:radial-gradient(circle at 35% 30%,#d6f3ff,#5c91b4 58%,#1a344d);box-shadow:0 4px 14px #0009;pointer-events:none}
+.mobile-joy-label{position:absolute;left:0;right:0;bottom:-18px;text-align:center;color:#e1efff9c;font-size:8px;font-weight:950;letter-spacing:.22em;text-shadow:0 2px 5px #000}
+.mobile-action-grid{position:absolute;right:max(10px,env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:min(62vw,360px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;pointer-events:none}
+.mobile-btn{min-width:0;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:5px 2px;border:1px solid #d7eaff66;border-radius:7px;background:linear-gradient(145deg,#18263aee,#070d18f2);color:#f5f8ff;font:900 10px/1.05 system-ui,sans-serif;letter-spacing:.04em;text-shadow:0 2px 4px #000;box-shadow:0 5px 13px #0008;pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent}
+.mobile-btn small{font-size:7px;font-weight:800;letter-spacing:.08em;color:#9eb2c9}
+.mobile-btn:active,.mobile-btn.active{transform:scale(.96);border-color:#9be5ff;background:linear-gradient(145deg,#31516e,#12243a);box-shadow:0 0 14px #6dccff48}
+.mobile-btn .mobile-btn-main{font-size:15px;font-weight:1000}
+.mobile-btn.m1{grid-column:span 2;min-height:52px;border-color:#ff8798aa;background:linear-gradient(145deg,#8b3048f2,#351624f5)}
+.mobile-btn.m1 .mobile-btn-main{font-size:20px;letter-spacing:.15em}
+.mobile-btn.block{border-color:#8bc8ff99}
+.mobile-btn.skill{border-color:#77d8ff66}
+.mobile-btn.special{border-color:#d39cff99}
+.mobile-btn.awaken{border-color:#ffcf79aa;background:linear-gradient(145deg,#6a4323f2,#25170df5)}
+.mobile-btn.pause{grid-column:1/-1;min-height:30px;flex-direction:row;gap:7px;background:#080e18d9}
+@media(max-width:640px){
+ .mobile-setup-wrap{width:min(300px,82vw)}
+ .mobile-setup-button{min-height:46px}
+ .mobile-action-grid{width:min(64vw,300px);gap:5px}
+ .mobile-btn{min-height:42px;font-size:9px;border-radius:6px}
+ .mobile-btn.m1{min-height:47px}
+ #mobileJoystick{width:clamp(108px,30vw,132px)}
+ body.mobile-controls-enabled.game-active .bottom{bottom:calc(154px + env(safe-area-inset-bottom))}
+}
+@media(orientation:landscape) and (max-height:520px){
+ #mobileJoystick{width:100px;bottom:8px}
+ .mobile-action-grid{width:min(48vw,350px);bottom:8px;gap:4px}
+ .mobile-btn{min-height:36px;padding:3px 1px}
+ .mobile-btn.m1{min-height:40px}
+ body.mobile-controls-enabled.game-active .bottom{bottom:7px;left:50%;width:28%;transform:translateX(-50%)}
+ body.mobile-controls-enabled.game-active .awakening-label{font-size:7px}
+ body.mobile-controls-enabled.game-active .slot{width:42px;height:38px}
+}
+
 </style>
 </head>
 <body>
@@ -161,6 +211,28 @@
   </div>
   <div id="modeTag">JJS-INSPIRED · 2D ARENA TEST</div>
 </div>
+
+<div id="mobileControls" aria-label="Mobile combat controls">
+  <div id="mobileJoystick" aria-label="Movement joystick">
+    <div class="mobile-joy-knob" id="mobileJoyKnob"></div>
+    <div class="mobile-joy-label">MOVE</div>
+  </div>
+  <div class="mobile-action-grid" aria-label="Combat buttons">
+    <button type="button" class="mobile-btn m1" data-mobile-action="m1"><span class="mobile-btn-main">M1</span><small>TAP · COMBO</small></button>
+    <button type="button" class="mobile-btn block" data-mobile-action="block"><span class="mobile-btn-main">GUARD</span><small>HOLD</small></button>
+    <button type="button" class="mobile-btn" data-mobile-action="dash"><span class="mobile-btn-main">Q</span><small>DASH</small></button>
+    <button type="button" class="mobile-btn skill" data-mobile-action="1"><span class="mobile-btn-main">1</span><small>SKILL</small></button>
+    <button type="button" class="mobile-btn skill" data-mobile-action="2"><span class="mobile-btn-main">2</span><small>SKILL</small></button>
+    <button type="button" class="mobile-btn skill" data-mobile-action="3"><span class="mobile-btn-main">3</span><small>SKILL</small></button>
+    <button type="button" class="mobile-btn skill" data-mobile-action="4"><span class="mobile-btn-main">4</span><small>SKILL</small></button>
+    <button type="button" class="mobile-btn special" data-mobile-action="special"><span class="mobile-btn-main">R</span><small>SPECIAL</small></button>
+    <button type="button" class="mobile-btn awaken" data-mobile-action="awaken"><span class="mobile-btn-main">G</span><small>AWAKEN</small></button>
+    <button type="button" class="mobile-btn" data-mobile-action="jump"><span class="mobile-btn-main">↑</span><small>JUMP · HOLD</small></button>
+    <button type="button" class="mobile-btn" data-mobile-action="trash"><span class="mobile-btn-main">E</span><small>TRASH CAN</small></button>
+    <button type="button" class="mobile-btn pause" data-mobile-action="pause">Ⅱ <span>PAUSE</span></button>
+  </div>
+</div>
+
 <div id="menu">
   <div class="menu-art" aria-hidden="true"></div><div class="menu-screen-shade" aria-hidden="true"></div>
   <div class="menu-topline"><div class="menu-brand"><span class="menu-brand-mark">呪</span><span>CURSED ENERGY BATTLEGROUND</span></div><div class="menu-version">JJS <i>2D</i> <b>FAN PROJECT</b></div></div>
@@ -170,6 +242,15 @@
       <button class="menu-button play" id="startBtn"><span class="button-icon">▶</span><span>PLAY</span><small>ENTER THE BATTLE</small></button>
       <button class="menu-button" id="switchCharBtn"><span class="button-icon">⇄</span><span>SWITCH CHARACTER</span><small>CHOOSE YOUR FIGHTER</small></button>
       <button class="menu-button" id="switchSkinBtn"><span class="button-icon">◈</span><span>SWITCH SKIN</span><small>CHANGE YOUR LOOK</small></button>
+    </div>
+
+    <div class="mobile-setup-wrap">
+      <button class="mobile-setup-button" id="mobileControlsToggle" type="button" aria-pressed="false">
+        <span class="mobile-setup-icon">☷</span>
+        <strong id="mobileControlsTitle">ENABLE MOBILE CONTROLS</strong>
+        <small>JOYSTICK · M1 · BLOCK · SKILLS</small>
+      </button>
+      <div class="mobile-setup-hint" id="mobileSetupHint">Touch controls are OFF · Keyboard and mouse remain available</div>
     </div>
     <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-skin-line"><span>SKIN</span><b id="currentSkinName">BLINDFOLDED</b></div></div>
   </main>
@@ -196,7 +277,7 @@ const lerp=(a,b,t)=>a+(b-a)*t;
 const keys=new Set(),suppressedKeyUps=new Set();let mouse={x:W*.7,y:H*.5,down:false,buffer:0,pending:false};
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys.add(k);if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause();if(k==='e'&&!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){toggleTrashCan(player);e.preventDefault();return}if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if((k==='g'||k==='r')&&player.char==='honored'&&keys.has(k==='g'?'r':'g')){useAttack(player,'domain02');keys.delete('g');keys.delete('r');suppressedKeyUps.add('g');suppressedKeyUps.add('r')}else if(k==='q'){useAttack(player,'dash');keys.delete(k)}else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}}});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);if(k==='f'&&player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')});
-addEventListener('blur',()=>{keys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player)player.block=false});
+addEventListener('blur',()=>{keys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player)player.block=false;if(typeof stopMobileJoystick==='function')stopMobileJoystick()});
 canvas.addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
 canvas.addEventListener('mousedown',e=>{if(e.button===0){mouse.down=true;mouse.pending=true;mouse.buffer=.72}});addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
@@ -310,11 +391,83 @@ function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trash
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,skinIndex:team==='player'?(skinSelections[char]||0):0,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false}};
 let player,enemy,trainingDummy;
 function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1800,1150);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.enemyRespawn=0;game.kills=0;game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});resetTrashCans();camera.x=1300;camera.y=750;updateHud()}
-function startGame(){resetMatch();game.started=true;game.paused=false;$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
+function startGame(){resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
-function togglePause(){if(!game.started||game.over)return;game.paused=!game.paused;if(game.paused){mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none'}
+
+let mobileControlsEnabled=false;
+try{mobileControlsEnabled=localStorage.getItem('jjsMobileControls')==='1'}catch(e){}
+function syncMobileControls(){
+ const btn=$('mobileControlsToggle'),title=$('mobileControlsTitle'),hint=$('mobileSetupHint');
+ document.body.classList.toggle('mobile-controls-enabled',mobileControlsEnabled);
+ if(btn)btn.setAttribute('aria-pressed',mobileControlsEnabled?'true':'false');
+ if(title)title.textContent=mobileControlsEnabled?'MOBILE CONTROLS · ON':'ENABLE MOBILE CONTROLS';
+ if(hint)hint.textContent=mobileControlsEnabled?'Touch controls ON · Joystick + combat buttons will appear in matches':'Touch controls are OFF · Keyboard and mouse remain available';
+}
+$('mobileControlsToggle').onclick=()=>{mobileControlsEnabled=!mobileControlsEnabled;try{localStorage.setItem('jjsMobileControls',mobileControlsEnabled?'1':'0')}catch(e){}syncMobileControls()};
+const mobileJoystick=$('mobileJoystick'),mobileJoyKnob=$('mobileJoyKnob');
+let mobileJoyPointer=null;
+function clearMobileJoyKeys(){['w','a','s','d'].forEach(k=>keys.delete(k));if(mobileJoyKnob)mobileJoyKnob.style.transform='translate(-50%,-50%)'}
+function moveMobileJoystick(e){
+ const rect=mobileJoystick.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
+ let dx=e.clientX-cx,dy=e.clientY-cy,max=rect.width*.31,len=Math.hypot(dx,dy)||1;
+ if(len>max){dx=dx/len*max;dy=dy/len*max}
+ mobileJoyKnob.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';
+ ['w','a','s','d'].forEach(k=>keys.delete(k));
+ const threshold=rect.width*.12;
+ if(Math.abs(dx)>threshold)keys.add(dx<0?'a':'d');
+ if(Math.abs(dy)>threshold)keys.add(dy<0?'w':'s');
+}
+function stopMobileJoystick(){
+ mobileJoyPointer=null;clearMobileJoyKeys();
+}
+mobileJoystick.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();mobileJoyPointer=e.pointerId;mobileJoystick.setPointerCapture(e.pointerId);moveMobileJoystick(e)});
+mobileJoystick.addEventListener('pointermove',e=>{if(e.pointerId===mobileJoyPointer){e.preventDefault();moveMobileJoystick(e)}});
+mobileJoystick.addEventListener('pointerup',e=>{if(e.pointerId===mobileJoyPointer)stopMobileJoystick()});
+mobileJoystick.addEventListener('pointercancel',stopMobileJoystick);
+mobileJoystick.addEventListener('lostpointercapture',stopMobileJoystick);
+function mobileAimAtTarget(){
+ if(!player||!enemy)return;
+ const candidates=[enemy];
+ if(trainingDummy&&!trainingDummy.dead&&dist(player,trainingDummy)<980)candidates.push(trainingDummy);
+ let target=candidates.filter(t=>t&&!t.dead).sort((a,b)=>dist(player,a)-dist(player,b))[0]||enemy;
+ mouse.x=clamp(target.x-camera.x+W/2,12,W-12);
+ mouse.y=clamp(target.y-camera.y+H/2,12,H-12);
+}
+function mobileButtonAction(action){
+ if(!game.started||game.paused||game.over||!player||player.dead)return;
+ if(!['trash','pause','jump'].includes(action))mobileAimAtTarget();
+ if(action==='m1')useAttack(player,'m1');
+ else if(action==='dash')useAttack(player,'dash');
+ else if(action==='special')useAttack(player,'special');
+ else if(action==='awaken')useAttack(player,'awaken');
+ else if(action==='trash')toggleTrashCan(player);
+ else if(action==='pause')togglePause();
+ else if(['1','2','3','4'].includes(action))useAttack(player,action);
+}
+const mobileHeldKeys={block:'f',jump:' '};
+document.querySelectorAll('[data-mobile-action]').forEach(btn=>{
+ const action=btn.dataset.mobileAction;
+ btn.addEventListener('pointerdown',e=>{
+  e.preventDefault();e.stopPropagation();btn.classList.add('active');
+  try{btn.setPointerCapture(e.pointerId)}catch(err){}
+  if(mobileHeldKeys[action]){
+   if(action==='block')mobileAimAtTarget();
+   keys.add(mobileHeldKeys[action]);
+  }else mobileButtonAction(action);
+ });
+ const release=()=>{
+  btn.classList.remove('active');
+  if(mobileHeldKeys[action])keys.delete(mobileHeldKeys[action]);
+ };
+ btn.addEventListener('pointerup',release);
+ btn.addEventListener('pointercancel',release);
+ btn.addEventListener('lostpointercapture',release);
+});
+syncMobileControls();
+
+function togglePause(){if(!game.started||game.over)return;game.paused=!game.paused;document.body.classList.toggle('game-paused',game.paused);if(game.paused){stopMobileJoystick();mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none'}
 $('resumeBtn').onclick=togglePause;$('restartBtn').onclick=()=>{resetMatch();game.paused=false;$('pause').style.display='none';showToast('ROUND 1',800)};
-$('menuBtn').onclick=()=>{game.started=false;game.paused=false;$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
+$('menuBtn').onclick=()=>{game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
 function showToast(s,d=700){$('toast').textContent=s;$('toast').classList.add('show');game.toastTimer=d}
 function playAwakeningCutscene(f){
  const c=CHARS[f.char],el=$('awakeningCutscene');
