@@ -629,6 +629,7 @@ function damage(target,amount,source,opts={}){
   }
  }
  if(target.invuln>0&&!opts.ignoreInvuln)return;
+ if(target.char==='ten'&&target.tenDogActive&&source&&source.team!==target.team){target.tenDogActive=false;target.tenDogCharges=0;target.tenDogTimer=0;target.skillCd[3]=Math.max(target.skillCd[3]||0,20);burst(target.x,target.y,'#dce5f1',10,3);popText(target.x,target.y-56,'DIVINE DOG · DISMISSED','#e3ebf7',11)}
  const jackpotProtected=target.jackpot;
  if(jackpotProtected){
   target.meter=Math.max(0,target.meter-amount/3.33);
@@ -974,7 +975,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
   }
   if(idx===2){
    if(!targetInAim(f,t,750,.95,angle)){f.skillCd[2]=15;setMotion(f,'megumiToad',.45,angle,t);popText(f.x,f.y-50,'TOAD · NO TARGET','#95b8e4',11)}
-   else{f.tenToadWindow=.72;f.tenToadTarget=t;f.tenToadVisual=.8;setMotion(f,'megumiToad',.72,angle,t);showToast('TOAD · TONGUE LOCK',600);popText(t.x,t.y-54,'TARGETED','#d8c9ff',12);schedule(()=>{if(f.dead||f.stun>.04||!f.tenToadTarget||f.tenToadTarget!==t||t.dead)return;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;if(beginGrab(f,t,'toadPull',.78,angle,'#7ba7d6',0)){showToast('TOAD · PULLED IN',550);popText(t.x,t.y-52,'TOAD TONGUE','#cbdcff',12)}else popText(f.x,f.y-48,'TOAD · BLOCKED','#a8b8d2',11)},650)}
+   else{f.tenToadWindow=.72;f.tenToadTarget=t;f.tenToadVisual=.8;f.skillCd[2]=15;setMotion(f,'megumiToad',.72,angle,t);showToast('TOAD · TONGUE LOCK',600);popText(t.x,t.y-54,'TARGETED','#d8c9ff',12);schedule(()=>{if(f.dead||f.stun>.04||!f.tenToadTarget||f.tenToadTarget!==t||t.dead)return;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;if(beginGrab(f,t,'toadPull',.78,angle,'#7ba7d6',0)){showToast('TOAD · PULLED IN',550);popText(t.x,t.y-52,'TOAD TONGUE','#cbdcff',12)}else popText(f.x,f.y-48,'TOAD · BLOCKED','#a8b8d2',11)},650)}
   }
   if(idx===3){
    if(!f.tenDogActive){f.tenDogActive=true;f.tenDogCharges=3;f.tenDogTimer=16;f.skillCd[3]=.45;setMotion(f,'megumiDogSummon',.65,angle,t);showToast('DIVINE DOG: TOTALITY · SUMMONED',800);burst(f.x-Math.cos(angle)*42,f.y-Math.sin(angle)*42,'#e6edf7',17,4);popText(f.x,f.y-55,'THREE COMMANDS READY','#e2ecfb',11)}
@@ -1725,6 +1726,15 @@ function drawTenSummons(){
    ctx.fillStyle='#dce5f1';ctx.fillRect(-22,-7,38,14);ctx.fillRect(8,-15,16,15);ctx.fillRect(-17,9,7,13);ctx.fillRect(1,9,7,13);
    ctx.fillStyle='#a8c2e8';ctx.fillRect(17,-9,4,4);ctx.fillStyle='#243047';ctx.fillRect(22,-4,9,4);ctx.restore();
    ctx.save();ctx.fillStyle='#eff4ff';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText('DOG ×'+f.tenDogCharges,px,py-32);ctx.restore();
+  }
+  if(f.tenMahoragaActive>0){
+   const mx=x+Math.cos(a+Math.PI/2)*76,my=y+Math.sin(a+Math.PI/2)*76;
+   ctx.save();ctx.translate(mx,my);ctx.rotate(a);
+   ctx.fillStyle='#111827';ctx.fillRect(-18,-10,36,43);ctx.fillRect(-25,-28,50,27);ctx.fillRect(-35,-2,14,28);ctx.fillRect(21,-2,14,28);ctx.fillRect(-15,32,12,18);ctx.fillRect(5,32,12,18);
+   ctx.fillStyle='#aebbd0';ctx.fillRect(-20,-24,40,18);ctx.fillRect(-9,-45,18,19);ctx.fillRect(-13,-51,7,8);ctx.fillRect(6,-51,7,8);
+   ctx.fillStyle='#e5edf7';ctx.fillRect(-8,-38,4,4);ctx.fillRect(5,-38,4,4);
+   ctx.fillStyle='#c4d0e2';ctx.fillRect(22,-30,5,57);ctx.fillRect(17,-36,15,6);
+   ctx.restore();
   }
   if(f.tenMahoragaRitual>0||f.tenMahoragaActive>0){
    ctx.save();ctx.translate(x,y-48);ctx.strokeStyle='#d8e2f2';ctx.lineWidth=3;ctx.globalAlpha=.75;
