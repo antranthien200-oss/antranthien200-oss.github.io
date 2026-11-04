@@ -688,7 +688,7 @@ function canDomainClash(a,b){
  if(!a||!b||a.dead||b.dead||!CLASHABLE_DOMAINS.includes(a.domainType)||!CLASHABLE_DOMAINS.includes(b.domainType))return false;
  const at=Number.isFinite(a.domainCastStartedAt)?a.domainCastStartedAt:(a.domainOpenedAt||game.time),bt=Number.isFinite(b.domainCastStartedAt)?b.domainCastStartedAt:(b.domainOpenedAt||game.time);
  const timed=Math.abs(at-bt)<=2.7||Math.abs(game.time-(a.domainOpenedAt||0))<=2.4||Math.abs(game.time-(b.domainOpenedAt||0))<=2.4;
- return timed&&dist(a,b)<=Math.min(1960,Math.max(1240,((a.domainRadius||545)+(b.domainRadius||545))*1.56));
+ return timed&&dist(a,b)<=Math.min(1960,Math.max(1240,((a.domainRadius||860)+(b.domainRadius||860))*.78));
 }
 function updateDomainClashHud(){
  const panel=$('domainClashHud');if(!panel)return;const q=game.domainClash;panel.classList.toggle('visible',!!q);if(!q)return;
@@ -766,10 +766,11 @@ function domainViewMatches(f,owner){return (!!(f&&f.domainInsideOwner===owner))=
 function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
  if(!f||f.dead||f.domainWindup>0||f.domainTimer>0||game.domainClash)return false;
  if(f.jump>.12){showToast('DOMAIN · LAND FIRST',700);return false}
- const other=targetOf(f);
+ const other=f===player?enemy:player;
  if(other&&(other.domainTimer>0||other.domainWindup>0)){
   const compatible=CLASHABLE_DOMAINS.includes(type)&&CLASHABLE_DOMAINS.includes(other.domainType),started=other.domainCastStartedAt||other.domainOpenedAt||game.time;
-  const close=dist(f,other)<=1960&&(other.domainWindup>0||game.time-started<=2.7);
+  const clashRange=Math.min(1960,Math.max(1240,(Math.min(radius*2,860)+(other.domainRadius||860))*.78));
+  const close=dist(f,other)<=clashRange&&(other.domainWindup>0||game.time-started<=2.7);
   if(!compatible||!close){showToast('DOMAIN BARRIER ALREADY ACTIVE',800);return false}
  }
  f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=Math.min(radius*2,860);f.domainCenterX=f.x;f.domainCenterY=f.y;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
@@ -782,13 +783,13 @@ function activateDomain(f){
  f.domainWindup=0;f.domainWindupStart=0;f.domainState='active';f.domainTimer=f.domainDuration;f.domainHitApplied=true;f.domainFlashTimer=.92;f.domainOpenedAt=game.time;captureDomainOccupants(f);
  if(f.domainType==='trash'){f.trashGoldenCanX=f.domainCenterX;f.trashGoldenCanY=f.domainCenterY+(f.domainRadius||430)*.18;f.trashDomainCanAvailable=true;f.trashGoldenCanCarried=false;f.trashDomainCanCooldown=0}
  burst(f.x,f.y,f.domainType==='void'?'#c8d8ff':f.domainType==='shrine'?'#f34a60':'#9ce5d4',58,9);addDebris(f.x,f.y,f.domainType==='shrine'?'#8e273a':'#434b5b',10);game.shake=Math.max(game.shake,14);
- const t=targetOf(f),d=Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY);
- if(!t.dead&&d<=f.domainRadius&&t.domainInsideOwner===f){
+ const t=f.domainType==='hakari'?(f===player?enemy:player):targetOf(f),d=t?Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY):Infinity;
+ if(t&&!t.dead&&d<=f.domainRadius&&t.domainInsideOwner===f){
   if(f.domainType==='void'){t.stun=Math.max(t.stun,Math.min(.55,f.domainDuration));t.invuln=0;popText(t.x,t.y-68,'INFINITE INFORMATION','#d8e2ff',13)}
   else if(f.domainType==='soul'){t.transfigureMeter=Math.min(35,t.transfigureMeter||0);t.transfigureSource=f;t.stun=Math.max(t.stun,.45);t.invuln=0;popText(t.x,t.y-68,'SOUL EXPOSED','#a6e8d8',13)}
   else if(f.domainType==='hakari'&&f.domainStunGuaranteed){t.stun=Math.max(t.stun,.7);t.invuln=0;popText(t.x,t.y-68,'RULES TRANSMITTED','#e5d3ff',13)}
  }
- const opponent=targetOf(f);if(opponent&&opponent.domainTimer>0&&canDomainClash(f,opponent))beginDomainClash(f,opponent);
+ const opponent=f===player?enemy:player;if(opponent&&opponent.domainTimer>0&&canDomainClash(f,opponent))beginDomainClash(f,opponent);
  showToast(domainName(f.domainType)+' · OPEN',1200);
 }
 function updateDomainState(f,dt){
@@ -1213,7 +1214,7 @@ function useAttack(f,kind){
   f.awakened=true;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:f.char==='yuta'?25:15));
   f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':f.char==='yuta'?'trueLove':f.char==='trashman'?'trashstorm':'brother';
   f.tenBase=false;f.awakeFuel=100;f.awakeFuelDrainRate=100/(f.char==='restless'?121.25:60);f.jackpot=false;if(f.char==='yuta'){f.rikaSummoned=true;f.rikaMode=false;f.yutaCopyIndex=0;}f.gambleVisuals=0;f.gambleAttempts=0;
-  f.domainStunGuaranteed=f.char==='restless'&&dist(f,t)<600;
+  f.domainStunGuaranteed=f.char==='restless'&&dist(f,f===player?enemy:player)<600;
   const isHakariDomain=f.char==='restless';
   f.domainType=isHakariDomain?'hakari':'';
   f.domainCastStartedAt=isHakariDomain?game.time:0;
