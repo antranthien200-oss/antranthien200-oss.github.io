@@ -2199,7 +2199,7 @@ function drawDomainArena(f){
   const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,W,H);ctx=frameCtx;
   try{renderDomainArenaFrame(f)}finally{ctx=screenCtx}cache.last=game.time;
  }
- ctx.drawImage(cache.canvas,0,0,W,H);drawDomainInsideBoundary(f);
+ const barrierX=sx(Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x),barrierY=sy(Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y),barrierRadius=(f.domainRadius||430)-5;ctx.save();ctx.beginPath();ctx.arc(barrierX,barrierY,barrierRadius,0,Math.PI*2);ctx.clip();ctx.drawImage(cache.canvas,0,0,W,H);ctx.restore();drawDomainInsideBoundary(f);
 }
 function renderDomainArenaFrame(f){
  const type=f.domainType;
