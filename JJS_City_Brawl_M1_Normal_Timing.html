@@ -219,6 +219,43 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(210px + env(safe-ar
  body.mobile-controls-enabled.game-active .slot{width:42px;height:38px}
 }
 
+
+/* Mobile mode: remove desktop key prompts/skill slots and keep only a centered rage meter. */
+body.mobile-controls-enabled.game-active .slots{display:none!important}
+body.mobile-controls-enabled.game-active .bottom{
+  left:50%;
+  width:min(210px,40vw);
+  bottom:calc(235px + env(safe-area-inset-bottom));
+  gap:0;
+  align-items:center;
+}
+body.mobile-controls-enabled.game-active .awakening{width:100%;max-width:none}
+body.mobile-controls-enabled.game-active .awakening-label{
+  margin-bottom:3px;
+  font-size:8px;
+  line-height:1;
+  letter-spacing:.16em;
+}
+body.mobile-controls-enabled.game-active .ult-track{
+  height:7px;
+  transform:skewX(-8deg);
+  box-shadow:0 2px 7px #0008;
+}
+@media(max-width:360px){
+  body.mobile-controls-enabled.game-active .bottom{
+    width:min(180px,42vw);
+    bottom:calc(245px + env(safe-area-inset-bottom));
+  }
+}
+@media(orientation:landscape) and (max-height:520px){
+  body.mobile-controls-enabled.game-active .bottom{
+    width:min(170px,30vw);
+    bottom:calc(196px + env(safe-area-inset-bottom));
+  }
+  body.mobile-controls-enabled.game-active .awakening-label{font-size:7px}
+  body.mobile-controls-enabled.game-active .ult-track{height:6px}
+}
+
 </style>
 </head>
 <body>
