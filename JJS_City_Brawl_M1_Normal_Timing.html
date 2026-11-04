@@ -802,7 +802,6 @@ function drawTrashCan(x,y,scale=1,angle=0,flash=0){
 }
 function drawThrowableProps(){
  for(const prop of trashCans){if(prop.carried)continue;drawTrashCan(prop.x,prop.y,1,0,prop.flash||0);if(prop.flash>0)prop.flash=Math.max(0,prop.flash-.016);if(player&&!player.dead&&dist(player,prop)<112){ctx.save();ctx.fillStyle='#f2f7ff';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('E  PICK UP',sx(prop.x),sy(prop.y)-27);ctx.restore()}}
- for(const p of projectiles){if(p.kind==='trashCan')drawTrashCan(p.x,p.y-(p.height||0),1.08,p.rotation||0,p.hitOnce?.18:0)}
  if(player&&player.carryingTrashCan){const f=player,a=f.face;drawTrashCan(f.x+Math.cos(a)*28,f.y+Math.sin(a)*28,.94,a,0)}
 }
 function drawTrainingDummy(){
@@ -1127,20 +1126,6 @@ function updateFighter(f,dt){if(f.dead)return;if(f.capturedBy){const h=f.capture
 function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i],t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
-  if(p.kind==='trashCan'){
-   const ox=p.x,oy=p.y;p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;
-   p.travelled=(p.travelled||0)+Math.hypot(p.x-ox,p.y-oy);p.life-=dt;p.rotation=(p.rotation||0)+dt*13;
-   const progress=clamp(p.travelled/(p.maxDistance||820),0,1);
-   p.height=p.hitOnce?Math.max(0,(p.height||0)-180*dt):Math.sin(progress*Math.PI)*34;
-   if(!p.hitOnce&&t&&!t.dead&&Math.hypot(p.x-t.x,p.y-t.y)<p.r+18){
-    damage(t,p.damage,p.owner,{stun:.78,kx:p.vx*.78,ky:p.vy*.78,color:'#c5d0d9',big:true,unblockable:true,damageType:'projectile'});
-    p.hitOnce=true;p.life=.22;p.vx*=.12;p.vy*=.12;p.height=Math.min(p.height||0,7);
-    burst(p.x,p.y,'#c8d4df',9,2.6);game.shake=Math.max(game.shake,3);popText(t.x,t.y-62,'CLANG!','#e0ebf2',13);
-   }
-   const outside=p.x<24||p.y<24||p.x>WORLD.w-24||p.y>WORLD.h-24;
-   if(p.life<=0||p.travelled>p.maxDistance||outside){settleThrownCan(p);projectiles.splice(i,1)}
-   continue;
-  }
   if(p.kind==='blueMax'){
    const a=aimedAt(p.owner),dx=a.x-p.x,dy=a.y-p.y,l=Math.hypot(dx,dy)||1;
    const step=Math.min(l,520*dt);p.x+=dx/l*step;p.y+=dy/l*step;
@@ -1203,7 +1188,7 @@ function updateProjectiles(dt){
   p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);
   const hit=!t.dead&&Math.hypot(p.x-t.x,p.y-t.y)<p.r+18;
   if(hit){
-   if(p.kind==='trashCan'){p.life=0;
+   if(p.kind==='trashCan'){damage(t,p.damage,p.owner,{stun:.78,kx:p.vx*.78,ky:p.vy*.78,color:'#c5d0d9',big:true,unblockable:true,damageType:'projectile'});burst(p.x,p.y,'#c8d4df',30,7);addDebris(p.x,p.y,'#7a8792',8);game.shake=Math.max(game.shake,8);popText(t.x,t.y-62,'TRASHED!','#e0ebf2',15);p.life=0;
    }else if(p.kind==='red'){
     damage(t,p.damage,p.owner,{stun:.48,kx:p.vx*.55,ky:p.vy*.55,color:p.color,damageType:'bullet',blockedDamage:p.blockedDamage});
     burst(p.x,p.y,p.color,28,7);for(let n=0;n<22;n++){const a=n/22*Math.PI*2;burst(p.x+Math.cos(a)*(p.blastRadius||95),p.y+Math.sin(a)*(p.blastRadius||95),p.color,1,2)}p.life=0;
