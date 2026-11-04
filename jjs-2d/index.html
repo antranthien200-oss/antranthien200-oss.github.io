@@ -541,7 +541,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetR
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
@@ -781,7 +781,7 @@ function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
 }
 function activateDomain(f){
  f.domainWindup=0;f.domainWindupStart=0;f.domainState='active';f.domainTimer=f.domainDuration;f.domainHitApplied=true;f.domainFlashTimer=.92;f.domainOpenedAt=game.time;captureDomainOccupants(f);
- if(f.domainType==='trash'){f.trashGoldenCanX=f.domainCenterX;f.trashGoldenCanY=f.domainCenterY+(f.domainRadius||430)*.18;f.trashDomainCanAvailable=true;f.trashGoldenCanCarried=false;f.trashDomainCanCooldown=0}
+ if(f.domainType==='trash'){f.trashGoldenCanX=f.domainCenterX;f.trashGoldenCanY=f.domainCenterY+(f.domainRadius||860)*.18;f.trashDomainCanAvailable=true;f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=false;f.trashDomainCanCooldown=0}
  burst(f.x,f.y,f.domainType==='void'?'#c8d8ff':f.domainType==='shrine'?'#f34a60':'#9ce5d4',58,9);addDebris(f.x,f.y,f.domainType==='shrine'?'#8e273a':'#434b5b',10);game.shake=Math.max(game.shake,14);
  const t=f.domainType==='hakari'?(f===player?enemy:player):targetOf(f),d=t?Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY):Infinity;
  if(t&&!t.dead&&d<=f.domainRadius&&t.domainInsideOwner===f){
@@ -1000,7 +1000,7 @@ function dropCarriedTrashCan(f){if(!f||!f.carryingTrashCan)return;const prop=f.c
 function toggleTrashCan(f){
  if(!f||f.dead||game.domainClash)return;
  if(f.char==='trashman'&&f.domainType==='trash'&&f.domainTimer>0){
-  if(f.trashGoldenCanCarried){const a=aimedAngle(f);projectiles.push({x:f.x+Math.cos(a)*34,y:f.y+Math.sin(a)*34,vx:Math.cos(a)*19.5,vy:Math.sin(a)*19.5,r:30,life:2.8,maxDistance:900,travelled:0,owner:f,kind:'trashCan',damage:28,color:'#f5c84c',golden:true,trashMan:true});f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=1.15;setMotion(f,'trashManFlyingCan',.42,a,targetOf(f));burst(f.x,f.y,'#ffe18b',18,5);showToast('GOLDEN BIN · THROWN · RETURNS',850);return}
+  if(f.trashGoldenCanCarried){const a=aimedAngle(f);projectiles.push({x:f.x+Math.cos(a)*34,y:f.y+Math.sin(a)*34,vx:Math.cos(a)*19.5,vy:Math.sin(a)*19.5,r:30,life:3.8,maxDistance:4200,travelled:0,owner:f,kind:'trashCan',damage:28,color:'#f5c84c',golden:true,domainBound:true,domainCastStartedAt:f.domainCastStartedAt,trashMan:true,domainBounceCount:0});f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=true;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0;setMotion(f,'trashManFlyingCan',.42,a,targetOf(f));burst(f.x,f.y,'#ffe18b',18,5);showToast('GOLDEN BIN · THROWN · RETURNS',850);return}
   const canX=Number.isFinite(f.trashGoldenCanX)?f.trashGoldenCanX:f.domainCenterX,canY=Number.isFinite(f.trashGoldenCanY)?f.trashGoldenCanY:f.domainCenterY+f.domainRadius*.18;
   if(!f.trashDomainCanAvailable){showToast('GOLDEN BIN · RETURNING',600);return}if(Math.hypot(f.x-canX,f.y-canY)>150){showToast('GOLDEN BIN · GO TO THE CENTER',650);return}
   f.trashGoldenCanCarried=true;f.trashDomainCanAvailable=false;setMotion(f,'trashManPickupGolden',.32,f.face,targetOf(f));burst(canX,canY,'#ffe18b',14,4);showToast('GOLDEN BIN · READY · PRESS E TO THROW',850);return;
@@ -1150,8 +1150,9 @@ function updateTrashManEffects(f,dt){
  if(f.trashBarrageTimer>0){f.trashBarrageTimer=Math.max(0,f.trashBarrageTimer-dt);f.trashBarrageTick-=dt;if(f.trashBarrageTick<=0){f.trashBarrageTick=.19;const a=f.trashBarrageAngle;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f){const d=dist(f,target),da=Math.atan2(target.y-f.y,target.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-a),Math.cos(da-a)));if(d<168&&arc<1.05){damage(target,1.65,f,{stun:.08,kx:Math.cos(a)*.7,ky:Math.sin(a)*.7,color:'#c4d5ab',ignoreInvuln:true});burst(target.x,target.y,'#b1cc8e',2,2)}}}if(f.trashBarrageTimer<=0){if(f.motion&&f.motion.name==='trashManCanBarrage')f.motion=null;f.attackAnim=0}}
  if(f.trashBodyBarrageTimer>0){f.trashBodyBarrageTimer=Math.max(0,f.trashBodyBarrageTimer-dt);f.trashBodyBarrageTick-=dt;if(f.trashBodyBarrageTick<=0){f.trashBodyBarrageTick=.145;const base=f.trashBodyBarrageAngle;for(let i=0;i<3;i++){const angle=base+(i-1)*.33+rnd(-.08,.08),speed=rnd(10,14),x=f.x+Math.cos(angle)*20,y=f.y+Math.sin(angle)*20;projectiles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:9,life:1.05,maxDistance:370,travelled:0,owner:f,kind:'trashJunk',damage:2.2,color:i%2?'#9dbb79':'#aeb7a1'})}burst(f.x,f.y,'#a8c68b',3,2)}if(f.trashBodyBarrageTimer<=0&&f.motion&&f.motion.name==='trashManEruption')f.motion=null}
  if(f.trashSwapDecoy){f.trashSwapDecoy.life-=dt;if(f.trashSwapDecoy.life<=0)f.trashSwapDecoy=null}
- if(f.trashDomainCanCooldown>0){f.trashDomainCanCooldown=Math.max(0,f.trashDomainCanCooldown-dt);if(f.trashDomainCanCooldown===0&&f.domainType==='trash'&&f.domainTimer>0)f.trashDomainCanAvailable=true}
- if(f.domainType!=='trash'||f.domainTimer<=0){f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
+ if(f.trashGoldenCanInFlight){f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
+ else if(f.trashDomainCanCooldown>0){f.trashDomainCanCooldown=Math.max(0,f.trashDomainCanCooldown-dt);if(f.trashDomainCanCooldown===0&&f.domainType==='trash'&&f.domainTimer>0)f.trashDomainCanAvailable=true}
+ if(f.domainType!=='trash'||f.domainTimer<=0){f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
 }
 function useAttack(f,kind){
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||game.cutsceneTimer>0)return;
@@ -1513,6 +1514,42 @@ function updateTenEffects(f,dt){
 function updateFighter(f,dt){if(f.dead)return;if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot&&!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}let spd=f.block?.55:1;if(f.shadowTimer>0)spd*=1.7;if(f.char==='restless'&&f.jackpot&&f.rhythmStacks>0)spd*=1+Math.min(.5,f.rhythmStacks*.08);f.x+=f.vx*60*dt*spd;f.y+=f.vy*60*dt*spd;f.vx=clamp(f.vx,-15,15);f.vy=clamp(f.vy,-15,15);collideWorld(f);if(f.jump>0){f.jumpV-=20*dt;f.jump+=f.jumpV*dt;if(f.jump<=0){f.jump=0;f.jumpV=0;burst(f.x,f.y,'#d1d8e0',5,2)}}updateDomainContainment(f);f.walk+=dt*(Math.abs(f.vx)+Math.abs(f.vy))*.2;
 }
+function bounceGoldenBinInsideDomain(p){
+ if(!p||!p.domainBound||!p.owner)return false;
+ const f=p.owner;
+ if(f.domainType!=='trash'||f.domainTimer<=0||f.domainCastStartedAt!==p.domainCastStartedAt)return false;
+ const cx=Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x,cy=Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y;
+ const safeRadius=Math.max(48,(f.domainRadius||860)-p.r-18);
+ const dx=p.x-cx,dy=p.y-cy,d=Math.hypot(dx,dy)||1;
+ if(d<=safeRadius)return false;
+ const nx=dx/d,ny=dy/d;
+ p.x=cx+nx*safeRadius;p.y=cy+ny*safeRadius;
+ const outward=p.vx*nx+p.vy*ny;
+ if(outward>0){p.vx-=2*outward*nx;p.vy-=2*outward*ny}
+ p.vx*=.94;p.vy*=.94;
+ p.domainBounceCount=(p.domainBounceCount||0)+1;
+ p.rotation=(p.rotation||0)+.35;
+ burst(p.x,p.y,'#ffe18b',10,3.5);
+ burst(p.x-nx*8,p.y-ny*8,'#fff0b2',5,2.5);
+ game.shake=Math.max(game.shake,1.8);
+ return true;
+}
+function settleGoldenBinInDomain(p){
+ if(!p||!p.domainBound||!p.owner)return;
+ const f=p.owner;
+ if(f.domainType!=='trash'||f.domainTimer<=0||f.domainCastStartedAt!==p.domainCastStartedAt)return;
+ const cx=Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x,cy=Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y;
+ const safeRadius=Math.max(48,(f.domainRadius||860)-p.r-18);
+ const dx=p.x-cx,dy=p.y-cy,d=Math.hypot(dx,dy)||1;
+ if(d>safeRadius){
+  // Last-resort recovery only; normal edge contact is handled by bouncing.
+  p.x=cx+Math.cos(Math.atan2(dy,dx))*(safeRadius-4);
+  p.y=cy+Math.sin(Math.atan2(dy,dx))*(safeRadius-4);
+ }
+ f.trashGoldenCanX=p.x;f.trashGoldenCanY=p.y;
+ f.trashGoldenCanInFlight=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=.55;
+ burst(p.x,p.y,'#ffe18b',14,4);
+}
 function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i],t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
@@ -1576,6 +1613,7 @@ function updateProjectiles(dt){
   const ox=p.x,oy=p.y;p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;
   p.travelled=(p.travelled||0)+Math.hypot(p.x-ox,p.y-oy);p.life-=dt;
   p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);
+  if(p.domainBound)bounceGoldenBinInsideDomain(p);
   const hit=!t.dead&&Math.hypot(p.x-t.x,p.y-t.y)<p.r+18;
   if(hit){
    if(p.kind==='trashCan'){damage(t,p.damage,p.owner,{stun:.78,kx:p.vx*.78,ky:p.vy*.78,color:'#c5d0d9',big:true,unblockable:true,damageType:'projectile'});burst(p.x,p.y,'#c8d4df',30,7);addDebris(p.x,p.y,'#7a8792',8);game.shake=Math.max(game.shake,8);popText(t.x,t.y-62,'TRASHED!','#e0ebf2',15);p.life=0;
@@ -1600,7 +1638,7 @@ function updateProjectiles(dt){
    if(p.y<12||p.y>WORLD.h-12){p.vy*=-1;p.y=clamp(p.y,12,WORLD.h-12);p.life-=.25}
   }else if(p.x<0||p.y<0||p.x>WORLD.w||p.y>WORLD.h)p.life=0;
   if(p.maxDistance&&p.travelled>p.maxDistance)p.life=0;
-  if(p.life<=0){settleThrownCan(p);projectiles.splice(i,1)}
+  if(p.life<=0){settleGoldenBinInDomain(p);settleThrownCan(p);projectiles.splice(i,1)}
  }
 }
 
