@@ -762,7 +762,7 @@ function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
  }
  f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=Math.min(radius,430);f.domainCenterX=f.x;f.domainCenterY=f.y;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
  f.block=false;f.vx*=.18;f.vy*=.18;
- const pose=type==='void'?'gojoVoid':type==='shrine'?'sukunaShrine':type==='hakari'?'hakariDomain':type==='yuta'?'yutaDomain':'mahitoDomain';
+ const pose=type==='void'?'gojoVoid':type==='shrine'?'sukunaShrine':type==='hakari'?'hakariDomain':type==='yuta'?'yutaDomain':type==='trash'?'trashManDomain':'mahitoDomain';
  setMotion(f,pose,windup,f.face,targetOf(f));damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));
  burst(f.x,f.y,type==='void'?'#aebcff':type==='shrine'?'#f3445b':'#8bd9c7',30,5);showToast('DOMAIN EXPANSION · '+domainName(type),1500);game.shake=Math.max(game.shake,8);return true;
 }
@@ -783,7 +783,7 @@ function updateDomainState(f,dt){
  f.domainFlashTimer=Math.max(0,(f.domainFlashTimer||0)-dt);
  if(game.domainClash&&game.domainClash.members.includes(f))return;
  if(f.domainWindup>0){
-  if(f.stun>0){const color=f.domainType==='void'?'#9fb9ff':f.domainType==='shrine'?'#ef4c62':f.domainType==='hakari'?'#d8b8ff':'#8bd9c7';burst(f.x,f.y,color,12,4);f.domainWindup=0;f.domainWindupStart=0;f.domainDuration=0;f.domainType='';f.domainState='';if(f.motion&&['gojoVoid','sukunaShrine','mahitoDomain','hakariDomain'].includes(f.motion.name))f.motion=null;showToast('DOMAIN INTERRUPTED',850)}
+  if(f.stun>0){const color=f.domainType==='void'?'#9fb9ff':f.domainType==='shrine'?'#ef4c62':f.domainType==='hakari'?'#d8b8ff':'#8bd9c7';burst(f.x,f.y,color,12,4);f.domainWindup=0;f.domainWindupStart=0;f.domainDuration=0;f.domainType='';f.domainState='';if(f.motion&&['gojoVoid','sukunaShrine','mahitoDomain','hakariDomain','trashManDomain'].includes(f.motion.name))f.motion=null;showToast('DOMAIN INTERRUPTED',850)}
   else{f.domainWindup=Math.max(0,f.domainWindup-dt);if(f.domainWindup===0)activateDomain(f)}
  }
  if(f.domainTimer>0){
@@ -1265,7 +1265,7 @@ function useAttack(f,kind){
  if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){setMotion(f,'yujiBlackFlash',.58,f.face,t);const impact=f.blackFlashChain+1,dmg=10+Math.min(2,impact-1)*1.5;f.blackFlashWindow=0;f.skillCd[2]=18;t.invuln=0;damage(t,dmg,f,{stun:.45,kx:Math.cos(f.face)*(impact===3?16:12),ky:Math.sin(f.face)*(impact===3?16:12),unblockable:true,big:true,color:'#ffcf72'});popText(t.x,t.y-70,'BLACK FLASH '+impact+'/3','#ffe5a2',22);burst(t.x,t.y,'#fff0bb',24,7);if(impact<3){f.blackFlashChain=impact;f.blackFlashWindow=.58;f.skillCd[2]=0;showToast('BLACK FLASH CHAIN ×'+(impact+1),600)}else{f.blackFlashChain=0;f.blackFlashWindow=0;f.skillCd[2]=18}return}
  if(f.char==='ten'&&(!f.awakened||f.tenBase)&&idx===1&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead){const comboTarget=f.tenToadTarget;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;setMotion(f,'megumiAbyss',1.15,f.face,comboTarget);showToast('WELL’S UNKNOWN ABYSS',900);comboTarget.rooted=Math.max(comboTarget.rooted||0,1.15);comboTarget.tenRabbitSwarm={owner:f,life:1.1};[0,1,2].forEach(i=>schedule(()=>{if(f.dead||f.stun>.04||comboTarget.dead||dist(f,comboTarget)>560)return;const a=Math.atan2(comboTarget.y-f.y,comboTarget.x-f.x);damage(comboTarget,4,f,{stun:.22,kx:Math.cos(a)*(i===2?10:2),ky:Math.sin(a)*(i===2?10:2),color:'#a9c0e8',blockAllSides:true,ignoreInvuln:true});if(i===1){comboTarget.jump=.32;comboTarget.jumpV=2.2}if(i===2){comboTarget.jump=.95;comboTarget.jumpV=3.6;game.shake=Math.max(game.shake,8)}burst(comboTarget.x,comboTarget.y,'#c5d5ed',7,3)},220+i*260));return}
 if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);
- const isDomainCast=idx===3&&((f.char==='honored'&&f.awakened)||(f.char==='vessel'&&f.awakened)||(f.char==='perfection'&&f.awakened));
+ const isDomainCast=idx===3&&((f.char==='honored'&&f.awakened)||(f.char==='vessel'&&f.awakened)||(f.char==='perfection'&&f.awakened)||(f.char==='trashman'&&f.awakened));
  if(!isDomainCast)damageBuildingAlongRay(f,angle,Math.min(1100,Math.hypot(aim.x-f.x,aim.y-f.y)+55));
  if(f.char==='honored'){
   if(!f.awakened){
