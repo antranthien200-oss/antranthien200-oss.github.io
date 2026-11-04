@@ -2206,7 +2206,8 @@ function domainPolygon(points,fill,stroke=null,width=1){
  if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=width;ctx.stroke()}
 }
 function domainGlow(cx,cy,r,color,alpha=.4){
- const g=ctx.createRadialGradient(cx,cy,2,cx,cy,r);g.addColorStop(0,color);g.addColorStop(.42,color+'66');g.addColorStop(1,color+'00');
+ const solid=color.length===4?'#'+color[1]+color[1]+color[2]+color[2]+color[3]+color[3]:color;
+ const g=ctx.createRadialGradient(cx,cy,2,cx,cy,r);g.addColorStop(0,solid);g.addColorStop(.42,solid+'66');g.addColorStop(1,solid+'00');
  ctx.save();ctx.globalAlpha=alpha;ctx.fillStyle=g;ctx.fillRect(cx-r,cy-r,r*2,r*2);ctx.restore();
 }
 function drawVoidDomainInterior(cx,cy,r){
