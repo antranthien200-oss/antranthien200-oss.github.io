@@ -164,7 +164,8 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-ar
 
 /* Large center M1: strong fist silhouette and double ring like the reference. */
 .mobile-btn.m1{left:67px;top:7px;width:76px;height:76px;border-width:4px;outline-width:3px;background:rgba(0,0,0,.29);box-shadow:inset 0 0 0 5px rgba(255,255,255,.12),inset 0 0 0 9px rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.28)}
-.mobile-btn.m1 svg{width:73%;height:73%}
+.mobile-btn.m1 .mobile-btn-main{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:43px;line-height:1;text-shadow:none}
+.mobile-btn[data-mobile-action="dash"] .mobile-btn-main{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:27px;line-height:1;text-shadow:none}
 
 /* Sprint / dash button above-left of M1; skill 4 above-right. */
 .mobile-btn[data-mobile-action="dash"]{left:7px;top:10px;width:40px;height:40px}
@@ -309,11 +310,11 @@ body.mobile-controls-enabled.game-active .ult-track{
   <button type="button" class="mobile-btn pause-top" data-mobile-action="pause" aria-label="Pause">Ⅱ</button>
   <div class="mobile-action-grid" aria-label="Combat buttons">
     <button type="button" class="mobile-btn" data-mobile-action="dash" aria-label="Dash">
-      <span class="mobile-btn-main"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M36 5h10v10H36zM30 17h11v8H30zM25 24h12v9H25zM19 31h12v8H19zM12 39h13v8H12zM6 49h14v7H6zM35 25l8 3 7-5 5 5-10 10-8-2-8 8-7-5 10-12zM38 36l8 2-2 11 9 7H42l-12-8zM20 39l9 1-3 12 6 6H20l-7-7z" /><path d="M3 24h17v3H3zM1 32h13v3H1zM1 40h9v3H1z" opacity=".85"/></svg></span>
+      <span class="mobile-btn-main">🏃</span>
       <span class="mobile-cooldown"></span>
     </button>
     <button type="button" class="mobile-btn m1" data-mobile-action="m1" aria-label="Punch">
-      <span class="mobile-btn-main"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M8 34 15 21 20 16 27 19 30 10 37 8 42 16 47 12 53 17 54 23 59 22 62 28 59 43 52 53 29 58 14 49 7 41Z"/><path d="M26 19 22 40M39 15 35 46M51 20 47 45" fill="none" stroke="#17202b" stroke-width="4" stroke-linecap="square"/><path d="M14 42 25 51 29 57" fill="none" stroke="#17202b" stroke-width="3" stroke-linecap="square"/></svg></span>
+      <span class="mobile-btn-main">👊</span>
       <span class="mobile-cooldown"></span>
     </button>
     <button type="button" class="mobile-btn" data-mobile-action="4" aria-label="Skill 4"><span class="mobile-btn-main">4</span><span class="mobile-cooldown"></span></button>
