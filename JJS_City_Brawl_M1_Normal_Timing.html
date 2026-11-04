@@ -748,8 +748,8 @@ function updateDomainContainment(f){
   else if(!airborne){f.x=cx+nx*(r+19);f.y=cy+ny*(r+19);const inward=f.vx*nx+f.vy*ny;if(inward<0){f.vx-=inward*nx;f.vy-=inward*ny}}
  }
 }
-function domainViewIsInside(owner){return !!(player&&(player===owner||player.domainInsideOwner===owner))}
-function domainViewMatches(f,owner){return (!!(f&&(f===owner||f.domainInsideOwner===owner)))===domainViewIsInside(owner)}
+function domainViewIsInside(owner){return !!(player&&player.domainInsideOwner===owner)}
+function domainViewMatches(f,owner){return (!!(f&&f.domainInsideOwner===owner))===domainViewIsInside(owner)}
 function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
  if(!f||f.dead||f.domainWindup>0||f.domainTimer>0||game.domainClash)return false;
  if(f.jump>.12){showToast('DOMAIN · LAND FIRST',700);return false}
