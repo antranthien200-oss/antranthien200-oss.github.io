@@ -1738,7 +1738,8 @@ const JJS_HEAD_PALETTE={
  ten:{main:'#303e59',accent:'#91a9d2',shadow:'#171f30'},
  perfection:{main:'#79b9ad',accent:'#b6e8d8',shadow:'#3c7773'},
  todo:{main:'#434c5c',accent:'#d3b477',shadow:'#242b38'},
- choso:{main:'#96374b',accent:'#e15b70',shadow:'#572332'}
+ choso:{main:'#96374b',accent:'#e15b70',shadow:'#572332'},
+ trashman:{main:'#778489',accent:'#bed0ad',shadow:'#39464c'}
 };
 function getFighterTheme(f){
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
@@ -1813,9 +1814,15 @@ function drawFloatingHand(x,y,angle,theme,scale=1){
  ctx.restore();
 }
 function drawCuteHead(f,c){
- // Small, featureless pixelated circle in the character's dominant JJS color.
- const theme=getFighterTheme(f);
- drawPixelatedCircle(0,0,14.8,theme,2.4);
+ if(f.char==='trashman'){drawTrashManHead();return}
+ const theme=getFighterTheme(f);drawPixelatedCircle(0,0,14.8,theme,2.4);
+}
+function drawTrashManHead(){
+ // The head is the same squat, lidded metal bin silhouette used by the map props.
+ ctx.save();ctx.fillStyle='#1b2428';ctx.fillRect(-14,-8,28,23);ctx.fillStyle='#65727b';ctx.fillRect(-12,-10,24,24);ctx.fillStyle='#aeb9c4';ctx.fillRect(-14,-14,28,5);ctx.fillStyle='#48545e';ctx.fillRect(-16,-18,32,4);ctx.fillStyle='#d2dbe2';ctx.fillRect(-8,-7,3,16);ctx.fillRect(5,-7,3,16);ctx.fillStyle='#303a43';ctx.fillRect(-11,13,5,4);ctx.fillRect(6,13,5,4);ctx.fillStyle='#d9e1e5';ctx.fillRect(-5,-12,10,2);ctx.restore();
+}
+function drawTinyTrashCanScreen(x,y,scale=1,angle=0){
+ ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);ctx.fillStyle='#11191c';ctx.fillRect(-10,5,20,5);ctx.fillStyle='#596771';ctx.fillRect(-9,-8,18,15);ctx.fillStyle='#9ba9b2';ctx.fillRect(-10,-11,20,4);ctx.fillStyle='#303b43';ctx.fillRect(-12,-14,24,3);ctx.fillStyle='#c7d1d8';ctx.fillRect(-6,-6,2,10);ctx.fillRect(4,-6,2,10);ctx.strokeStyle='#253039';ctx.lineWidth=1;ctx.strokeRect(-9,-8,18,15);ctx.restore();
 }
 function drawHeadHands(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player';
@@ -1983,8 +1990,7 @@ function drawHeadHands(f){
  if(f.awakened){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':(f.char==='vessel'?'#f0445a':c.accent);ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c);ctx.restore();
- drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);
- drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale);
+ if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();drawAccessoryOverlays(f,x,headY);
  if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
@@ -2020,7 +2026,34 @@ function drawYutaKatana(f){
   ctx.fillStyle='#111722';ctx.fillRect(30,-4,51,8);ctx.fillStyle='#f0f2f8';ctx.fillRect(31,-3,48,6);ctx.fillStyle='#aeb9c8';ctx.fillRect(34,-1,40,2);ctx.fillStyle='#fff';ctx.fillRect(36,-2,34,1);
   ctx.restore();
  }
-function drawFighter(f){if(f.dead||f.isTrainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}}
+function drawGoldenTrashCanScreen(x,y,scale=1,angle=0){
+ ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
+ ctx.globalAlpha=.36;ctx.fillStyle='#ffd957';ctx.shadowBlur=25;ctx.shadowColor='#ffe27d';ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ ctx.fillStyle='#573f16';ctx.fillRect(-17,15,34,7);ctx.fillStyle='#b8791d';ctx.fillRect(-15,-13,30,29);ctx.fillStyle='#f3c64d';ctx.fillRect(-13,-11,26,24);ctx.fillStyle='#ffe88d';ctx.fillRect(-7,-8,4,19);ctx.fillRect(5,-8,4,19);ctx.fillStyle='#8c5c19';ctx.fillRect(-16,-17,32,5);ctx.fillStyle='#ffe18a';ctx.fillRect(-14,-19,28,4);ctx.fillStyle='#805316';ctx.fillRect(-18,-23,36,5);ctx.fillStyle='#f6d35b';ctx.fillRect(-16,-25,32,4);ctx.fillStyle='#fff1ad';ctx.fillRect(-9,-22,18,2);ctx.strokeStyle='#7e581b';ctx.lineWidth=1;ctx.strokeRect(-15,-13,30,29);ctx.restore();
+}
+function drawTrashManDomainCan(){
+ const owner=[player,enemy].find(f=>f&&f.char==='trashman'&&f.domainType==='trash'&&f.domainTimer>0);
+ if(!owner||!domainViewIsInside(owner))return;
+ const x=Number.isFinite(owner.trashGoldenCanX)?owner.trashGoldenCanX:owner.domainCenterX;
+ const y=Number.isFinite(owner.trashGoldenCanY)?owner.trashGoldenCanY:owner.domainCenterY+(owner.domainRadius||430)*.18;
+ if(owner.trashGoldenCanCarried)drawGoldenTrashCanScreen(sx(owner.x+Math.cos(owner.face)*32),sy(owner.y+Math.sin(owner.face)*32)-8,.84,owner.face);
+ else if(owner.trashDomainCanAvailable)drawGoldenTrashCanScreen(sx(x),sy(y),1.35,Math.sin(game.time*1.1)*.035);
+}
+function drawTrashManEffects(){
+ for(const f of [player,enemy]){
+  if(!f||f.dead||f.char!=='trashman')continue;
+  const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))continue;
+  if(f.trashGiantCan){
+   const g=f.trashGiantCan,x=sx(g.x),y=sy(g.y);ctx.save();ctx.globalAlpha=.15;ctx.fillStyle='#a3bb84';ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.8;ctx.strokeStyle='#a4b68d';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();drawTrashCan(g.x,g.y,1.9,Math.sin(game.time*1.8)*.035,0);
+  }
+  if(f.trashStinkArea){
+   const a=f.trashStinkArea,x=sx(a.x),y=sy(a.y),r=a.radius;ctx.save();const fog=ctx.createRadialGradient(x,y,5,x,y,r);fog.addColorStop(0,'rgba(132,173,91,.4)');fog.addColorStop(.62,'rgba(132,173,91,.2)');fog.addColorStop(1,'rgba(132,173,91,0)');ctx.fillStyle=fog;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#9ec66e';ctx.globalAlpha=.62;ctx.setLineDash([9,6]);ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r*.82+Math.sin(game.time*4)*5,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
+   for(let i=0;i<9;i++){const a0=game.time*.8+i*Math.PI*2/9,rr=r*(.25+(i%3)*.18);ctx.globalAlpha=.36;ctx.fillStyle='#c1dc81';ctx.beginPath();ctx.arc(x+Math.cos(a0)*rr,y+Math.sin(a0)*rr*.7,4+i%3*2,0,Math.PI*2);ctx.fill()}
+   ctx.restore();
+  }
+ }
+}
+function drawFighter(f){if(f.dead||f.isTrainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}if(f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)}
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
  ctx.save();ctx.translate(x1,y1);ctx.rotate(Math.atan2(dy,dx));ctx.fillStyle=edge;ctx.fillRect(-1,-width/2-1,len+2,width+2);ctx.fillStyle=color;ctx.fillRect(0,-width/2,len,width);ctx.restore();
@@ -2514,7 +2547,7 @@ function drawEffects(){for(const s of trailStrokes){ctx.save();ctx.globalAlpha=c
   if(f&&!f.dead&&!clashant&&(f.domainTimer>0||f.domainWindup>0||f.domainType==='void02'))drawDomainArena(f);
   if(f&&!f.dead&&visibleInDomainView&&f.bloodRain)drawBloodRain(f);
   if(f&&!f.dead&&visibleInDomainView&&f.char==='restless'&&(f.awakeMode==='gamble'||f.jackpot)&&f.domainType!=='hakari')drawIdleDeathGamble(f)
- }for(const p of projectiles){const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(p.owner,activeDomain))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#182337';ctx.beginPath();ctx.moveTo(-19,0);ctx.lineTo(-2,-8);ctx.lineTo(14,-5);ctx.lineTo(24,0);ctx.lineTo(8,7);ctx.lineTo(-8,7);ctx.closePath();ctx.fill();ctx.fillStyle='#9eb7e4';ctx.beginPath();ctx.moveTo(-7,-3);ctx.quadraticCurveTo(-34,-34,-43,-17);ctx.lineTo(-17,4);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(-7,3);ctx.quadraticCurveTo(-34,34,-43,17);ctx.lineTo(-17,-3);ctx.closePath();ctx.fill();ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){ctx.fillStyle='#d92d4e';ctx.shadowBlur=26;ctx.beginPath();ctx.arc(x,y,18+Math.sin(game.time*9)*4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff9bab';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,27+Math.sin(game.time*7)*4,0,Math.PI*2);ctx.stroke()}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='blueMax'){ctx.strokeStyle='#b9f4ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,34+Math.sin(game.time*12)*5,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(x,y,25,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,14,game.time*4,game.time*4+Math.PI*1.5);ctx.stroke()}else if(p.kind==='hollow'){ctx.beginPath();ctx.ellipse(x,y,p.r*1.5,p.r*.7,Math.atan2(p.vy,p.vx),0,Math.PI*2);ctx.fill();ctx.fillStyle='#f5f2ff';ctx.beginPath();ctx.arc(x,y,p.r*.35,0,Math.PI*2);ctx.fill()}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillRect(-36,-5,72,10);ctx.strokeStyle='#fff0f2';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-28,-12);ctx.lineTo(28,12);ctx.stroke()}else{ctx.beginPath();ctx.arc(x,y,p.r*.55,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,p.r*.85,0,Math.PI*2);ctx.stroke()}ctx.restore()}
+ }for(const p of projectiles){const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(p.owner,activeDomain))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#182337';ctx.beginPath();ctx.moveTo(-19,0);ctx.lineTo(-2,-8);ctx.lineTo(14,-5);ctx.lineTo(24,0);ctx.lineTo(8,7);ctx.lineTo(-8,7);ctx.closePath();ctx.fill();ctx.fillStyle='#9eb7e4';ctx.beginPath();ctx.moveTo(-7,-3);ctx.quadraticCurveTo(-34,-34,-43,-17);ctx.lineTo(-17,4);ctx.closePath();ctx.fill();ctx.beginPath();ctx.moveTo(-7,3);ctx.quadraticCurveTo(-34,34,-43,17);ctx.lineTo(-17,-3);ctx.closePath();ctx.fill();ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){ctx.fillStyle='#d92d4e';ctx.shadowBlur=26;ctx.beginPath();ctx.arc(x,y,18+Math.sin(game.time*9)*4,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ff9bab';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,27+Math.sin(game.time*7)*4,0,Math.PI*2);ctx.stroke()}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='blueMax'){ctx.strokeStyle='#b9f4ff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,34+Math.sin(game.time*12)*5,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(x,y,25,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,14,game.time*4,game.time*4+Math.PI*1.5);ctx.stroke()}else if(p.kind==='hollow'){ctx.beginPath();ctx.ellipse(x,y,p.r*1.5,p.r*.7,Math.atan2(p.vy,p.vx),0,Math.PI*2);ctx.fill();ctx.fillStyle='#f5f2ff';ctx.beginPath();ctx.arc(x,y,p.r*.35,0,Math.PI*2);ctx.fill()}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillRect(-36,-5,72,10);ctx.strokeStyle='#fff0f2';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-28,-12);ctx.lineTo(28,12);ctx.stroke()}else{ctx.beginPath();ctx.arc(x,y,p.r*.55,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y,p.r*.85,0,Math.PI*2);ctx.stroke()}ctx.restore()}
  for(const p of particles){ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;if(p.shape==='square')ctx.fillRect(sx(p.x),sy(p.y),p.size,p.size);else{ctx.beginPath();ctx.arc(sx(p.x),sy(p.y),p.size/2,0,Math.PI*2);ctx.fill()}ctx.restore()}
  for(const p of debris){ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.translate(sx(p.x),sy(p.y)-p.z);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.fillRect(-p.z*.45,-p.z*.45,p.z,p.z);ctx.strokeStyle='#62676d';ctx.lineWidth=1;ctx.strokeRect(-p.z*.45,-p.z*.45,p.z,p.z);ctx.restore()}
  for(const t of texts){ctx.save();ctx.globalAlpha=clamp(t.life/t.max,0,1);ctx.fillStyle='#070b12';ctx.font=`1000 ${t.size}px system-ui`;ctx.textAlign='center';ctx.fillText(t.text,sx(t.x)+2,sy(t.y)+2);ctx.fillStyle=t.color;ctx.fillText(t.text,sx(t.x),sy(t.y));ctx.restore()}}
@@ -2569,7 +2602,7 @@ function drawMobileEnemyPointer(){
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
- drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();
+ drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(game.domainClash)drawDomainClashFighterMarkers();
  // Handsign cut-ins are the top gameplay layer: the fighter and HUD cannot obscure the pose.
  if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
