@@ -709,8 +709,8 @@ function updateDomainClash(dt){
  if(q.time<=0){if(Math.abs(p-e)<.001)resolveDomainClash(null,'TIME');else resolveDomainClash(p>e?a:b,'TIME');return}updateDomainClashHud();
 }
 function useDomainClashM1(f){
- if(!f||f.dead||!game.domainClash||f.attackCd>0)return;const t=targetOf(f);if(!t||t.dead)return;
- const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackCd=.27;f.attackAnim=.19;f.attackType='clash-punch';f.combo=(f.combo%3)+1;f.comboTimer=.38;setMotion(f,'m1_'+f.combo,.2,angle,t);
+ if(!f||f.dead||!game.domainClash||f.attackCd>0)return;const t=game.domainClash.members.find(x=>x!==f);if(!t||t.dead)return;
+ const aim={x:t.x,y:t.y},angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackCd=.27;f.attackAnim=.19;f.attackType='clash-punch';f.combo=(f.combo%3)+1;f.comboTimer=.38;setMotion(f,'m1_'+f.combo,.2,angle,t);
  const range=mobileControlsEnabled&&f===player?145:132,d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)));
  if(d<=range&&arc<(mobileControlsEnabled&&f===player?1.45:1.28)){const color=f.team==='player'?'#82e8ff':'#ff899b';
   damage(t,3.2,f,{stun:0,invuln:0,kx:0,ky:0,color,unblockable:true,ignoreInvuln:true,damageType:'domain-clash-m1'});m1Feedback(f,t,angle,true,false);
@@ -2122,29 +2122,30 @@ function drawDomainHandsignCutin(f,p,accent){
 }
 const domainClashFrameCache={canvas:document.createElement('canvas'),last:-Infinity,width:0,height:0,scale:0,clash:null};
 function drawDomainClashArena(){
- const clash=game.domainClash;if(!clash)return;
- const cache=domainClashFrameCache,scale=isMobileDevice?.82:1;
- if(cache.width!==W||cache.height!==H||cache.scale!==scale||cache.clash!==clash){
-  cache.width=W;cache.height=H;cache.scale=scale;cache.clash=clash;cache.canvas.width=Math.max(1,Math.ceil(W*scale));cache.canvas.height=Math.max(1,Math.ceil(H*scale));cache.last=-Infinity;
- }
- if(game.time-cache.last>=(isMobileDevice?1/24:1/30)||cache.last===-Infinity){
-  const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,W,H);ctx=frameCtx;
-  try{renderDomainClashArenaFrame()}finally{ctx=screenCtx}
-  cache.last=game.time;
- }
- ctx.drawImage(cache.canvas,0,0,W,H);
-}
-function renderDomainClashArenaFrame(){
- const q=game.domainClash;if(!q)return;const a=q.members[0],b=q.members[1],colors={void:'#7ea8ff',shrine:'#ff536b',soul:'#8fe0cc',hakari:'#d5a4ff'};
- colors.yuta='#f0c9ee';const c1=colors[a.domainType]||'#78caff',c2=colors[b.domainType]||'#ff788e';
- const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,c1);g.addColorStop(.47,'#111522');g.addColorStop(1,c2);
- ctx.save();ctx.globalAlpha=.76;ctx.fillStyle=g;ctx.fillRect(0,0,W,H);const cx=W*.5,cy=H*.5,pulse=1+Math.sin(game.time*7)*.035;
- const halo=ctx.createRadialGradient(cx,cy,12,cx,cy,Math.max(W,H)*.78);halo.addColorStop(0,'rgba(245,249,255,.48)');halo.addColorStop(.18,'rgba(170,190,255,.13)');halo.addColorStop(1,'rgba(0,0,0,.72)');
- ctx.globalAlpha=.9;ctx.fillStyle=halo;ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(cx,cy);ctx.rotate(game.time*.12);
- for(let i=0;i<9;i++){ctx.globalAlpha=.12+(i%3)*.035;ctx.strokeStyle=i%2?c1:c2;ctx.lineWidth=2+i%3;ctx.beginPath();ctx.ellipse(0,0,(70+i*44)*pulse,(28+i*19)/pulse,0,0,Math.PI*2);ctx.stroke()}
- ctx.restore();ctx.globalAlpha=.8;ctx.lineWidth=4;ctx.strokeStyle='#f4f7ff';ctx.shadowBlur=22;ctx.shadowColor='#fff';ctx.beginPath();ctx.moveTo(cx,0);ctx.lineTo(cx+Math.sin(game.time*2.2)*22,H*.36);ctx.lineTo(cx-Math.sin(game.time*1.8)*16,H*.68);ctx.lineTo(cx,H);ctx.stroke();
- ctx.globalAlpha=.42;ctx.strokeStyle=c1;ctx.lineWidth=13;ctx.beginPath();ctx.arc(cx,cy,Math.min(W,H)*(.22+.018*Math.sin(game.time*5)),0,Math.PI*2);ctx.stroke();ctx.strokeStyle=c2;ctx.globalAlpha=.36;ctx.lineWidth=7;ctx.beginPath();ctx.arc(cx,cy,Math.min(W,H)*(.3+.018*Math.cos(game.time*4)),0,Math.PI*2);ctx.stroke();
- const shade=ctx.createRadialGradient(cx,cy,Math.min(W,H)*.18,cx,cy,Math.max(W,H)*.8);shade.addColorStop(0,'rgba(0,0,0,0)');shade.addColorStop(1,'rgba(0,0,0,.62)');ctx.globalAlpha=1;ctx.fillStyle=shade;ctx.fillRect(0,0,W,H);ctx.restore();
+ const q=game.domainClash;if(!q)return;
+ const a=q.members[0],b=q.members[1],cx=sx((a.x+b.x)*.5),cy=sy((a.y+b.y)*.5),r=430;
+ if(cx+r<0||cy+r<0||cx-r>W||cy-r>H)return;
+ const colors={void:'#7ea8ff',shrine:'#ff536b',soul:'#8fe0cc',hakari:'#d5a4ff',yuta:'#f0c9ee'};
+ const c1=colors[a.domainType]||'#78caff',c2=colors[b.domainType]||'#ff788e',pulse=1+Math.sin(game.time*7)*.025;
+ ctx.save();
+ const shell=ctx.createRadialGradient(cx-r*.25,cy-r*.34,8,cx,cy,r*1.08);
+ shell.addColorStop(0,'#303543');shell.addColorStop(.3,'#10131d');shell.addColorStop(.75,'#030408');shell.addColorStop(1,'#000');
+ ctx.fillStyle=shell;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+ ctx.save();ctx.beginPath();ctx.arc(cx,cy,r-7,0,Math.PI*2);ctx.clip();
+ const split=ctx.createLinearGradient(cx-r,cy,cx+r,cy);split.addColorStop(0,c1);split.addColorStop(.43,c1+'aa');split.addColorStop(.5,'#111522');split.addColorStop(.57,c2+'aa');split.addColorStop(1,c2);
+ ctx.globalAlpha=.34;ctx.fillStyle=split;ctx.fillRect(cx-r,cy-r,r*2,r*2);
+ const halo=ctx.createRadialGradient(cx,cy,10,cx,cy,r*.95);halo.addColorStop(0,'rgba(245,249,255,.42)');halo.addColorStop(.22,'rgba(170,190,255,.13)');halo.addColorStop(1,'rgba(0,0,0,.3)');
+ ctx.globalAlpha=.85;ctx.fillStyle=halo;ctx.fillRect(cx-r,cy-r,r*2,r*2);
+ ctx.save();ctx.translate(cx,cy);ctx.rotate(game.time*.12);
+ for(let i=0;i<9;i++){ctx.globalAlpha=.16+(i%3)*.035;ctx.strokeStyle=i%2?c1:c2;ctx.lineWidth=2+i%3;ctx.beginPath();ctx.ellipse(0,0,(70+i*37)*pulse,(28+i*18)/pulse,0,0,Math.PI*2);ctx.stroke()}
+ ctx.restore();
+ ctx.globalAlpha=.85;ctx.strokeStyle='#f4f7ff';ctx.lineWidth=4;ctx.shadowBlur=18;ctx.shadowColor='#fff';ctx.beginPath();ctx.moveTo(cx,cy-r);ctx.lineTo(cx+Math.sin(game.time*2.2)*22,cy-r*.36);ctx.lineTo(cx-Math.sin(game.time*1.8)*16,cy+r*.2);ctx.lineTo(cx,cy+r);ctx.stroke();
+ ctx.restore();
+ ctx.globalAlpha=.34;ctx.strokeStyle=c1;ctx.lineWidth=22;ctx.shadowBlur=28;ctx.shadowColor=c1;ctx.beginPath();ctx.arc(cx,cy,r-8,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=.3;ctx.strokeStyle=c2;ctx.lineWidth=10;ctx.shadowColor=c2;ctx.beginPath();ctx.arc(cx,cy,r-13,Math.PI,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=.96;ctx.strokeStyle='#07080d';ctx.lineWidth=9;ctx.shadowBlur=8;ctx.shadowColor='#000';ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=.8;ctx.strokeStyle='#f2f4fa';ctx.lineWidth=1.6;ctx.shadowBlur=0;ctx.beginPath();ctx.arc(cx,cy,r-15,0,Math.PI*2);ctx.stroke();
+ ctx.restore();
 }
 function drawDomainClashFighterMarkers(){
  const q=game.domainClash;if(!q)return;
