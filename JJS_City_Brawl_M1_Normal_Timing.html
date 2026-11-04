@@ -423,13 +423,14 @@ const CHARS={
   moves:[['SEVERING PATH','Slide forward with a katana sweep and a three-hit follow-up'],['RESOLUTE SLASH','Vanish and reappear with an unblockable aimed slash'],['OUTBURST','Cursed-energy katana burst; parries melee and absorbs projectiles'],['SECOND WIND','Rush forward and grab-slam; a first miss grants one retry']],
   awakeMoves:[['ELBOW RUSH','Yuta and Rika rush together with a multi-hit finisher'],['COPY: CURSED SPEECH','Use a stored copied technique; cycle the Copy Wheel with G'],['ENERGY RIPPLE','Drive the katana into the floor and blast enemies away'],['AUTHENTIC MUTUAL LOVE','Open the katana domain; land four direct sword hits to unlock Jacob’s Ladder']],
   special:'RIKA',specialDesc:'Summon Rika. Press again to switch between Yuta and Rika’s moves; double-tap to dismiss.',awakeSpecial:'RIKA',awakeSpecialDesc:'Rika remains fully manifested during True Love.',awakening:'TRUE LOVE',awakeName:'TRUE LOVE'},
+ trashman:{name:'TRASH MAN',desc:'A walking garbage disaster. Throw cans, dash with a garbage-loaded punch, drop giant bins, and turn both fists into mini trash cans. Awakening: STOP THROWING TRASH CAN.',color:'#9aa3a5',hair:'#6f777a',coat:'#3a4549',accent:'#a6d0a0',skin:'#a6a8a1',hp:105,moves:[['TRASH CAN TOSS','Throw a trash can straight toward your pointer'],['GARBAGE PUNCH','Dash with a garbage-filled fist'],['GIANT BIN DROP','Drop a huge trash can a short distance ahead'],['CAN-FIST BARRAGE','Turn both hands into tiny trash cans and punch nonstop']],awakeMoves:[['FLYING DUMPSTER','Summon a trash can that rockets toward your pointer'],['TOXIC STENCH','Create a stinky damage zone'],['TRASH ERUPTION','Continuously fire garbage from your body'],['DOMAIN EXPANSION: LANDFILL','Create a dump arena with a reusable golden trash can']],special:'TRASH SWAP',specialDesc:'A timed counter: swap with a trash can and appear behind the attacker just before a hit lands.',awakeSpecial:'TRASH SWAP',awakeSpecialDesc:'The same trash-can substitution counter.',awakening:'STOP THROWING TRASH CAN',awakeName:'TRASH STORM'},
  choso:{name:'BLOOD MANIPULATOR',desc:'Choso. Shape blood into beams, blades, explosions, and a Convergence arsenal. Awakening: Duty as a Brother.',color:'#d9bec0',hair:'#17151a',coat:'#31252c',accent:'#b82e45',skin:'#c68c76',hp:100,
   moves:[['PIERCING BLOOD','Compress blood and fire a razor-thin beam'],['FLOWING RED SCALE','Boost your body and rush through a combo'],['SUPERNOVA','Counter melee attacks or use an orb for a blood bomb'],['BLOOD EDGE','Create blood blades, impale, and slam the target']],
   awakeMoves:[['SLICING EXORCISM','Fire a powerful pressurized stream of blood'],['WING KING','Rush with a flurry and pull the target in'],['BLOOD RAIN','Create a blood sphere and rain projectiles'],['PLASMA WAVE','Build blood orbs and unleash a huge blast']],
   special:'CONVERGENCE',specialDesc:'Condense four blood orbs to empower your techniques.',awakeSpecial:'CONVERGENCE',awakeSpecialDesc:'Command your stored blood orbs.',awakening:'DUTY AS A BROTHER',awakeName:'DUTY AS A BROTHER'}
 };
 let selected='honored';
-const CHAR_ICONS={honored:'🕶️',vessel:'🥊',restless:'🎰',ten:'🐺',perfection:'🧬',todo:'👏',choso:'🩸',yuta:'🗡️'};
+const CHAR_ICONS={honored:'🕶️',vessel:'🥊',restless:'🎰',ten:'🐺',perfection:'🧬',todo:'👏',choso:'🩸',yuta:'🗡️',trashman:'🗑️'};
 const YUTA_COPY_OPTIONS=['CURSED SPEECH','DISMANTLE','LAPSE BLUE','PIERCING BLOOD','BOOGIE WOOGIE'];
 const YUTA_RIKA_MOVES=[['RIKA SMASH','A giant downward punch that bounces the target'],['RIKA LAUNCH','Rika boosts Yuta into the air and forward'],['RIKA THROW','Rika grabs and hurls the target'],['RIKA HAYMAKER','A heavy homing punch with strong knockback']];
 const YUTA_RIKA_AWAKE_MOVES=[['RIKA DOWNSLAM','Rika pins the target and slams them into the floor'],['RIKA SLAM','Rika grabs the target and slams them repeatedly'],['TRUE LOVE BEAM','Yuta and Rika fire a devastating cursed-energy beam'],['RIKA THROW','Rika launches Yuta into a high-speed aerial throw']];
@@ -528,7 +529,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetR
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
@@ -830,7 +831,11 @@ function damage(target,amount,source,opts={}){
  if(target.char==='ten'&&target.tenGardenTimer>0&&source&&source.team!==target.team){target.tenGardenTimer=0;target.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · INTERRUPTED',850)}
  if(target.counterWindow>0&&source&&source.team!==target.team){
   const kind=target.counterKind;target.counterWindow=0;target.counterKind='';
-  if(kind==='yutaOutburst'){
+  if(kind==='trashSwap'){
+    const oldX=target.x,oldY=target.y,dx=source.x-target.x,dy=source.y-target.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
+    target.trashSwapDecoy={x:oldX,y:oldY,life:.95};target.x=clamp(source.x+nx*68,45,WORLD.w-45);target.y=clamp(source.y+ny*68,45,WORLD.h-45);collideWorld(target);target.vx=0;target.vy=0;target.stun=0;target.invuln=Math.max(target.invuln,.48);setMotion(target,'trashManSwap',.48,Math.atan2(source.y-target.y,source.x-target.x),source);source.counterWindow=0;source.counterKind='';source.stun=Math.max(source.stun,.72);source.invuln=0;damage(source,8,target,{stun:.72,kx:-nx*9,ky:-ny*9,color:'#a8ca8c',unblockable:true,big:true,ignoreInvuln:true});burst(oldX,oldY,'#b2c69a',24,6);burst(target.x,target.y,'#b2c69a',22,5);popText(target.x,target.y-58,'TRASH SWAP','#d9edbd',15);return;
+   }
+   if(kind==='yutaOutburst'){
    const a=Math.atan2(source.y-target.y,source.x-target.x);target.invuln=Math.max(target.invuln,.5);
    if((opts.damageType||'melee')==='bullet'||(opts.damageType||'melee')==='projectile')target.skillCd[2]=Math.min(target.skillCd[2]||0,.15);
    else{source.stun=Math.max(source.stun,.48);source.vx+=Math.cos(a)*-11;source.vy+=Math.sin(a)*-11;target.skillCd[2]=4}
@@ -915,6 +920,7 @@ function setSkillMotion(f,idx,angle,target){
  else if(f.char==='perfection'){names=f.awakened?['mahitoTransfigure','mahitoDisfigure','mahitoSpikes','mahitoDomain']:['mahitoStockpile','mahitoSoulFire','mahitoFocus','mahitoRepel'];times=f.awakened?[.9,1.5,1.2,2.2]:[.8,1.05,.5,1.1]}
  else if(f.char==='todo'){names=f.awakened?['todoIdol','todoClimax','todoDreams','todoBrothers']:['todoSwiftKick','todoBrute','todoPebble','todoElbow'];times=f.awakened?[1.6,2.2,1.1,1.3]:[1.1,.9,.6,1.25]}
  else if(f.char==='choso'){names=f.awakened?['chosoExorcism','chosoWingKing','chosoBloodRain','chosoPlasma']:['chosoPiercing','chosoScale','chosoSupernova','chosoEdge'];times=f.awakened?[1.8,1.7,1.4,2.1]:[.75,1.4,.8,1.1]}
+ else if(f.char==='trashman'){names=f.awakened?['trashManFlyingCan','trashManStench','trashManEruption','trashManDomain']:['trashManThrow','trashManGarbagePunch','trashManBigCan','trashManCanBarrage'];times=f.awakened?[.45,.65,2.2,1.5]:[.42,.75,.7,2.1]}
  else if(f.char==='yuta'){names=f.rikaMode?(f.awakened?['rikaDownslam','rikaSlam','yutaTrueLoveBeam','rikaThrow']:['rikaSmash','rikaLaunch','rikaThrow','rikaHaymaker']):(f.awakened?['yutaElbowRush','yutaCopy','yutaEnergyRipple','yutaDomain']:['yutaSevering','yutaSlash','yutaOutburst','yutaSecondWind']);times=f.rikaMode?(f.awakened?[1.1,1.8,2.4,1.4]:[.75,.4,.8,1.1]):(f.awakened?[1.8,.5,.8,2.2]:[.8,.7,.55,.8])}
  setMotion(f,(names&&names[idx])||'skill',(times&&times[idx])||.7,angle,target);
 }
@@ -979,6 +985,12 @@ function endAwakening(f){const hadJackpot=f.jackpot;if(f.char==='yuta'){f.rikaSu
 function dropCarriedTrashCan(f){if(!f||!f.carryingTrashCan)return;const prop=f.carryingTrashCan;f.carryingTrashCan=null;prop.carried=false;prop.x=clamp(f.x+Math.cos(f.face)*35,60,WORLD.w-60);prop.y=clamp(f.y+Math.sin(f.face)*35,60,WORLD.h-60);prop.flash=.3}
 function toggleTrashCan(f){
  if(!f||f.dead||game.domainClash)return;
+ if(f.char==='trashman'&&f.domainType==='trash'&&f.domainTimer>0){
+  if(f.trashGoldenCanCarried){const a=aimedAngle(f);projectiles.push({x:f.x+Math.cos(a)*34,y:f.y+Math.sin(a)*34,vx:Math.cos(a)*19.5,vy:Math.sin(a)*19.5,r:30,life:2.8,maxDistance:900,travelled:0,owner:f,kind:'trashCan',damage:28,color:'#f5c84c',golden:true,trashMan:true});f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=1.15;setMotion(f,'trashManFlyingCan',.42,a,targetOf(f));burst(f.x,f.y,'#ffe18b',18,5);showToast('GOLDEN BIN · THROWN · RETURNS',850);return}
+  const canX=Number.isFinite(f.trashGoldenCanX)?f.trashGoldenCanX:f.domainCenterX,canY=Number.isFinite(f.trashGoldenCanY)?f.trashGoldenCanY:f.domainCenterY+f.domainRadius*.18;
+  if(!f.trashDomainCanAvailable){showToast('GOLDEN BIN · RETURNING',600);return}if(Math.hypot(f.x-canX,f.y-canY)>150){showToast('GOLDEN BIN · GO TO THE CENTER',650);return}
+  f.trashGoldenCanCarried=true;f.trashDomainCanAvailable=false;setMotion(f,'trashManPickupGolden',.32,f.face,targetOf(f));burst(canX,canY,'#ffe18b',14,4);showToast('GOLDEN BIN · READY · PRESS E TO THROW',850);return;
+ }
  if(f.carryingTrashCan){
   const prop=f.carryingTrashCan;f.carryingTrashCan=null;prop.carried='projectile';
   const aim=aimedAt(f),a=Math.atan2(aim.y-f.y,aim.x-f.x),speed=18.5;
@@ -1085,6 +1097,50 @@ function yutaUseSkill(f,idx,t,angle){
  return true;
 }
 
+function trashManLaunchCan(f,angle,damageValue=13,golden=false){
+ const speed=golden?20:17.5,color=golden?'#f5c84c':'#aeb9c4';
+ setMotion(f,golden?'trashManFlyingCan':'trashManThrow',.42,angle,targetOf(f));
+ projectiles.push({x:f.x+Math.cos(angle)*34,y:f.y+Math.sin(angle)*34,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:golden?29:23,life:2.8,maxDistance:golden?930:820,travelled:0,owner:f,kind:'trashCan',damage:damageValue,color,golden,trashMan:true,rotation:0});
+ burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,golden?'#ffe38c':'#c5d0d9',12,4);
+}
+function trashManUseSkill(f,idx,t,angle){
+ const awake=f.awakened,aim=aimedAt(f),mobile=f===player&&mobileControlsEnabled;
+ if(f.skillCd[idx]>0)return;
+ if(!awake){
+  if(idx===0){f.skillCd[0]=10;trashManLaunchCan(f,angle,13,false);return}
+  if(idx===1){
+   f.skillCd[1]=15;f.invuln=.18;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;setMotion(f,'trashManGarbagePunch',.72,angle,t);
+   schedule(()=>{if(f.dead||f.stun>.04)return;if(!t.dead&&dist(f,t)<230&&targetInAim(f,t,240,mobile?1.12:.92,angle)){damage(t,15,f,{stun:.68,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,color:'#b6d89a',big:true,unblockable:true,ignoreInvuln:true});burst(t.x,t.y,'#a8cf87',25,6);addDebris(t.x,t.y,'#66715f',7);popText(t.x,t.y-61,'GARBAGE PUNCH','#d1e8b6',14)}else{burst(f.x+Math.cos(angle)*95,f.y+Math.sin(angle)*95,'#8aa77a',15,4);popText(f.x,f.y-48,'GARBAGE PUNCH · WHIFF','#b6d89a',11)}},190);return;
+  }
+  if(idx===2){
+   f.skillCd[2]=19;setMotion(f,'trashManBigCan',.72,angle,t);
+   const x=clamp(f.x+Math.cos(angle)*98,45,WORLD.w-45),y=clamp(f.y+Math.sin(angle)*98,45,WORLD.h-45);
+   f.trashGiantCan={x,y,life:7.5,tick:.55,owner:f,radius:104};burst(x,y,'#a9b2a8',24,6);addDebris(x,y,'#65716e',12);
+   for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&dist(target,{x,y})<112){const a=Math.atan2(target.y-y,target.x-x);damage(target,9,f,{stun:.48,kx:Math.cos(a)*7,ky:Math.sin(a)*7,color:'#a9c58d',big:true,ignoreInvuln:true})}
+   popText(x,y-55,'GIANT BIN DROP','#d8e8c0',14);return;
+  }
+  if(idx===3){f.skillCd[3]=22;f.trashBarrageTimer=2.15;f.trashBarrageTick=.05;f.trashBarrageAngle=angle;setMotion(f,'trashManCanBarrage',2.15,angle,t);f.attackAnim=2.15;burst(f.x,f.y,'#a6c98b',14,3);return}
+ }else{
+  if(idx===0){f.skillCd[0]=13;trashManLaunchCan(f,angle,22,true);return}
+  if(idx===1){
+   f.skillCd[1]=24;setMotion(f,'trashManStench',.65,angle,t);
+   const reach=Math.min(430,dist(f,aim)),px=clamp(f.x+Math.cos(angle)*reach,45,WORLD.w-45),py=clamp(f.y+Math.sin(angle)*reach,45,WORLD.h-45);
+   f.trashStinkArea={x:px,y:py,life:5,tick:.1,radius:145,owner:f};burst(px,py,'#8eb96b',26,5);popText(px,py-58,'TOXIC STENCH','#b7e68b',15);return;
+  }
+  if(idx===2){f.skillCd[2]=30;f.trashBodyBarrageTimer=2.2;f.trashBodyBarrageTick=.04;f.trashBodyBarrageAngle=angle;setMotion(f,'trashManEruption',2.2,angle,t);f.invuln=.2;burst(f.x,f.y,'#9acb80',28,6);popText(f.x,f.y-62,'TRASH ERUPTION','#d8f2bb',16);return}
+  if(idx===3){if(f.domainType==='trash'&&f.domainTimer>0)return;if(startDomain(f,'trash',28,1.35,.25,430,1))f.skillCd[3]=120;return}
+ }
+}
+function updateTrashManEffects(f,dt){
+ if(!f||f.char!=='trashman')return;
+ if(f.trashGiantCan){const g=f.trashGiantCan;g.life-=dt;g.tick-=dt;if(g.tick<=0){g.tick=.72;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,2.8,f,{stun:.12,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,color:'#9fb982',ignoreInvuln:true})}if(g.life>0)burst(g.x+rnd(-24,24),g.y+rnd(-24,24),'#9aa88d',3,2)}if(g.life<=0)f.trashGiantCan=null}
+ if(f.trashStinkArea){const a=f.trashStinkArea;a.life-=dt;a.tick-=dt;if(a.tick<=0){a.tick=.52;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-a.x,target.y-a.y)<a.radius){damage(target,2.1,f,{stun:.12,color:'#9cc66d',ignoreInvuln:true});burst(target.x+rnd(-16,16),target.y+rnd(-14,14),'#91b86a',3,2)}}if(a.life<=0)f.trashStinkArea=null}
+ if(f.trashBarrageTimer>0){f.trashBarrageTimer=Math.max(0,f.trashBarrageTimer-dt);f.trashBarrageTick-=dt;if(f.trashBarrageTick<=0){f.trashBarrageTick=.19;const a=f.trashBarrageAngle;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f){const d=dist(f,target),da=Math.atan2(target.y-f.y,target.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-a),Math.cos(da-a)));if(d<168&&arc<1.05){damage(target,1.65,f,{stun:.08,kx:Math.cos(a)*.7,ky:Math.sin(a)*.7,color:'#c4d5ab',ignoreInvuln:true});burst(target.x,target.y,'#b1cc8e',2,2)}}}if(f.trashBarrageTimer<=0){if(f.motion&&f.motion.name==='trashManCanBarrage')f.motion=null;f.attackAnim=0}}
+ if(f.trashBodyBarrageTimer>0){f.trashBodyBarrageTimer=Math.max(0,f.trashBodyBarrageTimer-dt);f.trashBodyBarrageTick-=dt;if(f.trashBodyBarrageTick<=0){f.trashBodyBarrageTick=.145;const base=f.trashBodyBarrageAngle;for(let i=0;i<3;i++){const angle=base+(i-1)*.33+rnd(-.08,.08),speed=rnd(10,14),x=f.x+Math.cos(angle)*20,y=f.y+Math.sin(angle)*20;projectiles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:9,life:1.05,maxDistance:370,travelled:0,owner:f,kind:'trashJunk',damage:2.2,color:i%2?'#9dbb79':'#aeb7a1'})}burst(f.x,f.y,'#a8c68b',3,2)}if(f.trashBodyBarrageTimer<=0&&f.motion&&f.motion.name==='trashManEruption')f.motion=null}
+ if(f.trashSwapDecoy){f.trashSwapDecoy.life-=dt;if(f.trashSwapDecoy.life<=0)f.trashSwapDecoy=null}
+ if(f.trashDomainCanCooldown>0){f.trashDomainCanCooldown=Math.max(0,f.trashDomainCanCooldown-dt);if(f.trashDomainCanCooldown===0&&f.domainType==='trash'&&f.domainTimer>0)f.trashDomainCanAvailable=true}
+ if(f.domainType!=='trash'||f.domainTimer<=0){f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
+}
 function useAttack(f,kind){
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||game.cutsceneTimer>0)return;
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
@@ -1144,7 +1200,7 @@ function useAttack(f,kind){
   if(f.char==='ten'&&f.awakened){f.tenBase=!f.tenBase;setMotion(f,'megumiSwitch',.45,f.face,t);showToast(f.tenBase?'TEN SHADOWS · BASE TECHNIQUES':'INSANITY · AWAKENED SHIKIGAMI',900);updateHud();return}
   if(f.meter<100||f.awakened)return;
   f.awakened=true;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:f.char==='yuta'?25:15));
-  f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':f.char==='yuta'?'trueLove':'brother';
+  f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':f.char==='yuta'?'trueLove':f.char==='trashman'?'trashstorm':'brother';
   f.tenBase=false;f.awakeTimer=f.char==='restless'?120:60;f.jackpot=false;if(f.char==='yuta'){f.rikaSummoned=true;f.rikaMode=false;f.yutaCopyIndex=0;}f.gambleVisuals=0;f.gambleAttempts=0;
   f.domainStunGuaranteed=f.char==='restless'&&dist(f,t)<600;
   const isHakariDomain=f.char==='restless';
@@ -1154,7 +1210,7 @@ function useAttack(f,kind){
   f.domainWindup=isHakariDomain?1.25:0;f.domainWindupStart=isHakariDomain?1.25:0;
   f.domainRadius=isHakariDomain?430:0;f.domainCenterX=isHakariDomain?f.x:null;f.domainCenterY=isHakariDomain?f.y:null;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainState=isHakariDomain?'forming':'';f.domainTick=0;
   f.domainFlashTimer=0;f.domainOpenedAt=0;
-  setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
+  setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken',trashman:'trashManAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
   burst(f.x,f.y,c.accent,56,8);game.shake=13;
   if(isHakariDomain){f.awakeTimer=121.25;f.invuln=Math.max(f.invuln,1.3);damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));showToast(c.awakening+' · HANDSIGN',1300)}
   else{playAwakeningCutscene(f);showToast(c.awakening,1600)}
@@ -1163,6 +1219,7 @@ function useAttack(f,kind){
  if(kind==='special'){
   if(f.char==='ten'&&f.tenNueCast&&f.tenNueWindow>0){const p=spawnTenNue(f,true);if(p){f.skillCd[1]=22;f.specialCd=10;setMotion(f,'megumiNueRide',1.05,Math.atan2(p.aimY-p.y,p.aimX-p.x),targetOf(f));showToast('NUE · RIDE THE SHIKIGAMI',750)}return}
   if(f.char==='ten'&&f.shadowTimer>0){tenExitShadow(f);return}
+  if(f.char==='trashman'){if(f.specialCd>0)return;setMotion(f,'trashManSwap',.42,f.face,t);f.counterWindow=.42;f.counterKind='trashSwap';f.specialCd=9.5;f.block=false;burst(f.x,f.y,'#b3c991',12,3);popText(f.x,f.y-54,'TRASH SWAP · READY','#d5edb1',12);return}
   if(f.char==='yuta'){
    if(f.awakened){f.rikaSummoned=true;f.rikaMode=!f.rikaMode;f.rikaLastSpecialAt=game.time;f.specialCd=.24;return}
    if(!f.rikaSummoned){f.rikaSummoned=true;f.rikaMode=false;f.rikaLastSpecialAt=game.time;f.specialCd=.24;burst(f.x+Math.cos(f.face+Math.PI/2)*36,f.y+Math.sin(f.face+Math.PI/2)*36,'#e4c9ee',20,5);return}
@@ -1200,6 +1257,7 @@ function useAttack(f,kind){
  }
  const idx=Number(kind)-1;if(idx<0||idx>3)return;const d=dist(f,t);
  if(f.char==='yuta'){yutaUseSkill(f,idx,t,aimedAngle(f));return;}
+ if(f.char==='trashman'){trashManUseSkill(f,idx,t,aimedAngle(f));return;}
  // Hakari can combine Shutter Doors with Fever Breaker's windup for Fever Crush.
  if(f.char==='restless'&&!f.jackpot&&idx===1&&f.feverWindow>0){if(d<190){damage(t,8,f,{stun:.22,color:'#d8a6ff'});schedule(()=>{if(!t.dead&&dist(f,t)<160)damage(t,12,f,{stun:.75,kx:Math.cos(f.face)*11,ky:Math.sin(f.face)*11,big:true,unblockable:true,color:'#d8a6ff'})},180);popText(t.x,t.y-58,'FEVER CRUSH','#e9c7ff',17)}f.feverWindow=0;f.skillCd[1]=15;f.skillCd[3]=23;registerGambleVisual(f);return}
  // Divergent Fist has a deliberate second press window for Black Flash.
@@ -1398,7 +1456,7 @@ function updateTenEffects(f,dt){
  if(f.tenMahoragaActive>0){f.tenMahoragaActive=Math.max(0,f.tenMahoragaActive-dt);f.tenMahoragaAttackCd-=dt;if(f.tenMahoragaActive===0){f.tenMahoragaTarget=null;popText(f.x,f.y-55,'MAHORAGA DISMISSED','#c8d0df',12)}else if(f.tenMahoragaAttackCd<=0){const target=tenNearestTarget(f,560);if(target){f.tenMahoragaAttackCd=1.35;f.adaptation=clamp((f.adaptation||0)+1,0,10);const a=Math.atan2(target.y-f.y,target.x-f.x);setMotion(f,'megumiMahoragaStrike',.6,a,target);damage(target,12+Math.min(5,f.adaptation),f,{stun:.62,kx:Math.cos(a)*12,ky:Math.sin(a)*12,big:true,unblockable:true,ignoreInvuln:true,color:'#aebbd0'});burst(target.x,target.y,'#bdcadc',20,5);game.shake=Math.max(game.shake,7);popText(target.x,target.y-66,'ADAPTATION','#dce5f4',12)}else f.tenMahoragaAttackCd=.35}}
  if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);updateHud();if(f.hp<=0){f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
-function updateFighter(f,dt){if(f.dead)return;if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeTimer-=dt;if(f.awakeTimer<=0)endAwakening(f)}if(f.jackpot&&!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.meter<=0)endAwakening(f)}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+function updateFighter(f,dt){if(f.dead)return;if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeTimer-=dt;if(f.awakeTimer<=0)endAwakening(f)}if(f.jackpot&&!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.meter<=0)endAwakening(f)}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}let spd=f.block?.55:1;if(f.shadowTimer>0)spd*=1.7;if(f.char==='restless'&&f.jackpot&&f.rhythmStacks>0)spd*=1+Math.min(.5,f.rhythmStacks*.08);f.x+=f.vx*60*dt*spd;f.y+=f.vy*60*dt*spd;f.vx=clamp(f.vx,-15,15);f.vy=clamp(f.vy,-15,15);collideWorld(f);if(f.jump>0){f.jumpV-=20*dt;f.jump+=f.jumpV*dt;if(f.jump<=0){f.jump=0;f.jumpV=0;burst(f.x,f.y,'#d1d8e0',5,2)}}updateDomainContainment(f);f.walk+=dt*(Math.abs(f.vx)+Math.abs(f.vy))*.2;
 }
 function updateProjectiles(dt){
