@@ -1703,51 +1703,80 @@ function drawDomainHandsignPose(f,cx,headY,headR,theme,p){
  if(t>.62){const flash=clamp((t-.62)/.12,0,1)*(1-clamp((t-.9)/.1,0,1));ctx.save();ctx.globalAlpha=flash*.5;ctx.strokeStyle=theme.accent;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,headY+headR*.1,headR*.52+Math.sin(game.time*14)*2,0,Math.PI*2);ctx.stroke();ctx.restore()}
 }
 function drawDomainHandsignCutin(f,p,accent){
- const t=clamp(p,0,1),cx=W*.5,avatarY=H*.43;
- const theme=getFighterTheme(f),headR=clamp(Math.min(W,H)*.092,15,38);
+ const t=clamp(p,0,1),cx=W*.5,cy=H*.5;
+ const theme=getFighterTheme(f),compact=W/H<1.15;
+ const enter=clamp(t/.14,0,1),enterEase=1-Math.pow(1-enter,3);
+ const exit=clamp((t-.72)/.25,0,1),fold=exit*exit*(3-2*exit);
+ const panelW=compact?W*.88:W*.86,panelH=compact?H*.69:H*.66;
+ const panelScale=Math.max(.008,(.72+.28*enterEase)*(1-fold));
+ const tilt=-.075+fold*.62;
+ const slideX=fold*W*.34,slideY=fold*H*.12;
  ctx.save();
- // Keep the live street visible; this is a character popup over the game world.
- ctx.globalAlpha=.14;ctx.fillStyle='#070b10';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
- const pop=clamp(t/.18,0,1),spring=1+Math.sin(pop*Math.PI)*.08;
- const scale=headR/14.8*spring,headY=avatarY+(1-pop)*H*.06+Math.sin(game.time*8)*2;
- // Round faceless head and two floating pixel fists from the actual player design.
- ctx.save();ctx.globalAlpha=.24;ctx.fillStyle='#101719';ctx.beginPath();ctx.ellipse(cx,H*.77,headR*1.35,headR*.2,0,0,Math.PI*2);ctx.fill();ctx.restore();
- drawPixelatedCircle(cx,headY,headR*spring,theme,Math.max(2.4,headR/6));
- drawDomainHandsignPose(f,cx,headY,headR*spring,theme,t);
- // Panel opens as two halves from the center seam, holds, then folds diagonally inward.
- const ent=clamp(t/.13,0,1),enter=1-Math.pow(1-ent,3);
- const out=clamp((t-.72)/.25,0,1),fold=out*out*(3-2*out);
- const visible=Math.max(.012,enter*(1-fold));
- const half=W*.73,bandH=clamp(H*.115,34,66),bandY=H*.555;
- function panelHalf(side){
-  ctx.save();
-  ctx.translate(cx+side*half*.5*visible,bandY+side*fold*H*.13);
-  ctx.rotate(-.135+side*fold*.33);
-  ctx.scale(visible,Math.max(.025,1-fold*.7));
-  ctx.fillStyle='rgba(8,12,14,.72)';ctx.fillRect(-half*.5-3,-bandH/2-3,half+6,bandH+6);
-  ctx.fillStyle='#f6f6f1';ctx.fillRect(-half*.5,-bandH/2,half,bandH);
-  ctx.strokeStyle='#151a19';ctx.lineWidth=2;ctx.strokeRect(-half*.5,-bandH/2,half,bandH);
-  ctx.fillStyle='#b8bcb7';ctx.fillRect(-half*.5,-bandH/2,half,2);
-  ctx.fillStyle='#5d625f';ctx.fillRect(-half*.5,bandH/2-2,half,2);
-  ctx.restore();
- }
- panelHalf(-1);panelHalf(1);
- // Words are attached to their respective moving panel halves.
- ctx.save();ctx.globalAlpha=visible;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#151816';ctx.font='1000 '+clamp(W*.052,13,25)+'px system-ui';
- ctx.fillText('DOMAIN',cx-half*.48*visible,bandY-fold*H*.13);
- ctx.fillText('EXPANSION',cx+half*.48*visible,bandY+fold*H*.13);
- ctx.fillStyle=accent;ctx.fillRect(cx-2*visible,bandY-bandH*.48*visible,4*visible,bandH*.96*visible);
+ // Dim the real game world behind one continuous cut-in card.
+ ctx.globalAlpha=.52;ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+ // Everything below is drawn in the same transform: one panel, one character, one title.
+ ctx.save();
+ ctx.translate(cx+slideX,cy+slideY);
+ ctx.rotate(tilt);
+ ctx.scale(panelScale,panelScale);
+ const left=-panelW/2,top=-panelH/2;
+ const bg=ctx.createLinearGradient(left,top,left+panelW,top+panelH);
+ bg.addColorStop(0,'#fbfbf5');bg.addColorStop(.55,'#f0f2ed');bg.addColorStop(1,'#dce1df');
+ ctx.fillStyle=bg;ctx.fillRect(left,top,panelW,panelH);
+ ctx.strokeStyle='#171d20';ctx.lineWidth=3;ctx.strokeRect(left,top,panelW,panelH);
+ ctx.strokeStyle=accent;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(left+3,top+7);ctx.lineTo(left+panelW-3,top+7);ctx.stroke();
+ // Light graphic texture is part of the same single rectangle, not separate popup cards.
+ ctx.save();ctx.globalAlpha=.12;ctx.strokeStyle='#65737a';ctx.lineWidth=1;
+ for(let i=0;i<8;i++){const xx=left+panelW*(.04+i*.13);ctx.beginPath();ctx.moveTo(xx,top+panelH*.05);ctx.lineTo(xx+panelW*.09,top+panelH*.95);ctx.stroke()}
  ctx.restore();
- // As the popup folds away, its barrier circle contracts into a tiny seal at the avatar.
+ const headR=clamp(Math.min(panelW,panelH)*.125,21,55);
+ const avatarX=compact?0:-panelW*.245;
+ const avatarY=compact?-panelH*.16:-panelH*.035;
+ const poseProgress=clamp(t/.72,0,1);
+ const pop=enterEase,spring=1+Math.sin(pop*Math.PI)*.045;
+ const headScale=headR/14.8*spring;
+ // The player's exact round faceless pixel head and two animated hands sit INSIDE the panel.
+ const headGlow=ctx.createRadialGradient(avatarX,avatarY,headR*.35,avatarX,avatarY,headR*1.85);
+ headGlow.addColorStop(0,accent+'30');headGlow.addColorStop(1,accent+'00');
+ ctx.fillStyle=headGlow;ctx.beginPath();ctx.arc(avatarX,avatarY,headR*1.85,0,Math.PI*2);ctx.fill();
+ drawAccessoryAura(f,avatarX,avatarY,headScale);
+ drawPixelatedCircle(avatarX,avatarY,headR*spring,theme,Math.max(2.4,headR/6));
+ drawAccessoryOverlays(f,avatarX,avatarY,headScale);
+ drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress);
+ if(compact){
+  const titleY=panelH*.245;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172025';
+  ctx.font='1000 '+clamp(panelW*.085,17,30)+'px system-ui';
+  ctx.fillText('DOMAIN',0,titleY);
+  ctx.fillText('EXPANSION',0,titleY+clamp(panelH*.075,24,38));
+  ctx.fillStyle=accent;ctx.fillRect(-panelW*.17,titleY+clamp(panelH*.12,43,63),panelW*.34,4);
+  ctx.fillStyle='#53616a';ctx.font='900 '+clamp(panelW*.035,9,12)+'px system-ui';
+  ctx.fillText(domainName(f.domainType),0,titleY+clamp(panelH*.18,64,88));
+ }else{
+  const tx=panelW*.205;
+  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172025';
+  ctx.font='1000 '+clamp(panelW*.061,22,42)+'px system-ui';
+  ctx.fillText('DOMAIN',tx,-panelH*.105);
+  ctx.fillText('EXPANSION',tx,panelH*.035);
+  ctx.fillStyle=accent;ctx.fillRect(tx-panelW*.13,panelH*.115,panelW*.26,5);
+  ctx.fillStyle='#53616a';ctx.font='900 '+clamp(panelW*.022,10,15)+'px system-ui';
+  ctx.fillText(domainName(f.domainType),tx,panelH*.205);
+  ctx.textAlign='left';ctx.fillStyle='#77838a';ctx.font='900 '+clamp(panelW*.016,8,11)+'px system-ui';
+  ctx.fillText('領域展開',left+panelW*.06,top+panelH*.14);
+ }
+ ctx.restore();
+ // The single panel folds away as one piece; the circular seal then contracts around the avatar.
  const seal=clamp((t-.76)/.24,0,1),se=seal*seal*(3-2*seal);
  if(seal>0){
+  const sealX=cx+slideX+(compact?0:-panelW*.245),sealY=cy+slideY+(compact?-panelH*.16:-panelH*.035);
   const radius=Math.max(2,Math.max(W,H)*.72*(1-se)+2),dark=f.domainType==='shrine'||f.domainType==='soul';
   ctx.save();ctx.globalAlpha=.14+.2*seal;ctx.fillStyle=dark?'#030406':'#eef4ff';ctx.fillRect(0,0,W,H);
   ctx.globalAlpha=.94*(1-se*.32);ctx.strokeStyle=dark?'#08090d':accent;ctx.lineWidth=clamp(Math.min(W,H)*.016,3,8);ctx.shadowBlur=18;ctx.shadowColor=accent;
-  ctx.beginPath();ctx.arc(cx,headY,radius,0,Math.PI*2);ctx.stroke();
-  ctx.globalAlpha=.75;ctx.strokeStyle='#f7f8f5';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,headY,radius*.955,0,Math.PI*2);ctx.stroke();
-  const core=ctx.createRadialGradient(cx,headY,1,cx,headY,Math.max(3,radius*.3));core.addColorStop(0,'rgba(255,255,255,.96)');core.addColorStop(.25,accent+'bb');core.addColorStop(1,accent+'00');
-  ctx.globalAlpha=se;ctx.fillStyle=core;ctx.beginPath();ctx.arc(cx,headY,Math.max(3,radius*.3),0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.arc(sealX,sealY,radius,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=.75;ctx.strokeStyle='#f7f8f5';ctx.lineWidth=2;ctx.beginPath();ctx.arc(sealX,sealY,radius*.955,0,Math.PI*2);ctx.stroke();
+  const core=ctx.createRadialGradient(sealX,sealY,1,sealX,sealY,Math.max(3,radius*.3));
+  core.addColorStop(0,'rgba(255,255,255,.96)');core.addColorStop(.25,accent+'bb');core.addColorStop(1,accent+'00');
+  ctx.globalAlpha=se;ctx.fillStyle=core;ctx.beginPath();ctx.arc(sealX,sealY,Math.max(3,radius*.3),0,Math.PI*2);ctx.fill();
   ctx.restore();
  }
  ctx.restore();
