@@ -637,7 +637,7 @@ function playAwakeningCutscene(f){
  el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
  game.cutsceneTimer=1.55;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
 }
-function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE'})[type]||'DOMAIN EXPANSION'}
+function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
 function damageBuildingAlongRay(f,angle,maxRange=1000){
  if(!f||!Number.isFinite(angle))return false;
  const aim=aimedAt(f),aimDistance=Math.hypot(aim.x-f.x,aim.y-f.y);
@@ -671,7 +671,7 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
  }
  return true;
 }
-const CLASHABLE_DOMAINS=['void','shrine','soul','hakari','yuta'];
+const CLASHABLE_DOMAINS=['void','shrine','soul','hakari','yuta','trash'];
 function canDomainClash(a,b){
  if(!a||!b||a.dead||b.dead||!CLASHABLE_DOMAINS.includes(a.domainType)||!CLASHABLE_DOMAINS.includes(b.domainType))return false;
  const at=Number.isFinite(a.domainCastStartedAt)?a.domainCastStartedAt:(a.domainOpenedAt||game.time),bt=Number.isFinite(b.domainCastStartedAt)?b.domainCastStartedAt:(b.domainOpenedAt||game.time);
@@ -768,6 +768,7 @@ function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
 }
 function activateDomain(f){
  f.domainWindup=0;f.domainWindupStart=0;f.domainState='active';f.domainTimer=f.domainDuration;f.domainHitApplied=true;f.domainFlashTimer=.92;f.domainOpenedAt=game.time;captureDomainOccupants(f);
+ if(f.domainType==='trash'){f.trashGoldenCanX=f.domainCenterX;f.trashGoldenCanY=f.domainCenterY+(f.domainRadius||430)*.18;f.trashDomainCanAvailable=true;f.trashGoldenCanCarried=false;f.trashDomainCanCooldown=0}
  burst(f.x,f.y,f.domainType==='void'?'#c8d8ff':f.domainType==='shrine'?'#f34a60':'#9ce5d4',58,9);addDebris(f.x,f.y,f.domainType==='shrine'?'#8e273a':'#434b5b',10);game.shake=Math.max(game.shake,14);
  const t=targetOf(f),d=Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY);
  if(!t.dead&&d<=f.domainRadius&&t.domainInsideOwner===f){
@@ -801,7 +802,7 @@ function updateDomainState(f,dt){
    f.domainTick-=dt;if(f.domainTick<=0){f.domainTick=.32;if(inside){damage(t,1.5*f.domainPower,f,{stun:.05,color:'#84d1c1',ignoreInvuln:true,damageType:'domain'});burst(t.x+rnd(-48,48),t.y+rnd(-48,48),'#9de4d5',2,2)}}
   }
   }
-  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
+  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}if(f.domainType==='trash'){f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
  }
  if(f.bloodRain){
   const b=f.bloodRain;b.life-=dt;b.tick-=dt;const t=targetOf(f);
@@ -2183,7 +2184,7 @@ function drawDomainClashArena(){
  const q=game.domainClash;if(!q)return;
  const a=q.members[0],b=q.members[1],cx=sx((a.x+b.x)*.5),cy=sy((a.y+b.y)*.5),r=430;
  if(cx+r<0||cy+r<0||cx-r>W||cy-r>H)return;
- const colors={void:'#7ea8ff',shrine:'#ff536b',soul:'#8fe0cc',hakari:'#d5a4ff',yuta:'#f0c9ee'};
+ const colors={void:'#7ea8ff',shrine:'#ff536b',soul:'#8fe0cc',hakari:'#d5a4ff',yuta:'#f0c9ee',trash:'#b2c98c'};
  const c1=colors[a.domainType]||'#78caff',c2=colors[b.domainType]||'#ff788e',pulse=1+Math.sin(game.time*7)*.025;
  ctx.save();
  const shell=ctx.createRadialGradient(cx-r*.25,cy-r*.34,8,cx,cy,r*1.08);
@@ -2217,7 +2218,7 @@ const domainFrameCache=new WeakMap();
 function drawDomainOutsideShell(f){
  const cx=sx(Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x),cy=sy(Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y),r=f.domainRadius||430;
  if(cx+r<0||cy+r<0||cx-r>W||cy-r>H)return;
- const white=f.domainType==='void'||f.domainType==='hakari',edge=white?'#e9efff':'#050609',glow=f.domainType==='void'?'#9db8ff':f.domainType==='hakari'?'#d8b9ff':f.domainType==='shrine'?'#8f182f':f.domainType==='yuta'?'#d8bddf':'#438e83';
+ const white=f.domainType==='void'||f.domainType==='hakari',edge=white?'#e9efff':'#050609',glow=f.domainType==='void'?'#9db8ff':f.domainType==='hakari'?'#d8b9ff':f.domainType==='shrine'?'#8f182f':f.domainType==='yuta'?'#d8bddf':f.domainType==='trash'?'#95a96d':'#438e83';
  ctx.save();const shell=ctx.createRadialGradient(cx-r*.28,cy-r*.36,Math.max(2,r*.025),cx,cy,r*1.08);
  shell.addColorStop(0,'#323844');shell.addColorStop(.22,'#11151d');shell.addColorStop(.68,'#030407');shell.addColorStop(1,'#000');
  ctx.fillStyle=shell;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
@@ -2227,7 +2228,7 @@ function drawDomainOutsideShell(f){
 }
 function drawDomainInsideBoundary(f){
  const cx=sx(Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x),cy=sy(Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y),r=f.domainRadius||430;
- const white=f.domainType==='void'||f.domainType==='hakari',edge=white?'#f4f6ff':'#08090c',accent=f.domainType==='void'?'#aebfff':f.domainType==='hakari'?'#d8b9ff':f.domainType==='shrine'?'#ff536b':f.domainType==='yuta'?'#edcbed':'#8fe0cc';
+ const white=f.domainType==='void'||f.domainType==='hakari',edge=white?'#f4f6ff':'#08090c',accent=f.domainType==='void'?'#aebfff':f.domainType==='hakari'?'#d8b9ff':f.domainType==='shrine'?'#ff536b':f.domainType==='yuta'?'#edcbed':f.domainType==='trash'?'#abc98b':'#8fe0cc';
  ctx.save();ctx.globalAlpha=.2;ctx.strokeStyle=accent;ctx.lineWidth=28;ctx.shadowBlur=24;ctx.shadowColor=accent;ctx.beginPath();ctx.arc(cx,cy,r-9,0,Math.PI*2);ctx.stroke();
  ctx.globalAlpha=.95;ctx.strokeStyle=edge;ctx.lineWidth=white?5:8;ctx.shadowBlur=white?16:5;ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.stroke();
  ctx.globalAlpha=.65;ctx.strokeStyle=white?'#fff':accent;ctx.lineWidth=1.5;ctx.shadowBlur=0;ctx.beginPath();ctx.arc(cx,cy,r-16,0,Math.PI*2);ctx.stroke();
@@ -2244,7 +2245,7 @@ function drawDomainArena(f){
  const type=f.domainType;
  if(f.domainWindup>0){if(!player||Math.hypot(player.x-f.x,player.y-f.y)<(f.domainRadius||430)+150)renderDomainArenaFrame(f);return}
  if(type==='void02'){drawVoid02Bubble(f);return}
- if(f.domainTimer<=0||!['void','shrine','soul','hakari','yuta'].includes(type))return;
+ if(f.domainTimer<=0||!['void','shrine','soul','hakari','yuta','trash'].includes(type))return;
  if(!domainViewIsInside(f)){drawDomainOutsideShell(f);return}
  let cache=domainFrameCache.get(f);
  if(!cache){cache={canvas:document.createElement('canvas'),last:-Infinity,width:0,height:0,scale:0,type:''};domainFrameCache.set(f,cache)}
@@ -2371,6 +2372,36 @@ function drawYutaDomainInterior(cx,cy,r,f){
  for(let i=0;i<50;i++){const x=cx-r+((i*61+game.time*4)%(r*2)),y=cy-r+((i*37-game.time*11)%(r*2));ctx.globalAlpha=.25+.3*Math.sin(game.time*2+i);ctx.fillStyle=i%3?'#a9d0bc':'#e2d7b4';ctx.fillRect(x,y,2+(i%3),2+(i%3))}
  ctx.restore();
 }
+function drawTrashDomainInterior(cx,cy,r){
+ ctx.save();
+ const sky=ctx.createLinearGradient(0,cy-r,0,cy+r);sky.addColorStop(0,'#171e19');sky.addColorStop(.25,'#384333');sky.addColorStop(.52,'#59634a');sky.addColorStop(.76,'#35372b');sky.addColorStop(1,'#171b17');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ const haze=ctx.createRadialGradient(cx,cy-r*.28,8,cx,cy-r*.28,r*1.15);haze.addColorStop(0,'rgba(181,206,128,.42)');haze.addColorStop(.45,'rgba(114,145,91,.2)');haze.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=haze;ctx.fillRect(0,0,W,H);
+ for(let i=0;i<25;i++){const x=cx-r+((i*113+game.time*4)%(r*2)),y=cy-r*.7+(i%7)*r*.12;ctx.globalAlpha=.1+(i%4)*.035;ctx.fillStyle=i%2?'#9aab79':'#222c22';ctx.beginPath();ctx.ellipse(x,y,42+(i%5)*18,13+(i%3)*9,Math.sin(i)*.18,0,Math.PI*2);ctx.fill()}
+ // Cranes, smokestacks, and conveyor structures on the far ridge.
+ for(let i=0;i<8;i++){const x=cx-r*.9+i*r*.26,base=cy-r*.05+(i%3)*r*.04,h=r*(.25+(i%4)*.07);ctx.fillStyle='#1f2925';ctx.fillRect(x-7,base-h,14,h);ctx.fillRect(x-r*.095,base-h,r*.19,7);ctx.strokeStyle='#71816a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-r*.15,base-h);ctx.lineTo(x,base-h-r*.1);ctx.lineTo(x+r*.16,base-h);ctx.moveTo(x-r*.1,base-h+8);ctx.lineTo(x+r*.1,base);ctx.stroke();ctx.fillStyle='#b4bd7b';ctx.fillRect(x-4,base-h-5,8,5)}
+ for(let i=0;i<5;i++){const x=cx-r*.82+i*r*.4,y=cy-r*.18+(i%2)*r*.08;ctx.fillStyle='#202723';ctx.fillRect(x-13,y-r*.29,26,r*.3);ctx.fillStyle='#596a53';ctx.fillRect(x-17,y-r*.31,34,7);ctx.strokeStyle='#9ba77b';ctx.lineWidth=2;ctx.strokeRect(x-13,y-r*.29,26,r*.3)}
+ const bag=(x,y,s,shade,rot=0)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.fillStyle='#111916';ctx.fillRect(-s*.48,-s*.3,s*.96,s*.72);ctx.fillStyle=shade;ctx.beginPath();ctx.ellipse(0,-s*.1,s*.48,s*.34,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#a3a98b';ctx.globalAlpha=.22;ctx.fillRect(-s*.3,-s*.18,s*.6,3);ctx.strokeStyle='#080d0a';ctx.lineWidth=2;ctx.strokeRect(-s*.48,-s*.3,s*.96,s*.72);ctx.restore()};
+ const box=(x,y,w,h,shade,rot=0)=>{ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.fillStyle='#111611';ctx.fillRect(-w/2-2,-h/2-2,w+4,h+4);ctx.fillStyle=shade;ctx.fillRect(-w/2,-h/2,w,h);ctx.strokeStyle='#9b9b6d';ctx.lineWidth=1;ctx.strokeRect(-w/2,-h/2,w,h);ctx.beginPath();ctx.moveTo(-w/2,-h/2);ctx.lineTo(0,0);ctx.lineTo(w/2,-h/2);ctx.moveTo(0,0);ctx.lineTo(0,h/2);ctx.stroke();ctx.restore()};
+ // Large heaps of tied refuse bags and crushed boxes.
+ for(let i=0;i<38;i++){const x=cx-r+((i*89+17)%(r*2)),y=cy+r*(.13+(i%5)*.09),s=24+(i%6)*12;bag(x,y,s,i%2?'#303c32':'#46513a',Math.sin(i*3)*.28);if(i%3===0)box(x+s*.6,y+5,s*.9,s*.68,i%2?'#6b5d42':'#8a7651',Math.sin(i)*.2)}
+ // Conveyor belt and crane boom across the left mound.
+ ctx.strokeStyle='#111916';ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(cx-r*.82,cy-r*.12);ctx.lineTo(cx-r*.82,cy-r*.58);ctx.lineTo(cx-r*.2,cy-r*.58);ctx.stroke();ctx.strokeStyle='#a4b181';ctx.lineWidth=3;ctx.stroke();
+ ctx.strokeStyle='#202722';ctx.lineWidth=18;ctx.beginPath();ctx.moveTo(cx-r*.95,cy+r*.08);ctx.lineTo(cx-r*.56,cy-r*.12);ctx.lineTo(cx-r*.23,cy+r*.04);ctx.stroke();ctx.strokeStyle='#8f9a70';ctx.lineWidth=3;ctx.stroke();
+ for(let i=0;i<6;i++){const x=cx-r*.9+i*r*.12,y=cy+r*.055-i*r*.035;ctx.fillStyle='#aeb78a';ctx.fillRect(x,y,8,4)}
+ // A crushed refrigerator and stacked tyres.
+ ctx.save();ctx.translate(cx+r*.68,cy+r*.13);ctx.rotate(-.13);ctx.fillStyle='#141c1b';ctx.fillRect(-r*.16,-r*.22,r*.32,r*.44);ctx.fillStyle='#59615a';ctx.fillRect(-r*.14,-r*.2,r*.28,r*.4);ctx.strokeStyle='#9ba39a';ctx.lineWidth=3;ctx.strokeRect(-r*.14,-r*.2,r*.28,r*.4);ctx.fillStyle='#222e2a';ctx.fillRect(-r*.11,-r*.13,r*.22,r*.08);ctx.restore();
+ for(let i=0;i<3;i++){const x=cx+r*.85,y=cy+r*(.26+i*.13);ctx.strokeStyle='#151c18';ctx.lineWidth=13;ctx.beginPath();ctx.ellipse(x,y,r*.105,r*.055,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#697461';ctx.lineWidth=4;ctx.beginPath();ctx.ellipse(x,y,r*.105,r*.055,0,0,Math.PI*2);ctx.stroke()}
+ // Compacted earth with tyre ruts and litter.
+ const ground=ctx.createLinearGradient(0,cy+r*.28,0,H);ground.addColorStop(0,'#52533c');ground.addColorStop(.28,'#34382c');ground.addColorStop(1,'#191e19');ctx.fillStyle=ground;ctx.fillRect(0,cy+r*.28,W,H-cy-r*.28);
+ for(let i=0;i<17;i++){const y=cy+r*(.3+i*.045);ctx.globalAlpha=.24;ctx.strokeStyle=i%2?'#77785a':'#191e18';ctx.lineWidth=i%3===0?5:2;ctx.beginPath();ctx.moveTo(0,y);ctx.bezierCurveTo(cx-r*.35,y+Math.sin(i)*15,cx+r*.35,y-Math.cos(i)*12,W,y+Math.sin(i*2)*8);ctx.stroke()}
+ for(let i=0;i<34;i++){const x=cx-r+((i*67)%(r*2)),y=cy+r*(.37+(i%7)*.085),w=8+(i%5)*8,h=3+(i%3)*3;ctx.save();ctx.translate(x,y);ctx.rotate(i*.51);ctx.fillStyle=['#b2b7a0','#a68f68','#718b84','#7d8a57'][i%4];ctx.fillRect(-w/2,-h/2,w,h);ctx.strokeStyle='#1b241d';ctx.lineWidth=1;ctx.strokeRect(-w/2,-h/2,w,h);ctx.restore()}
+ for(let i=0;i<12;i++){const x=cx-r+((i*101+13)%(r*2)),y=cy+r*(.72+(i%3)*.055),s=18+(i%4)*10;bag(x,y,s,i%2?'#252c25':'#414a36',Math.sin(i)*.2)}
+ for(let i=0;i<7;i++){const x=cx-r*.75+i*r*.25,y=cy+r*.78+(i%2)*r*.05;box(x,y,r*.12,r*.075,i%2?'#8c7048':'#66543a',Math.sin(i*5)*.14)}
+ // Toxic wisps and flies.
+ for(let i=0;i<18;i++){const a=i*2.399+game.time*.09,rr=r*(.22+(i%5)*.12),x=cx+Math.cos(a)*rr,y=cy+Math.sin(a)*rr*.62;ctx.globalAlpha=.16+.12*Math.sin(game.time*3+i);ctx.fillStyle='#a9cf77';ctx.beginPath();ctx.ellipse(x,y,12+i%4*5,8+i%3*5,a*.3,0,Math.PI*2);ctx.fill()}
+ for(let i=0;i<22;i++){const x=cx-r+((i*73+game.time*(12+i%5))%(r*2)),y=cy-r*.3+((i*41+Math.sin(game.time*4+i)*15)%(r*1.2));ctx.globalAlpha=.42;ctx.fillStyle='#d0d4a4';ctx.fillRect(x,y,2,2);ctx.fillRect(x+4,y-2,2,2)}
+ ctx.restore();
+}
 function renderDomainArenaFrame(f){
  const type=f.domainType;
  const focusX=W*.5,focusY=H*.5;
@@ -2385,7 +2416,7 @@ function renderDomainArenaFrame(f){
   const g=ctx.createRadialGradient(focusX,focusY,5,focusX,focusY,Math.max(W,H)*.72);g.addColorStop(0,'rgba(222,232,255,.9)');g.addColorStop(.15,'rgba(89,118,205,.25)');g.addColorStop(1,'rgba(2,5,17,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   ctx.strokeStyle='#f0f4ff';ctx.lineWidth=5;ctx.beginPath();ctx.arc(focusX,focusY,115+(1-a)*220,0,Math.PI*2);ctx.stroke();ctx.restore();return;
  }
- if(f.domainTimer<=0||!['void','shrine','soul','hakari','yuta'].includes(type))return;
+ if(f.domainTimer<=0||!['void','shrine','soul','hakari','yuta','trash'].includes(type))return;
  const cx=focusX,cy=focusY;
  ctx.save();
  // The active domain opens outward from the collapsed cut-in seal.
@@ -2393,6 +2424,7 @@ function renderDomainArenaFrame(f){
  // Five bespoke environments: every major landmark is composed from layered canvas geometry.
  const domainR=f.domainRadius||430;
  if(type==='void')drawVoidDomainInterior(cx,cy,domainR);
+  else if(type==='trash')drawTrashDomainInterior(cx,cy,domainR);
  else if(type==='shrine')drawShrineDomainInterior(cx,cy,domainR);
  else if(type==='hakari')drawHakariDomainInterior(cx,cy,domainR,f);
  else if(type==='yuta')drawYutaDomainInterior(cx,cy,domainR,f);
