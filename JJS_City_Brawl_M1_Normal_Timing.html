@@ -1116,9 +1116,7 @@ function trashManUseSkill(f,idx,t,angle){
   if(idx===2){
    f.skillCd[2]=19;setMotion(f,'trashManBigCan',.72,angle,t);
    const x=clamp(f.x+Math.cos(angle)*98,45,WORLD.w-45),y=clamp(f.y+Math.sin(angle)*98,45,WORLD.h-45);
-   f.trashGiantCan={x,y,life:7.5,tick:.55,owner:f,radius:104};burst(x,y,'#a9b2a8',24,6);addDebris(x,y,'#65716e',12);
-   for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&dist(target,{x,y})<112){const a=Math.atan2(target.y-y,target.x-x);damage(target,9,f,{stun:.48,kx:Math.cos(a)*7,ky:Math.sin(a)*7,color:'#a9c58d',big:true,ignoreInvuln:true})}
-   popText(x,y-55,'GIANT BIN DROP','#d8e8c0',14);return;
+   f.trashGiantCan={x,y,life:7.5,tick:.55,dropTimer:.28,landed:false,owner:f,radius:104};burst(x,y,'#a9b2a8',18,5);popText(x,y-55,'GIANT BIN DROP','#d8e8c0',14);return;
   }
   if(idx===3){f.skillCd[3]=22;f.trashBarrageTimer=2.15;f.trashBarrageTick=.05;f.trashBarrageAngle=angle;setMotion(f,'trashManCanBarrage',2.15,angle,t);f.attackAnim=2.15;burst(f.x,f.y,'#a6c98b',14,3);return}
  }else{
@@ -1134,7 +1132,7 @@ function trashManUseSkill(f,idx,t,angle){
 }
 function updateTrashManEffects(f,dt){
  if(!f||f.char!=='trashman')return;
- if(f.trashGiantCan){const g=f.trashGiantCan;g.life-=dt;g.tick-=dt;if(g.tick<=0){g.tick=.72;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,2.8,f,{stun:.12,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,color:'#9fb982',ignoreInvuln:true})}if(g.life>0)burst(g.x+rnd(-24,24),g.y+rnd(-24,24),'#9aa88d',3,2)}if(g.life<=0)f.trashGiantCan=null}
+ if(f.trashGiantCan){const g=f.trashGiantCan;g.life-=dt;if(!g.landed){g.dropTimer=Math.max(0,(g.dropTimer||0)-dt);if(g.dropTimer===0){g.landed=true;game.shake=Math.max(game.shake,8);burst(g.x,g.y,'#c5d0b2',34,8);addDebris(g.x,g.y,'#65716e',15);for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius+12){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,9,f,{stun:.48,kx:Math.cos(a)*7,ky:Math.sin(a)*7,color:'#a9c58d',big:true,ignoreInvuln:true})}}}if(g.landed){g.tick-=dt;if(g.tick<=0){g.tick=.72;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,2.8,f,{stun:.12,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,color:'#9fb982',ignoreInvuln:true})}if(g.life>0)burst(g.x+rnd(-24,24),g.y+rnd(-24,24),'#9aa88d',3,2)}}if(g.life<=0)f.trashGiantCan=null}
  if(f.trashStinkArea){const a=f.trashStinkArea;a.life-=dt;a.tick-=dt;if(a.tick<=0){a.tick=.52;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-a.x,target.y-a.y)<a.radius){damage(target,2.1,f,{stun:.12,color:'#9cc66d',ignoreInvuln:true});burst(target.x+rnd(-16,16),target.y+rnd(-14,14),'#91b86a',3,2)}}if(a.life<=0)f.trashStinkArea=null}
  if(f.trashBarrageTimer>0){f.trashBarrageTimer=Math.max(0,f.trashBarrageTimer-dt);f.trashBarrageTick-=dt;if(f.trashBarrageTick<=0){f.trashBarrageTick=.19;const a=f.trashBarrageAngle;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f){const d=dist(f,target),da=Math.atan2(target.y-f.y,target.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-a),Math.cos(da-a)));if(d<168&&arc<1.05){damage(target,1.65,f,{stun:.08,kx:Math.cos(a)*.7,ky:Math.sin(a)*.7,color:'#c4d5ab',ignoreInvuln:true});burst(target.x,target.y,'#b1cc8e',2,2)}}}if(f.trashBarrageTimer<=0){if(f.motion&&f.motion.name==='trashManCanBarrage')f.motion=null;f.attackAnim=0}}
  if(f.trashBodyBarrageTimer>0){f.trashBodyBarrageTimer=Math.max(0,f.trashBodyBarrageTimer-dt);f.trashBodyBarrageTick-=dt;if(f.trashBodyBarrageTick<=0){f.trashBodyBarrageTick=.145;const base=f.trashBodyBarrageAngle;for(let i=0;i<3;i++){const angle=base+(i-1)*.33+rnd(-.08,.08),speed=rnd(10,14),x=f.x+Math.cos(angle)*20,y=f.y+Math.sin(angle)*20;projectiles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:9,life:1.05,maxDistance:370,travelled:0,owner:f,kind:'trashJunk',damage:2.2,color:i%2?'#9dbb79':'#aeb7a1'})}burst(f.x,f.y,'#a8c68b',3,2)}if(f.trashBodyBarrageTimer<=0&&f.motion&&f.motion.name==='trashManEruption')f.motion=null}
@@ -2036,15 +2034,19 @@ function drawTrashManDomainCan(){
  if(!owner||!domainViewIsInside(owner))return;
  const x=Number.isFinite(owner.trashGoldenCanX)?owner.trashGoldenCanX:owner.domainCenterX;
  const y=Number.isFinite(owner.trashGoldenCanY)?owner.trashGoldenCanY:owner.domainCenterY+(owner.domainRadius||430)*.18;
- if(owner.trashGoldenCanCarried)drawGoldenTrashCanScreen(sx(owner.x+Math.cos(owner.face)*32),sy(owner.y+Math.sin(owner.face)*32)-8,.84,owner.face);
- else if(owner.trashDomainCanAvailable)drawGoldenTrashCanScreen(sx(x),sy(y),1.35,Math.sin(game.time*1.1)*.035);
-}
+ if(owner.trashGoldenCanCarried){
+  const px=sx(owner.x+Math.cos(owner.face)*32),py=sy(owner.y+Math.sin(owner.face)*32)-8;drawGoldenTrashCanScreen(px,py,.84,owner.face);
+  ctx.save();ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#080b0a';ctx.fillRect(px-38,py-48,76,17);ctx.fillStyle='#fff0a8';ctx.fillText('E · THROW',px,py-36);ctx.restore();
+ }else if(owner.trashDomainCanAvailable){
+  const px=sx(x),py=sy(y);drawGoldenTrashCanScreen(px,py,1.35,Math.sin(game.time*1.1)*.035);
+  if(Math.hypot(owner.x-x,owner.y-y)<150){ctx.save();ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#080b0a';ctx.fillRect(px-43,py-50,86,17);ctx.fillStyle='#fff0a8';ctx.fillText('E · PICK UP',px,py-38);ctx.restore()}
+ }
 function drawTrashManEffects(){
  for(const f of [player,enemy]){
   if(!f||f.dead||f.char!=='trashman')continue;
   const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))continue;
   if(f.trashGiantCan){
-   const g=f.trashGiantCan,x=sx(g.x),y=sy(g.y);ctx.save();ctx.globalAlpha=.15;ctx.fillStyle='#a3bb84';ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.8;ctx.strokeStyle='#a4b68d';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();drawTrashCan(g.x,g.y,1.9,Math.sin(game.time*1.8)*.035,0);
+   const g=f.trashGiantCan,x=sx(g.x),y=sy(g.y);ctx.save();ctx.globalAlpha=.15;ctx.fillStyle='#a3bb84';ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.8;ctx.strokeStyle='#a4b68d';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();const fallOffset=(g.dropTimer||0)>0?(g.dropTimer||0)*330:0;drawTrashCan(g.x,g.y-fallOffset,1.9+Math.max(0,g.dropTimer||0)*.7,Math.sin(game.time*1.8)*.035,0);
   }
   if(f.trashStinkArea){
    const a=f.trashStinkArea,x=sx(a.x),y=sy(a.y),r=a.radius;ctx.save();const fog=ctx.createRadialGradient(x,y,5,x,y,r);fog.addColorStop(0,'rgba(132,173,91,.4)');fog.addColorStop(.62,'rgba(132,173,91,.2)');fog.addColorStop(1,'rgba(132,173,91,0)');ctx.fillStyle=fog;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#9ec66e';ctx.globalAlpha=.62;ctx.setLineDash([9,6]);ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y,r*.82+Math.sin(game.time*4)*5,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
