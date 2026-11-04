@@ -1655,58 +1655,56 @@ function drawPixelSignHand(x,y,scale,rotation,skin,sleeve,variant='palm'){
  ctx.restore();
 }
 function drawDomainHandsignCutin(f,p,accent){
- const meta={
-  honored:{name:'SATORU GOJO',sign:'ONE-HAND CROSSED-FINGER SEAL',type:'gojo'},
-  vessel:{name:'RYOMEN SUKUNA',sign:'ENMA PALM · TWO-HAND SEAL',type:'sukuna'},
-  restless:{name:'KINJI HAKARI',sign:'TWO-HAND DOMAIN SIGN',type:'hakari'},
-  perfection:{name:'MAHITO',sign:'MINIATURE TRANSFIGURED HANDS',type:'mahito'}
- }[f.char]||{name:CHARS[f.char].name,sign:'DOMAIN HAND SIGN',type:'generic'};
- const baseW=780,bw=Math.min(W-32,baseW),scale=bw/baseW,bh=190,bx=(W-bw)/2,by=H*.55-bh/2;
- const enter=clamp(p/.2,0,1),lift=(1-enter)*48,theme=getFighterTheme(f),look=getFighterLook(f),skin=look.skin||'#c99c82';
- const X=v=>bx+v*scale,Y=v=>by+lift+v;
- ctx.save();ctx.globalAlpha=.52+.16*p;ctx.fillStyle='#02050b';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
- // Clean two-column cut-in: character/sign at left, domain name and cast progress at right.
- ctx.fillStyle='#050910f5';ctx.fillRect(bx,by+lift,bw,bh);
- ctx.fillStyle=accent;ctx.fillRect(bx,by+lift,bw,4);ctx.fillRect(bx,by+lift+bh-4,bw,4);
- ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(bx+1,by+lift+1,bw-2,bh-2);
- const hx=X(91),hy=Y(99),settle=clamp((p-.12)/.72,0,1),rise=1-settle;
- // A small featureless pixel-circle head; no eyes, mouth, hair, or extra accessories.
- ctx.fillStyle='#0c1720';ctx.fillRect(hx-28*scale,hy+29*scale,56*scale,6*scale);
- drawAccessoryAura(f,hx,hy-16*scale,scale);drawPixelatedCircle(hx,hy-16*scale,15*scale,theme,2.25*scale);drawAccessoryOverlays(f,hx,hy-16*scale,scale);
- // The hands float close to the head, matching the game's compact circle-and-fist character style.
- if(meta.type==='gojo'){
-  // One raised crossed-finger hand, with the support fist held lower.
-  drawPixelSignHand(X(148-rise*5),Y(88-rise*8),.72*scale,-.12,skin,theme.main,'gojo');
-  drawPixelSignHand(X(175+rise*3),Y(137),.48*scale,.35,skin,theme.main,'fist');
- }else if(meta.type==='sukuna'){
-  // Sukuna's Enma palm seal: both palms face inward and meet centrally.
-  drawPixelSignHand(X(145-rise*6),Y(109-rise*8),.67*scale,.1,skin,theme.main,'sukuna');
-  drawPixelSignHand(X(184+rise*6),Y(109-rise*8),.67*scale,Math.PI-.1,skin,theme.main,'sukuna');
-  drawBlockLink(X(160),Y(94),X(170),Y(94),3.5*scale,skin);
- }else if(meta.type==='hakari'){
-  // Two hands rise from chest level and clasp into Hakari's domain sign.
-  drawPixelSignHand(X(145-rise*5),Y(110-rise*8),.68*scale,.2,skin,theme.main,'hakari');
-  drawPixelSignHand(X(184+rise*5),Y(110-rise*8),.68*scale,Math.PI-.2,skin,theme.main,'hakari');
-  ctx.strokeStyle=accent;ctx.lineWidth=2.2*scale;ctx.beginPath();ctx.moveTo(X(159),Y(82));ctx.lineTo(X(165),Y(76));ctx.lineTo(X(171),Y(82));ctx.stroke();
- }else if(meta.type==='mahito'){
-  // The miniature hands form the seal directly in front of Mahito's plain head.
-  const centerX=X(166),centerY=Y(108),radius=(14-3*p)*scale;
-  for(let i=0;i<4;i++){
-   const a=i*Math.PI/2+(1-p)*.22,px=centerX+Math.cos(a)*radius,py=centerY+Math.sin(a)*radius;
-   ctx.save();ctx.translate(px,py);ctx.rotate(a+Math.PI/2);drawPixelSignHand(0,0,.34*scale,0,skin,theme.main,'palm');ctx.restore();
-  }
-  ctx.strokeStyle=accent;ctx.globalAlpha=.8;ctx.lineWidth=2*scale;ctx.beginPath();ctx.arc(centerX,centerY,7*scale+3*scale*Math.sin(p*Math.PI),0,Math.PI*2);ctx.stroke();
- }else{
-  drawPixelSignHand(X(148),Y(110),.68*scale,0,skin,theme.main,'palm');
-  drawPixelSignHand(X(186),Y(110),.68*scale,Math.PI,skin,theme.main,'palm');
+ const t=clamp(p,0,1),cx=W*.5,avatarY=H*.53;
+ const theme=getFighterTheme(f),headR=clamp(Math.min(W,H)*.092,15,38);
+ ctx.save();
+ // Keep the live street visible; this is a character popup over the game world.
+ ctx.globalAlpha=.14;ctx.fillStyle='#070b10';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+ const pop=clamp(t/.18,0,1),spring=1+Math.sin(pop*Math.PI)*.08;
+ const scale=headR/14.8*spring,headY=avatarY+(1-pop)*H*.06+Math.sin(game.time*8)*2;
+ // Round faceless head and two floating pixel fists from the actual player design.
+ ctx.save();ctx.globalAlpha=.24;ctx.fillStyle='#101719';ctx.beginPath();ctx.ellipse(cx,H*.77,headR*1.35,headR*.2,0,0,Math.PI*2);ctx.fill();ctx.restore();
+ drawPixelatedCircle(cx,headY,headR*spring,theme,Math.max(2.4,headR/6));
+ const spread=headR*(1.55+.15*Math.sin(pop*Math.PI)),hy=headY+headR*.9-(1-pop)*headR*.55;
+ const swing=Math.sin(game.time*5)*.08;
+ drawFloatingHand(cx-spread,hy,-.18-swing,theme,scale*.96);
+ drawFloatingHand(cx+spread,hy,.18+swing,theme,scale*.96);
+ // Panel opens as two halves from the center seam, holds, then folds diagonally inward.
+ const ent=clamp(t/.13,0,1),enter=1-Math.pow(1-ent,3);
+ const out=clamp((t-.72)/.25,0,1),fold=out*out*(3-2*out);
+ const visible=Math.max(.012,enter*(1-fold));
+ const half=W*.73,bandH=clamp(H*.115,34,66),bandY=H*.555;
+ function panelHalf(side){
+  ctx.save();
+  ctx.translate(cx+side*half*.5*visible,bandY+side*fold*H*.13);
+  ctx.rotate(-.135+side*fold*.33);
+  ctx.scale(visible,Math.max(.025,1-fold*.7));
+  ctx.fillStyle='rgba(8,12,14,.72)';ctx.fillRect(-half*.5-3,-bandH/2-3,half+6,bandH+6);
+  ctx.fillStyle='#f6f6f1';ctx.fillRect(-half*.5,-bandH/2,half,bandH);
+  ctx.strokeStyle='#151a19';ctx.lineWidth=2;ctx.strokeRect(-half*.5,-bandH/2,half,bandH);
+  ctx.fillStyle='#b8bcb7';ctx.fillRect(-half*.5,-bandH/2,half,2);
+  ctx.fillStyle='#5d625f';ctx.fillRect(-half*.5,bandH/2-2,half,2);
+  ctx.restore();
  }
- const tx=X(332),tw=(bw-355*scale);
- ctx.textAlign='left';ctx.fillStyle='#f3f6ff';ctx.font=`1000 ${Math.max(9,11*scale)}px system-ui`;
- ctx.fillText(p<.82?'DOMAIN EXPANSION · FORMING HAND SIGN':'DOMAIN EXPANSION · SEAL LOCKED',tx,Y(43));
- ctx.fillStyle=accent;ctx.font=`1000 ${Math.max(15,20*scale)}px system-ui`;ctx.fillText(meta.name,tx,Y(81));
- ctx.fillStyle='#d5dce8';ctx.font=`900 ${Math.max(9,11*scale)}px system-ui`;ctx.fillText(meta.sign,tx,Y(105));
- ctx.fillStyle='#697582';ctx.fillRect(tx,Y(135),tw,7*scale);ctx.fillStyle=accent;ctx.fillRect(tx,Y(135),tw*p,7*scale);
- ctx.fillStyle='#bac4d2';ctx.font=`800 ${Math.max(8,9*scale)}px system-ui`;ctx.fillText(p<.82?'HAND SIGN IN PROGRESS':'BARRIER OPENING',tx,Y(157));
+ panelHalf(-1);panelHalf(1);
+ // Words are attached to their respective moving panel halves.
+ ctx.save();ctx.globalAlpha=visible;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#151816';ctx.font='1000 '+clamp(W*.052,13,25)+'px system-ui';
+ ctx.fillText('DOMAIN',cx-half*.48*visible,bandY-fold*H*.13);
+ ctx.fillText('EXPANSION',cx+half*.48*visible,bandY+fold*H*.13);
+ ctx.fillStyle=accent;ctx.fillRect(cx-2*visible,bandY-bandH*.48*visible,4*visible,bandH*.96*visible);
+ ctx.restore();
+ // As the popup folds away, its barrier circle contracts into a tiny seal at the avatar.
+ const seal=clamp((t-.76)/.24,0,1),se=seal*seal*(3-2*seal);
+ if(seal>0){
+  const radius=Math.max(2,Math.max(W,H)*.72*(1-se)+2),dark=f.domainType==='shrine'||f.domainType==='soul';
+  ctx.save();ctx.globalAlpha=.14+.2*seal;ctx.fillStyle=dark?'#030406':'#eef4ff';ctx.fillRect(0,0,W,H);
+  ctx.globalAlpha=.94*(1-se*.32);ctx.strokeStyle=dark?'#08090d':accent;ctx.lineWidth=clamp(Math.min(W,H)*.016,3,8);ctx.shadowBlur=18;ctx.shadowColor=accent;
+  ctx.beginPath();ctx.arc(cx,headY,radius,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=.75;ctx.strokeStyle='#f7f8f5';ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,headY,radius*.955,0,Math.PI*2);ctx.stroke();
+  const core=ctx.createRadialGradient(cx,headY,1,cx,headY,Math.max(3,radius*.3));core.addColorStop(0,'rgba(255,255,255,.96)');core.addColorStop(.25,accent+'bb');core.addColorStop(1,accent+'00');
+  ctx.globalAlpha=se;ctx.fillStyle=core;ctx.beginPath();ctx.arc(cx,headY,Math.max(3,radius*.3),0,Math.PI*2);ctx.fill();
+  ctx.restore();
+ }
  ctx.restore();
 }
 function drawDomainArena(f){
@@ -1737,6 +1735,8 @@ function drawDomainArena(f){
  if(f.domainTimer<=0||!['void','shrine','soul','hakari'].includes(type))return;
  const cx=focusX,cy=focusY;
  ctx.save();
+ // The active domain opens outward from the collapsed cut-in seal.
+ if(f.domainFlashTimer>0){const reveal=clamp(1-f.domainFlashTimer/.92,0,1),ease=reveal*reveal*(3-2*reveal),radius=Math.max(2,Math.hypot(W,H)*1.15*ease);ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.clip();}
  // Domain expansion replaces the ordinary street arena with its own environment.
  if(type==='void'){
   const g=ctx.createRadialGradient(cx,cy,18,cx,cy,Math.max(W,H)*.74);g.addColorStop(0,'#172252');g.addColorStop(.35,'#0a1235');g.addColorStop(.72,'#04091c');g.addColorStop(1,'#01030a');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
@@ -1794,9 +1794,8 @@ function drawDomainArena(f){
  // Opening title and timer stay in a compact HUD strip.
  const bannerY=H-27;ctx.globalAlpha=.88;ctx.fillStyle='#05070ddd';ctx.fillRect(W*.29,bannerY-13,W*.42,22);ctx.strokeStyle=border;ctx.lineWidth=1;ctx.strokeRect(W*.29,bannerY-13,W*.42,22);ctx.textAlign='center';ctx.fillStyle=accent;ctx.font='1000 10px system-ui';ctx.fillText(domainName(type),W/2,bannerY+2);
  const left=Math.max(0,Math.min(1,f.domainTimer/(f.domainDuration||1)));ctx.fillStyle='#05070dcc';ctx.fillRect(W*.34,H-5,W*.32,3);ctx.fillStyle=accent;ctx.fillRect(W*.34,H-5,W*.32*left,3);
- // JJS-style domain activation popup flashes for under one second after the shell opens.
- if(f.domainFlashTimer>0){const q=clamp(1-f.domainFlashTimer/.92,0,1),slide=clamp(q/.32,0,1),fade=clamp(f.domainFlashTimer/.2,0,1),bw=Math.min(W*.8,610),bh=58,bx=cx-bw/2+(1-slide)*W*.9,by=H*.34;ctx.globalAlpha=fade;ctx.fillStyle='#05060c';ctx.fillRect(bx,by,bw,bh);ctx.fillStyle=accent;ctx.fillRect(bx,by,bw,4);ctx.fillRect(bx,by+bh-4,bw,4);ctx.textAlign='center';ctx.fillStyle='#f4f7ff';ctx.font='1000 11px system-ui';ctx.fillText('DOMAIN EXPANSION',bx+bw/2,by+22);ctx.fillStyle=accent;ctx.font='1000 22px system-ui';ctx.fillText(domainName(type),bx+bw/2,by+47)}
  ctx.restore();ctx.restore();
+ if(f.domainFlashTimer>0){const reveal=clamp(1-f.domainFlashTimer/.92,0,1),ease=reveal*reveal*(3-2*reveal),radius=Math.max(2,Math.hypot(W,H)*1.15*ease);ctx.save();ctx.globalAlpha=.72*(1-reveal);ctx.strokeStyle=type==='void'||type==='hakari'?'#f5f7ff':accent;ctx.lineWidth=5+7*(1-reveal);ctx.shadowBlur=18;ctx.shadowColor=accent;ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(type==='hakari')drawIdleDeathGamble(f);
  if(type==='soul'&&f.team==='player'){ctx.save();ctx.fillStyle='#061417dd';ctx.fillRect(W-214,132,196,45);ctx.strokeStyle='#93e5d3';ctx.strokeRect(W-214,132,196,45);ctx.fillStyle='#c9fff0';ctx.font='900 10px system-ui';ctx.fillText('SOUL TRANSMUTATION',W-203,150);ctx.fillStyle='#173937';ctx.fillRect(W-203,160,172,8);ctx.fillStyle='#91e6d2';ctx.fillRect(W-203,160,172*(targetOf(f).transfigureMeter||0)/100,8);ctx.restore()}
 }
