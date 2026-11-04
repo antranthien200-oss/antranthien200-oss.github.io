@@ -341,11 +341,11 @@ const ACCESSORY_SLOTS=[
   {id:'crown',name:'CURSED CROWN',icon:'♛',desc:'A gold crown with a cursed gem.'},
   {id:'halo',name:'FLOATING HALO',icon:'◯',desc:'A small ring hovering above your head.'}
  ]},
- {id:'face',label:'FACE',items:[
-  {id:'blindfold',name:'BLINDFOLD',icon:'▰',desc:'A dark wrap across the eyes.'},
-  {id:'shades',name:'DARK SHADES',icon:'🕶️',desc:'Pixel sunglasses with blue lenses.'},
-  {id:'oni-mask',name:'ONI MASK',icon:'👹',desc:'A pale mask covering the lower face.'},
-  {id:'sukuna-marks',name:'CURSE MARKS',icon:'〽',desc:'Crimson markings across the face.'}
+ {id:'face',label:'FACE GEAR',items:[
+  {id:'blindfold',name:'BLACK BLINDFOLD',icon:'▰',desc:'A clean dark wrap; no eyes or facial details.'},
+  {id:'shades',name:'CURSED VISOR',icon:'◇',desc:'One continuous blue-glass visor strip.'},
+  {id:'oni-mask',name:'BLANK PORCELAIN GUARD',icon:'◻',desc:'A smooth featureless white half-mask.'},
+  {id:'sukuna-marks',name:'CRIMSON SIGIL',icon:'〽',desc:'Abstract red pixel markings, not facial features.'}
  ]},
  {id:'neck',label:'NECK & BACK',items:[
   {id:'red-scarf',name:'RED SCARF',icon:'🧣',desc:'A bright scarf tied around the neck.'},
@@ -1425,13 +1425,16 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   ctx.save();ctx.strokeStyle='#614b26';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,-23,15,5,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#ffe18b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-23,15,5,0,0,Math.PI*2);ctx.stroke();ctx.restore();
  }
  if(a.face==='blindfold'){
-  ctx.fillStyle='#090e18';ctx.fillRect(-16,-7,32,8);ctx.fillStyle='#40516d';ctx.fillRect(-15,-6,30,2);ctx.fillStyle='#111a2a';ctx.fillRect(12,-5,7,4);
+  ctx.fillStyle='#080d16';ctx.fillRect(-16,-7,32,8);ctx.fillStyle='#35465f';ctx.fillRect(-15,-6,30,2);
  }else if(a.face==='shades'){
-  ctx.fillStyle='#080d16';ctx.fillRect(-14,-7,12,8);ctx.fillRect(2,-7,12,8);ctx.fillRect(-2,-5,4,3);ctx.fillStyle='#4f9bc8';ctx.fillRect(-12,-5,8,4);ctx.fillRect(4,-5,8,4);
+  // A single visor panel: no separate eye shapes or facial details.
+  ctx.fillStyle='#071320';ctx.fillRect(-16,-8,32,10);ctx.fillStyle='#3b9dcc';ctx.fillRect(-14,-7,28,6);ctx.fillStyle='#9beaff';ctx.fillRect(-12,-6,24,2);
  }else if(a.face==='oni-mask'){
-  ctx.fillStyle='#566171';ctx.fillRect(-12,1,24,11);ctx.fillStyle='#e3e8ed';ctx.fillRect(-11,0,22,10);ctx.fillStyle='#7d8999';ctx.fillRect(-7,4,3,2);ctx.fillRect(4,4,3,2);ctx.fillStyle='#303b4a';ctx.fillRect(-4,8,8,2);
+  // Smooth blank guard with a simple rim; deliberately no eyes, nose, or mouth.
+  ctx.fillStyle='#8995a5';ctx.fillRect(-13,0,26,12);ctx.fillStyle='#edf1f5';ctx.fillRect(-11,1,22,9);ctx.fillStyle='#c4ccd6';ctx.fillRect(-9,2,18,1);
  }else if(a.face==='sukuna-marks'){
-  ctx.fillStyle='#a72b43';ctx.fillRect(-12,-8,3,7);ctx.fillRect(-9,-5,3,3);ctx.fillRect(9,-8,3,7);ctx.fillRect(6,-5,3,3);ctx.fillRect(-3,4,6,2);
+  // Abstract geometric curse sigils rather than eyes or other facial features.
+  ctx.fillStyle='#a72b43';ctx.fillRect(-15,-10,4,3);ctx.fillRect(-11,-7,3,3);ctx.fillRect(-14,-4,3,3);ctx.fillRect(11,-10,4,3);ctx.fillRect(8,-7,3,3);ctx.fillRect(11,-4,3,3);ctx.fillRect(-3,8,6,2);
  }
  ctx.restore();
 }
