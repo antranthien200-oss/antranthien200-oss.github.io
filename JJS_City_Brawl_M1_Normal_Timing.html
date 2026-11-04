@@ -740,9 +740,12 @@ function updateDomainContainment(f){
    if(airborne){f.domainInsideOwner=null;f.domainEscapedOwner=owner}
    else{f.x=cx+nx*(r-17);f.y=cy+ny*(r-17);const outward=f.vx*nx+f.vy*ny;if(outward>0){f.vx-=outward*nx;f.vy-=outward*ny}}
   }
+ }else if(f.domainEscapedOwner===owner){
+  if(airborne&&d<r-22){f.domainInsideOwner=owner;f.domainEscapedOwner=null}
+  else if(!airborne&&d<r+18){f.x=cx+nx*(r+19);f.y=cy+ny*(r+19);const inward=f.vx*nx+f.vy*ny;if(inward<0){f.vx-=inward*nx;f.vy-=inward*ny}}
  }else if(d<r+18){
-  if(airborne){f.domainInsideOwner=owner;f.domainEscapedOwner=null}
-  else{f.x=cx+nx*(r+19);f.y=cy+ny*(r+19);const inward=f.vx*nx+f.vy*ny;if(inward<0){f.vx-=inward*nx;f.vy-=inward*ny}}
+  if(airborne&&d<r-22){f.domainInsideOwner=owner;f.domainEscapedOwner=null}
+  else if(!airborne){f.x=cx+nx*(r+19);f.y=cy+ny*(r+19);const inward=f.vx*nx+f.vy*ny;if(inward<0){f.vx-=inward*nx;f.vy-=inward*ny}}
  }
 }
 function domainViewIsInside(owner){return !!(player&&(player===owner||player.domainInsideOwner===owner))}
