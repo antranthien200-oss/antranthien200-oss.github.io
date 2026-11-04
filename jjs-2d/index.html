@@ -400,9 +400,9 @@ const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const lerp=(a,b,t)=>a+(b-a)*t;
 const keys=new Set(),suppressedKeyUps=new Set();let mouse={x:W*.7,y:H*.5,down:false,buffer:0,pending:false};
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys.add(k);if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause();if(k==='e'&&!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){toggleTrashCan(player);e.preventDefault();return}if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if((k==='g'||k==='r')&&player.char==='honored'&&keys.has(k==='g'?'r':'g')){useAttack(player,'domain02');keys.delete('g');keys.delete('r');suppressedKeyUps.add('g');suppressedKeyUps.add('r')}else if(k==='q'){useAttack(player,'dash');keys.delete(k)}else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}}});
-addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);if(k==='f'&&player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')});
-addEventListener('blur',()=>{keys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player)player.block=false;if(typeof stopMobileJoystick==='function')stopMobileJoystick()});
+addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys.add(k);if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause();if(k==='e'&&!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if(!beginLandfillCanMove(player))toggleTrashCan(player);e.preventDefault();return}if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if((k==='g'||k==='r')&&player.char==='honored'&&keys.has(k==='g'?'r':'g')){useAttack(player,'domain02');keys.delete('g');keys.delete('r');suppressedKeyUps.add('g');suppressedKeyUps.add('r')}else if(k==='q'){useAttack(player,'dash');keys.delete(k)}else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}}});
+addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);if(k==='e'&&player)finishLandfillCanMove(player,false);if(k==='f'&&player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')});
+addEventListener('blur',()=>{if(player)finishLandfillCanMove(player,true);keys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player)player.block=false;if(typeof stopMobileJoystick==='function')stopMobileJoystick()});
 canvas.addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
 canvas.addEventListener('mousedown',e=>{if(e.button===0){mouse.down=true;mouse.pending=true;mouse.buffer=.72}});addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
@@ -541,7 +541,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetR
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashGoldenCanMoveHolding:false,trashGoldenCanHoldPickedUp:false,trashGoldenCanHoldStartedAt:0,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
@@ -815,7 +815,7 @@ function updateDomainState(f,dt){
    f.domainTick-=dt;if(f.domainTick<=0){f.domainTick=.32;if(inside){damage(t,1.5*f.domainPower,f,{stun:.05,color:'#84d1c1',ignoreInvuln:true,damageType:'domain'});burst(t.x+rnd(-48,48),t.y+rnd(-48,48),'#9de4d5',2,2)}}
   }
   }
-  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}if(f.domainType==='trash'){f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
+  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}if(f.domainType==='trash'){f.trashGoldenCanCarried=false;f.trashGoldenCanMoveHolding=false;f.trashGoldenCanHoldPickedUp=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
  }
  if(f.bloodRain){
   const b=f.bloodRain;b.life-=dt;b.tick-=dt;const t=targetOf(f);
@@ -997,6 +997,43 @@ function registerGambleVisual(f){
 }
 function endAwakening(f){const hadJackpot=f.jackpot;if(f.char==='yuta'){f.rikaSummoned=false;f.rikaMode=false;f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.char==='ten'){f.tenBase=false;f.tenDogActive=false;f.tenDogCharges=0;f.tenMahoragaRitual=0;f.tenMahoragaActive=0;f.tenMahoragaAttackTimer=0;f.tenMahoragaTarget=null;f.tenGardenTimer=0;f.tenGardenDrain=0}f.awakened=false;f.awakeMode='';f.jackpot=false;f.awakeFuel=0;f.awakeFuelDrainRate=0;f.domainType='';f.domainTimer=0;f.domainWindup=0;f.domainWindupStart=0;f.domainState='';if(hadJackpot){f.meter=Math.min(100,40+f.consecutiveJackpots*25);f.consecutiveJackpots++;f.rhythmStacks=0}else if(f.char==='restless'){f.consecutiveJackpots=0;f.rhythmStacks=0}showToast(hadJackpot?'JACKPOT ENDED · METER REFUNDED':'AWAKENING ENDED',900)}
 function dropCarriedTrashCan(f){if(!f||!f.carryingTrashCan)return;const prop=f.carryingTrashCan;f.carryingTrashCan=null;prop.carried=false;prop.x=clamp(f.x+Math.cos(f.face)*35,60,WORLD.w-60);prop.y=clamp(f.y+Math.sin(f.face)*35,60,WORLD.h-60);prop.flash=.3}
+function updateLandfillCanCarryPosition(f){
+ if(!f||!f.trashGoldenCanCarried)return;
+ const cx=Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x;
+ const cy=Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y;
+ const safeRadius=Math.max(24,(f.domainRadius||860)-54);
+ let x=f.x+Math.cos(f.face||0)*44,y=f.y+Math.sin(f.face||0)*44;
+ const dx=x-cx,dy=y-cy,d=Math.hypot(dx,dy)||1;
+ if(d>safeRadius){x=cx+dx/d*safeRadius;y=cy+dy/d*safeRadius}
+ f.trashGoldenCanX=x;f.trashGoldenCanY=y;
+}
+function beginLandfillCanMove(f){
+ if(!f||f.dead||f.char!=='trashman'||f.domainType!=='trash'||f.domainTimer<=0)return false;
+ if(f.trashGoldenCanCarried){
+  f.trashGoldenCanMoveHolding=true;f.trashGoldenCanHoldPickedUp=false;f.trashGoldenCanHoldStartedAt=game.time;
+  return true;
+ }
+ const x=Number.isFinite(f.trashGoldenCanX)?f.trashGoldenCanX:f.domainCenterX;
+ const y=Number.isFinite(f.trashGoldenCanY)?f.trashGoldenCanY:f.domainCenterY+(f.domainRadius||860)*.18;
+ if(!f.trashDomainCanAvailable||Math.hypot(f.x-x,f.y-y)>150)return false;
+ toggleTrashCan(f);
+ if(!f.trashGoldenCanCarried)return false;
+ f.trashGoldenCanMoveHolding=true;f.trashGoldenCanHoldPickedUp=true;f.trashGoldenCanHoldStartedAt=game.time;
+ return true;
+}
+function finishLandfillCanMove(f,forcePlace=false){
+ if(!f||!f.trashGoldenCanMoveHolding)return;
+ const held=Math.max(0,game.time-(f.trashGoldenCanHoldStartedAt||game.time));
+ const pickedUp=!!f.trashGoldenCanHoldPickedUp;
+ f.trashGoldenCanMoveHolding=false;f.trashGoldenCanHoldPickedUp=false;f.trashGoldenCanHoldStartedAt=0;
+ if(!f.trashGoldenCanCarried)return;
+ if(!forcePlace&&!pickedUp&&held<.22){toggleTrashCan(f);return}
+ if(held>=.22||forcePlace){
+  updateLandfillCanCarryPosition(f);
+  f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=true;f.trashDomainCanCooldown=0;
+  showToast('GOLDEN BIN · PLACED',650);
+ }
+}
 function toggleTrashCan(f){
  if(!f||f.dead||game.domainClash)return;
  if(f.char==='trashman'&&f.domainType==='trash'&&f.domainTimer>0){
@@ -1151,8 +1188,9 @@ function updateTrashManEffects(f,dt){
  if(f.trashBodyBarrageTimer>0){f.trashBodyBarrageTimer=Math.max(0,f.trashBodyBarrageTimer-dt);f.trashBodyBarrageTick-=dt;if(f.trashBodyBarrageTick<=0){f.trashBodyBarrageTick=.145;const base=f.trashBodyBarrageAngle;for(let i=0;i<3;i++){const angle=base+(i-1)*.33+rnd(-.08,.08),speed=rnd(10,14),x=f.x+Math.cos(angle)*20,y=f.y+Math.sin(angle)*20;projectiles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:9,life:1.05,maxDistance:370,travelled:0,owner:f,kind:'trashJunk',damage:2.2,color:i%2?'#9dbb79':'#aeb7a1'})}burst(f.x,f.y,'#a8c68b',3,2)}if(f.trashBodyBarrageTimer<=0&&f.motion&&f.motion.name==='trashManEruption')f.motion=null}
  if(f.trashSwapDecoy){f.trashSwapDecoy.life-=dt;if(f.trashSwapDecoy.life<=0)f.trashSwapDecoy=null}
  if(f.trashGoldenCanInFlight){f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
- else if(f.trashDomainCanCooldown>0){f.trashDomainCanCooldown=Math.max(0,f.trashDomainCanCooldown-dt);if(f.trashDomainCanCooldown===0&&f.domainType==='trash'&&f.domainTimer>0)f.trashDomainCanAvailable=true}
- if(f.domainType!=='trash'||f.domainTimer<=0){f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
+ else if(f.trashGoldenCanCarried&&f.trashGoldenCanMoveHolding)updateLandfillCanCarryPosition(f);
+ if(f.trashDomainCanCooldown>0){f.trashDomainCanCooldown=Math.max(0,f.trashDomainCanCooldown-dt);if(f.trashDomainCanCooldown===0&&f.domainType==='trash'&&f.domainTimer>0)f.trashDomainCanAvailable=true}
+ if(f.domainType!=='trash'||f.domainTimer<=0){f.trashGoldenCanCarried=false;f.trashGoldenCanMoveHolding=false;f.trashGoldenCanHoldPickedUp=false;f.trashGoldenCanInFlight=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
 }
 function useAttack(f,kind){
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||game.cutsceneTimer>0)return;
@@ -2217,7 +2255,7 @@ function drawTrashManDomainCan(){
  const y=Number.isFinite(owner.trashGoldenCanY)?owner.trashGoldenCanY:owner.domainCenterY+(owner.domainRadius||430)*.18;
  if(owner.trashGoldenCanCarried){
   const px=sx(owner.x+Math.cos(owner.face)*32),py=sy(owner.y+Math.sin(owner.face)*32)-8;drawGoldenTrashCanScreen(px,py,.84,owner.face);
-  ctx.save();ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#080b0a';ctx.fillRect(px-38,py-48,76,17);ctx.fillStyle='#fff0a8';ctx.fillText('E · THROW',px,py-36);ctx.restore();
+  ctx.save();ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#080b0a';ctx.fillRect(px-55,py-48,110,17);ctx.fillStyle='#fff0a8';ctx.fillText(owner.trashGoldenCanMoveHolding?'RELEASE · PLACE':'HOLD E · MOVE · TAP THROW',px,py-36);ctx.restore();
  }else if(owner.trashDomainCanAvailable){
   const px=sx(x),py=sy(y);drawGoldenTrashCanScreen(px,py,1.35,Math.sin(game.time*1.1)*.035);
   if(Math.hypot(owner.x-x,owner.y-y)<150){ctx.save();ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#080b0a';ctx.fillRect(px-43,py-50,86,17);ctx.fillStyle='#fff0a8';ctx.fillText('E · PICK UP',px,py-38);ctx.restore()}
