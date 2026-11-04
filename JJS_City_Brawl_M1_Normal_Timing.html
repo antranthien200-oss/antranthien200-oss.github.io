@@ -528,7 +528,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetR
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
@@ -683,7 +683,7 @@ function updateDomainClashHud(){
  $('pClashFill').style.width=p+'%';$('eClashFill').style.width=e+'%';$('pClashPct').textContent=Math.round(p)+'%';$('eClashPct').textContent=Math.round(e)+'%';$('domainClashTime').textContent=Math.max(0,q.time).toFixed(1)+'s';
 }
 function resolveDomainClash(winner,reason='TIME'){
- const q=game.domainClash;if(!q)return;const contestants=q.members.slice();game.domainClash=null;
+ const q=game.domainClash;if(!q)return;const contestants=q.members.slice();game.domainClash=null;for(const f of contestants)releaseDomainOccupants(f);
  for(const f of contestants){const opponent=contestants.find(x=>x!==f);
   if(f!==winner){if(f.domainType==='soul'&&opponent&&opponent.transfigureSource===f){opponent.transfigureSource=null;opponent.transfigureMeter=0}
    f.domainType='';f.domainTimer=0;f.domainTick=0;f.domainWindup=0;f.domainWindupStart=0;f.domainDuration=0;f.domainState='';f.domainFlashTimer=0;f.block=false;f.stun=Math.min(f.stun||0,.12);
@@ -692,11 +692,11 @@ function resolveDomainClash(winner,reason='TIME'){
  if(winner){const loser=contestants.find(x=>x!==winner);if(loser)loser.meter=Math.max(loser.meter||0,75);
   burst(winner.x,winner.y,winner.team==='player'?'#77e7ff':'#ff8798',52,8);popText(winner.x,winner.y-82,'DOMAIN CLASH · WINNER','#fff0b8',19);showToast((winner.team==='player'?'YOU WIN':'CPU WINS')+' · DOMAIN CLASH',1500);game.shake=Math.max(game.shake,9);
  }else{for(const f of contestants){f.domainType='';f.domainTimer=0;f.domainTick=0;f.domainState='';f.domainDuration=0;f.domainFlashTimer=0;burst(f.x,f.y,'#e5e9f4',24,5)}showToast(reason==='TIME'?'DOMAIN CLASH · BOTH DOMAINS BREAK':'DOMAIN CLASH · DRAW',1500);game.shake=Math.max(game.shake,7)}
- updateDomainClashHud();updateHud(true);
+ if(winner&&winner.domainTimer>0)captureDomainOccupants(winner);updateDomainClashHud();updateHud(true);
 }
 function beginDomainClash(a,b){
  if(game.domainClash||!canDomainClash(a,b))return false;
- game.domainClash={members:[a,b],time:15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time};
+ game.domainClash={members:[a,b],time:15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time};releaseDomainOccupants(a);releaseDomainOccupants(b);
  for(const f of [a,b]){if(f.grabTarget)releaseGrab(f,false);if(f.capturedBy&&!f.capturedBy.dead)releaseGrab(f.capturedBy,false);f.domainState='clashing';f.block=false;f.combo=0;f.comboTimer=0;f.attackCd=0;f.counterWindow=0;f.counterKind='';f.rooted=0;f.pullTimer=0;f.pullSource=null;f.bloodRain=null;f.stun=Math.min(f.stun||0,.12);f.ragdollTimer=0;if(f.transfigureSource){f.transfigureSource=null;f.transfigureMeter=0}}
  scheduledTasks.length=0;for(let i=projectiles.length-1;i>=0;i--)if(a===projectiles[i].owner||b===projectiles[i].owner)projectiles.splice(i,1);
  showToast('DOMAIN CLASH · LAND HITS TO WIN',1600);burst((a.x+b.x)/2,(a.y+b.y)/2,'#e8edff',46,9);game.shake=Math.max(game.shake,12);updateDomainClashHud();return true;
@@ -718,6 +718,35 @@ function useDomainClashM1(f){
   if(game.domainClash.scores[f.team]>=100)resolveDomainClash(f);
  }else m1Feedback(f,t,angle,false,false);
 }
+function domainIsActive(owner){return !!(owner&&!owner.dead&&owner.domainType&&owner.domainTimer>0&&!game.domainClash)}
+function releaseDomainOccupants(owner){
+ for(const f of [player,enemy,trainingDummy]){if(!f)continue;if(f.domainInsideOwner===owner)f.domainInsideOwner=null;if(f.domainEscapedOwner===owner)f.domainEscapedOwner=null}
+}
+function captureDomainOccupants(owner){
+ if(!owner)return;
+ releaseDomainOccupants(owner);
+ const cx=Number.isFinite(owner.domainCenterX)?owner.domainCenterX:owner.x,cy=Number.isFinite(owner.domainCenterY)?owner.domainCenterY:owner.y,r=owner.domainRadius||430;
+ for(const f of [player,enemy,trainingDummy]){if(!f||f.dead)continue;if(Math.hypot(f.x-cx,f.y-cy)<=r){f.domainInsideOwner=owner;f.domainEscapedOwner=null}}
+}
+function updateDomainContainment(f){
+ if(!f||game.domainClash)return;
+ for(const owner of [f.domainInsideOwner,f.domainEscapedOwner])if(owner&&!domainIsActive(owner)){if(f.domainInsideOwner===owner)f.domainInsideOwner=null;if(f.domainEscapedOwner===owner)f.domainEscapedOwner=null}
+ const owner=[player,enemy].find(o=>domainIsActive(o));
+ if(!owner||f.dead)return;
+ const cx=Number.isFinite(owner.domainCenterX)?owner.domainCenterX:owner.x,cy=Number.isFinite(owner.domainCenterY)?owner.domainCenterY:owner.y,r=owner.domainRadius||430;
+ const dx=f.x-cx,dy=f.y-cy,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d,airborne=f.jump>.35;
+ if(f.domainInsideOwner===owner){
+  if(d>=r-16){
+   if(airborne){f.domainInsideOwner=null;f.domainEscapedOwner=owner}
+   else{f.x=cx+nx*(r-17);f.y=cy+ny*(r-17);const outward=f.vx*nx+f.vy*ny;if(outward>0){f.vx-=outward*nx;f.vy-=outward*ny}}
+  }
+ }else if(d<r+18){
+  if(airborne){f.domainInsideOwner=owner;f.domainEscapedOwner=null}
+  else{f.x=cx+nx*(r+19);f.y=cy+ny*(r+19);const inward=f.vx*nx+f.vy*ny;if(inward<0){f.vx-=inward*nx;f.vy-=inward*ny}}
+ }
+}
+function domainViewIsInside(owner){return !!(player&&(player===owner||player.domainInsideOwner===owner))}
+function domainViewMatches(f,owner){return (!!(f&&(f===owner||f.domainInsideOwner===owner)))===domainViewIsInside(owner)}
 function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
  if(!f||f.dead||f.domainWindup>0||f.domainTimer>0||game.domainClash)return false;
  if(f.jump>.12){showToast('DOMAIN · LAND FIRST',700);return false}
@@ -727,17 +756,17 @@ function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
   const close=dist(f,other)<=980&&(other.domainWindup>0||game.time-started<=2.7);
   if(!compatible||!close){showToast('DOMAIN BARRIER ALREADY ACTIVE',800);return false}
  }
- f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=radius;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
+ f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=Math.min(radius,430);f.domainCenterX=f.x;f.domainCenterY=f.y;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
  f.block=false;f.vx*=.18;f.vy*=.18;
  const pose=type==='void'?'gojoVoid':type==='shrine'?'sukunaShrine':type==='hakari'?'hakariDomain':type==='yuta'?'yutaDomain':'mahitoDomain';
  setMotion(f,pose,windup,f.face,targetOf(f));damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));
  burst(f.x,f.y,type==='void'?'#aebcff':type==='shrine'?'#f3445b':'#8bd9c7',30,5);showToast('DOMAIN EXPANSION · '+domainName(type),1500);game.shake=Math.max(game.shake,8);return true;
 }
 function activateDomain(f){
- f.domainWindup=0;f.domainWindupStart=0;f.domainState='active';f.domainTimer=f.domainDuration;f.domainHitApplied=true;f.domainFlashTimer=.92;f.domainOpenedAt=game.time;
+ f.domainWindup=0;f.domainWindupStart=0;f.domainState='active';f.domainTimer=f.domainDuration;f.domainHitApplied=true;f.domainFlashTimer=.92;f.domainOpenedAt=game.time;captureDomainOccupants(f);
  burst(f.x,f.y,f.domainType==='void'?'#c8d8ff':f.domainType==='shrine'?'#f34a60':'#9ce5d4',58,9);addDebris(f.x,f.y,f.domainType==='shrine'?'#8e273a':'#434b5b',10);game.shake=Math.max(game.shake,14);
- const t=targetOf(f),d=dist(f,t);
- if(!t.dead&&d<=f.domainRadius){
+ const t=targetOf(f),d=Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY);
+ if(!t.dead&&d<=f.domainRadius&&t.domainInsideOwner===f){
   if(f.domainType==='void'){t.stun=Math.max(t.stun,Math.min(.55,f.domainDuration));t.invuln=0;popText(t.x,t.y-68,'INFINITE INFORMATION','#d8e2ff',13)}
   else if(f.domainType==='soul'){t.transfigureMeter=Math.min(35,t.transfigureMeter||0);t.transfigureSource=f;t.stun=Math.max(t.stun,.45);t.invuln=0;popText(t.x,t.y-68,'SOUL EXPOSED','#a6e8d8',13)}
   else if(f.domainType==='hakari'&&f.domainStunGuaranteed){t.stun=Math.max(t.stun,.7);t.invuln=0;popText(t.x,t.y-68,'RULES TRANSMITTED','#e5d3ff',13)}
@@ -754,7 +783,7 @@ function updateDomainState(f,dt){
  }
  if(f.domainTimer>0){
   f.domainTimer=Math.max(0,f.domainTimer-dt);
-  const t=targetOf(f),d=t.dead?Infinity:dist(f,t),inside=d<=(f.domainRadius||545);
+  const t=targetOf(f),d=t.dead?Infinity:Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY),inside=d<=(f.domainRadius||430)&&t.domainInsideOwner===f;
   const chimeraSuppress=(f===enemy&&player&&player.char==='ten'&&player.tenGardenTimer>0)||(f===player&&enemy&&enemy.char==='ten'&&enemy.tenGardenTimer>0);
   if(!chimeraSuppress){
   if(f.domainType==='shrine'){
@@ -768,7 +797,7 @@ function updateDomainState(f,dt){
    f.domainTick-=dt;if(f.domainTick<=0){f.domainTick=.32;if(inside){damage(t,1.5*f.domainPower,f,{stun:.05,color:'#84d1c1',ignoreInvuln:true});burst(t.x+rnd(-48,48),t.y+rnd(-48,48),'#9de4d5',2,2)}}
   }
   }
-  if(f.domainTimer<=0){if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
+  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
  }
  if(f.bloodRain){
   const b=f.bloodRain;b.life-=dt;b.tick-=dt;const t=targetOf(f);
@@ -979,7 +1008,7 @@ function drawThrowableProps(){
  if(player&&player.carryingTrashCan){const f=player,a=f.face;drawTrashCan(f.x+Math.cos(a)*28,f.y+Math.sin(a)*28,.94,a,0)}
 }
 function drawTrainingDummy(){
- if(!trainingDummy)return;
+ if(!trainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
  const d=trainingDummy,x=sx(d.x),y=sy(d.y);
  ctx.save();
  ctx.globalAlpha=.96;
@@ -1119,7 +1148,7 @@ function useAttack(f,kind){
   f.domainCastStartedAt=isHakariDomain?game.time:0;
   f.domainTimer=0;f.domainDuration=isHakariDomain?120:0;
   f.domainWindup=isHakariDomain?1.25:0;f.domainWindupStart=isHakariDomain?1.25:0;
-  f.domainRadius=isHakariDomain?560:0;f.domainState=isHakariDomain?'forming':'';f.domainTick=0;
+  f.domainRadius=isHakariDomain?430:0;f.domainCenterX=isHakariDomain?f.x:null;f.domainCenterY=isHakariDomain?f.y:null;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainState=isHakariDomain?'forming':'';f.domainTick=0;
   f.domainFlashTimer=0;f.domainOpenedAt=0;
   setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
   burst(f.x,f.y,c.accent,56,8);game.shake=13;
@@ -1366,7 +1395,7 @@ function updateTenEffects(f,dt){
  if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);updateHud();if(f.hp<=0){f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
 function updateFighter(f,dt){if(f.dead)return;if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeTimer-=dt;if(f.awakeTimer<=0)endAwakening(f)}if(f.jackpot&&!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.meter<=0)endAwakening(f)}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
- if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}let spd=f.block?.55:1;if(f.shadowTimer>0)spd*=1.7;if(f.char==='restless'&&f.jackpot&&f.rhythmStacks>0)spd*=1+Math.min(.5,f.rhythmStacks*.08);f.x+=f.vx*60*dt*spd;f.y+=f.vy*60*dt*spd;f.vx=clamp(f.vx,-15,15);f.vy=clamp(f.vy,-15,15);collideWorld(f);if(f.jump>0){f.jumpV-=20*dt;f.jump+=f.jumpV*dt;if(f.jump<=0){f.jump=0;f.jumpV=0;burst(f.x,f.y,'#d1d8e0',5,2)}}f.walk+=dt*(Math.abs(f.vx)+Math.abs(f.vy))*.2;
+ if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}let spd=f.block?.55:1;if(f.shadowTimer>0)spd*=1.7;if(f.char==='restless'&&f.jackpot&&f.rhythmStacks>0)spd*=1+Math.min(.5,f.rhythmStacks*.08);f.x+=f.vx*60*dt*spd;f.y+=f.vy*60*dt*spd;f.vx=clamp(f.vx,-15,15);f.vy=clamp(f.vy,-15,15);collideWorld(f);if(f.jump>0){f.jumpV-=20*dt;f.jump+=f.jumpV*dt;if(f.jump<=0){f.jump=0;f.jumpV=0;burst(f.x,f.y,'#d1d8e0',5,2)}}updateDomainContainment(f);f.walk+=dt*(Math.abs(f.vx)+Math.abs(f.vy))*.2;
 }
 function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
@@ -1928,7 +1957,7 @@ function drawYutaKatana(f){
   ctx.fillStyle='#111722';ctx.fillRect(30,-4,51,8);ctx.fillStyle='#f0f2f8';ctx.fillRect(31,-3,48,6);ctx.fillStyle='#aeb9c8';ctx.fillRect(34,-1,40,2);ctx.fillStyle='#fff';ctx.fillRect(36,-2,34,1);
   ctx.restore();
  }
-function drawFighter(f){if(f.dead||f.isTrainingDummy)return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}}
+function drawFighter(f){if(f.dead||f.isTrainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}}
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
  ctx.save();ctx.translate(x1,y1);ctx.rotate(Math.atan2(dy,dx));ctx.fillStyle=edge;ctx.fillRect(-1,-width/2-1,len+2,width+2);ctx.fillStyle=color;ctx.fillRect(0,-width/2,len,width);ctx.restore();
@@ -2122,31 +2151,45 @@ function drawDomainClashFighterMarkers(){
  }
 }
 const domainFrameCache=new WeakMap();
+function drawDomainOutsideShell(f){
+ const cx=sx(Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x),cy=sy(Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y),r=f.domainRadius||430;
+ if(cx+r<0||cy+r<0||cx-r>W||cy-r>H)return;
+ const white=f.domainType==='void'||f.domainType==='hakari',edge=white?'#e9efff':'#050609',glow=f.domainType==='void'?'#9db8ff':f.domainType==='hakari'?'#d8b9ff':f.domainType==='shrine'?'#8f182f':f.domainType==='yuta'?'#d8bddf':'#438e83';
+ ctx.save();const shell=ctx.createRadialGradient(cx-r*.28,cy-r*.36,Math.max(2,r*.025),cx,cy,r*1.08);
+ shell.addColorStop(0,'#323844');shell.addColorStop(.22,'#11151d');shell.addColorStop(.68,'#030407');shell.addColorStop(1,'#000');
+ ctx.fillStyle=shell;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
+ ctx.globalAlpha=.22;ctx.strokeStyle=glow;ctx.lineWidth=22;ctx.shadowBlur=26;ctx.shadowColor=glow;ctx.beginPath();ctx.arc(cx,cy,r-5,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=1;ctx.strokeStyle=edge;ctx.lineWidth=white?5:8;ctx.shadowBlur=white?18:8;ctx.shadowColor=white?'#dce6ff':'#000';ctx.beginPath();ctx.arc(cx,cy,r-2,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=.54;ctx.strokeStyle=white?'#fff':'#6b707a';ctx.lineWidth=2;ctx.shadowBlur=0;ctx.beginPath();ctx.ellipse(cx-r*.12,cy-r*.24,r*.72,r*.25,-.52,Math.PI*1.08,Math.PI*1.94);ctx.stroke();ctx.restore();
+}
+function drawDomainInsideBoundary(f){
+ const cx=sx(Number.isFinite(f.domainCenterX)?f.domainCenterX:f.x),cy=sy(Number.isFinite(f.domainCenterY)?f.domainCenterY:f.y),r=f.domainRadius||430;
+ const white=f.domainType==='void'||f.domainType==='hakari',edge=white?'#f4f6ff':'#08090c',accent=f.domainType==='void'?'#aebfff':f.domainType==='hakari'?'#d8b9ff':f.domainType==='shrine'?'#ff536b':f.domainType==='yuta'?'#edcbed':'#8fe0cc';
+ ctx.save();ctx.globalAlpha=.2;ctx.strokeStyle=accent;ctx.lineWidth=28;ctx.shadowBlur=24;ctx.shadowColor=accent;ctx.beginPath();ctx.arc(cx,cy,r-9,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=.95;ctx.strokeStyle=edge;ctx.lineWidth=white?5:8;ctx.shadowBlur=white?16:5;ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=.65;ctx.strokeStyle=white?'#fff':accent;ctx.lineWidth=1.5;ctx.shadowBlur=0;ctx.beginPath();ctx.arc(cx,cy,r-16,0,Math.PI*2);ctx.stroke();
+ if(f.domainFlashTimer>0){const p=1-f.domainFlashTimer/.92;ctx.globalAlpha=.7*(1-p);ctx.strokeStyle=edge;ctx.lineWidth=5+8*(1-p);ctx.beginPath();ctx.arc(cx,cy,Math.max(2,r*p),0,Math.PI*2);ctx.stroke()}
+ for(let i=0;i<12;i++){const a=game.time*.22+i*Math.PI/6,px=cx+Math.cos(a)*(r-8),py=cy+Math.sin(a)*(r-8);ctx.globalAlpha=.3+.35*Math.sin(game.time*5+i);ctx.fillStyle=accent;ctx.fillRect(px-2,py-2,4,4)}
+ ctx.restore();
+}
 function drawDomainArena(f){
  if(!f)return;
  const type=f.domainType;
- // Keep brief domain cuts and the handsign cut-in at full frame rate.
- if(f.domainWindup>0||type==='void02'){renderDomainArenaFrame(f);return}
+ if(f.domainWindup>0||type==='void02'){if(!player||Math.hypot(player.x-f.x,player.y-f.y)<(f.domainRadius||430)+150)renderDomainArenaFrame(f);return}
  if(f.domainTimer<=0||!['void','shrine','soul','hakari','yuta'].includes(type))return;
+ if(!domainViewIsInside(f)){drawDomainOutsideShell(f);return}
  let cache=domainFrameCache.get(f);
  if(!cache){cache={canvas:document.createElement('canvas'),last:-Infinity,width:0,height:0,scale:0,type:''};domainFrameCache.set(f,cache)}
- // Mobile domain scenery is rendered at 0.82 resolution and 24 FPS.
- // The actual combat simulation and fighter rendering are not throttled.
- const scale=isMobileDevice?.82:1;
- const pixelWidth=Math.max(1,Math.ceil(W*scale)),pixelHeight=Math.max(1,Math.ceil(H*scale));
+ const scale=isMobileDevice?.82:1,pixelWidth=Math.max(1,Math.ceil(W*scale)),pixelHeight=Math.max(1,Math.ceil(H*scale));
  if(cache.width!==W||cache.height!==H||cache.scale!==scale||cache.type!==type){
-  cache.width=W;cache.height=H;cache.scale=scale;cache.type=type;
-  cache.canvas.width=pixelWidth;cache.canvas.height=pixelHeight;cache.last=-Infinity;
+  cache.width=W;cache.height=H;cache.scale=scale;cache.type=type;cache.canvas.width=pixelWidth;cache.canvas.height=pixelHeight;cache.last=-Infinity;
  }
  const interval=isMobileDevice?1/24:1/30;
  if(game.time-cache.last>=interval||cache.last===-Infinity){
-  const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');
-  frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,W,H);
-  ctx=frameCtx;
-  try{renderDomainArenaFrame(f)}finally{ctx=screenCtx}
-  cache.last=game.time;
+  const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,W,H);ctx=frameCtx;
+  try{renderDomainArenaFrame(f)}finally{ctx=screenCtx}cache.last=game.time;
  }
- ctx.drawImage(cache.canvas,0,0,W,H);
+ ctx.drawImage(cache.canvas,0,0,W,H);drawDomainInsideBoundary(f);
 }
 function renderDomainArenaFrame(f){
  const type=f.domainType;
@@ -2218,21 +2261,13 @@ function renderDomainArenaFrame(f){
   ctx.globalAlpha=.28;ctx.strokeStyle='#81d3c2';ctx.lineWidth=2;for(let i=0;i<10;i++){ctx.beginPath();ctx.ellipse(cx,cy,46+i*43,18+i*23,game.time*.045+i*.19,0,Math.PI*2);ctx.stroke()}
   ctx.globalAlpha=.86;ctx.fillStyle='#0d2b2c';ctx.beginPath();ctx.arc(cx,cy,42,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#b3f1df';ctx.lineWidth=2;ctx.stroke();
  }
- // A soft barrier edge and a domain-specific title make the arena feel like a sealed space.
- ctx.save();const vignette=ctx.createRadialGradient(cx,cy,Math.min(W,H)*.24,cx,cy,Math.max(W,H)*.78);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.64)');ctx.fillStyle=vignette;ctx.fillRect(0,0,W,H);
- const accent=type==='void'?'#dce7ff':type==='shrine'?'#f14b62':type==='hakari'?'#ead6ff':'#87d9c9';
- const border=(type==='void'||type==='hakari')?'#f4f6ff':'#050609';
- // Large curved shell edge: the two white-border domains contrast with the black-bordered lethal domains.
- ctx.globalAlpha=.18;ctx.strokeStyle=border;ctx.lineWidth=28;ctx.shadowBlur=22;ctx.shadowColor=accent;ctx.beginPath();ctx.ellipse(cx,cy,W*.535,H*.69,0,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=.94;ctx.strokeStyle=border;ctx.lineWidth=5;ctx.shadowBlur=14;ctx.beginPath();ctx.ellipse(cx,cy,W*.535,H*.69,0,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=.9;ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.shadowBlur=0;ctx.beginPath();ctx.ellipse(cx,cy,W*.518,H*.665,0,0,Math.PI*2);ctx.stroke();
- // Repeating glints travel along the barrier instead of drawing a flat rectangle around the screen.
- for(let i=0;i<12;i++){const a=game.time*.22+i*Math.PI/6,px=cx+Math.cos(a)*W*.535,py=cy+Math.sin(a)*H*.69;ctx.globalAlpha=.25+.35*Math.sin(game.time*5+i);ctx.fillStyle=accent;ctx.fillRect(px-2,py-2,4,4)}
- // Opening title and timer stay in a compact HUD strip.
- const bannerY=H-27;ctx.globalAlpha=.88;ctx.fillStyle='#05070ddd';ctx.fillRect(W*.29,bannerY-13,W*.42,22);ctx.strokeStyle=border;ctx.lineWidth=1;ctx.strokeRect(W*.29,bannerY-13,W*.42,22);ctx.textAlign='center';ctx.fillStyle=accent;ctx.font='1000 10px system-ui';ctx.fillText(domainName(type),W/2,bannerY+2);
- const left=Math.max(0,Math.min(1,f.domainTimer/(f.domainDuration||1)));ctx.fillStyle='#05070dcc';ctx.fillRect(W*.34,H-5,W*.32,3);ctx.fillStyle=accent;ctx.fillRect(W*.34,H-5,W*.32*left,3);
+ // The boundary rim is drawn in world space after the cached interior, not as an oval covering the screen.
+ const accent=type==='void'?'#dce7ff':type==='shrine'?'#f14b62':type==='hakari'?'#ead6ff':type==='yuta'?'#f0c9ee':'#87d9c9';
+ ctx.save();const hudW=Math.min(320,W-28),hudX=(W-hudW)/2;
+ ctx.globalAlpha=.88;ctx.fillStyle='#05070ddd';ctx.fillRect(hudX,18,hudW,30);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(hudX,18,hudW,30);
+ ctx.textAlign='center';ctx.fillStyle=accent;ctx.font='1000 10px system-ui';ctx.fillText(domainName(type),W/2,31);
+ const left=Math.max(0,Math.min(1,f.domainTimer/(f.domainDuration||1)));ctx.fillStyle='#05070dcc';ctx.fillRect(hudX+12,39,hudW-24,4);ctx.fillStyle=accent;ctx.fillRect(hudX+12,39,(hudW-24)*left,4);
  ctx.restore();ctx.restore();
- if(f.domainFlashTimer>0){const reveal=clamp(1-f.domainFlashTimer/.92,0,1),ease=reveal*reveal*(3-2*reveal),radius=Math.max(2,Math.hypot(W,H)*1.15*ease);ctx.save();ctx.globalAlpha=.72*(1-reveal);ctx.strokeStyle=type==='void'||type==='hakari'?'#f5f7ff':accent;ctx.lineWidth=5+7*(1-reveal);ctx.shadowBlur=18;ctx.shadowColor=accent;ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(type==='hakari')drawIdleDeathGamble(f);
  if(type==='soul'&&f.team==='player'){ctx.save();ctx.fillStyle='#061417dd';ctx.fillRect(W-214,132,196,45);ctx.strokeStyle='#93e5d3';ctx.strokeRect(W-214,132,196,45);ctx.fillStyle='#c9fff0';ctx.font='900 10px system-ui';ctx.fillText('SOUL TRANSMUTATION',W-203,150);ctx.fillStyle='#173937';ctx.fillRect(W-203,160,172,8);ctx.fillStyle='#91e6d2';ctx.fillRect(W-203,160,172*(targetOf(f).transfigureMeter||0)/100,8);ctx.restore()}
 }
