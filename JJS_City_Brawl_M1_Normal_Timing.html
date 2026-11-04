@@ -128,7 +128,7 @@
 @keyframes awakenLines{0%{opacity:0;transform:translateX(-18%) rotate(-8deg)}25%{opacity:.8}100%{opacity:0;transform:translateX(18%) rotate(-8deg)}}
 @keyframes awakenText{0%{opacity:0;transform:skewX(-7deg) scale(.66) translateY(22px)}40%{opacity:1;transform:skewX(-7deg) scale(1.04) translateY(0)}100%{opacity:1;transform:skewX(-7deg) scale(1)}}
 
-/* Compact, semi-transparent pixel-ring mobile controls */
+/* Compact mobile mode: translucent pixel rings, matching button palette */
 .mobile-setup-wrap{width:min(350px,82vw);display:flex;flex-direction:column;align-items:stretch;gap:8px}
 .mobile-setup-button{appearance:none;position:relative;display:grid;grid-template-columns:42px 1fr;grid-template-rows:1fr 14px;align-items:center;min-height:62px;padding:8px 14px;border:3px solid #9bdfff;border-radius:0;background:linear-gradient(180deg,#18334b 0%,#102236 48%,#0a1524 49%,#102238 100%);color:#f5fbff;text-align:left;cursor:pointer;box-shadow:4px 4px 0 #03070d,inset 2px 2px 0 #d5f2ff25,inset -3px -3px 0 #020811;transition:transform .08s,filter .08s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .mobile-setup-button:hover{filter:brightness(1.16)}
@@ -143,35 +143,40 @@
 #mobileControls{position:fixed;inset:0;z-index:9;display:none;pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none}
 body.mobile-controls-enabled.game-active:not(.game-paused) #mobileControls{display:block}
 body.mobile-controls-enabled.game-active .controls,body.mobile-controls-enabled.game-active #modeTag{display:none}
-/* Keep the existing HUD clear of the compact button cluster. */
-body.mobile-controls-enabled.game-active .bottom{bottom:calc(210px + env(safe-area-inset-bottom))}
+body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-area-inset-bottom))}
 
-#mobileJoystick{position:absolute;left:max(10px,env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom));width:clamp(88px,23vw,104px);aspect-ratio:1;border:3px solid rgba(245,250,255,.86);border-radius:50%;background:radial-gradient(circle,rgba(36,48,64,.34) 0 42%,rgba(4,8,15,.48) 44% 100%);box-shadow:0 0 0 3px rgba(0,0,0,.45),inset 0 0 0 4px rgba(255,255,255,.12);backdrop-filter:blur(2px);pointer-events:auto;touch-action:none}
+#mobileJoystick{position:absolute;left:max(9px,env(safe-area-inset-left));bottom:calc(13px + env(safe-area-inset-bottom));width:clamp(82px,22vw,98px);aspect-ratio:1;border:3px solid rgba(245,250,255,.86);border-radius:50%;background:radial-gradient(circle,rgba(36,48,64,.34) 0 42%,rgba(4,8,15,.48) 44% 100%);box-shadow:0 0 0 3px rgba(0,0,0,.45),inset 0 0 0 4px rgba(255,255,255,.12);backdrop-filter:blur(2px);pointer-events:auto;touch-action:none}
 #mobileJoystick:before{content:"";position:absolute;inset:17%;border:2px dashed rgba(216,238,255,.48);border-radius:50%;background:repeating-conic-gradient(rgba(220,240,255,.07) 0 25%,transparent 0 50%) 0 0/9px 9px}
 .mobile-joy-knob{position:absolute;left:50%;top:50%;width:43%;height:43%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid rgba(245,251,255,.9);background:linear-gradient(145deg,rgba(193,224,245,.62),rgba(57,91,123,.55));box-shadow:0 0 0 2px rgba(0,0,0,.42),inset 0 0 0 3px rgba(255,255,255,.15);pointer-events:none}
 .mobile-joy-label{position:absolute;left:0;right:0;bottom:-18px;text-align:center;color:rgba(242,248,255,.9);font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;text-shadow:2px 2px 0 #050a12}
 
-.mobile-action-grid{position:absolute;right:max(7px,env(safe-area-inset-right));bottom:calc(7px + env(safe-area-inset-bottom));width:min(184px,57vw);height:202px;pointer-events:none}
-.mobile-btn{position:absolute;display:flex;align-items:center;justify-content:center;width:34px;height:34px;min-width:0;min-height:0;padding:0;border:2px solid rgba(245,250,255,.84);border-radius:50%;outline:2px solid rgba(0,0,0,.45);background:rgba(5,10,18,.43);color:#fff;font:1000 13px/1 ui-monospace,monospace;letter-spacing:0;text-shadow:2px 2px 0 rgba(0,0,0,.9);box-shadow:inset 0 0 0 3px rgba(255,255,255,.09),0 2px 5px rgba(0,0,0,.2);backdrop-filter:blur(2px);pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent;image-rendering:pixelated}
+/* G and R sit just to the right of the movement stick, like the reference. */
+.mobile-left-actions{position:absolute;left:calc(max(9px,env(safe-area-inset-left)) + clamp(82px,22vw,98px) + 5px);bottom:calc(38px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;pointer-events:none}
+
+/* Right-side diamond cluster: dash, M1, and four skills; Guard/E sit below dash. */
+.mobile-action-grid{position:absolute;right:max(7px,env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));width:190px;height:184px;pointer-events:none}
+.mobile-btn{position:absolute;display:flex;align-items:center;justify-content:center;width:34px;height:34px;min-width:0;min-height:0;padding:0;border:2px solid rgba(245,250,255,.88);border-radius:50%;outline:2px solid rgba(0,0,0,.48);background:rgba(5,10,18,.48);color:#fff;font:1000 13px/1 ui-monospace,monospace;letter-spacing:0;text-shadow:2px 2px 0 rgba(0,0,0,.9);box-shadow:inset 0 0 0 3px rgba(255,255,255,.10),0 2px 5px rgba(0,0,0,.25);backdrop-filter:blur(2px);pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent;image-rendering:pixelated;overflow:hidden}
 .mobile-btn small{display:none}
-.mobile-btn .mobile-btn-main{font:1000 13px/1 ui-monospace,monospace}
-.mobile-btn:active,.mobile-btn.active{transform:scale(.91);border-color:#fff;background:rgba(116,160,194,.68);box-shadow:inset 0 0 0 3px rgba(255,255,255,.2),0 1px 2px rgba(0,0,0,.3)}
-.mobile-btn.m1{left:78px;top:64px;width:68px;height:68px;border:3px solid rgba(255,255,255,.96);outline:3px solid rgba(0,0,0,.52);background:rgba(0,0,0,.48);box-shadow:inset 0 0 0 5px rgba(255,255,255,.12),inset 0 0 0 9px rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.28)}
-.mobile-btn.m1 .mobile-btn-main{font-size:19px;letter-spacing:.04em}
-.mobile-btn.m1:active,.mobile-btn.m1.active{background:rgba(100,142,177,.66)}
-.mobile-btn.block{left:2px;top:46px;border-color:rgba(177,222,255,.92)}
-.mobile-btn.skill{border-color:rgba(255,255,255,.86)}
-.mobile-btn[data-mobile-action="1"]{left:96px;top:8px}
-.mobile-btn[data-mobile-action="2"]{right:2px;top:64px}
-.mobile-btn[data-mobile-action="3"]{left:96px;top:136px}
-.mobile-btn[data-mobile-action="4"]{left:44px;top:64px}
-.mobile-btn[data-mobile-action="dash"]{left:2px;top:8px}
-.mobile-btn.special{left:2px;top:84px;border-color:rgba(224,190,255,.96)}
-.mobile-btn.awaken{left:2px;top:122px;border-color:rgba(255,218,144,.96)}
-.mobile-btn[data-mobile-action="jump"]{left:40px;top:172px;width:28px;height:25px;border-radius:8px;font-size:11px}
-.mobile-btn[data-mobile-action="trash"]{left:73px;top:172px;width:28px;height:25px;border-radius:8px;font-size:11px}
-.mobile-btn.pause{left:106px;top:172px;width:68px;height:25px;border-radius:8px;display:flex;flex-direction:row;gap:5px;background:rgba(5,10,18,.58);border-color:rgba(255,255,255,.72);font-size:9px}
-.mobile-btn.pause span{font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em}
+.mobile-btn .mobile-btn-main{font:1000 13px/1 ui-monospace,monospace;display:flex;align-items:center;justify-content:center;width:100%;height:100%;pointer-events:none}
+.mobile-btn svg{width:68%;height:68%;display:block;fill:#fff;shape-rendering:crispEdges;pointer-events:none}
+.mobile-btn:active,.mobile-btn.active{transform:scale(.91);border-color:#fff;background:rgba(116,137,155,.62);box-shadow:inset 0 0 0 3px rgba(255,255,255,.2),0 1px 2px rgba(0,0,0,.3)}
+.mobile-btn.m1{left:76px;top:53px;width:66px;height:66px;border-width:3px;outline-width:3px;background:rgba(0,0,0,.48);box-shadow:inset 0 0 0 5px rgba(255,255,255,.12),inset 0 0 0 9px rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.28)}
+.mobile-btn.m1 svg{width:72%;height:72%}
+.mobile-btn[data-mobile-action="dash"]{left:39px;top:5px;width:40px;height:40px}
+.mobile-btn[data-mobile-action="4"]{left:150px;top:19px;width:34px;height:34px}
+.mobile-btn[data-mobile-action="1"]{left:62px;top:137px;width:36px;height:36px}
+.mobile-btn[data-mobile-action="2"]{left:111px;top:147px;width:36px;height:36px}
+.mobile-btn[data-mobile-action="3"]{left:158px;top:137px;width:36px;height:36px}
+.mobile-btn.block{left:1px;top:91px;width:30px;height:30px}
+.mobile-btn[data-mobile-action="trash"]{left:36px;top:91px;width:30px;height:30px}
+.mobile-btn.special,.mobile-btn.awaken{position:relative;left:auto;top:auto;width:31px;height:31px}
+.mobile-btn.pause-top{position:absolute;left:50%;top:calc(7px + env(safe-area-inset-top));width:31px;height:31px;transform:translateX(-50%);z-index:12;font-size:15px;background:rgba(5,10,18,.5)}
+.mobile-btn.pause-top:active,.mobile-btn.pause-top.active{transform:translateX(-50%) scale(.91)}
+.mobile-btn.cooling{filter:grayscale(1);background:rgba(82,86,92,.78)!important;border-color:rgba(185,190,196,.92)!important;color:#d7dbe0!important}
+.mobile-btn .mobile-cooldown{display:none;position:absolute;inset:0;z-index:3;align-items:center;justify-content:center;border-radius:50%;background:rgba(48,52,58,.76);color:#fff;font:1000 12px/1 ui-monospace,monospace;letter-spacing:-.04em;text-shadow:1px 1px 0 #111;pointer-events:none}
+.mobile-btn.cooling .mobile-cooldown{display:flex}
+.mobile-btn.cooling .mobile-btn-main{opacity:.15}
+.mobile-btn.m1 .mobile-cooldown{font-size:16px}
 
 @media(max-width:640px){
  .mobile-setup-wrap{width:min(320px,86vw)}
@@ -179,46 +184,34 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(210px + env(safe-ar
  .mobile-setup-button strong{font-size:10px}
  .mobile-setup-button small{font-size:7px}
  .mobile-setup-hint{font-size:8px}
- .mobile-action-grid{width:min(184px,57vw);height:202px;right:max(7px,env(safe-area-inset-right));bottom:calc(7px + env(safe-area-inset-bottom))}
- #mobileJoystick{width:clamp(86px,23vw,100px);left:max(9px,env(safe-area-inset-left));bottom:calc(13px + env(safe-area-inset-bottom))}
- body.mobile-controls-enabled.game-active .bottom{bottom:calc(210px + env(safe-area-inset-bottom))}
- .mobile-btn:active,.mobile-btn.active{transform:scale(.91)}
+ .mobile-action-grid{width:190px;height:184px;right:max(7px,env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom))}
+ #mobileJoystick{width:clamp(82px,22vw,98px)}
+ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-area-inset-bottom))}
 }
 @media(max-width:360px){
- .mobile-action-grid{width:178px;height:196px}
- .mobile-btn.m1{left:76px;top:62px;width:64px;height:64px}
- .mobile-btn[data-mobile-action="1"]{left:92px;top:7px}
- .mobile-btn[data-mobile-action="2"]{right:2px;top:62px}
- .mobile-btn[data-mobile-action="3"]{left:92px;top:132px}
- .mobile-btn[data-mobile-action="4"]{left:42px;top:62px}
- .mobile-btn[data-mobile-action="jump"]{top:168px}
- .mobile-btn[data-mobile-action="trash"]{top:168px}
- .mobile-btn.pause{top:168px}
- #mobileJoystick{width:82px}
+ .mobile-action-grid{width:190px;height:184px;right:5px}
+ .mobile-btn.m1{left:76px;top:53px;width:62px;height:62px}
+ .mobile-btn[data-mobile-action="4"]{left:150px;top:19px}
+ .mobile-btn[data-mobile-action="1"]{left:62px;top:137px}
+ .mobile-btn[data-mobile-action="2"]{left:110px;top:147px}
+ .mobile-btn[data-mobile-action="3"]{left:158px;top:137px}
+ #mobileJoystick{width:80px}
 }
 @media(orientation:landscape) and (max-height:520px){
- #mobileJoystick{width:76px;left:max(8px,env(safe-area-inset-left));bottom:8px}
- .mobile-action-grid{width:172px;height:148px;bottom:5px;right:max(8px,env(safe-area-inset-right))}
- .mobile-btn{width:28px;height:28px;font-size:11px}
- .mobile-btn .mobile-btn-main{font-size:11px}
+ #mobileJoystick{width:72px;left:max(8px,env(safe-area-inset-left));bottom:7px}
+ .mobile-left-actions{left:calc(max(8px,env(safe-area-inset-left)) + 72px + 4px);bottom:calc(19px + env(safe-area-inset-bottom));gap:5px}
+ .mobile-left-actions .mobile-btn{width:27px;height:27px}
+ .mobile-action-grid{width:178px;height:151px;bottom:5px;right:max(7px,env(safe-area-inset-right))}
  .mobile-btn.m1{left:72px;top:43px;width:54px;height:54px}
- .mobile-btn.m1 .mobile-btn-main{font-size:16px}
- .mobile-btn[data-mobile-action="1"]{left:83px;top:5px}
- .mobile-btn[data-mobile-action="2"]{right:2px;top:43px}
- .mobile-btn[data-mobile-action="3"]{left:83px;top:100px}
- .mobile-btn[data-mobile-action="4"]{left:42px;top:43px}
- .mobile-btn.block{left:2px;top:39px}
- .mobile-btn[data-mobile-action="dash"]{left:2px;top:5px}
- .mobile-btn.special{left:2px;top:73px}
- .mobile-btn.awaken{left:2px;top:107px}
- .mobile-btn[data-mobile-action="jump"]{left:37px;top:119px;width:24px;height:22px}
- .mobile-btn[data-mobile-action="trash"]{left:65px;top:119px;width:24px;height:22px}
- .mobile-btn.pause{left:93px;top:119px;width:64px;height:22px}
- body.mobile-controls-enabled.game-active .bottom{bottom:calc(154px + env(safe-area-inset-bottom));left:50%;width:27%;transform:translateX(-50%)}
- body.mobile-controls-enabled.game-active .awakening-label{font-size:7px}
- body.mobile-controls-enabled.game-active .slot{width:42px;height:38px}
+ .mobile-btn[data-mobile-action="dash"]{left:39px;top:4px;width:34px;height:34px}
+ .mobile-btn[data-mobile-action="4"]{left:140px;top:16px;width:30px;height:30px}
+ .mobile-btn[data-mobile-action="1"]{left:62px;top:112px;width:31px;height:31px}
+ .mobile-btn[data-mobile-action="2"]{left:104px;top:119px;width:31px;height:31px}
+ .mobile-btn[data-mobile-action="3"]{left:145px;top:112px;width:31px;height:31px}
+ .mobile-btn.block{left:1px;top:78px;width:26px;height:26px}
+ .mobile-btn[data-mobile-action="trash"]{left:31px;top:78px;width:26px;height:26px}
+ body.mobile-controls-enabled.game-active .bottom{bottom:calc(196px + env(safe-area-inset-bottom))}
 }
-
 
 /* Mobile mode: remove desktop key prompts/skill slots and keep only a centered rage meter. */
 body.mobile-controls-enabled.game-active .slots{display:none!important}
@@ -297,21 +290,29 @@ body.mobile-controls-enabled.game-active .ult-track{
     <div class="mobile-joy-knob" id="mobileJoyKnob"></div>
     <div class="mobile-joy-label">MOVE</div>
   </div>
+  <div class="mobile-left-actions" aria-label="Awakening and special">
+    <button type="button" class="mobile-btn awaken" data-mobile-action="awaken" aria-label="Awaken"><span class="mobile-btn-main">G</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn special" data-mobile-action="special" aria-label="Special"><span class="mobile-btn-main">R</span><span class="mobile-cooldown"></span></button>
+  </div>
+  <button type="button" class="mobile-btn pause-top" data-mobile-action="pause" aria-label="Pause">Ⅱ</button>
   <div class="mobile-action-grid" aria-label="Combat buttons">
-    <button type="button" class="mobile-btn m1" data-mobile-action="m1"><span class="mobile-btn-main">M1</span><small>TAP · COMBO</small></button>
-    <button type="button" class="mobile-btn block" data-mobile-action="block"><span class="mobile-btn-main">GUARD</span><small>HOLD</small></button>
-    <button type="button" class="mobile-btn" data-mobile-action="dash"><span class="mobile-btn-main">Q</span><small>DASH</small></button>
-    <button type="button" class="mobile-btn skill" data-mobile-action="1"><span class="mobile-btn-main">1</span><small>SKILL</small></button>
-    <button type="button" class="mobile-btn skill" data-mobile-action="2"><span class="mobile-btn-main">2</span><small>SKILL</small></button>
-    <button type="button" class="mobile-btn skill" data-mobile-action="3"><span class="mobile-btn-main">3</span><small>SKILL</small></button>
-    <button type="button" class="mobile-btn skill" data-mobile-action="4"><span class="mobile-btn-main">4</span><small>SKILL</small></button>
-    <button type="button" class="mobile-btn special" data-mobile-action="special"><span class="mobile-btn-main">R</span><small>SPECIAL</small></button>
-    <button type="button" class="mobile-btn awaken" data-mobile-action="awaken"><span class="mobile-btn-main">G</span><small>AWAKEN</small></button>
-    <button type="button" class="mobile-btn" data-mobile-action="jump"><span class="mobile-btn-main">↑</span><small>TAP TO JUMP</small></button>
-    <button type="button" class="mobile-btn" data-mobile-action="trash"><span class="mobile-btn-main">E</span><small>TRASH CAN</small></button>
-    <button type="button" class="mobile-btn pause" data-mobile-action="pause">Ⅱ <span>PAUSE</span></button>
+    <button type="button" class="mobile-btn" data-mobile-action="dash" aria-label="Dash">
+      <span class="mobile-btn-main"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M36 5h10v10H36zM30 17h11v8H30zM25 24h12v9H25zM19 31h12v8H19zM12 39h13v8H12zM6 49h14v7H6zM35 25l8 3 7-5 5 5-10 10-8-2-8 8-7-5 10-12zM38 36l8 2-2 11 9 7H42l-12-8zM20 39l9 1-3 12 6 6H20l-7-7z" /><path d="M3 24h17v3H3zM1 32h13v3H1zM1 40h9v3H1z" opacity=".85"/></svg></span>
+      <span class="mobile-cooldown"></span>
+    </button>
+    <button type="button" class="mobile-btn m1" data-mobile-action="m1" aria-label="Punch">
+      <span class="mobile-btn-main"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M9 30h7V18h7v-7h8v5h6V9h8v8h6v7h6v17h-4v9H19v-5h-6v-8H9z"/><path d="M16 19h5v14h-5zM29 14h6v12h-6zM43 18h5v12h-5zM53 25h4v12h-4z" fill="#17202b"/><path d="M20 39h7v10h-7zM29 36h6v13h-6zM38 34h6v15h-6z" fill="#17202b"/></svg></span>
+      <span class="mobile-cooldown"></span>
+    </button>
+    <button type="button" class="mobile-btn" data-mobile-action="4" aria-label="Skill 4"><span class="mobile-btn-main">4</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn" data-mobile-action="1" aria-label="Skill 1"><span class="mobile-btn-main">1</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn" data-mobile-action="2" aria-label="Skill 2"><span class="mobile-btn-main">2</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn" data-mobile-action="3" aria-label="Skill 3"><span class="mobile-btn-main">3</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn block" data-mobile-action="block" aria-label="Guard"><span class="mobile-btn-main">F</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn" data-mobile-action="trash" aria-label="Trash can"><span class="mobile-btn-main">E</span><span class="mobile-cooldown"></span></button>
   </div>
 </div>
+
 
 <div id="menu">
   <div class="menu-art" aria-hidden="true"></div><div class="menu-screen-shade" aria-hidden="true"></div>
@@ -541,12 +542,12 @@ function mobileAimAtTarget(){
 }
 function mobileButtonAction(action){
  if(!game.started||game.paused||game.over||!player||player.dead)return;
- if(action!=='pause'&&action!=='jump'&&(action!=='trash'||player.carryingTrashCan))mobileAimAtTarget();
+ if(action!=='pause'&&(action!=='trash'||player.carryingTrashCan))mobileAimAtTarget();
  if(action==='m1')useAttack(player,'m1');
  else if(action==='dash')useAttack(player,'dash');
  else if(action==='special')useAttack(player,'special');
  else if(action==='awaken')useAttack(player,'awaken');
- else if(action==='jump'){if(player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}}
+
  else if(action==='trash')toggleTrashCan(player);
  else if(action==='pause')togglePause();
  else if(['1','2','3','4'].includes(action))useAttack(player,action);
@@ -1280,7 +1281,35 @@ function updateProjectiles(dt){
 
 function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){const d=doorTraps[i];d.life-=dt;if(d.life<=0){doorTraps.splice(i,1);continue}const f=d.owner;if(!d.hit&&f&&f.jump<=0&&dist(f,d)<48&&keys.has(' ')){f.jump=1.65;f.jumpV=8.5;d.life=0;burst(d.x,d.y,'#e5c5ff',16,4);popText(d.x,d.y-38,'BOUNCE!','#e9d5ff',14)}}}
 function updateDestructibles(dt){for(const o of destructibles){if(!o.alive)continue;for(const f of [player,enemy]){if(f.dead||dist({x:o.x+o.w/2,y:o.y+o.h/2},f)>45)continue;if(f.attackAnim>0&&f.attackType==='punch'){const oldHp=o.hp;o.hp-=.045*dt*60;if(oldHp>=3&&o.hp<3)mapCacheDirty=true;if(o.hp<=0){o.alive=false;mapCacheDirty=true;addDebris(o.x+o.w/2,o.y+o.h/2,o.color,22);burst(o.x+o.w/2,o.y+o.h/2,'#f9e6c7',15,4);f.meter=clamp(f.meter+5,0,100)}}}}}
-function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;$('pHealth').style.width=(player.hp/player.maxHp*100)+'%';$('eHealth').style.width=(enemy.hp/enemy.maxHp*100)+'%';$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';$('ultFill').style.width=player.meter+'%';$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeTimer)+'s':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeTimer)+'s':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});}
+function updateMobileCooldowns(){
+ if(!player)return;
+ const nearbyReadyCan=trashCans.some(p=>!p.carried&&dist(player,p)<105);
+ const nearestCoolingCan=trashCans
+  .filter(p=>p.carried==='cooldown'&&p.lastThrownBy===player)
+  .sort((a,b)=>(a.respawnTimer||0)-(b.respawnTimer||0))[0];
+ document.querySelectorAll('#mobileControls [data-mobile-action]').forEach(btn=>{
+  const action=btn.dataset.mobileAction;
+  let cd=0;
+  if(action==='m1')cd=player.attackCd||0;
+  else if(action==='dash')cd=player.dashCd||0;
+  else if(['1','2','3','4'].includes(action))cd=player.skillCd[Number(action)-1]||0;
+  else if(action==='special')cd=player.specialCd||0;
+  else if(action==='trash'&&!player.carryingTrashCan&&!nearbyReadyCan&&nearestCoolingCan)cd=nearestCoolingCan.respawnTimer||0;
+  cd=Math.max(0,cd);
+  const cooling=cd>.04;
+  btn.classList.toggle('cooling',cooling);
+  const overlay=btn.querySelector('.mobile-cooldown');
+  if(overlay)overlay.textContent=cooling?cd.toFixed(1):'';
+  if(cooling)btn.setAttribute('aria-label',action+' cooldown '+cd.toFixed(1)+' seconds');
+  else if(action==='m1')btn.setAttribute('aria-label','Punch');
+  else if(action==='dash')btn.setAttribute('aria-label','Dash');
+  else if(['1','2','3','4'].includes(action))btn.setAttribute('aria-label','Skill '+action);
+  else if(action==='special')btn.setAttribute('aria-label','Special');
+  else if(action==='trash')btn.setAttribute('aria-label','Trash can');
+ });
+}
+function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;$('pHealth').style.width=(player.hp/player.maxHp*100)+'%';$('eHealth').style.width=(enemy.hp/enemy.maxHp*100)+'%';$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';$('ultFill').style.width=player.meter+'%';$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeTimer)+'s':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeTimer)+'s':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});updateMobileCooldowns();}
+
 function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)$('awakeningCutscene').classList.remove('active');return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;runScheduledTasks();updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}ai(dt);if(player.dead){player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateTrainingDummy(dt);updateProjectiles(dt);updateDoorTraps(dt);updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=Math.pow(.97,dt*60);p.vy*=Math.pow(.97,dt*60);p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60);camera.x=lerp(camera.x,player.x,camLerp);camera.y=lerp(camera.y,player.y,camLerp);camera.x=clamp(camera.x,W/2,WORLD.w-W/2);camera.y=clamp(camera.y,H/2,WORLD.h-H/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud()}
 function sx(x){return x-camera.x+W/2}function sy(y){return y-camera.y+H/2}
 function rect(x,y,w,h,c,stroke){ctx.fillStyle=c;ctx.fillRect(sx(x),sy(y),w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sx(x),sy(y),w,h)}}
