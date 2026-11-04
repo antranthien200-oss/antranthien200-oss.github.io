@@ -729,7 +729,7 @@ function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
  }
  f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=radius;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
  f.block=false;f.vx*=.18;f.vy*=.18;
- const pose=type==='void'?'gojoVoid':type==='shrine'?'sukunaShrine':type==='hakari'?'hakariDomain':'mahitoDomain';
+ const pose=type==='void'?'gojoVoid':type==='shrine'?'sukunaShrine':type==='hakari'?'hakariDomain':type==='yuta'?'yutaDomain':'mahitoDomain';
  setMotion(f,pose,windup,f.face,targetOf(f));damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));
  burst(f.x,f.y,type==='void'?'#aebcff':type==='shrine'?'#f3445b':'#8bd9c7',30,5);showToast('DOMAIN EXPANSION · '+domainName(type),1500);game.shake=Math.max(game.shake,8);return true;
 }
@@ -1981,6 +1981,10 @@ function drawDomainHandsignPose(f,cx,headY,headR,theme,p){
   // Hakari: hands rise to chest height and press together into a compact clasp.
   leftEnd={x:cx-headR*.31,y:headY+headR*.53};rightEnd={x:cx+headR*.31,y:headY+headR*.53};
   leftAngle=-.4;rightAngle=.4;leftStyle='clasp';rightStyle='clasp';
+ }else if(domain==='yuta'){
+  // Yuta: palms align at the chest for the vow with Rika.
+  leftEnd={x:cx-headR*.18,y:headY+headR*.36};rightEnd={x:cx+headR*.18,y:headY+headR*.36};
+  leftAngle=-.12;rightAngle=.12;leftStyle='interlock';rightStyle='interlock';
  }else{
   // Mahito: hands lift beside the head and open into a flower-like seal.
   leftEnd={x:cx-headR*.7,y:headY-headR*.47};rightEnd={x:cx+headR*.7,y:headY-headR*.47};
