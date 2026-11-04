@@ -2041,6 +2041,7 @@ function drawTrashManDomainCan(){
   const px=sx(x),py=sy(y);drawGoldenTrashCanScreen(px,py,1.35,Math.sin(game.time*1.1)*.035);
   if(Math.hypot(owner.x-x,owner.y-y)<150){ctx.save();ctx.textAlign='center';ctx.font='900 10px system-ui';ctx.fillStyle='#080b0a';ctx.fillRect(px-43,py-50,86,17);ctx.fillStyle='#fff0a8';ctx.fillText('E · PICK UP',px,py-38);ctx.restore()}
  }
+}
 function drawTrashManEffects(){
  for(const f of [player,enemy]){
   if(!f||f.dead||f.char!=='trashman')continue;
