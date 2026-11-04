@@ -128,7 +128,7 @@
 @keyframes awakenLines{0%{opacity:0;transform:translateX(-18%) rotate(-8deg)}25%{opacity:.8}100%{opacity:0;transform:translateX(18%) rotate(-8deg)}}
 @keyframes awakenText{0%{opacity:0;transform:skewX(-7deg) scale(.66) translateY(22px)}40%{opacity:1;transform:skewX(-7deg) scale(1.04) translateY(0)}100%{opacity:1;transform:skewX(-7deg) scale(1)}}
 
-/* Pixel HUD mobile controls */
+/* Compact, semi-transparent pixel-ring mobile controls */
 .mobile-setup-wrap{width:min(350px,82vw);display:flex;flex-direction:column;align-items:stretch;gap:8px}
 .mobile-setup-button{appearance:none;position:relative;display:grid;grid-template-columns:42px 1fr;grid-template-rows:1fr 14px;align-items:center;min-height:62px;padding:8px 14px;border:3px solid #9bdfff;border-radius:0;background:linear-gradient(180deg,#18334b 0%,#102236 48%,#0a1524 49%,#102238 100%);color:#f5fbff;text-align:left;cursor:pointer;box-shadow:4px 4px 0 #03070d,inset 2px 2px 0 #d5f2ff25,inset -3px -3px 0 #020811;transition:transform .08s,filter .08s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 .mobile-setup-button:hover{filter:brightness(1.16)}
@@ -139,56 +139,82 @@
 .mobile-setup-button strong{font-size:11px;letter-spacing:.1em;font-weight:1000;text-shadow:2px 2px 0 #06101a}
 .mobile-setup-button small{font-size:8px;letter-spacing:.1em;color:#b6d0e3;font-weight:900}
 .mobile-setup-hint{text-align:center;color:#afc1d2;font-size:9px;line-height:1.4;letter-spacing:.04em;text-shadow:1px 1px 0 #000}
+
 #mobileControls{position:fixed;inset:0;z-index:9;display:none;pointer-events:none;touch-action:none;user-select:none;-webkit-user-select:none}
 body.mobile-controls-enabled.game-active:not(.game-paused) #mobileControls{display:block}
 body.mobile-controls-enabled.game-active .controls,body.mobile-controls-enabled.game-active #modeTag{display:none}
-body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-area-inset-bottom))}
-#mobileJoystick{position:absolute;left:max(14px,env(safe-area-inset-left));bottom:calc(20px + env(safe-area-inset-bottom));width:clamp(116px,30vw,150px);aspect-ratio:1;border:3px solid #9bdfff;border-radius:0;background:repeating-linear-gradient(0deg,rgba(98,169,207,.08) 0 4px,transparent 4px 8px),linear-gradient(145deg,#162d43ed,#07111ff5);box-shadow:4px 4px 0 #03070d,inset 3px 3px 0 #d8f2ff20,inset -4px -4px 0 #020811;pointer-events:auto;touch-action:none}
-#mobileJoystick:before{content:"";position:absolute;inset:18%;border:2px dashed #b6dcf566;border-radius:0;background:repeating-conic-gradient(#a9dfff0b 0 25%,transparent 0 50%) 0 0/10px 10px}
-.mobile-joy-knob{position:absolute;left:50%;top:50%;width:42%;height:42%;transform:translate(-50%,-50%);border-radius:0;border:3px solid #d9f0ff;background:linear-gradient(135deg,#b6eaff 0 22%,#6bafd7 23% 68%,#2c5b7e 69%);box-shadow:3px 3px 0 #03070d,inset 2px 2px 0 #fff8;pointer-events:none}
-.mobile-joy-label{position:absolute;left:0;right:0;bottom:-20px;text-align:center;color:#e1efff;font-size:9px;font-weight:1000;letter-spacing:.2em;text-shadow:2px 2px 0 #050a12}
-.mobile-action-grid{position:absolute;right:max(12px,env(safe-area-inset-right));bottom:calc(18px + env(safe-area-inset-bottom));width:min(70vw,380px);display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;pointer-events:none}
-.mobile-btn{min-width:0;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:5px 2px;border:3px solid #799eb9;border-radius:0;background:linear-gradient(180deg,#29445b 0%,#182d42 48%,#0b1727 49%,#12253a 100%);color:#f5f8ff;font:1000 10px/1.05 system-ui,sans-serif;letter-spacing:.04em;text-shadow:2px 2px 0 #050a11;box-shadow:3px 3px 0 #03070d,inset 2px 2px 0 #dcefff24,inset -3px -3px 0 #020811;pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent}
-.mobile-btn small{font-size:8px;font-weight:950;letter-spacing:.05em;color:#bdd2e3;text-shadow:1px 1px 0 #050a11}
-.mobile-btn:active,.mobile-btn.active{transform:translate(2px,2px);border-color:#e1f7ff;background:linear-gradient(180deg,#47779a 0%,#2c5877 48%,#16334d 49%,#244966 100%);box-shadow:1px 1px 0 #03070d,inset 2px 2px 0 #fff5}
-.mobile-btn .mobile-btn-main{font-size:18px;font-weight:1000;line-height:1}
-.mobile-btn.m1{grid-column:span 2;min-height:58px;border-color:#ff8798;background:linear-gradient(180deg,#a9435b 0%,#792b43 48%,#351624 49%,#562239 100%);box-shadow:3px 3px 0 #03070d,inset 2px 2px 0 #fff2,inset -3px -3px 0 #170812}
-.mobile-btn.m1 .mobile-btn-main{font-size:23px;letter-spacing:.15em}
-.mobile-btn.block{border-color:#8bc8ff;background:linear-gradient(180deg,#315a7c 0%,#214362 48%,#10253a 49%,#1a3852 100%)}
-.mobile-btn.skill{border-color:#77d8ff}
-.mobile-btn.special{border-color:#d39cff;background:linear-gradient(180deg,#5b3b7b 0%,#392552 48%,#1d1430 49%,#302044 100%)}
-.mobile-btn.awaken{border-color:#ffcf79;background:linear-gradient(180deg,#92612f 0%,#68421e 48%,#2d1b0d 49%,#4d2d14 100%)}
-.mobile-btn.pause{grid-column:1/-1;min-height:34px;flex-direction:row;gap:9px;background:linear-gradient(180deg,#1a2738,#0a111c);border-color:#8294aa}
+/* Keep the existing HUD clear of the compact button cluster. */
+body.mobile-controls-enabled.game-active .bottom{bottom:calc(210px + env(safe-area-inset-bottom))}
+
+#mobileJoystick{position:absolute;left:max(10px,env(safe-area-inset-left));bottom:calc(12px + env(safe-area-inset-bottom));width:clamp(88px,23vw,104px);aspect-ratio:1;border:3px solid rgba(245,250,255,.86);border-radius:50%;background:radial-gradient(circle,rgba(36,48,64,.34) 0 42%,rgba(4,8,15,.48) 44% 100%);box-shadow:0 0 0 3px rgba(0,0,0,.45),inset 0 0 0 4px rgba(255,255,255,.12);backdrop-filter:blur(2px);pointer-events:auto;touch-action:none}
+#mobileJoystick:before{content:"";position:absolute;inset:17%;border:2px dashed rgba(216,238,255,.48);border-radius:50%;background:repeating-conic-gradient(rgba(220,240,255,.07) 0 25%,transparent 0 50%) 0 0/9px 9px}
+.mobile-joy-knob{position:absolute;left:50%;top:50%;width:43%;height:43%;transform:translate(-50%,-50%);border-radius:50%;border:3px solid rgba(245,251,255,.9);background:linear-gradient(145deg,rgba(193,224,245,.62),rgba(57,91,123,.55));box-shadow:0 0 0 2px rgba(0,0,0,.42),inset 0 0 0 3px rgba(255,255,255,.15);pointer-events:none}
+.mobile-joy-label{position:absolute;left:0;right:0;bottom:-18px;text-align:center;color:rgba(242,248,255,.9);font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;text-shadow:2px 2px 0 #050a12}
+
+.mobile-action-grid{position:absolute;right:max(7px,env(safe-area-inset-right));bottom:calc(7px + env(safe-area-inset-bottom));width:min(184px,57vw);height:202px;pointer-events:none}
+.mobile-btn{position:absolute;display:flex;align-items:center;justify-content:center;width:34px;height:34px;min-width:0;min-height:0;padding:0;border:2px solid rgba(245,250,255,.84);border-radius:50%;outline:2px solid rgba(0,0,0,.45);background:rgba(5,10,18,.43);color:#fff;font:1000 13px/1 ui-monospace,monospace;letter-spacing:0;text-shadow:2px 2px 0 rgba(0,0,0,.9);box-shadow:inset 0 0 0 3px rgba(255,255,255,.09),0 2px 5px rgba(0,0,0,.2);backdrop-filter:blur(2px);pointer-events:auto;touch-action:none;-webkit-tap-highlight-color:transparent;image-rendering:pixelated}
+.mobile-btn small{display:none}
+.mobile-btn .mobile-btn-main{font:1000 13px/1 ui-monospace,monospace}
+.mobile-btn:active,.mobile-btn.active{transform:scale(.91);border-color:#fff;background:rgba(116,160,194,.68);box-shadow:inset 0 0 0 3px rgba(255,255,255,.2),0 1px 2px rgba(0,0,0,.3)}
+.mobile-btn.m1{left:78px;top:64px;width:68px;height:68px;border:3px solid rgba(255,255,255,.96);outline:3px solid rgba(0,0,0,.52);background:rgba(0,0,0,.48);box-shadow:inset 0 0 0 5px rgba(255,255,255,.12),inset 0 0 0 9px rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.28)}
+.mobile-btn.m1 .mobile-btn-main{font-size:19px;letter-spacing:.04em}
+.mobile-btn.m1:active,.mobile-btn.m1.active{background:rgba(100,142,177,.66)}
+.mobile-btn.block{left:2px;top:46px;border-color:rgba(177,222,255,.92)}
+.mobile-btn.skill{border-color:rgba(255,255,255,.86)}
+.mobile-btn[data-mobile-action="1"]{left:96px;top:8px}
+.mobile-btn[data-mobile-action="2"]{right:2px;top:64px}
+.mobile-btn[data-mobile-action="3"]{left:96px;top:136px}
+.mobile-btn[data-mobile-action="4"]{left:44px;top:64px}
+.mobile-btn[data-mobile-action="dash"]{left:2px;top:8px}
+.mobile-btn.special{left:2px;top:84px;border-color:rgba(224,190,255,.96)}
+.mobile-btn.awaken{left:2px;top:122px;border-color:rgba(255,218,144,.96)}
+.mobile-btn[data-mobile-action="jump"]{left:40px;top:172px;width:28px;height:25px;border-radius:8px;font-size:11px}
+.mobile-btn[data-mobile-action="trash"]{left:73px;top:172px;width:28px;height:25px;border-radius:8px;font-size:11px}
+.mobile-btn.pause{left:106px;top:172px;width:68px;height:25px;border-radius:8px;display:flex;flex-direction:row;gap:5px;background:rgba(5,10,18,.58);border-color:rgba(255,255,255,.72);font-size:9px}
+.mobile-btn.pause span{font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em}
+
 @media(max-width:640px){
  .mobile-setup-wrap{width:min(320px,86vw)}
  .mobile-setup-button{min-height:58px;padding:8px 11px}
  .mobile-setup-button strong{font-size:10px}
  .mobile-setup-button small{font-size:7px}
  .mobile-setup-hint{font-size:8px}
- .mobile-action-grid{width:min(72vw,360px);gap:6px;right:max(8px,env(safe-area-inset-right));bottom:calc(12px + env(safe-area-inset-bottom))}
- .mobile-btn{min-height:52px;padding:4px 1px;font-size:9px}
- .mobile-btn small{font-size:7px}
- .mobile-btn .mobile-btn-main{font-size:17px}
- .mobile-btn.m1{min-height:56px}
- .mobile-btn.m1 .mobile-btn-main{font-size:21px}
- #mobileJoystick{width:clamp(108px,30vw,132px);left:max(10px,env(safe-area-inset-left));bottom:calc(17px + env(safe-area-inset-bottom))}
- body.mobile-controls-enabled.game-active .bottom{bottom:calc(154px + env(safe-area-inset-bottom))}
+ .mobile-action-grid{width:min(184px,57vw);height:202px;right:max(7px,env(safe-area-inset-right));bottom:calc(7px + env(safe-area-inset-bottom))}
+ #mobileJoystick{width:clamp(86px,23vw,100px);left:max(9px,env(safe-area-inset-left));bottom:calc(13px + env(safe-area-inset-bottom))}
+ body.mobile-controls-enabled.game-active .bottom{bottom:calc(210px + env(safe-area-inset-bottom))}
+ .mobile-btn:active,.mobile-btn.active{transform:scale(.91)}
 }
 @media(max-width:360px){
- .mobile-action-grid{width:74vw;gap:4px}
- .mobile-btn{min-height:48px;border-width:2px}
- .mobile-btn small{font-size:6px}
- #mobileJoystick{width:104px}
+ .mobile-action-grid{width:178px;height:196px}
+ .mobile-btn.m1{left:76px;top:62px;width:64px;height:64px}
+ .mobile-btn[data-mobile-action="1"]{left:92px;top:7px}
+ .mobile-btn[data-mobile-action="2"]{right:2px;top:62px}
+ .mobile-btn[data-mobile-action="3"]{left:92px;top:132px}
+ .mobile-btn[data-mobile-action="4"]{left:42px;top:62px}
+ .mobile-btn[data-mobile-action="jump"]{top:168px}
+ .mobile-btn[data-mobile-action="trash"]{top:168px}
+ .mobile-btn.pause{top:168px}
+ #mobileJoystick{width:82px}
 }
 @media(orientation:landscape) and (max-height:520px){
- #mobileJoystick{width:102px;bottom:8px}
- .mobile-action-grid{width:min(46vw,370px);bottom:7px;gap:4px}
- .mobile-btn{min-height:39px;padding:3px 1px;border-width:2px}
- .mobile-btn small{font-size:6px}
- .mobile-btn .mobile-btn-main{font-size:15px}
- .mobile-btn.m1{min-height:43px}
- .mobile-btn.m1 .mobile-btn-main{font-size:18px}
- body.mobile-controls-enabled.game-active .bottom{bottom:7px;left:50%;width:27%;transform:translateX(-50%)}
+ #mobileJoystick{width:76px;left:max(8px,env(safe-area-inset-left));bottom:8px}
+ .mobile-action-grid{width:172px;height:148px;bottom:5px;right:max(8px,env(safe-area-inset-right))}
+ .mobile-btn{width:28px;height:28px;font-size:11px}
+ .mobile-btn .mobile-btn-main{font-size:11px}
+ .mobile-btn.m1{left:72px;top:43px;width:54px;height:54px}
+ .mobile-btn.m1 .mobile-btn-main{font-size:16px}
+ .mobile-btn[data-mobile-action="1"]{left:83px;top:5px}
+ .mobile-btn[data-mobile-action="2"]{right:2px;top:43px}
+ .mobile-btn[data-mobile-action="3"]{left:83px;top:100px}
+ .mobile-btn[data-mobile-action="4"]{left:42px;top:43px}
+ .mobile-btn.block{left:2px;top:39px}
+ .mobile-btn[data-mobile-action="dash"]{left:2px;top:5px}
+ .mobile-btn.special{left:2px;top:73px}
+ .mobile-btn.awaken{left:2px;top:107px}
+ .mobile-btn[data-mobile-action="jump"]{left:37px;top:119px;width:24px;height:22px}
+ .mobile-btn[data-mobile-action="trash"]{left:65px;top:119px;width:24px;height:22px}
+ .mobile-btn.pause{left:93px;top:119px;width:64px;height:22px}
+ body.mobile-controls-enabled.game-active .bottom{bottom:calc(154px + env(safe-area-inset-bottom));left:50%;width:27%;transform:translateX(-50%)}
  body.mobile-controls-enabled.game-active .awakening-label{font-size:7px}
  body.mobile-controls-enabled.game-active .slot{width:42px;height:38px}
 }
@@ -436,8 +462,9 @@ function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.c
 function startGame(){resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
 
-let mobileControlsEnabled=false;
-try{mobileControlsEnabled=localStorage.getItem('jjsMobileControls')==='1'}catch(e){}
+// Enable touch controls by default on phones/tablets; a saved user choice takes priority.
+let mobileControlsEnabled=isMobileDevice;
+try{const savedMobileControls=localStorage.getItem('jjsMobileControls');if(savedMobileControls!==null)mobileControlsEnabled=savedMobileControls==='1'}catch(e){}
 function syncMobileControls(){
  const btn=$('mobileControlsToggle'),title=$('mobileControlsTitle'),hint=$('mobileSetupHint');
  document.body.classList.toggle('mobile-controls-enabled',mobileControlsEnabled);
