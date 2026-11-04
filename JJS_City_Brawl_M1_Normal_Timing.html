@@ -691,7 +691,7 @@ function resolveDomainClash(winner,reason='TIME'){
 function beginDomainClash(a,b){
  if(game.domainClash||!canDomainClash(a,b))return false;
  game.domainClash={members:[a,b],time:15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time};
- for(const f of [a,b]){f.domainState='clashing';f.block=false;f.combo=0;f.comboTimer=0;f.attackCd=0;f.stun=Math.min(f.stun||0,.12);f.ragdollTimer=0;if(f.transfigureSource){f.transfigureSource=null;f.transfigureMeter=0}}
+ for(const f of [a,b]){if(f.grabTarget)releaseGrab(f,false);if(f.capturedBy&&!f.capturedBy.dead)releaseGrab(f.capturedBy,false);f.domainState='clashing';f.block=false;f.combo=0;f.comboTimer=0;f.attackCd=0;f.counterWindow=0;f.counterKind='';f.rooted=0;f.pullTimer=0;f.pullSource=null;f.bloodRain=null;f.stun=Math.min(f.stun||0,.12);f.ragdollTimer=0;if(f.transfigureSource){f.transfigureSource=null;f.transfigureMeter=0}}
  scheduledTasks.length=0;for(let i=projectiles.length-1;i>=0;i--)if(a===projectiles[i].owner||b===projectiles[i].owner)projectiles.splice(i,1);
  showToast('DOMAIN CLASH · LAND HITS TO WIN',1600);burst((a.x+b.x)/2,(a.y+b.y)/2,'#e8edff',46,9);game.shake=Math.max(game.shake,12);updateDomainClashHud();return true;
 }
@@ -718,7 +718,7 @@ function startDomain(f,type,duration,windup=1.25,tick=.2,radius=545,power=1){
  const other=targetOf(f);
  if(other&&(other.domainTimer>0||other.domainWindup>0)){
   const compatible=CLASHABLE_DOMAINS.includes(type)&&CLASHABLE_DOMAINS.includes(other.domainType),started=other.domainCastStartedAt||other.domainOpenedAt||game.time;
-  const close=dist(f,other)<=980&&(other.domainWindup>0||game.time-started<=3.2);
+  const close=dist(f,other)<=980&&(other.domainWindup>0||game.time-started<=2.7);
   if(!compatible||!close){showToast('DOMAIN BARRIER ALREADY ACTIVE',800);return false}
  }
  f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=radius;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
