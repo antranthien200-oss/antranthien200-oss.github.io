@@ -1729,17 +1729,20 @@ function drawHeadHands(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player';
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/m.duration,0,1):(f.block?.5+.5*Math.sin(game.time*7):0);
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
- const target=(m&&!name.startsWith('m1_')&&Number.isFinite(m.angle))?{x:f.x+Math.cos(m.angle)*100,y:f.y+Math.sin(m.angle)*100}:liveTarget;
+ const target=(m&&!name.startsWith('m1_')&&!name.startsWith('yutaM1_')&&Number.isFinite(m.angle))?{x:f.x+Math.cos(m.angle)*100,y:f.y+Math.sin(m.angle)*100}:liveTarget;
  const dx=target.x-f.x,dy=target.y-(f.y-23),distance=Math.hypot(dx,dy)||1;
  const nx=dx/distance,ny=dy/distance,px=-ny,py=nx,angle=Math.atan2(ny,nx);
  const reach=clamp(distance*.56,23,76),idle=Math.sin(game.time*4.2+(isPlayer?0:1.5))*1.4,headY=y-23;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
- const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0;
+ const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0,yutaCombo=name.startsWith('yutaM1_')?(Number(name.slice(7))||1):0;
  if(name==='blockGesture'){
   const brace=0.5+0.5*Math.sin(game.time*7);handA=P(13+brace*4,22,-10-brace*3);handB=P(13+brace*4,-22,-10-brace*3);handAScale=1.16;handBScale=1.16;
  }else if(name==='dashGesture'){
   const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
+ }else if(yutaCombo){
+  const sweep=Math.sin(progress*Math.PI),grip=P(9+sweep*11,-5,15+Math.sin(progress*Math.PI*2)*3),support=P(5+sweep*8,12,14);
+  handB=grip;handA=support;handBScale=1.08;handAScale=.9;handBAngle=angle+(yutaCombo%2?-.12:.12);handAAngle=angle;
  }else if(combo===1||combo===3){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handB=P(forward,-15,0);handA=P(reach-13+idle,18,0);handBScale=1.12;handBAngle=angle-.08;
@@ -1912,11 +1915,19 @@ function drawRikaCompanion(f){
  ctx.globalAlpha=.5;ctx.strokeStyle='#e8c9f1';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,0,37*big,game.time*2,game.time*2+Math.PI*1.6);ctx.stroke();ctx.restore();
 }
 function drawYutaKatana(f){
- const m=f.motion;if(!m||!m.name.startsWith('yuta'))return;
- const x=sx(f.x),y=sy(f.y)-f.jump*3,a=Number.isFinite(m.angle)?m.angle:f.face,p=clamp(m.t/m.duration,0,1),swing=Math.sin(p*Math.PI)*.42;
- ctx.save();ctx.translate(x+Math.cos(a+Math.PI/2)*9,y+Math.sin(a+Math.PI/2)*9-7);ctx.rotate(a+swing);
- ctx.fillStyle='#171923';ctx.fillRect(9,-3,15,6);ctx.fillStyle='#d6c0a3';ctx.fillRect(21,-2,7,4);ctx.fillStyle='#f0f2f8';ctx.fillRect(27,-2,48,4);ctx.fillStyle='#aeb9c8';ctx.fillRect(31,-1,39,2);ctx.fillStyle='#f0d5eb';ctx.fillRect(24,-5,4,10);ctx.fillStyle='#272334';ctx.fillRect(8,-2,15,4);ctx.restore();
-}
+  if(f.rikaMode)return;
+  const m=f.motion,active=!!(m&&m.name.startsWith('yutaM1_')),combo=active?(Number(m.name.slice(7))||1):0;
+  const x=sx(f.x),y=sy(f.y)-f.jump*3,a=active&&Number.isFinite(m.angle)?m.angle:(f.face||0),p=active?clamp(m.t/m.duration,0,1):0;
+  const swing=active?(p-.5)*1.8*(combo%2?1:-1):-.38,follow=active?Math.sin(p*Math.PI)*7:0;
+  const handSide=a+Math.PI/2;
+  ctx.save();ctx.translate(x+Math.cos(handSide)*9+Math.cos(a)*follow,y+Math.sin(handSide)*9+Math.sin(a)*follow-7);ctx.rotate(a+swing);
+  if(active){ctx.globalAlpha=.34*(1-p);ctx.strokeStyle='#f6e4f4';ctx.lineWidth=5;ctx.beginPath();ctx.arc(42,0,48,combo%2?-.95:.12,combo%2?.28:1.35);ctx.stroke();ctx.globalAlpha=1}
+  // Dark wrapped grip, bright guard, and a long silver blade: visible in Yuta's idle stance and sweeping on every M1.
+  ctx.fillStyle='#171923';ctx.fillRect(7,-3,17,6);ctx.fillStyle='#d6c0a3';ctx.fillRect(9,-2,12,4);ctx.fillStyle='#272334';ctx.fillRect(19,-2,8,4);
+  ctx.fillStyle='#f0d5eb';ctx.fillRect(24,-6,4,12);ctx.fillStyle='#bba8c8';ctx.fillRect(27,-3,4,6);
+  ctx.fillStyle='#111722';ctx.fillRect(30,-4,51,8);ctx.fillStyle='#f0f2f8';ctx.fillRect(31,-3,48,6);ctx.fillStyle='#aeb9c8';ctx.fillRect(34,-1,40,2);ctx.fillStyle='#fff';ctx.fillRect(36,-2,34,1);
+  ctx.restore();
+ }
 function drawFighter(f){if(f.dead||f.isTrainingDummy)return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}}
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
