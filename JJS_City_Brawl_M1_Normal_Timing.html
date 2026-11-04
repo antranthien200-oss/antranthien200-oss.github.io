@@ -763,7 +763,7 @@ function damage(target,amount,source,opts={}){
  if(target.hp<=0){if(target===player)dropCarriedTrashCan(target);target.dead=true;target.respawn=target.isTrainingDummy?2.4:2.5;if(target.isTrainingDummy){popText(target.x,target.y-75,'DUMMY DOWN','#aaf4e8',22)}else{popText(target.x,target.y-65,'K.O.','#ffcf75',28);if(source===player){game.kills++;showToast('K.O. · '+game.kills,1000)}}}
  updateHud();
 }
-function circleHit(x,y,r,source,amount,opts={}){let target=source===player?targetOf(source):player;if(target.dead)return;let d=Math.hypot(target.x-x,target.y-y);if(d<r+18){let ang=Math.atan2(target.y-y,target.x-x);damage(target,amount,source,{...opts,kx:Math.cos(ang)*(opts.push||4),ky:Math.sin(ang)*(opts.push||4)})}}
+function circleHit(x,y,r,source,amount,opts={}){let target=source===player?targetOf(source):player;if(target.dead)return;let d=Math.hypot(target.x-x,target.y-y),mobileBonus=mobileControlsEnabled&&source===player?14:0;if(d<r+18+mobileBonus){let ang=Math.atan2(target.y-y,target.x-x);damage(target,amount,source,{...opts,kx:Math.cos(ang)*(opts.push||4),ky:Math.sin(ang)*(opts.push||4)})}}
 function aimWorld(){return {x:mouse.x-W/2+camera.x,y:mouse.y-H/2+camera.y}}
 let camera={x:1100,y:750};
 function activeMoves(f){if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
@@ -771,9 +771,9 @@ function targetOf(f){if(f===player&&trainingDummy&&!trainingDummy.dead){const ai
 function aimedAt(f){return f.team==='player'?aimWorld():{x:player.x,y:player.y}}
 function faceTarget(f,t){f.face=Math.atan2(t.y-f.y,t.x-f.x)}
 function aimedAngle(f){const a=aimedAt(f);return Math.atan2(a.y-f.y,a.x-f.x)}
-function targetInAim(f,t,range,halfAngle=.8,angle=aimedAngle(f)){if(!t||t.dead||dist(f,t)>range)return false;const da=Math.atan2(t.y-f.y,t.x-f.x);return Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<=halfAngle}
+function targetInAim(f,t,range,halfAngle=.8,angle=aimedAngle(f)){const mobileBoost=mobileControlsEnabled&&f===player;if(!t||t.dead||dist(f,t)>range*(mobileBoost?1.22:1))return false;const da=Math.atan2(t.y-f.y,t.x-f.x);return Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<=halfAngle+(mobileBoost?.16:0)}
 function burstLine(f,t,color,n=12){let dx=t.x-f.x,dy=t.y-f.y,l=Math.hypot(dx,dy)||1;for(let i=0;i<n;i++){let k=i/(n-1);burst(f.x+dx*k,f.y+dy*k,color,1,2.5)}}
-function repeatDamage(f,t,amount,count,interval,opts={}){for(let i=0;i<count;i++)schedule(()=>{if(!t.dead&&dist(f,t)<(opts.range||320))damage(t,amount,f,{...opts,stun:opts.stun??.08})},i*interval)}
+function repeatDamage(f,t,amount,count,interval,opts={}){const hitRange=(opts.range||320)+(mobileControlsEnabled&&f===player?18:0);for(let i=0;i<count;i++)schedule(()=>{if(!t.dead&&dist(f,t)<hitRange)damage(t,amount,f,{...opts,stun:opts.stun??.08})},i*interval)}
 function setMotion(f,name,duration=.5,angle=f.face,target=null){
  if(!f)return;
  f.motion={name,t:0,duration:Math.max(.08,duration),angle:Number.isFinite(angle)?angle:f.face,target};
@@ -923,9 +923,10 @@ function useAttack(f,kind){
   const angle=f.face;f.comboTimer=.62;f.attackCd=fin?.34:.115;f.attackAnim=fin?.28:.18;f.attackType='punch';
   // Four-hit hand choreography: left, right, left, then a slower two-hand downward slam.
   setMotion(f,'m1_'+f.combo,fin?.42:.24,angle,t);
-  const range=f.char==='vessel'&&f.awakened?188:112;
+  const baseRange=f.char==='vessel'&&f.awakened?188:112;
+  const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2);
-  const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<1.08;
+  const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
   if(f.char==='vessel'&&f.awakened){
    const hit=d<range&&inArc;
    if(hit){damage(t,3.8,f,{stun:fin?.62:.32,invuln:.055,kx:Math.cos(angle)*(fin?7.5:.3),ky:Math.sin(angle)*(fin?7.5:.3),color:'#f04b62',damageType:'bullet'});burstLine(f,t,'#f04b62',6);m1Feedback(f,t,angle,true,false)}
@@ -1245,7 +1246,7 @@ function updateProjectiles(dt){
     }
    }
    let hitTarget=null,hitDistance=Infinity;
-   for(const candidate of candidates){const d=Math.hypot(p.x-candidate.x,p.y-candidate.y);if(d<p.r+25&&d<hitDistance){hitDistance=d;hitTarget=candidate}}
+   for(const candidate of candidates){const d=Math.hypot(p.x-candidate.x,p.y-candidate.y),mobileShotBonus=mobileControlsEnabled&&owner===player?10:0;if(d<p.r+25+mobileShotBonus&&d<hitDistance){hitDistance=d;hitTarget=candidate}}
    if(hitTarget){
     const a=Math.atan2(hitTarget.y-p.y,hitTarget.x-p.x),airborne=hitTarget.jump>.2;
     const special=p.specialVariant;
