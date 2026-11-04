@@ -151,7 +151,7 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-ar
 .mobile-joy-label{position:absolute;left:0;right:0;bottom:-18px;text-align:center;color:rgba(242,248,255,.9);font:900 8px/1 ui-monospace,monospace;letter-spacing:.18em;text-shadow:2px 2px 0 #050a12}
 
 /* G and R sit just to the right of the movement stick, like the reference. */
-.mobile-left-actions{position:absolute;left:calc(max(9px,env(safe-area-inset-left)) + clamp(82px,22vw,98px) + 5px);bottom:calc(38px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.mobile-left-actions{position:absolute;left:calc(max(9px,env(safe-area-inset-left)) + clamp(82px,22vw,98px));bottom:calc(38px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:8px;pointer-events:none}
 
 /* Right-side diamond cluster: dash, M1, and four skills; Guard/E sit below dash. */
 .mobile-action-grid{position:absolute;right:max(7px,env(safe-area-inset-right));bottom:calc(8px + env(safe-area-inset-bottom));width:190px;height:184px;pointer-events:none}
@@ -163,10 +163,10 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-ar
 .mobile-btn.m1{left:76px;top:53px;width:66px;height:66px;border-width:3px;outline-width:3px;background:rgba(0,0,0,.48);box-shadow:inset 0 0 0 5px rgba(255,255,255,.12),inset 0 0 0 9px rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.28)}
 .mobile-btn.m1 svg{width:72%;height:72%}
 .mobile-btn[data-mobile-action="dash"]{left:39px;top:5px;width:40px;height:40px}
-.mobile-btn[data-mobile-action="4"]{left:150px;top:19px;width:34px;height:34px}
-.mobile-btn[data-mobile-action="1"]{left:62px;top:137px;width:36px;height:36px}
-.mobile-btn[data-mobile-action="2"]{left:111px;top:147px;width:36px;height:36px}
-.mobile-btn[data-mobile-action="3"]{left:158px;top:137px;width:36px;height:36px}
+.mobile-btn[data-mobile-action="4"]{left:154px;top:19px;width:34px;height:34px}
+.mobile-btn[data-mobile-action="1"]{left:33px;top:137px;width:36px;height:36px}
+.mobile-btn[data-mobile-action="2"]{left:91px;top:147px;width:36px;height:36px}
+.mobile-btn[data-mobile-action="3"]{left:149px;top:137px;width:36px;height:36px}
 .mobile-btn.block{left:1px;top:91px;width:30px;height:30px}
 .mobile-btn[data-mobile-action="trash"]{left:36px;top:91px;width:30px;height:30px}
 .mobile-btn.special,.mobile-btn.awaken{position:relative;left:auto;top:auto;width:31px;height:31px}
@@ -192,22 +192,22 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-ar
  .mobile-action-grid{width:190px;height:184px;right:5px}
  .mobile-btn.m1{left:76px;top:53px;width:62px;height:62px}
  .mobile-btn[data-mobile-action="4"]{left:150px;top:19px}
- .mobile-btn[data-mobile-action="1"]{left:62px;top:137px}
- .mobile-btn[data-mobile-action="2"]{left:110px;top:147px}
- .mobile-btn[data-mobile-action="3"]{left:158px;top:137px}
+ .mobile-btn[data-mobile-action="1"]{left:33px;top:137px}
+ .mobile-btn[data-mobile-action="2"]{left:91px;top:147px}
+ .mobile-btn[data-mobile-action="3"]{left:149px;top:137px}
  #mobileJoystick{width:80px}
 }
 @media(orientation:landscape) and (max-height:520px){
  #mobileJoystick{width:72px;left:max(8px,env(safe-area-inset-left));bottom:7px}
- .mobile-left-actions{left:calc(max(8px,env(safe-area-inset-left)) + 72px + 4px);bottom:calc(19px + env(safe-area-inset-bottom));gap:5px}
+ .mobile-left-actions{left:calc(max(8px,env(safe-area-inset-left)) + 72px);bottom:calc(19px + env(safe-area-inset-bottom));gap:5px}
  .mobile-left-actions .mobile-btn{width:27px;height:27px}
  .mobile-action-grid{width:178px;height:151px;bottom:5px;right:max(7px,env(safe-area-inset-right))}
  .mobile-btn.m1{left:72px;top:43px;width:54px;height:54px}
  .mobile-btn[data-mobile-action="dash"]{left:39px;top:4px;width:34px;height:34px}
  .mobile-btn[data-mobile-action="4"]{left:140px;top:16px;width:30px;height:30px}
- .mobile-btn[data-mobile-action="1"]{left:62px;top:112px;width:31px;height:31px}
- .mobile-btn[data-mobile-action="2"]{left:104px;top:119px;width:31px;height:31px}
- .mobile-btn[data-mobile-action="3"]{left:145px;top:112px;width:31px;height:31px}
+ .mobile-btn[data-mobile-action="1"]{left:29px;top:112px;width:31px;height:31px}
+ .mobile-btn[data-mobile-action="2"]{left:72px;top:119px;width:31px;height:31px}
+ .mobile-btn[data-mobile-action="3"]{left:115px;top:112px;width:31px;height:31px}
  .mobile-btn.block{left:1px;top:78px;width:26px;height:26px}
  .mobile-btn[data-mobile-action="trash"]{left:31px;top:78px;width:26px;height:26px}
  body.mobile-controls-enabled.game-active .bottom{bottom:calc(196px + env(safe-area-inset-bottom))}
@@ -308,7 +308,7 @@ body.mobile-controls-enabled.game-active .ult-track{
     <button type="button" class="mobile-btn" data-mobile-action="1" aria-label="Skill 1"><span class="mobile-btn-main">1</span><span class="mobile-cooldown"></span></button>
     <button type="button" class="mobile-btn" data-mobile-action="2" aria-label="Skill 2"><span class="mobile-btn-main">2</span><span class="mobile-cooldown"></span></button>
     <button type="button" class="mobile-btn" data-mobile-action="3" aria-label="Skill 3"><span class="mobile-btn-main">3</span><span class="mobile-cooldown"></span></button>
-    <button type="button" class="mobile-btn block" data-mobile-action="block" aria-label="Guard"><span class="mobile-btn-main">F</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn block" data-mobile-action="block" aria-label="Guard"><span class="mobile-btn-main"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 54 14v16c0 14-9 23-22 30C19 53 10 44 10 30V14z"/><path d="M32 13 17 19v11c0 10 5 17 15 23 10-6 15-13 15-23V19z" fill="#17202b"/><path d="M29 22h6v18h-6z" fill="#fff"/><path d="M23 30h18v6H23z" fill="#fff"/></svg></span><span class="mobile-cooldown"></span></button>
     <button type="button" class="mobile-btn" data-mobile-action="trash" aria-label="Trash can"><span class="mobile-btn-main">E</span><span class="mobile-cooldown"></span></button>
   </div>
 </div>
@@ -547,7 +547,6 @@ function mobileButtonAction(action){
  else if(action==='dash')useAttack(player,'dash');
  else if(action==='special')useAttack(player,'special');
  else if(action==='awaken')useAttack(player,'awaken');
-
  else if(action==='trash')toggleTrashCan(player);
  else if(action==='pause')togglePause();
  else if(['1','2','3','4'].includes(action))useAttack(player,action);
