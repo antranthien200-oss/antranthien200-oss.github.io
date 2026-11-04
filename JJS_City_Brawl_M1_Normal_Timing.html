@@ -215,7 +215,7 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(164px + env(safe-ar
     </div>
   </div>
   <div id="toast"></div>
-  <div class="controls"><b>M1</b> Punch combo · separate clicks (holding does not repeat)<br><b>1–4</b> Character skills<br><b>Q</b> Dash / escape stun<br><b>F</b> Hold directional block · face attacker<br><b>R</b> Special technique<br><b>G</b> Awaken at 100%<br><b>E</b> Pick up / throw trash can<br><b>WASD</b> Move · <b>MOUSE</b> Aim / Face<br><b>SPACE</b> Jump · <b>ESC</b> Pause</div>
+  <div class="controls"><b>M1</b> Punch combo · separate clicks (holding does not repeat)<br><b>1–4</b> Character skills<br><b>Q</b> Dash / escape stun<br><b>F</b> Hold directional block · face attacker<br><b>R</b> Special technique<br><b>G</b> Awaken at 100%<br><b>E</b> Pick up / throw reusable trash can<br><b>WASD</b> Move · <b>MOUSE</b> Aim / Face<br><b>SPACE</b> Jump · <b>ESC</b> Pause</div>
   <div class="bottom">
     <div class="awakening"><div class="awakening-label" id="ultLabel">AWAKENING · 0%</div><div class="ult-track"><div id="ultFill"></div></div></div>
     <div class="slots" id="slots">
@@ -427,7 +427,7 @@ const nativeProjectilePush=projectiles.push.bind(projectiles);
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)})));
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
-function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0});}
+function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeTimer:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
@@ -776,7 +776,7 @@ function toggleTrashCan(f){
   const prop=f.carryingTrashCan;f.carryingTrashCan=null;prop.carried='projectile';
   const aim=aimedAt(f),a=Math.atan2(aim.y-f.y,aim.x-f.x),speed=18.5;
   setMotion(f,'trashCanThrow',.38,a,targetOf(f));
-  projectiles.push({x:f.x+Math.cos(a)*31,y:f.y+Math.sin(a)*31,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:24,life:2.65,maxDistance:820,travelled:0,owner:f,kind:'trashCan',damage:19,color:'#aeb9c4',propRef:prop});
+  projectiles.push({x:f.x+Math.cos(a)*31,y:f.y+Math.sin(a)*31,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:24,life:2.65,maxDistance:820,travelled:0,owner:f,kind:'trashCan',damage:19,color:'#aeb9c4',propRef:prop,rotation:0,height:0,hitOnce:false});prop.throws=(prop.throws||0)+1;
   showToast('TRASH CAN · THROWN',650);burst(f.x+Math.cos(a)*34,f.y+Math.sin(a)*34,'#c4d0da',9,3);return;
  }
  let nearest=null,best=105;
@@ -784,7 +784,7 @@ function toggleTrashCan(f){
  if(!nearest){showToast('NO TRASH CAN NEARBY',550);return}
  nearest.carried='player';f.carryingTrashCan=nearest;setMotion(f,'trashCanPickup',.25,f.face,targetOf(f));showToast('TRASH CAN · READY TO THROW',750);burst(nearest.x,nearest.y,'#c5d0d9',7,2.5);
 }
-function settleThrownCan(p){if(!p||p.kind!=='trashCan'||!p.propRef||p.propRef.carried!=='projectile')return;const prop=p.propRef;prop.carried=false;prop.x=clamp(p.x,60,WORLD.w-60);prop.y=clamp(p.y,60,WORLD.h-60);prop.flash=.45;}
+function settleThrownCan(p){if(!p||p.kind!=='trashCan'||!p.propRef||p.propRef.carried!=='projectile')return;const prop=p.propRef;prop.carried=false;prop.x=clamp(p.x,60,WORLD.w-60);prop.y=clamp(p.y,60,WORLD.h-60);prop.flash=.65;prop.lastThrownBy=p.owner||null;}
 function updateTrainingDummy(dt){
  if(!trainingDummy)return;
  if(trainingDummy.dead){trainingDummy.respawn-=dt;if(trainingDummy.respawn<=0){trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.x=1800;trainingDummy.y=1150;burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14)}return}
@@ -801,7 +801,8 @@ function drawTrashCan(x,y,scale=1,angle=0,flash=0){
 }
 function drawThrowableProps(){
  for(const prop of trashCans){if(prop.carried)continue;drawTrashCan(prop.x,prop.y,1,0,prop.flash||0);if(prop.flash>0)prop.flash=Math.max(0,prop.flash-.016);if(player&&!player.dead&&dist(player,prop)<112){ctx.save();ctx.fillStyle='#f2f7ff';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('E  PICK UP',sx(prop.x),sy(prop.y)-27);ctx.restore()}}
- if(player&&player.carryingTrashCan){const f=player,a=f.face;drawTrashCan(f.x+Math.cos(a)*28,f.y+Math.sin(a)*28-.0,.94,a,0)}
+ for(const p of projectiles){if(p.kind==='trashCan')drawTrashCan(p.x,p.y-(p.height||0),1.08,p.rotation||0,p.hitOnce?.18:0)}
+ if(player&&player.carryingTrashCan){const f=player,a=f.face;drawTrashCan(f.x+Math.cos(a)*28,f.y+Math.sin(a)*28,.94,a,0)}
 }
 function drawTrainingDummy(){
  if(!trainingDummy)return;
@@ -1125,6 +1126,20 @@ function updateFighter(f,dt){if(f.dead)return;if(f.capturedBy){const h=f.capture
 function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i],t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
+  if(p.kind==='trashCan'){
+   const ox=p.x,oy=p.y;p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;
+   p.travelled=(p.travelled||0)+Math.hypot(p.x-ox,p.y-oy);p.life-=dt;p.rotation=(p.rotation||0)+dt*13;
+   const progress=clamp(p.travelled/(p.maxDistance||820),0,1);
+   p.height=p.hitOnce?Math.max(0,(p.height||0)-180*dt):Math.sin(progress*Math.PI)*34;
+   if(!p.hitOnce&&t&&!t.dead&&Math.hypot(p.x-t.x,p.y-t.y)<p.r+18){
+    damage(t,p.damage,p.owner,{stun:.78,kx:p.vx*.78,ky:p.vy*.78,color:'#c5d0d9',big:true,unblockable:true,damageType:'projectile'});
+    p.hitOnce=true;p.life=.22;p.vx*=.12;p.vy*=.12;p.height=Math.min(p.height||0,7);
+    burst(p.x,p.y,'#c8d4df',9,2.6);game.shake=Math.max(game.shake,3);popText(t.x,t.y-62,'CLANG!','#e0ebf2',13);
+   }
+   const outside=p.x<24||p.y<24||p.x>WORLD.w-24||p.y>WORLD.h-24;
+   if(p.life<=0||p.travelled>p.maxDistance||outside){settleThrownCan(p);projectiles.splice(i,1)}
+   continue;
+  }
   if(p.kind==='blueMax'){
    const a=aimedAt(p.owner),dx=a.x-p.x,dy=a.y-p.y,l=Math.hypot(dx,dy)||1;
    const step=Math.min(l,520*dt);p.x+=dx/l*step;p.y+=dy/l*step;
@@ -1187,7 +1202,7 @@ function updateProjectiles(dt){
   p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);
   const hit=!t.dead&&Math.hypot(p.x-t.x,p.y-t.y)<p.r+18;
   if(hit){
-   if(p.kind==='trashCan'){damage(t,p.damage,p.owner,{stun:.78,kx:p.vx*.78,ky:p.vy*.78,color:'#c5d0d9',big:true,unblockable:true,damageType:'projectile'});burst(p.x,p.y,'#c8d4df',30,7);addDebris(p.x,p.y,'#7a8792',8);game.shake=Math.max(game.shake,8);popText(t.x,t.y-62,'TRASHED!','#e0ebf2',15);p.life=0;
+   if(p.kind==='trashCan'){p.life=0;
    }else if(p.kind==='red'){
     damage(t,p.damage,p.owner,{stun:.48,kx:p.vx*.55,ky:p.vy*.55,color:p.color,damageType:'bullet',blockedDamage:p.blockedDamage});
     burst(p.x,p.y,p.color,28,7);for(let n=0;n<22;n++){const a=n/22*Math.PI*2;burst(p.x+Math.cos(a)*(p.blastRadius||95),p.y+Math.sin(a)*(p.blastRadius||95),p.color,1,2)}p.life=0;
