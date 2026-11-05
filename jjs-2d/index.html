@@ -986,7 +986,7 @@ function resolveDomainClash(winner,reason='TIME'){
    f.domainType='';f.domainTimer=0;f.domainTick=0;f.domainWindup=0;f.domainWindupStart=0;f.domainDuration=0;f.domainState='';f.domainFlashTimer=0;f.block=false;f.stun=Math.min(f.stun||0,.12);
   }else{f.domainState='active';f.domainTimer=Math.max(2,f.domainTimer||0);f.domainWindup=0;f.domainWindupStart=0;f.block=false;f.stun=Math.min(f.stun||0,.12)}
  }
- if(winner){const loser=contestants.find(x=>x!==winner);if(loser)loser.meter=Math.max(loser.meter||0,75);
+ if(winner){const loser=contestants.find(x=>x!==winner);if(loser&&!loser.awakened)loser.meter=Math.max(loser.meter||0,75);
   burst(winner.x,winner.y,winner.team==='player'?'#77e7ff':'#ff8798',52,8);popText(winner.x,winner.y-82,'DOMAIN CLASH · WINNER','#fff0b8',19);showToast((winner.team==='player'?'YOU WIN':'CPU WINS')+' · DOMAIN CLASH',1500);game.shake=Math.max(game.shake,9);
  }else{for(const f of contestants){f.domainType='';f.domainTimer=0;f.domainTick=0;f.domainState='';f.domainDuration=0;f.domainFlashTimer=0;burst(f.x,f.y,'#e5e9f4',24,5)}showToast(reason==='TIME'?'DOMAIN CLASH · BOTH DOMAINS BREAK':'DOMAIN CLASH · DRAW',1500);game.shake=Math.max(game.shake,7)}
  if(winner&&winner.domainTimer>0)captureDomainOccupants(winner);updateDomainClashHud();updateHud(true);
