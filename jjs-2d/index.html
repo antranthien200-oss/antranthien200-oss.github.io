@@ -1572,8 +1572,15 @@ function useAttack(f,kind){
  if(f.char==='trashman'){trashManUseSkill(f,idx,t,aimedAngle(f));return;}
  // Hakari can combine Shutter Doors with Fever Breaker's windup for Fever Crush.
  if(f.char==='restless'&&!f.jackpot&&idx===1&&f.feverWindow>0){if(d<190){damage(t,8,f,{stun:.22,color:'#d8a6ff'});schedule(()=>{if(!t.dead&&dist(f,t)<160)damage(t,12,f,{stun:.75,kx:Math.cos(f.face)*11,ky:Math.sin(f.face)*11,big:true,unblockable:true,color:'#d8a6ff'})},180);popText(t.x,t.y-58,'FEVER CRUSH','#e9c7ff',17)}f.feverWindow=0;f.skillCd[1]=15;f.skillCd[3]=23;registerGambleVisual(f);return}
- // Divergent Fist has a deliberate second press window for Black Flash.
- if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){setMotion(f,'yujiBlackFlash',.58,f.face,t);const impact=f.blackFlashChain+1,dmg=10+Math.min(2,impact-1)*1.5;f.blackFlashWindow=0;f.skillCd[2]=18;t.invuln=0;damage(t,dmg,f,{stun:.45,kx:Math.cos(f.face)*(impact===3?16:12),ky:Math.sin(f.face)*(impact===3?16:12),unblockable:true,big:true,color:'#ffcf72'});popText(t.x,t.y-70,'BLACK FLASH '+impact+'/3','#ffe5a2',22);burst(t.x,t.y,'#fff0bb',24,7);if(impact<3){f.blackFlashChain=impact;f.blackFlashWindow=.58;f.skillCd[2]=0;showToast('BLACK FLASH CHAIN ×'+(impact+1),600)}else{f.blackFlashChain=0;f.blackFlashWindow=0;f.skillCd[2]=18}return}
+ // A successful Divergent Fist hit opens a short second-press Black Flash window.
+ if(f.char==='vessel'&&!f.awakened&&idx===2&&f.blackFlashWindow>0){
+  const angle=aimedAngle(f),hit=targetInAim(f,t,165,.95,angle);f.face=angle;f.blackFlashWindow=0;f.blackFlashChain=0;f.attackAnim=.38;setMotion(f,'yujiBlackFlash',.38,angle,t);
+  const endX=hit?t.x:f.x+Math.cos(angle)*96,endY=hit?t.y-23:f.y-23+Math.sin(angle)*96;
+  f.yujiBlackFlashFx={x1:f.x+Math.cos(angle)*22,y1:f.y-23+Math.sin(angle)*22,x2:endX,y2:endY,life:.32,max:.32};
+  f.cursedWhiteFlash=.09;burst(endX,endY,'#101014',hit?18:9,5);burst(endX,endY,'#e7354d',hit?12:7,4);game.shake=Math.max(game.shake,hit?9:3);
+  if(hit){t.invuln=0;damage(t,19,f,{stun:.72,kx:Math.cos(angle)*15,ky:Math.sin(angle)*15,unblockable:true,big:true,ignoreInvuln:true,color:'#17171d'});burst(t.x,t.y-23,'#09090d',18,6);burst(t.x,t.y-23,'#e7354d',12,5)}
+  showToast('BLACK FLASH',650);return;
+ }
  if(f.char==='ten'&&(!f.awakened||f.tenBase)&&idx===1&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead){const comboTarget=f.tenToadTarget;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;setMotion(f,'megumiAbyss',1.15,f.face,comboTarget);showToast('WELL’S UNKNOWN ABYSS',900);comboTarget.rooted=Math.max(comboTarget.rooted||0,1.15);comboTarget.tenRabbitSwarm={owner:f,life:1.1};[0,1,2].forEach(i=>schedule(()=>{if(f.dead||f.stun>.04||comboTarget.dead||dist(f,comboTarget)>560)return;const a=Math.atan2(comboTarget.y-f.y,comboTarget.x-f.x);damage(comboTarget,4,f,{stun:.22,kx:Math.cos(a)*(i===2?10:2),ky:Math.sin(a)*(i===2?10:2),color:'#a9c0e8',blockAllSides:true,ignoreInvuln:true});if(i===1){comboTarget.jump=.32;comboTarget.jumpV=2.2}if(i===2){comboTarget.jump=.95;comboTarget.jumpV=3.6;game.shake=Math.max(game.shake,8)}burst(comboTarget.x,comboTarget.y,'#c5d5ed',7,3)},220+i*260));return}
 if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);
  const isDomainCast=idx===3&&((f.char==='honored'&&f.awakened)||(f.char==='vessel'&&f.awakened)||(f.char==='perfection'&&f.awakened)||(f.char==='trashman'&&f.awakened));
@@ -1623,7 +1630,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     if(f.jump>.1){if(targetInAim(f,t,185,.9,angle)){damage(t,14,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,big:true,color:'#ffc078'});burst(t.x,t.y,'#ffc078',26,6)}else popText(f.x,f.y-50,'CURSED STRIKES · MISS','#ffc078',11)}
     else if(targetInAim(f,t,225,.88,angle)&&beginGrab(f,t,'yujiDrag',3,angle,'#e3344e',4.3)){showToast('CURSED STRIKES · DRAG COMBO',700);popText(f.x,f.y-55,'KEEP AIMING · 3 SECONDS','#ff8b9d',12)}
     else{f.vx+=Math.cos(angle)*3;burst(f.x,f.y,'#ffb16d',12,4);popText(f.x,f.y-50,'CURSED STRIKES · WHIFF','#ffc078',11)}
-   }if(idx===1){f.skillCd[idx]=15;f.invuln=.3;f.attackAnim=.85;f.jump=0;f.jumpV=0;setMotion(f,'yujiCrush',.85,angle,t);f.yujiCrushDash={angle,speed:15,duration:.27,elapsed:0,sparkTimer:0,hitTargets:new Set()};burst(f.x,f.y-23,'#46d8ff',12,4);showToast('CRUSHING BLOW',550);return}if(idx===2){f.skillCd[idx]=18;f.blackFlashWindow=0;f.attackAnim=.48;if(targetInAim(f,t,140,.8,angle)){damage(t,5,f,{stun:.16,color:'#ffc078'});schedule(()=>{if(!t.dead&&dist(f,t)<150){damage(t,5,f,{stun:.3,kx:Math.cos(angle)*6,ky:Math.sin(angle)*6,color:'#ffc078',ignoreInvuln:true});f.blackFlashWindow=.62;f.flash=.18;popText(f.x,f.y-52,'PRESS 3 AGAIN · BLACK FLASH','#ffe5a2',12)}},230)}else popText(f.x,f.y-48,'TOO FAR','#ffc078',12)}
+   }if(idx===1){f.skillCd[idx]=15;f.invuln=.3;f.attackAnim=.85;f.jump=0;f.jumpV=0;setMotion(f,'yujiCrush',.85,angle,t);f.yujiCrushDash={angle,speed:15,duration:.27,elapsed:0,sparkTimer:0,hitTargets:new Set()};burst(f.x,f.y-23,'#46d8ff',12,4);showToast('CRUSHING BLOW',550);return}if(idx===2){f.skillCd[idx]=18;f.blackFlashWindow=0;f.blackFlashChain=0;f.attackAnim=.62;f.invuln=.08;setMotion(f,'yujiDivergent',.62,angle,t);showToast('DIVERGENT FIST',500);schedule(()=>{if(f.dead||f.stun>.2)return;const hit=targetInAim(f,t,150,.9,angle);const endX=hit?t.x:f.x+Math.cos(angle)*88,endY=hit?t.y-23:f.y-23+Math.sin(angle)*88;f.cursedWhiteFlash=.15;f.yujiEnergyStrike={x1:f.x+Math.cos(angle)*22,y1:f.y-23+Math.sin(angle)*22,x2:endX,y2:endY,life:.25,max:.25};burst(endX,endY,'#48d5ff',hit?17:10,4.5);burst(endX,endY,'#d9faff',hit?7:4,3);if(hit){damage(t,7.5,f,{stun:.28,kx:Math.cos(angle)*3.5,ky:Math.sin(angle)*3.5,color:'#48cfff',ignoreInvuln:true});f.blackFlashWindow=.72;f.blackFlashTarget=t;showToast('DIVERGENT FIST · PRESS 3 AGAIN',700)}},300);return}
    if(idx===3){f.counterWindow=.6;f.counterKind='manji';f.skillCd[idx]=20;f.attackAnim=.35;f.block=false;burst(f.x,f.y,'#f3bb67',12,3);popText(f.x,f.y-55,'MANJI KICK COUNTER','#f3bb67',12)}
   }else{
    if(idx===0){f.skillCd[idx]=13;if(f.jump>.1){f.attackAnim=.55;projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42+28,vx:Math.cos(angle)*18,vy:Math.sin(angle)*18+2,r:27,life:1.7,maxDistance:700,travelled:0,owner:f,kind:'slash',damage:25,color:'#ff6478'});burst(f.x,f.y,'#fa526b',18,5);popText(f.x,f.y-55,'AERIAL DISMANTLE','#ff6478',12)}else if(targetInAim(f,t,310,.98,angle)){f.attackAnim=.65;burstLine(f,t,'#fa526b',20);repeatDamage(f,t,1.75,10,85,{range:330,stun:.05,color:'#fa526b',damageType:'bullet',blockedDamage:1,ignoreInvuln:true})}else{burstLine(f,{x:f.x+Math.cos(angle)*280,y:f.y+Math.sin(angle)*280},'#fa526b',18);popText(f.x,f.y-55,'DISMANTLE · MISS','#fa526b',12)}}
@@ -1809,7 +1816,7 @@ function updateTenEffects(f,dt){
   }
  } if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);updateHud();if(f.hp<=0){f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
-function updateFighter(f,dt){if(f.dead)return;if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot&&!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+function updateFighter(f,dt){if(f.dead)return;if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot&&!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}const crushDash=f.yujiCrushDash,crushDashActive=!!(crushDash&&f.stun<=.02&&f.rooted<=0);
   if(crushDash&&!crushDashActive)f.yujiCrushDash=null;
   if(crushDashActive){f.vx=Math.cos(crushDash.angle)*crushDash.speed;f.vy=Math.sin(crushDash.angle)*crushDash.speed;f.jump=0;f.jumpV=0}
@@ -2145,11 +2152,19 @@ function drawPixelSkillVfx(f,m,p,c){
   for(let i=0;i<5;i++){const yy=-3+i*8,lead=clamp(p*24,0,24);line(-54+lead,yy,-13+lead*.35,yy+3,'#17648a',9);line(-49+lead,yy-1,-17+lead*.35,yy+1,i%2?'#39c9f5':'#a9f2ff',3)}
   drawPixelSpriteGrid(['...BB...','..BMMB..','.BMMHMMB.','BMMHHHMMB','.BMMHMMB.','..BMMB..','...BB...'],20,20,3,{B:'#15527c',M:'#32bce9',H:'#e5fbff'});
   line(5,31,34,38,'#baf6ff',4);line(13,38,42,44,'#39c9f5',3);ctx.restore();
- }else if(m==='yujiBlackFlash'||m==='yujiDivergent'||m==='yujiManjiHit'||m==='yujiDropkick'){
-  const col=m==='yujiBlackFlash'?'#ffd66a':'#ffb56d';
-  line(8,-34,20,-22,'#202331',9);line(20,-22,12,-11,'#202331',9);line(12,-11,31,1,'#202331',9);line(31,1,24,14,'#202331',9);
-  line(8,-34,20,-22,col,3);line(20,-22,12,-11,col,3);line(12,-11,31,1,col,3);line(31,1,24,14,col,3);
-  cell(34,-19,9,9,'#fff2bd');cell(43,-7,6,6,col);
+ }else if(m==='yujiDivergent'){
+   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
+   const punch=clamp((p-.32)/.24,0,1),eased=punch*punch*(3-2*punch);
+   for(let i=0;i<4;i++){const yy=-20+i*11,shift=eased*34;line(-48+shift,yy,-13+shift*.35,yy+3,'#12527e',8);line(-44+shift,yy-1,-16+shift*.35,yy+1,i%2?'#32bdec':'#d7faff',3)}
+   cell(36+eased*19,-13,12,12,'#38c9f4');cell(45+eased*19,-4,6,6,'#e4fcff');ctx.restore();
+  }else if(m==='yujiBlackFlash'){
+   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
+   const pts=[[13,-29],[25,-17],[20,-7],[39,2],[31,12],[45,25]];
+   for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#ed304b',10);
+   for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#08090d',5);
+  }else if(m==='yujiManjiHit'||m==='yujiDropkick'){
+   line(8,-34,20,-22,'#202331',9);line(20,-22,12,-11,'#202331',9);line(12,-11,31,1,'#202331',9);line(31,1,24,14,'#202331',9);
+   line(8,-34,20,-22,'#ffb56d',3);line(20,-22,12,-11,'#ffb56d',3);line(12,-11,31,1,'#ffb56d',3);line(31,1,24,14,'#ffb56d',3);
  }else if(m.startsWith('sukuna')){
   for(let i=0;i<3;i++){const y=-25+i*17;line(14,y,63,y-18,'#761d35',9);line(17,y-2,65,y-20,'#f14f68',3);cell(56,y-24,9,3,'#ffe0e5')}
   if(m==='sukunaOpen'||m==='sukunaShrine'){drawPixelSpriteGrid(['...BB...','..BMMB..','.BMMMMB.','BMMMMMMB','.BMMMMB.','..BMMB..','...BB...'],37,-15,3,{B:'#9d2c42',M:'#ff794b'})}
@@ -2246,6 +2261,7 @@ const JJS_HEAD_PALETTE={
  trashman:{main:'#778489',accent:'#bed0ad',shadow:'#39464c'}
 };
 function getFighterTheme(f){
+ if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
  if(f.char==='vessel'&&f.awakened)return {main:'#9f3046',accent:'#f05c70',shadow:'#571c30'};
  if(f.char==='restless'&&f.jackpot)return {main:'#55c987',accent:'#b3ffd0',shadow:'#236744'};
@@ -2390,9 +2406,14 @@ function drawHeadHands(f){
    }else if(name==='gojoLimitless'){
     handA=P(38+20*pulse,13,-4);handB=P(10,-20,5);handAScale=1.18;
    }else if(name.startsWith('yuji')||name.startsWith('sukuna')){
-    if(name==='yujiManjiCounter'||name==='yujiManjiCounter'||name==='yujiFeint'){
-     handA=P(9+8*pulse,23,-1);handB=P(9+8*pulse,-23,-1);
-    }else if(name==='yujiCrush'||name==='yujiDropkick'||name==='sukunaRush'||name==='sukunaCleave'||name==='sukunaCleaveEnd'){
+    if(name==='yujiDivergent'){
+      const windup=1-clamp(progress/.38,0,1),punch=clamp((progress-.32)/.24,0,1),eased=punch*punch*(3-2*punch);
+      handB=P(-8-25*windup+(42+reach*.55)*eased,-18,-4-8*windup);handA=P(8,19,4);handBScale=1.2;handAScale=.95;
+     }else if(name==='yujiBlackFlash'){
+      handB=P(reach+58,-17,-3);handA=P(7,19,4);handBScale=1.32;handAScale=.92;
+     }else if(name==='yujiManjiCounter'||name==='yujiFeint'){
+      handA=P(9+8*pulse,23,-1);handB=P(9+8*pulse,-23,-1);
+     }else if(name==='yujiCrush'||name==='yujiDropkick'||name==='sukunaRush'||name==='sukunaCleave'||name==='sukunaCleaveEnd'){
      const lift=progress<.48?-22*pulse:25*pulse;handA=P(24+24*pulse,12,lift);handB=P(24+24*pulse,-12,lift);handAScale=1.2;handBScale=1.2;
     }else if(name==='yujiDivergent'||name==='yujiBlackFlash'||name==='sukunaDismantle'||name==='sukunaM1'){
      const punch=beat===0?P(reach+34*pulse,15,-3):P(reach+34*pulse,-15,-3);handA=punch;handB=beat===0?P(12,-18,6):P(12,18,6);handAScale=1.17;handBScale=1.17;
@@ -3164,10 +3185,32 @@ function drawYujiCrushEffects(){
  }
 }
 
+
+function drawYujiSkillImpactEffects(){
+ for(const f of [player,enemy]){
+  if(!f)continue;
+  const strike=f.yujiEnergyStrike;
+  if(strike){
+   const x1=sx(strike.x1),y1=sy(strike.y1),x2=sx(strike.x2),y2=sy(strike.y2),life=clamp(strike.life/strike.max,0,1);
+   ctx.save();ctx.globalAlpha=life;ctx.lineCap='round';ctx.shadowBlur=22;ctx.shadowColor='#42d7ff';
+   ctx.strokeStyle='#155d91';ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+   ctx.strokeStyle='#35cafa';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+   ctx.strokeStyle='#e5fbff';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.restore();
+  }
+  const flash=f.yujiBlackFlashFx;
+  if(flash){
+   const x1=sx(flash.x1),y1=sy(flash.y1),x2=sx(flash.x2),y2=sy(flash.y2),dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1,px=-dy/len,py=dx/len,life=clamp(flash.life/flash.max,0,1);
+   const pts=[[0,0],[.19,11],[.35,-8],[.52,14],[.69,-11],[.83,7],[1,0]];
+   const path=()=>{ctx.beginPath();pts.forEach(([t,off],i)=>{const x=x1+dx*t+px*off,y=y1+dy*t+py*off;if(i===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)});};
+   ctx.save();ctx.globalAlpha=life;ctx.lineJoin='miter';ctx.lineCap='square';ctx.shadowBlur=24;ctx.shadowColor='#f02b49';ctx.strokeStyle='#f02b49';ctx.lineWidth=13;path();ctx.stroke();ctx.shadowBlur=0;ctx.strokeStyle='#08090d';ctx.lineWidth=7;path();ctx.stroke();ctx.restore();
+  }
+ }
+}
+
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
- drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawTrashManEffects();drawTrashManDomainCan();
+ drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawYujiSkillImpactEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(game.domainClash)drawDomainClashFighterMarkers();
  // Handsign cut-ins are the top gameplay layer: the fighter and HUD cannot obscure the pose.
  if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
