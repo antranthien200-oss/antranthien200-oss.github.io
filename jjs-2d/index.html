@@ -326,6 +326,20 @@ body.mobile-controls-enabled.game-active .ult-track{
  #menu .menu-sub-panel{max-height:calc(100dvh - 12px);padding:9px}
  #menu .menu-sub-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* Preserve the original menu artwork and improve how it displays on phones. */
+/* Use normal image interpolation; the selected artwork is not pixel art itself. */
+#menu .menu-art{image-rendering:auto;background-position:center center;background-repeat:no-repeat;background-size:cover}
+@media(max-width:640px) and (orientation:portrait){
+ #menu .menu-art{inset:0;background-size:contain;background-position:center center;background-repeat:no-repeat;background-color:#080d1c;image-rendering:auto}
+ #menu .menu-art:after{background:linear-gradient(180deg,rgba(3,6,16,.05),rgba(3,6,16,.18))}
+ #menu .menu-screen-shade{background:linear-gradient(180deg,rgba(3,6,16,.02),rgba(3,6,16,.08))}
+ #menu .menu-main{background:rgba(5,9,22,.68);backdrop-filter:blur(2px)}
+}
+@media(max-width:640px) and (orientation:landscape){
+ #menu .menu-art{inset:0;background-size:cover;background-position:center center;image-rendering:auto}
+ #menu .menu-art:after{background:linear-gradient(180deg,rgba(3,6,16,.05),rgba(3,6,16,.2))}
+}
 </style>
 </head>
 <body>
