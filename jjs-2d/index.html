@@ -825,7 +825,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetR
 const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
-function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
+function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaKatanas:[],yutaHeldKatana:null,yutaKatanaSpawnTimer:0,yutaLadder:null,yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
@@ -1049,7 +1049,7 @@ function releaseDomainOccupants(owner){
 }
 function activateDomain(f){
  f.domainWindup=0;f.domainWindupStart=0;f.domainState='active';f.domainTimer=f.domainDuration;f.domainHitApplied=true;f.domainFlashTimer=.92;f.domainOpenedAt=game.time;captureDomainOccupants(f);
- if(f.domainType==='trash'){f.trashGoldenCanX=f.domainCenterX;f.trashGoldenCanY=Math.min(WORLD.h-110,f.domainCenterY+Math.min(155,(f.domainVisualRadius||860)*.18));f.trashDomainCanAvailable=true;f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=false;f.trashDomainCanCooldown=0}
+ if(f.domainType==='yuta'){const opponent=f===player?enemy:player;if(!opponent||opponent.dead){f.domainTimer=0;f.domainType='';f.domainState='';releaseDomainOccupants(f);showToast('AUTHENTIC MUTUAL LOVE · NO ENEMIES',900);return}f.yutaDomainHits=0;f.yutaJacobReady=false;f.yutaHeldKatana=null;f.yutaKatanas=[];f.yutaKatanaSpawnTimer=0;for(let i=0;i<4;i++)spawnYutaDomainKatana(f)}  if(f.domainType==='trash'){f.trashGoldenCanX=f.domainCenterX;f.trashGoldenCanY=Math.min(WORLD.h-110,f.domainCenterY+Math.min(155,(f.domainVisualRadius||860)*.18));f.trashDomainCanAvailable=true;f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=false;f.trashDomainCanCooldown=0}
  burst(f.x,f.y,f.domainType==='void'?'#c8d8ff':f.domainType==='shrine'?'#f34a60':'#9ce5d4',58,9);addDebris(f.x,f.y,f.domainType==='shrine'?'#8e273a':'#434b5b',10);game.shake=Math.max(game.shake,14);
  const t=f.domainType==='hakari'?(f===player?enemy:player):targetOf(f),d=t?Math.hypot(t.x-f.domainCenterX,t.y-f.domainCenterY):Infinity;
  if(t&&!t.dead&&t.domainInsideOwner===f){
@@ -1078,12 +1078,14 @@ function updateDomainState(f,dt){
   }else if(f.domainType==='void'){
    f.domainTick-=dt;
    if(f.domainTick<=0){f.domainTick=.35;if(inside){t.stun=Math.max(t.stun,.42);t.invuln=0;burst(t.x+rnd(-18,18),t.y+rnd(-18,18),'#b9caff',2,2)}}
+  }else if(f.domainType==='yuta'){
+   updateYutaDomainArsenal(f,dt);
   }else if(f.domainType==='soul'){
    if(inside){const rate=d<150?40:d<300?24:12;t.transfigureSource=f;t.transfigureMeter=clamp((t.transfigureMeter||0)+rate*dt*f.domainPower,0,100);t.stun=Math.max(t.stun,.08);if(t.transfigureMeter>=100){t.transfigureMeter=0;damage(t,Math.max(t.maxHp*1.15,100),f,{stun:1.2,big:true,unblockable:true,ignoreInvuln:true,color:'#8bd9c7'});burst(t.x,t.y,'#b8f2e3',46,9);popText(t.x,t.y-80,'SOUL TRANfigURED','#b8f2e3',18)}}else if(t.transfigureSource===f){t.transfigureMeter=Math.max(0,t.transfigureMeter-14*dt);if(t.transfigureMeter===0)t.transfigureSource=null}
    f.domainTick-=dt;if(f.domainTick<=0){f.domainTick=.32;if(inside){damage(t,1.5*f.domainPower,f,{stun:.05,color:'#84d1c1',ignoreInvuln:true,damageType:'domain'});burst(t.x+rnd(-48,48),t.y+rnd(-48,48),'#9de4d5',2,2)}}
   }
   }
-  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}if(f.domainType==='trash'){f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
+  if(f.domainTimer<=0){releaseDomainOccupants(f);if(f.domainType==='yuta'){f.yutaDomainHits=0;f.yutaJacobReady=false;f.yutaKatanas=[];f.yutaHeldKatana=null;f.yutaKatanaSpawnTimer=0}if(f.domainType==='soul'&&t.transfigureSource===f){t.transfigureSource=null;t.transfigureMeter=Math.max(0,t.transfigureMeter-30)}if(f.domainType==='trash'){f.trashGoldenCanCarried=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}f.domainType='';f.domainState='';f.domainDuration=0;showToast('DOMAIN COLLAPSED',700)}
  }
  if(f.bloodRain){
   const b=f.bloodRain;b.life-=dt;b.tick-=dt;const t=targetOf(f);
@@ -1178,7 +1180,7 @@ function damage(target,amount,source,opts={}){
 function circleHit(x,y,r,source,amount,opts={}){let target=source===player?targetOf(source):player;if(target.dead)return;let d=Math.hypot(target.x-x,target.y-y),mobileBonus=mobileControlsEnabled&&source===player?14:0;if(d<r+18+mobileBonus){let ang=Math.atan2(target.y-y,target.x-x);damage(target,amount,source,{...opts,kx:Math.cos(ang)*(opts.push||4),ky:Math.sin(ang)*(opts.push||4)})}}
 function aimWorld(){return {x:mouse.x-W/2+camera.x,y:mouse.y-H/2+camera.y}}
 let camera={x:1100,y:750};
-function activeMoves(f){if(f.char==='yuta'){if(f.rikaMode)return f.awakened?YUTA_RIKA_AWAKE_MOVES:YUTA_RIKA_MOVES;if(f.awakened){const moves=CHARS.yuta.awakeMoves.map(m=>m.slice());moves[1]=['COPY: '+YUTA_COPY_OPTIONS[(f.yutaCopyIndex||0)%YUTA_COPY_OPTIONS.length],'Cycle the copied technique with G'];return moves}return CHARS.yuta.moves}if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
+function activeMoves(f){if(f.char==='yuta'){if(f.domainType==='yuta'&&f.domainTimer>0){const moves=(f.awakened?CHARS.yuta.awakeMoves:CHARS.yuta.moves).map(m=>m.slice());moves[3]=f.yutaHeldKatana?['KATANA · '+f.yutaHeldKatana.technique,'Press M1 to run and activate the copied technique']:f.yutaJacobReady?["JACOB'S LADDER",'Press 4 while aiming at a target']:['AUTHENTIC MUTUAL LOVE · '+Math.min(4,f.yutaDomainHits||0)+'/4','Walk near one of the four landed katanas'];return moves}if(f.rikaMode)return f.awakened?YUTA_RIKA_AWAKE_MOVES:YUTA_RIKA_MOVES;if(f.awakened){const moves=CHARS.yuta.awakeMoves.map(m=>m.slice());moves[1]=['COPY: '+YUTA_COPY_OPTIONS[(f.yutaCopyIndex||0)%YUTA_COPY_OPTIONS.length],'Cycle the copied technique with G'];return moves}return CHARS.yuta.moves}if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
 function targetOf(f){if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<112&&dist(f,trainingDummy)<980)return trainingDummy;}return f===player?enemy:player}
 function aimedAt(f){return f.team==='player'?aimWorld():{x:player.x,y:player.y}}
 function faceTarget(f,t){f.face=Math.atan2(t.y-f.y,t.x-f.x)}
@@ -1328,14 +1330,63 @@ function drawTrainingDummy(){
  ctx.restore();
 }
 
-function yutaDomainSwordHit(f,t,angle){
- const sword=(f.yutaDomainSwords||[])[f.yutaDomainHits%4]||'SHIKIGAMI';f.yutaDomainHits=(f.yutaDomainHits||0)+1;const color='#f0c9ef';
- if(sword==='SHRINE')damage(t,6,f,{stun:.24,kx:Math.cos(angle)*5,ky:Math.sin(angle)*5,color,unblockable:true,ignoreInvuln:true});
- else if(sword==='THIN ICE BREAKER')damage(t,8,f,{stun:.5,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,color,unblockable:true,ignoreInvuln:true,big:true});
- else if(sword==='CLAIRVOYANCE'){f.invuln=Math.max(f.invuln,.3);damage(t,2,f,{stun:.28,color,unblockable:true,ignoreInvuln:true})}
- else if(sword==='CURSED SPEECH')damage(t,3,f,{stun:.65,color,unblockable:true,ignoreInvuln:true});
- else{damage(t,5,f,{stun:.35,color,unblockable:true,ignoreInvuln:true});for(let n=0;n<3;n++)schedule(()=>{if(!t.dead&&dist(f,t)<260)damage(t,2,f,{stun:.12,color:'#dfb8f4',unblockable:true,ignoreInvuln:true})},n*125)}
- burst(t.x,t.y,color,9,4);if(f.yutaDomainHits>=4)f.yutaJacobReady=true;
+function spawnYutaDomainKatana(f,index=null){
+ const angle=index===null?rnd(0,Math.PI*2):index*Math.PI/2+.38;
+ const radius=index===null?rnd(125,205):128+(index%2)*38;
+ const x=clamp(f.domainCenterX+Math.cos(angle)*radius,65,WORLD.w-65);
+ const y=clamp(f.domainCenterY+Math.sin(angle)*radius*.76,65,WORLD.h-65);
+ const pool=['SHRINE','THIN ICE BREAKER','CLAIRVOYANCE','CURSED SPEECH','SHIKIGAMI'];
+ f.yutaKatanas.push({x,y,fallTimer:index===null?0.55:rnd(.12,.58),technique:pool[Math.floor(Math.random()*pool.length)],angle:angle+.72,landed:false});
+}
+function updateYutaDomainArsenal(f,dt){
+ const opponent=f===player?enemy:player;
+ if(!opponent||opponent.dead){f.domainTimer=0;f.domainType='';f.domainState='';f.yutaKatanas=[];f.yutaHeldKatana=null;releaseDomainOccupants(f);showToast('AUTHENTIC MUTUAL LOVE · NO ENEMIES',900);return}
+ for(const sword of f.yutaKatanas){
+  if(!sword.landed){sword.fallTimer=Math.max(0,sword.fallTimer-dt);if(sword.fallTimer===0){sword.landed=true;burst(sword.x,sword.y,'#f0c9ee',8,2.8)}}
+ }
+ if(!f.yutaHeldKatana){
+  const pick=f.yutaKatanas.find(s=>s.landed&&Math.hypot(f.x-s.x,f.y-s.y)<64);
+  if(pick){
+   f.yutaKatanas.splice(f.yutaKatanas.indexOf(pick),1);f.yutaHeldKatana=pick;f.yutaKatanaSpawnTimer=.34;
+   setMotion(f,'yutaKatanaPickup',.28,Math.atan2(pick.y-f.y,pick.x-f.x),targetOf(f));
+   showToast('KATANA ACQUIRED · '+pick.technique,750);burst(f.x,f.y,'#f0c9ee',12,3.2);
+  }
+ }
+ if(f.yutaKatanaSpawnTimer>0)f.yutaKatanaSpawnTimer=Math.max(0,f.yutaKatanaSpawnTimer-dt);
+ if(f.yutaKatanas.length<4&&f.yutaKatanaSpawnTimer<=0){spawnYutaDomainKatana(f);f.yutaKatanaSpawnTimer=.45}
+}
+function yutaDomainSwordHit(f,t,angle,technique,landed){
+ const color='#f0c9ef',targets=tenTargets(f);
+ if(landed&&t&&!t.dead){
+  f.yutaDomainHits=(f.yutaDomainHits||0)+1;
+  if(technique==='SHRINE'){
+   damage(t,6,f,{stun:.3,kx:Math.cos(angle)*6,ky:Math.sin(angle)*6,color,unblockable:true,ignoreInvuln:true});
+   for(let n=0;n<3;n++)schedule(()=>{if(!t.dead)damage(t,4,f,{stun:.12,color:'#f6d8f2',unblockable:true,ignoreInvuln:true})},n*100);
+  }else if(technique==='THIN ICE BREAKER'){
+   damage(t,18,f,{stun:.55,kx:Math.cos(angle)*9,ky:Math.sin(angle)*9,color,big:true,unblockable:true,ignoreInvuln:true});
+   for(let n=0;n<6;n++)schedule(()=>{if(!t.dead)burst(t.x+rnd(-34,34),t.y+rnd(-34,34),'#f8eaff',3,2.7)},n*70);
+  }else if(technique==='CLAIRVOYANCE'){
+   f.invuln=Math.max(f.invuln,.55);damage(t,8,f,{stun:.42,color,unblockable:true,ignoreInvuln:true});popText(t.x,t.y-58,'CLAIRVOYANCE','#f4d9f2',13);
+  }else if(technique==='CURSED SPEECH'){
+   for(const target of targets){if(dist(f,target)<360){target.invuln=0;target.stun=Math.max(target.stun,1.6);burst(target.x,target.y,'#eac9ef',7,2.5)}}
+   damage(t,5,f,{stun:.8,color,unblockable:true,ignoreInvuln:true});showToast('CURSED SPEECH · STOP',900);
+  }else{
+   damage(t,5,f,{stun:.3,color,unblockable:true,ignoreInvuln:true});
+   for(let n=0;n<8;n++)schedule(()=>{if(!t.dead&&dist(f,t)<310)damage(t,n===7?3:1.5,f,{stun:.06,color:'#dfb8f4',unblockable:true,ignoreInvuln:true,damageType:'swarm'})},n*95);
+  }
+  if(f.yutaDomainHits>=4){f.yutaJacobReady=true;showToast("JACOB'S LADDER READY · PRESS 4",1100)}
+  burst(t.x,t.y,color,13,4.5);return;
+ }
+ if(technique==='SHRINE'){
+  for(const target of targets){const d=dist(f,target),a=Math.atan2(target.y-f.y,target.x-f.x),delta=Math.abs(Math.atan2(Math.sin(a-angle),Math.cos(a-angle)));if(d<330&&delta<.3)damage(target,9,f,{stun:.25,color,unblockable:true,ignoreInvuln:true})}
+  burst(f.x+Math.cos(angle)*175,f.y+Math.sin(angle)*175,color,16,5);
+ }else if(technique==='THIN ICE BREAKER'){
+  for(const target of targets){const d=dist(f,target),a=Math.atan2(target.y-f.y,target.x-f.x),delta=Math.abs(Math.atan2(Math.sin(a-angle),Math.cos(a-angle)));if(d<230&&delta<.68)damage(target,12,f,{stun:.35,kx:Math.cos(angle)*6,ky:Math.sin(angle)*6,color,unblockable:true,ignoreInvuln:true})}
+  burst(f.x+Math.cos(angle)*125,f.y+Math.sin(angle)*125,'#fff2ff',20,6);
+ }else if(technique==='CLAIRVOYANCE'){f.invuln=Math.max(f.invuln,.45);showToast('CLAIRVOYANCE',650)}
+ else if(technique==='CURSED SPEECH'){for(const target of targets){if(dist(f,target)<340){target.invuln=0;target.stun=Math.max(target.stun,1.25);burst(target.x,target.y,'#eac9ef',5,2)}}}
+ else{for(let n=0;n<8;n++)schedule(()=>{for(const target of tenTargets(f)){if(dist(f,target)<285)damage(target,1.5,f,{stun:.04,color:'#e9c8ef',unblockable:true,ignoreInvuln:true,damageType:'swarm'})}},n*95)}
+ burst(f.x+Math.cos(angle)*85,f.y+Math.sin(angle)*85,color,12,4);showToast(technique+' · MISS VARIANT',650);
 }
 function yutaUseSkill(f,idx,t,angle){
  const mobile=f===player&&mobileControlsEnabled,range=r=>r*(mobile?1.18:1),hit=(r,a=.85)=>targetInAim(f,t,range(r),a,angle);
@@ -1364,8 +1415,8 @@ function yutaUseSkill(f,idx,t,angle){
   }
   if(idx===2){f.skillCd[2]=18;setMotion(f,'yutaEnergyRipple',.9,angle,t);burst(f.x,f.y,'#f0c9ee',30,7);for(const target of tenTargets(f)){const d=dist(f,target);if(d<245){const a=Math.atan2(target.y-f.y,target.x-f.x);damage(target,19,f,{stun:.48,kx:Math.cos(a)*13,ky:Math.sin(a)*13,color:'#f1c5ec',unblockable:true,big:true,ignoreInvuln:true})}}}
   if(idx===3){
-   if(f.domainType==='yuta'&&f.domainTimer>0){if(!f.yutaJacobReady||!hit(1050,.58))return;f.skillCd[3]=120;setMotion(f,'yutaJacobLadder',1.7,angle,t);f.invuln=.7;damage(t,62.5,f,{stun:1.05,kx:Math.cos(angle)*18,ky:Math.sin(angle)*18,color:'#fff1ff',unblockable:true,big:true,ignoreInvuln:true});burstLine(f,t,'#fff4ff',18);burst(t.x,t.y,'#fff4ff',56,10);f.domainType='';f.domainTimer=0;f.domainDuration=0;f.domainState='';f.yutaDomainHits=0;f.yutaJacobReady=false;return}
-   if(f.domainType==='yuta'&&f.domainTimer>0)return;if(f.skillCd[3]>0)return;f.yutaDomainHits=0;f.yutaJacobReady=false;f.yutaDomainSwords=['SHRINE','THIN ICE BREAKER','CLAIRVOYANCE','CURSED SPEECH','SHIKIGAMI'].sort(()=>Math.random()-.5).slice(0,4);if(startDomain(f,'yuta',45,1.3,.2,620,1))f.skillCd[3]=120;
+   if(f.domainType==='yuta'&&f.domainTimer>0){if(!f.yutaJacobReady||f.yutaHeldKatana||!hit(1050,.58))return;f.skillCd[3]=120;setMotion(f,'yutaJacobLadder',1.7,angle,t);f.invuln=1.7;t.invuln=0;t.stun=Math.max(t.stun,1.35);t.vx=0;t.vy=0;t.yutaLadder={life:1.15,max:1.15,owner:f,angle};burstLine(f,t,'#fff4ff',18);burst(t.x,t.y,'#fff4ff',56,10);for(let i=0;i<22;i++)schedule(()=>{if(!t.dead)burst(t.x+rnd(-24,24),t.y-30+rnd(-24,24),'#fff8ff',3,2.5)},i*48);f.domainType='';f.domainTimer=0;f.domainDuration=0;f.domainState='';releaseDomainOccupants(f);f.yutaKatanas=[];f.yutaHeldKatana=null;f.yutaDomainHits=0;f.yutaJacobReady=false;return}
+   if(f.domainType==='yuta'&&f.domainTimer>0)return;if(f.skillCd[3]>0)return;f.yutaDomainHits=0;f.yutaJacobReady=false;f.yutaHeldKatana=null;f.yutaKatanas=[];f.yutaKatanaSpawnTimer=0;if(startDomain(f,'yuta',45,1.5,.2,620,1))f.skillCd[3]=120;
   }
   return true;
  }
@@ -1434,14 +1485,16 @@ function useAttack(f,kind){
   if(f.char==='ten'&&(f.shadowTimer>0||f.tenShadowStoredCan)){tenExitShadow(f);return}
   if(f.char==='yuta'){
    if(f.attackCd>0)return;
-   f.combo=f.comboTimer>0?(f.combo%4)+1:1;const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);const angle=f.face;
-   f.comboTimer=.58;f.attackCd=fin?.3:.16;f.attackAnim=fin?.34:.2;f.attackType='katana';setMotion(f,'yutaM1_'+f.combo,fin?.38:.24,angle,t);
+   if(f.domainType==='yuta'&&f.domainTimer>0&&f.yutaHeldKatana){
+    const katana=f.yutaHeldKatana;f.yutaHeldKatana=null;f.attackCd=.92;f.comboTimer=0;f.attackAnim=.72;f.attackType='katana';const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;setMotion(f,'yutaDomainSwordRun',.72,angle,t);f.vx+=Math.cos(angle)*8.5;f.vy+=Math.sin(angle)*8.5;showToast('KATANA · '+katana.technique,500);
+    schedule(()=>{if(f.dead||f.domainType!=='yuta')return;const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),landed=!t.dead&&d<245&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<1.02;yutaDomainSwordHit(f,t,angle,katana.technique,landed);if(landed){m1Feedback(f,t,angle,true,true);burstLine(f,t,'#f4c8ee',8)}else m1Feedback(f,{x:f.x+Math.cos(angle)*95,y:f.y+Math.sin(angle)*95},angle,false,true)},520);return;
+   }
+   f.combo=f.comboTimer>0?(f.combo%4)+1:1;const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);const angle=f.face;f.comboTimer=.58;f.attackCd=fin?.3:.16;f.attackAnim=fin?.34:.2;f.attackType='katana';setMotion(f,'yutaM1_'+f.combo,fin?.38:.24,angle,t);
    const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),hit=d<(mobileControlsEnabled&&f===player?153:132)&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<(mobileControlsEnabled&&f===player?1.35:1.12);
-   if(hit){const dmg=[4,4.2,4.2,5.5][f.combo-1];damage(t,dmg,f,{stun:fin?.5:.22,kx:Math.cos(angle)*(fin?8:.8),ky:Math.sin(angle)*(fin?8:.8),color:'#f1e8ef',ignoreInvuln:true});m1Feedback(f,t,angle,true,fin);burstLine(f,t,'#f0e8f0',4);if(f.domainType==='yuta'&&f.domainTimer>0)yutaDomainSwordHit(f,t,angle);if(fin){t.jump=Math.max(t.jump,.18);t.jumpV=Math.max(t.jumpV,1.8);if(!f.awakened)f.meter=clamp(f.meter+4,0,100)}}
-   else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,135)}
+   if(hit){const dmg=[4,4.2,4.2,5.5][f.combo-1];damage(t,dmg,f,{stun:fin?.5:.22,kx:Math.cos(angle)*(fin?8:.8),ky:Math.sin(angle)*(fin?8:.8),color:'#f1e8ef',ignoreInvuln:true});m1Feedback(f,t,angle,true,fin);burstLine(f,t,'#f0e8f0',4);if(fin){t.jump=Math.max(t.jump,.18);t.jumpV=Math.max(t.jumpV,1.8);if(!f.awakened)f.meter=clamp(f.meter+4,0,100)}}else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,135)}
    return;
   }
-  if(f.attackCd>0)return;
+if(f.attackCd>0)return;
   f.combo=f.comboTimer>0?(f.combo%4)+1:1;
   const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);
   const angle=f.face;f.comboTimer=.62;f.attackCd=fin?.34:.115;f.attackAnim=fin?.28:.18;f.attackType='punch';
@@ -1813,7 +1866,7 @@ function updateFighter(f,dt){if(f.dead)return;if(f.cursedWhiteFlash>0)f.cursedWh
     game.shake=Math.max(game.shake,8);game.hitStop=Math.max(game.hitStop,.06);
    }
   }
-  if(f.jump>0){f.jumpV-=20*dt;f.jump+=f.jumpV*dt;if(f.jump<=0){f.jump=0;f.jumpV=0;burst(f.x,f.y,'#d1d8e0',5,2)}}updateDomainContainment(f);f.walk+=dt*(Math.abs(f.vx)+Math.abs(f.vy))*.2;
+  if(f.jump>0){f.jumpV-=20*dt;f.jump+=f.jumpV*dt;if(f.jump<=0){f.jump=0;f.jumpV=0;burst(f.x,f.y,'#d1d8e0',5,2)}}if(f.yutaLadder){const ladder=f.yutaLadder;ladder.life=Math.max(0,ladder.life-dt);const lift=1-ladder.life/ladder.max;f.jump=.55+lift*1.65;f.jumpV=0;f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);if(ladder.life<=0){f.yutaLadder=null;const owner=ladder.owner;if(owner&&!owner.dead){if(f.awakened){f.awakeFuel=Math.max(0,(f.awakeFuel||0)-50);if(f.awakeFuel<=0)endAwakening(f)}else f.meter=Math.max(0,(f.meter||0)-35);damage(f,62.5,owner,{stun:.8,kx:Math.cos(ladder.angle)*5,ky:Math.sin(ladder.angle)*5,color:'#fff1ff',unblockable:true,big:true,ignoreInvuln:true})}}}updateDomainContainment(f);f.walk+=dt*(Math.abs(f.vx)+Math.abs(f.vy))*.2;
 }
 function bounceGoldenBinInsideDomain(p){
  if(!p||!p.domainBound||!p.owner)return false;
@@ -2517,7 +2570,7 @@ function drawRikaCompanion(f){
 }
 function drawYutaKatana(f){
   if(f.rikaMode)return;
-  const m=f.motion,active=!!(m&&m.name.startsWith('yutaM1_')),combo=active?(Number(m.name.slice(7))||1):0;
+  const m=f.motion,active=!!(m&&(m.name.startsWith('yutaM1_')||m.name==='yutaDomainSwordRun')),combo=active?(Number(m.name.slice(7))||1):0;
   const x=sx(f.x),y=sy(f.y)-f.jump*3,a=active&&Number.isFinite(m.angle)?m.angle:(f.face||0),p=active?clamp(m.t/m.duration,0,1):0;
   const swing=active?(p-.5)*1.8*(combo%2?1:-1):-.38,follow=active?Math.sin(p*Math.PI)*7:0;
   const handSide=a+Math.PI/2;
@@ -2529,7 +2582,20 @@ function drawYutaKatana(f){
   ctx.fillStyle='#111722';ctx.fillRect(30,-4,51,8);ctx.fillStyle='#f0f2f8';ctx.fillRect(31,-3,48,6);ctx.fillStyle='#aeb9c8';ctx.fillRect(34,-1,40,2);ctx.fillStyle='#fff';ctx.fillRect(36,-2,34,1);
   ctx.restore();
  }
-function drawGoldenTrashCanScreen(x,y,scale=1,angle=0){
+function drawYutaDomainKatanas(){
+ for(const owner of [player,enemy]){
+  if(!owner||owner.dead||owner.char!=='yuta'||owner.domainType!=='yuta'||owner.domainTimer<=0)continue;
+  for(const sword of owner.yutaKatanas||[]){
+   const x=sx(sword.x),y=sy(sword.y)-(sword.fallTimer>0?sword.fallTimer*240:0);
+   if(x<-90||x>W+90||y<-100||y>H+100)continue;
+   ctx.save();ctx.translate(x,y);ctx.rotate(sword.angle||-.7);ctx.globalAlpha=sword.landed?1:.85;ctx.shadowBlur=13;ctx.shadowColor='#e8c4f0';
+   ctx.fillStyle='#241a2d';ctx.fillRect(-5,-7,13,14);ctx.fillStyle='#d9c6a2';ctx.fillRect(-3,-5,9,10);
+   ctx.fillStyle='#171827';ctx.fillRect(2,-3,54,6);ctx.fillStyle='#f2e9f4';ctx.fillRect(4,-2,50,4);ctx.fillStyle='#fff';ctx.fillRect(8,-1,40,1);
+   ctx.fillStyle='#b99bbd';ctx.fillRect(-7,-2,18,4);ctx.strokeStyle='#fbecff';ctx.lineWidth=1;ctx.strokeRect(1,-3,56,6);ctx.restore();
+   if(sword.landed&&Math.hypot(owner.x-sword.x,owner.y-sword.y)<125){ctx.save();ctx.globalAlpha=.85;ctx.font='1000 9px system-ui';ctx.textAlign='center';ctx.fillStyle='#080812';ctx.fillRect(x-48,y-35,96,16);ctx.fillStyle='#f7e8ff';ctx.fillText('PICK UP',x,y-24);ctx.restore()}
+  }
+ }
+} function drawGoldenTrashCanScreen(x,y,scale=1,angle=0){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
  ctx.globalAlpha=.36;ctx.fillStyle='#ffd957';ctx.shadowBlur=25;ctx.shadowColor='#ffe27d';ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
  ctx.fillStyle='#573f16';ctx.fillRect(-17,15,34,7);ctx.fillStyle='#b8791d';ctx.fillRect(-15,-13,30,29);ctx.fillStyle='#f3c64d';ctx.fillRect(-13,-11,26,24);ctx.fillStyle='#ffe88d';ctx.fillRect(-7,-8,4,19);ctx.fillRect(5,-8,4,19);ctx.fillStyle='#8c5c19';ctx.fillRect(-16,-17,32,5);ctx.fillStyle='#ffe18a';ctx.fillRect(-14,-19,28,4);ctx.fillStyle='#805316';ctx.fillRect(-18,-23,36,5);ctx.fillStyle='#f6d35b';ctx.fillRect(-16,-25,32,4);ctx.fillStyle='#fff1ad';ctx.fillRect(-9,-22,18,2);ctx.strokeStyle='#7e581b';ctx.lineWidth=1;ctx.strokeRect(-15,-13,30,29);ctx.restore();
@@ -3075,7 +3141,7 @@ function drawEffects(){for(const s of trailStrokes){ctx.save();ctx.globalAlpha=c
   if(f&&!f.dead&&!clashant&&(f.domainTimer>0||f.domainWindup>0||f.domainType==='void02'))drawDomainArena(f);
   if(f&&!f.dead&&visibleInDomainView&&f.bloodRain)drawBloodRain(f);
   if(f&&!f.dead&&visibleInDomainView&&f.char==='restless'&&(f.awakeMode==='gamble'||f.jackpot)&&f.domainType!=='hakari')drawIdleDeathGamble(f)
- }for(const p of projectiles){const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(p.owner,activeDomain))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='blueMax'){drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],x,y,6,{B:'#174f78',M:'#39b9e8',H:'#e6fcff'});ctx.fillStyle='#fff';ctx.fillRect(x-3,y-27,6,6);ctx.fillRect(x+21,y+9,6,6)}else if(p.kind==='hollow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['...BBBBBBBB...','..BMMMMMMMMB..','.BMMHHHHHHMMB.','BMMHHHHHHHHMMB','BMMMMMMMMMMMMB','.BMMMMMMMMMMB.','..BMMMMMMMMB..','...BBBBBBBB...'],0,0,5,{B:'#413c78',M:'#9488e8',H:'#f5f2ff'})}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#7e1f36';ctx.fillRect(-39,-6,78,12);ctx.fillStyle=p.color||'#f14b60';ctx.fillRect(-34,-3,68,6);ctx.fillStyle='#fff0f2';ctx.fillRect(-24,-6,38,3)}else{const size=Math.max(3,Math.round(p.r*.32));ctx.fillRect(Math.round((x-size*2)/3)*3,Math.round((y-size*2)/3)*3,size*4,size*4);ctx.fillStyle='#fff';ctx.fillRect(Math.round((x-size*.5)/3)*3,Math.round((y-size*.5)/3)*3,size,size)}ctx.restore()}
+ }drawYutaDomainKatanas();for(const p of projectiles){const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(p.owner,activeDomain))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='blueMax'){drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],x,y,6,{B:'#174f78',M:'#39b9e8',H:'#e6fcff'});ctx.fillStyle='#fff';ctx.fillRect(x-3,y-27,6,6);ctx.fillRect(x+21,y+9,6,6)}else if(p.kind==='hollow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['...BBBBBBBB...','..BMMMMMMMMB..','.BMMHHHHHHMMB.','BMMHHHHHHHHMMB','BMMMMMMMMMMMMB','.BMMMMMMMMMMB.','..BMMMMMMMMB..','...BBBBBBBB...'],0,0,5,{B:'#413c78',M:'#9488e8',H:'#f5f2ff'})}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#7e1f36';ctx.fillRect(-39,-6,78,12);ctx.fillStyle=p.color||'#f14b60';ctx.fillRect(-34,-3,68,6);ctx.fillStyle='#fff0f2';ctx.fillRect(-24,-6,38,3)}else{const size=Math.max(3,Math.round(p.r*.32));ctx.fillRect(Math.round((x-size*2)/3)*3,Math.round((y-size*2)/3)*3,size*4,size*4);ctx.fillStyle='#fff';ctx.fillRect(Math.round((x-size*.5)/3)*3,Math.round((y-size*.5)/3)*3,size,size)}ctx.restore()}
  for(const p of particles){ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;if(p.shape==='square')ctx.fillRect(sx(p.x),sy(p.y),p.size,p.size);else{ctx.beginPath();ctx.arc(sx(p.x),sy(p.y),p.size/2,0,Math.PI*2);ctx.fill()}ctx.restore()}
  for(const p of debris){ctx.save();ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.translate(sx(p.x),sy(p.y)-p.z);ctx.rotate(p.rot);ctx.fillStyle=p.color;ctx.fillRect(-p.z*.45,-p.z*.45,p.z,p.z);ctx.strokeStyle='#62676d';ctx.lineWidth=1;ctx.strokeRect(-p.z*.45,-p.z*.45,p.z,p.z);ctx.restore()}
  for(const t of texts){ctx.save();ctx.globalAlpha=clamp(t.life/t.max,0,1);ctx.fillStyle='#070b12';ctx.font=`1000 ${t.size}px system-ui`;ctx.textAlign='center';ctx.fillText(t.text,sx(t.x)+2,sy(t.y)+2);ctx.fillStyle=t.color;ctx.fillText(t.text,sx(t.x),sy(t.y));ctx.restore()}}
