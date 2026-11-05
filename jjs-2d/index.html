@@ -364,6 +364,20 @@ body.mobile-controls-enabled.game-active .ult-track{
   }
 }
 
+
+
+/* Always fill the title-screen viewport with the full-resolution 16:9 battle artwork. */
+#menu .menu-art{
+  inset:0!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  image-rendering:auto!important;
+}
+@media(max-width:640px) and (orientation:portrait){
+  #menu .menu-art{background-size:cover!important;background-position:center center!important}
+}
+
 </style>
 </head>
 <body>
