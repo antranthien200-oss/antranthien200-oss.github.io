@@ -3019,7 +3019,7 @@ resetMatch();camera.x=1100;camera.y=750;
 
 <script>
 (()=>{const node=document.querySelector('#menu .menu-art');if(!node)return;
-fetch('balls-shenanigan-menu.webp.b64?v=balls-sukuna-gojo-20261105',{cache:'reload'})
+fetch('balls-shenanigan-menu.webp.b64?v=menu-fullres-lossless-1672x941-20261105',{cache:'reload'})
 .then(r=>{if(!r.ok)throw new Error('Menu artwork request failed: '+r.status);return r.text()})
 .then(v=>{const b=v.trim();if(!b.startsWith('UklGR'))throw new Error('Invalid menu artwork data');node.style.backgroundImage='url("data:image/webp;base64,'+b+'")'})
 .catch(e=>console.warn('Balls Shenanigan artwork could not load',e));
