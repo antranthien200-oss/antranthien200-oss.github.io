@@ -1584,7 +1584,7 @@ function useAttack(f,kind){
  if(f.char==='ten'&&(!f.awakened||f.tenBase)&&idx===1&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead){const comboTarget=f.tenToadTarget;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;setMotion(f,'megumiAbyss',1.15,f.face,comboTarget);showToast('WELL’S UNKNOWN ABYSS',900);comboTarget.rooted=Math.max(comboTarget.rooted||0,1.15);comboTarget.tenRabbitSwarm={owner:f,life:1.1};[0,1,2].forEach(i=>schedule(()=>{if(f.dead||f.stun>.04||comboTarget.dead||dist(f,comboTarget)>560)return;const a=Math.atan2(comboTarget.y-f.y,comboTarget.x-f.x);damage(comboTarget,4,f,{stun:.22,kx:Math.cos(a)*(i===2?10:2),ky:Math.sin(a)*(i===2?10:2),color:'#a9c0e8',blockAllSides:true,ignoreInvuln:true});if(i===1){comboTarget.jump=.32;comboTarget.jumpV=2.2}if(i===2){comboTarget.jump=.95;comboTarget.jumpV=3.6;game.shake=Math.max(game.shake,8)}burst(comboTarget.x,comboTarget.y,'#c5d5ed',7,3)},220+i*260));return}
 if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);
  const isDomainCast=idx===3&&((f.char==='honored'&&f.awakened)||(f.char==='vessel'&&f.awakened)||(f.char==='perfection'&&f.awakened)||(f.char==='trashman'&&f.awakened));
- if(!isDomainCast)damageBuildingAlongRay(f,angle,Math.min(1100,Math.hypot(aim.x-f.x,aim.y-f.y)+55));
+ if(!isDomainCast&&!(f.char==='vessel'&&!f.awakened&&idx===2))damageBuildingAlongRay(f,angle,Math.min(1100,Math.hypot(aim.x-f.x,aim.y-f.y)+55));
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
@@ -2161,7 +2161,7 @@ function drawPixelSkillVfx(f,m,p,c){
    ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
    const pts=[[13,-29],[25,-17],[20,-7],[39,2],[31,12],[45,25]];
    for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#ed304b',10);
-   for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#08090d',5);
+   for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#08090d',5);ctx.restore();
   }else if(m==='yujiManjiHit'||m==='yujiDropkick'){
    line(8,-34,20,-22,'#202331',9);line(20,-22,12,-11,'#202331',9);line(12,-11,31,1,'#202331',9);line(31,1,24,14,'#202331',9);
    line(8,-34,20,-22,'#ffb56d',3);line(20,-22,12,-11,'#ffb56d',3);line(12,-11,31,1,'#ffb56d',3);line(31,1,24,14,'#ffb56d',3);
@@ -3210,8 +3210,8 @@ function drawYujiSkillImpactEffects(){
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
- drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawYujiSkillImpactEffects();drawTrashManEffects();drawTrashManDomainCan();
- if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(game.domainClash)drawDomainClashFighterMarkers();
+ drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawTrashManEffects();drawTrashManDomainCan();
+ if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  // Handsign cut-ins are the top gameplay layer: the fighter and HUD cannot obscure the pose.
  if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  ctx.restore();
