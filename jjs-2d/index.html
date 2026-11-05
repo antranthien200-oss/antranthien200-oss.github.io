@@ -1262,7 +1262,7 @@ function updateGrab(f,dt){
  else if(kind==='bloodEdge'){f.x+=fx*35*dt;f.y+=fy*35*dt;collideWorld(f);t.x=f.x+fx*42;t.y=f.y+fy*42}
  else{const orbit=a+progress*Math.PI*2;t.x=f.x+Math.cos(orbit)*43;t.y=f.y+Math.sin(orbit)*28}
  t.vx=0;t.vy=0;t.jump=0;if(t.motion){t.motion.t=f.grabElapsed;t.motion.angle=a}
- const color=f.grabColor||'#e83c57';trailStrokes.push({x1:oldX,y1:oldY,x2:f.x,y2:f.y,life:kind==='yujiDrag'?.42:.28,max:kind==='yujiDrag'?.42:.28,color,width:kind==='yujiDrag'?13:8});
+ const color=f.grabColor||'#e83c57',bodyCenterOffset=kind==='yujiDrag'?23+f.jump*3:0;trailStrokes.push({x1:oldX,y1:oldY-bodyCenterOffset,x2:f.x,y2:f.y-bodyCenterOffset,life:kind==='yujiDrag'?.42:.28,max:kind==='yujiDrag'?.42:.28,color,width:kind==='yujiDrag'?13:8});
  if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
  while(f.grabElapsed>=f.grabTick&&f.grabTick<f.grabDuration){f.grabTick+=kind==='yujiDrag'?.25:kind==='sukunaCleave'?.14:.22;const hit=kind==='yujiDrag'?1.1:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*MAHITO_MODES[f.soulMode].damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='bloodEdge'?1.9:0;if(hit>0)damage(t,hit,f,{stun:.03,color,ignoreInvuln:true,unblockable:true})}
  f.vx=0;f.vy=0;
