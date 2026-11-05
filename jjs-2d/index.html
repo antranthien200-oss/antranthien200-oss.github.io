@@ -340,6 +340,30 @@ body.mobile-controls-enabled.game-active .ult-track{
  #menu .menu-art{inset:0;background-size:cover;background-position:center center;image-rendering:auto}
  #menu .menu-art:after{background:linear-gradient(180deg,rgba(3,6,16,.05),rgba(3,6,16,.2))}
 }
+
+
+/* Menu polish: show the bright artwork cleanly and remove the oversized panel behind the controls. */
+#menu .menu-art:after{background:none!important}
+#menu .menu-screen-shade{background:transparent!important}
+#menu .menu-main{
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+@media(max-width:640px),(max-height:520px){
+  #menu .menu-main{
+    border:0!important;
+    border-radius:0!important;
+    background:transparent!important;
+    box-shadow:none!important;
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+  }
+}
+
 </style>
 </head>
 <body>
