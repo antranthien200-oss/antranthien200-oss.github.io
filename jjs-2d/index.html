@@ -378,6 +378,51 @@ body.mobile-controls-enabled.game-active .ult-track{
   #menu .menu-art{background-size:cover!important;background-position:center center!important}
 }
 
+
+
+/* Final title-screen layout: preserve the full artwork and keep controls below the logo. */
+#menu .menu-art{
+  inset:0!important;
+  background-size:contain!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+  image-rendering:auto!important;
+}
+#menu .menu-main{
+  top:auto!important;
+  bottom:2.5%!important;
+  left:50%!important;
+  transform:translateX(-50%)!important;
+  width:min(390px,88vw)!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:47%!important;
+  overflow-y:auto!important;
+  justify-content:center!important;
+  gap:7px!important;
+  padding:8px 0!important;
+  border:0!important;
+  border-radius:0!important;
+  background:transparent!important;
+  box-shadow:none!important;
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+@media(max-width:640px),(max-height:520px){
+  #menu .menu-art{background-size:contain!important}
+  #menu .menu-main{
+    top:auto!important;
+    bottom:1.5%!important;
+    height:auto!important;
+    max-height:48%!important;
+    width:min(350px,92vw)!important;
+    padding:7px 0!important;
+    background:transparent!important;
+    border:0!important;
+    box-shadow:none!important;
+  }
+}
+
 </style>
 </head>
 <body>
