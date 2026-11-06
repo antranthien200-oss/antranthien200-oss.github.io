@@ -1591,7 +1591,7 @@ function useAttack(f,kind){
     const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x),within=Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<arc;
     if(dNow<range&&within){
      const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.yuta,color=theme.accent||'#ffaddb';
-     damage(t,8.5,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
+     damage(t,10,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
      m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+4,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
     }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
    };
@@ -1628,7 +1628,7 @@ if(f.attackCd>0)return;
     const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x),inArcNow=Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
     if(dNow<range&&inArcNow){
      const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=palette.accent||palette.main;
-     damage(t,8.5,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
+     damage(t,10,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
      m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
     }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
    };
