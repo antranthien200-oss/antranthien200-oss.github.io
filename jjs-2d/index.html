@@ -2594,19 +2594,19 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
  const points=state[side];
  if(!active){points.length=0;return}
  const now=game.time,dx=hand.x-baseX,dy=hand.y-baseY,last=points[points.length-1];
- if(!last||Math.hypot(dx-last.x,dy-last.y)>.35||now-last.time>.045)points.push({x:dx,y:dy,time:now});
- while(points.length>12||(points.length&&now-points[0].time>.17))points.shift();
+ if(!last||Math.hypot(dx-last.x,dy-last.y)>.9||now-last.time>.024)points.push({x:dx,y:dy,time:now});
+ while(points.length>16||(points.length&&now-points[0].time>.12))points.shift();
  if(points.length<2)return;
  const age=now-points[points.length-1].time;
- if(age>.17)return;
+ if(age>.12)return;
  ctx.save();
- ctx.globalAlpha=.78;
+ ctx.globalAlpha=.94*clamp(1-age/.12,0,1);
  ctx.strokeStyle=color;
- ctx.lineWidth=7;
+ ctx.lineWidth=10;
  ctx.lineCap='round';
  ctx.lineJoin='round';
  ctx.shadowColor=color;
- ctx.shadowBlur=9;
+ ctx.shadowBlur=15;
  ctx.beginPath();
  ctx.moveTo(baseX+points[0].x,baseY+points[0].y);
  for(let i=1;i<points.length-1;i++){
