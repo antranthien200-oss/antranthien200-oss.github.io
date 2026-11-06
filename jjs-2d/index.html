@@ -2292,7 +2292,7 @@ function drawVesselBaseSmoothSkillVfx(f,m,p){
 
 function drawPixelSkillVfx(f,m,p,c){
  if(!m||m.startsWith('m1_')||m.startsWith('yutaM1_')||m==='blockGesture'||m==='dashGesture')return false;
- if(f.char==='vessel'&&!f.awakened&&['yujiCursedDrag','yujiCursedDragEnd','yujiCrush','yujiDivergent','yujiBlackFlash','yujiManjiBlock','yujiManjiCounter'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
+ if(f.char==='vessel'&&!f.awakened&&['yujiCrush','yujiDivergent','yujiBlackFlash'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
  const beat=Math.sin(Math.PI*clamp(p,0,1));
  const cell=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(Math.round(x/3)*3,Math.round(y/3)*3,Math.max(3,Math.ceil(w/3)*3),Math.max(3,Math.ceil(h/3)*3))};
  const line=(x1,y1,x2,y2,color,thick=3)=>{const steps=Math.max(2,Math.ceil(Math.hypot(x2-x1,y2-y1)/5));for(let i=0;i<=steps;i++){const t=i/steps;cell(x1+(x2-x1)*t-thick/2,y1+(y2-y1)*t-thick/2,thick,thick,color)}};
