@@ -1613,17 +1613,25 @@ function useAttack(f,kind){
 if(f.attackCd>0)return;
   f.combo=f.comboTimer>0?(f.combo%4)+1:1;
   const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);
-  const angle=f.face;f.comboTimer=.62;f.attackCd=fin?.34:.115;f.attackAnim=fin?.28:.18;f.attackType='punch';
-  setMotion(f,'m1_'+f.combo,fin?.42:.24,angle,t);
+  const shrineM1=f.char==='vessel'&&f.awakened;
+  const angle=f.face;f.comboTimer=shrineM1?.46:.62;f.attackCd=shrineM1?.085:fin?.34:.115;f.attackAnim=shrineM1?.15:fin?.28:.18;f.attackType=shrineM1?'slash':'punch';
+  setMotion(f,'m1_'+f.combo,shrineM1?.15:fin?.42:.24,angle,t);
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
   const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2);
   const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
-  if(f.char==='vessel'&&f.awakened){
+  if(shrineM1){
    const hit=d<range&&inArc;
-   if(hit){damage(t,3.8,f,{stun:fin?.62:.32,invuln:.055,kx:Math.cos(angle)*(fin?7.5:.3),ky:Math.sin(angle)*(fin?7.5:.3),color:'#f04b62',damageType:'bullet'});burstLine(f,t,'#f04b62',6);m1Feedback(f,t,angle,true,false)}
-   else{m1Feedback(f,t,angle,false,false);damageBuildingAlongRay(f,angle,range)}
-   setMotion(f,'sukunaM1',.18,angle,t);return;
+   if(hit){
+    const finalSlash=fin,damageAmount=finalSlash?4.8:f.combo===3?4.4:3.8,push=finalSlash?11.5:.25;
+    damage(t,damageAmount,f,{stun:finalSlash?.42:.17,invuln:.045,kx:Math.cos(angle)*push,ky:Math.sin(angle)*push,color:'#ffffff',damageType:'bullet'});
+    burst(t.x,t.y,'#ffffff',finalSlash?13:f.combo===3?10:6,finalSlash?5.5:3.2);
+    game.hitStop=Math.max(game.hitStop,finalSlash?.045:.012);
+    game.shake=Math.max(game.shake,finalSlash?6:f.combo===3?3.4:1.5);
+   }else{
+    damageBuildingAlongRay(f,angle,range);
+   }
+   return;
   }
   const hit=d<range&&inArc;
   if(hit){
@@ -2432,8 +2440,31 @@ function drawMotionVfx(f,m,p,c){
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
-  if(!f.awakened)return;
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
+  if(f.char==='vessel'&&f.awakened){
+   const fade=clamp((1-p)/.42,0,1),grow=.82+.18*clamp(p/.24,0,1);
+   const drawCrescent=(x,y,length,thickness,alpha)=>{
+    ctx.save();ctx.translate(x,y);ctx.scale(grow,grow);ctx.globalAlpha=alpha*fade;
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.bezierCurveTo(length*.2,-thickness*2.15,length*.8,-thickness*2.15,length,0);
+    ctx.bezierCurveTo(length*.8,-thickness*.48,length*.2,-thickness*.48,0,0);
+    ctx.closePath();ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=3.1;ctx.lineJoin='round';
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=4;ctx.fill();ctx.stroke();ctx.restore();
+   };
+   if(combo===1||combo===2){
+    // Right hand slash sits above; left hand slash sits below, matching their fist positions.
+    drawCrescent(front+5,combo===1?-14:14,78,6.2,.96);
+   }else if(combo===3){
+    // Third M1 is one larger and heavier horizontal crescent.
+    drawCrescent(front+1,-14,116,11.5,1);
+   }else if(combo===4){
+    // Final M1 creates two equally-shaped horizontal cuts in parallel.
+    drawCrescent(front+1,-13,99,7.8,1);
+    drawCrescent(front+10,15,99,7.8,.94);
+   }
+   return;
+  }
+  if(!f.awakened)return;
   ctx.save();ctx.lineCap='round';
   if(combo===4&&!f.awakened){
    // Heavy fourth hit: a broad curved slash follows the one-hand wind-up and whip.
@@ -2653,8 +2684,13 @@ function drawHeadHands(f){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handA=P(forward,15,0);handB=P(reach-13+idle,-18,0);handAScale=1.14;handAAngle=angle+.08;
  }else if(combo===4){
-  const drop=clamp((progress-.28)/.72,0,1),windup=1-drop,forward=18+(reach+31)*drop,vertical=-23*windup+37*drop,spread=17-9*drop;
-  handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
+  if(f.char==='vessel'&&f.awakened){
+   const snap=Math.sin(Math.PI*progress),forward=reach+13+34*snap;
+   handB=P(forward,-14,-2);handA=P(forward,14,-2);handAScale=1.12;handBScale=1.12;
+  }else{
+   const drop=clamp((progress-.28)/.72,0,1),windup=1-drop,forward=18+(reach+31)*drop,vertical=-23*windup+37*drop,spread=17-9*drop;
+   handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
+  }
  }else{
   const base=reach+idle;handA=P(base,15,0);handB=P(base-3,-15,0);
   if(name){
