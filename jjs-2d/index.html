@@ -2595,18 +2595,27 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
  if(!active){points.length=0;return}
  const now=game.time,dx=hand.x-baseX,dy=hand.y-baseY,last=points[points.length-1];
  if(!last||Math.hypot(dx-last.x,dy-last.y)>.35||now-last.time>.045)points.push({x:dx,y:dy,time:now});
- while(points.length>10||(points.length&&now-points[0].time>.145))points.shift();
+ while(points.length>12||(points.length&&now-points[0].time>.17))points.shift();
  if(points.length<2)return;
- ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=color;ctx.shadowBlur=12;
- for(let i=0;i<points.length-1;i++){
-  const a=points[i],b=points[i+1],recency=(i+1)/(points.length-1),fade=clamp(1-(now-b.time)/.15,0,1);
-  if(fade<=0)continue;
-  const x1=baseX+a.x,y1=baseY+a.y,x2=baseX+b.x,y2=baseY+b.y;
-  ctx.globalAlpha=fade*(.12+.52*recency);ctx.strokeStyle=color;ctx.lineWidth=3+recency*8;
-  ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo((x1+x2)*.5,(y1+y2)*.5-2*recency,x2,y2);ctx.stroke();
-  ctx.globalAlpha=fade*(.08+.42*recency);ctx.strokeStyle='#ffffff';ctx.lineWidth=1+recency*2;
-  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+ const age=now-points[points.length-1].time;
+ if(age>.17)return;
+ ctx.save();
+ ctx.globalAlpha=.78;
+ ctx.strokeStyle=color;
+ ctx.lineWidth=7;
+ ctx.lineCap='round';
+ ctx.lineJoin='round';
+ ctx.shadowColor=color;
+ ctx.shadowBlur=9;
+ ctx.beginPath();
+ ctx.moveTo(baseX+points[0].x,baseY+points[0].y);
+ for(let i=1;i<points.length-1;i++){
+  const a=points[i],b=points[i+1];
+  ctx.quadraticCurveTo(baseX+a.x,baseY+a.y,baseX+(a.x+b.x)*.5,baseY+(a.y+b.y)*.5);
  }
+ const lastPoint=points[points.length-1];
+ ctx.lineTo(baseX+lastPoint.x,baseY+lastPoint.y);
+ ctx.stroke();
  ctx.restore();
 }
 function drawHeadHands(f){
