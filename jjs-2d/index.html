@@ -602,6 +602,14 @@ body.mobile-controls-enabled.game-active .ult-track{
 @media(orientation:landscape) and (max-height:520px){
  #mobileControls .mobile-left-actions{left:calc(max(8px,env(safe-area-inset-left)) + 108px + 5px)}
 }
+
+/* Compact main-menu screen orientation control. */
+#screenRotateBtn{position:absolute;z-index:4;right:clamp(16px,3.1vw,44px);top:clamp(58px,8.5vh,82px);width:38px;height:38px;display:grid;place-items:center;padding:0;border:1px solid rgba(228,239,255,.48);border-radius:9px;background:rgba(5,12,24,.68);color:#f2f6ff;box-shadow:0 5px 18px #0008,inset 0 0 0 1px #ffffff12;backdrop-filter:blur(7px);cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+#screenRotateBtn:hover{background:rgba(40,65,91,.88);border-color:#b9d7f5;transform:translateY(-1px)}
+#screenRotateBtn svg{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+#screenRotateBtn.is-landscape svg{transform:rotate(90deg)}
+#screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
+@media(max-width:520px){#screenRotateBtn{right:13px;top:58px;width:34px;height:34px}}
 </style>
 </head>
 <body>
@@ -675,6 +683,9 @@ body.mobile-controls-enabled.game-active .ult-track{
 
 <div id="menu">
   <div class="menu-art" aria-hidden="true"></div><div class="menu-screen-shade" aria-hidden="true"></div>
+  <button type="button" id="screenRotateBtn" aria-label="Rotate screen orientation" title="Rotate screen orientation">
+    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="10" y="8" width="12" height="17" rx="2.2"/><path d="M14 11h4M15 22h2"/><path d="M7.1 13.4a11 11 0 0 1 18-4.2l1.4 1.5"/><path d="M26.5 6.8v4.5H22"/></svg>
+  </button>
   <div class="menu-topline"><div class="menu-brand"><span class="menu-brand-mark">呪</span><span>BALLS SHENANIGAN</span></div><div class="menu-version">BALLS <i>2D</i> <b>FIGHTING GAME</b></div></div>
   <main class="menu-main">
     <div class="menu-logo"><div class="menu-kicker">THE PIXEL BRAWL</div><div class="menu-title">BALLS</div><div class="menu-subtitle">SHENANIGAN</div><div class="menu-title-rule"><span></span><b>2D FIGHTING GAME</b><span></span></div></div>
@@ -869,6 +880,44 @@ const hudSlots=Array.from(document.querySelectorAll('.slot'));
 function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1800,1150);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});mapCacheDirty=true;resetTrashCans();camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
 function startGame(){resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
+
+async function rotateMenuScreen(){
+ const button=$('screenRotateBtn'),orientation=screen.orientation;
+ button.removeAttribute('data-status');
+ if(!orientation||typeof orientation.lock!=='function'){
+  button.dataset.status='USE DEVICE AUTO-ROTATE';
+  button.title='This browser cannot rotate the screen automatically. Use your device auto-rotate setting.';
+  return;
+ }
+ const current=orientation.type||(matchMedia('(orientation: landscape)').matches?'landscape-primary':'portrait-primary');
+ const next=current.startsWith('landscape')?'portrait':'landscape';
+ let enteredFullscreen=false;
+ try{
+  if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
+   await document.documentElement.requestFullscreen();
+   enteredFullscreen=true;
+  }
+  await orientation.lock(next);
+  button.classList.toggle('is-landscape',next==='landscape');
+  button.title='Switch to '+(next==='landscape'?'portrait':'landscape')+' orientation';
+  button.setAttribute('aria-label','Rotate screen; currently '+next);
+  button.dataset.status=next.toUpperCase();
+ }catch(error){
+  if(enteredFullscreen&&document.fullscreenElement){
+   try{await document.exitFullscreen()}catch(exitError){}
+  }
+  button.dataset.status='USE DEVICE AUTO-ROTATE';
+  button.title='Screen rotation is blocked by this browser. Use your device auto-rotate setting.';
+ }
+}
+$('screenRotateBtn').addEventListener('click',rotateMenuScreen);
+if(screen.orientation&&screen.orientation.addEventListener){
+ screen.orientation.addEventListener('change',()=>{
+  const button=$('screenRotateBtn');
+  button.classList.toggle('is-landscape',screen.orientation.type.startsWith('landscape'));
+ });
+}
+
 
 // Enable touch controls by default on phones/tablets; a saved user choice takes priority.
 let mobileControlsEnabled=isMobileDevice;
