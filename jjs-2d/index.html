@@ -604,12 +604,12 @@ body.mobile-controls-enabled.game-active .ult-track{
 }
 
 /* Compact main-menu screen orientation control. */
-#screenRotateBtn{position:absolute;z-index:4;right:clamp(16px,3.1vw,44px);top:clamp(58px,8.5vh,82px);width:38px;height:38px;display:grid;place-items:center;padding:0;border:1px solid rgba(228,239,255,.48);border-radius:9px;background:rgba(5,12,24,.68);color:#f2f6ff;box-shadow:0 5px 18px #0008,inset 0 0 0 1px #ffffff12;backdrop-filter:blur(7px);cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+#screenRotateBtn{position:absolute;z-index:4;right:clamp(16px,3.1vw,44px);bottom:clamp(16px,3.1vh,32px);width:38px;height:38px;display:grid;place-items:center;padding:0;border:1px solid rgba(228,239,255,.48);border-radius:9px;background:rgba(5,12,24,.68);color:#f2f6ff;box-shadow:0 5px 18px #0008,inset 0 0 0 1px #ffffff12;backdrop-filter:blur(7px);cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
 #screenRotateBtn:hover{background:rgba(40,65,91,.88);border-color:#b9d7f5;transform:translateY(-1px)}
 #screenRotateBtn svg{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
 #screenRotateBtn.is-landscape svg{transform:rotate(90deg)}
 #screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
-@media(max-width:520px){#screenRotateBtn{right:13px;top:58px;width:34px;height:34px}}
+@media(max-width:520px){#screenRotateBtn{right:13px;bottom:14px;width:34px;height:34px}}
 </style>
 </head>
 <body>
