@@ -610,6 +610,33 @@ body.mobile-controls-enabled.game-active .ult-track{
 #screenRotateBtn.is-landscape svg{transform:rotate(90deg)}
 #screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
 @media(max-width:520px){#screenRotateBtn{right:13px;bottom:14px;width:34px;height:34px}}
+
+/* Manual 90-degree game rotation: swap the logical viewport, then rotate the whole UI.
+   This works even when the browser/device orientation is locked. */
+html.manual-screen-rotated,html.manual-screen-rotated body{overflow:hidden!important}
+html.manual-screen-rotated body{
+ position:fixed!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;
+ width:100vh!important;height:100vw!important;min-width:0!important;min-height:0!important;
+ transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important;
+}
+html.manual-screen-rotated #menu .menu-art{background-size:cover!important;background-position:center center!important}
+html.manual-screen-rotated #menu .menu-main{
+ top:50%!important;bottom:auto!important;left:50%!important;transform:translate(-50%,-50%)!important;
+ width:min(390px,88vh)!important;max-height:calc(100vw - 24px)!important;overflow-y:auto!important;
+}
+html.manual-screen-rotated #menu .menu-sub{padding:8px!important}
+html.manual-screen-rotated #menu .menu-sub-panel{
+ width:min(780px,92vh)!important;max-height:calc(100vw - 20px)!important;overflow:auto!important;
+}
+html.manual-screen-rotated .fighter-card{width:clamp(160px,26vh,240px)!important}
+html.manual-screen-rotated body.mobile-controls-enabled.game-active .bottom{
+ bottom:calc(165px + env(safe-area-inset-bottom))!important;
+}
+html.manual-screen-rotated #screenRotateBtn{right:14px!important;bottom:14px!important}
+@media(max-height:420px){
+ html.manual-screen-rotated #menu .menu-main{max-height:calc(100vw - 12px)!important;width:min(360px,84vh)!important}
+ html.manual-screen-rotated #menu .menu-sub-panel{max-height:calc(100vw - 12px)!important}
+}
 </style>
 </head>
 <body>
@@ -720,7 +747,10 @@ const isMobileDevice=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||((na
 const MAX_DPR=isMobileDevice?1.35:1.75;
 const $=id=>document.getElementById(id);
 let W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,MAX_DPR),canvasNeedsDraw=true;
-function resize(){W=innerWidth;H=innerHeight;canvasNeedsDraw=true;dpr=Math.min(devicePixelRatio||1,MAX_DPR);canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
+function isManualScreenRotated(){return document.documentElement.classList.contains('manual-screen-rotated')}
+function resize(){const rotated=isManualScreenRotated();W=rotated?innerHeight:innerWidth;H=rotated?innerWidth:innerHeight;canvasNeedsDraw=true;dpr=Math.min(devicePixelRatio||1,MAX_DPR);canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
+function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:innerWidth-x}:{x,y}}
+function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
 addEventListener('resize',resize);resize();
 const WORLD={w:2600,h:1500};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -735,8 +765,8 @@ function finishEKey(){
 addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys.add(k);if([' ','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause();if(k==='e'&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if(!e.repeat)eKeyDownAt=performance.now();return}if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if((k==='g'||k==='r')&&player.char==='honored'&&keys.has(k==='g'?'r':'g')){useAttack(player,'domain02');keys.delete('g');keys.delete('r');suppressedKeyUps.add('g');suppressedKeyUps.add('r')}else if(k==='q'){useAttack(player,'dash');keys.delete(k)}else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}}});
 addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);if(k==='e')finishEKey();if(k==='f'&&player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')});
 addEventListener('blur',()=>{eKeyDownAt=0;keys.delete('e');keys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player)player.block=false;if(typeof stopMobileJoystick==='function')stopMobileJoystick()});
-canvas.addEventListener('pointermove',e=>{mouse.x=e.clientX;mouse.y=e.clientY});
-canvas.addEventListener('mousedown',e=>{if(e.button===0){mouse.down=true;mouse.pending=true;mouse.buffer=.72}});addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false});
+canvas.addEventListener('pointermove',e=>{const p=screenPointToGame(e.clientX,e.clientY);mouse.x=p.x;mouse.y=p.y});
+canvas.addEventListener('mousedown',e=>{if(e.button===0){const p=screenPointToGame(e.clientX,e.clientY);mouse.x=p.x;mouse.y=p.y;mouse.down=true;mouse.pending=true;mouse.buffer=.72}});addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 const CHARS={
  honored:{name:'THE HONORED ONE',desc:'Satoru Gojo. Use Limitless to pull, repel, rush down, and control space. Awakening: Six Eyes.',color:'#318bff',hair:'#d8ecff',coat:'#123c79',accent:'#50baff',skin:'#f1c7a9',hp:100,
@@ -881,43 +911,19 @@ function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.c
 function startGame(){resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
 
-async function rotateMenuScreen(){
- const button=$('screenRotateBtn'),orientation=screen.orientation;
+function rotateMenuScreen(){
+ const root=document.documentElement,button=$('screenRotateBtn'),rotated=!root.classList.contains('manual-screen-rotated');
+ root.classList.toggle('manual-screen-rotated',rotated);
+ button.classList.toggle('is-landscape',rotated);
+ button.setAttribute('aria-pressed',rotated?'true':'false');
+ button.setAttribute('aria-label',rotated?'Return to normal screen orientation':'Rotate game screen');
+ button.title=rotated?'Return to normal screen orientation':'Rotate game screen';
  button.removeAttribute('data-status');
- if(!orientation||typeof orientation.lock!=='function'){
-  button.dataset.status='USE DEVICE AUTO-ROTATE';
-  button.title='This browser cannot rotate the screen automatically. Use your device auto-rotate setting.';
-  return;
- }
- const current=orientation.type||(matchMedia('(orientation: landscape)').matches?'landscape-primary':'portrait-primary');
- const next=current.startsWith('landscape')?'portrait':'landscape';
- let enteredFullscreen=false;
- try{
-  if(!document.fullscreenElement&&document.documentElement.requestFullscreen){
-   await document.documentElement.requestFullscreen();
-   enteredFullscreen=true;
-  }
-  await orientation.lock(next);
-  button.classList.toggle('is-landscape',next==='landscape');
-  button.title='Switch to '+(next==='landscape'?'portrait':'landscape')+' orientation';
-  button.setAttribute('aria-label','Rotate screen; currently '+next);
-  button.dataset.status=next.toUpperCase();
- }catch(error){
-  if(enteredFullscreen&&document.fullscreenElement){
-   try{await document.exitFullscreen()}catch(exitError){}
-  }
-  button.dataset.status='USE DEVICE AUTO-ROTATE';
-  button.title='Screen rotation is blocked by this browser. Use your device auto-rotate setting.';
- }
+ if(typeof stopMobileJoystick==='function')stopMobileJoystick();
+ resize();
+ canvasNeedsDraw=true;
 }
 $('screenRotateBtn').addEventListener('click',rotateMenuScreen);
-if(screen.orientation&&screen.orientation.addEventListener){
- screen.orientation.addEventListener('change',()=>{
-  const button=$('screenRotateBtn');
-  button.classList.toggle('is-landscape',screen.orientation.type.startsWith('landscape'));
- });
-}
-
 
 // Enable touch controls by default on phones/tablets; a saved user choice takes priority.
 let mobileControlsEnabled=isMobileDevice;
@@ -941,8 +947,8 @@ function updateMobileAimPointer(){
 }
 function clearMobileJoyKeys(){['w','a','s','d'].forEach(k=>keys.delete(k));if(mobileJoyKnob)mobileJoyKnob.style.transform='translate(-50%,-50%)'}
 function moveMobileJoystick(e){
- const rect=mobileJoystick.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2;
- let dx=e.clientX-cx,dy=e.clientY-cy,max=rect.width*.31,len=Math.hypot(dx,dy)||0;
+ const rect=mobileJoystick.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,delta=screenDeltaToGame(e.clientX-cx,e.clientY-cy);
+ let dx=delta.x,dy=delta.y,max=rect.width*.31,len=Math.hypot(dx,dy)||0;
  if(len>max){dx=dx/len*max;dy=dy/len*max}
  mobileJoyKnob.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';
  ['w','a','s','d'].forEach(k=>keys.delete(k));
