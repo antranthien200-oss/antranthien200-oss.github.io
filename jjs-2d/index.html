@@ -1632,7 +1632,7 @@ if(f.attackCd>0)return;
      m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
     }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
    };
-   schedule(impact,390);
+   schedule(impact,485);
   }else{
    const hit=d<range&&inArc;
    if(hit){
@@ -2442,22 +2442,34 @@ function drawMotionVfx(f,m,p,c){
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
-  if(f.awakened){
-   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
-   ctx.save();ctx.lineCap='round';ctx.globalAlpha=.2+.58*beat;
-   if(combo===4){
-    const drop=clamp((p-.28)/.72,0,1);
-    ctx.strokeStyle='#fff0c8';ctx.lineWidth=5;
-    ctx.beginPath();ctx.moveTo(front+1,-31+drop*7);ctx.lineTo(front+22,7+drop*15);ctx.moveTo(front+18,-34+drop*7);ctx.lineTo(front+39,6+drop*15);ctx.stroke();
-    ctx.globalAlpha=.2+.65*drop;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(front+30,25+drop*9,12+drop*22,4+drop*6,0,0,Math.PI*2);ctx.stroke();
-   }else{
-    const side=combo===2?1:-1,reach=18+beat*16;
-    ctx.strokeStyle=combo===3?'#fff0c9':'#e8f4ff';ctx.lineWidth=combo===3?4:3;
-    ctx.beginPath();ctx.moveTo(front-10,side*20);ctx.quadraticCurveTo(front+reach,side*31,front+42,side*5);ctx.stroke();
-    if(combo===3){ctx.globalAlpha*=.72;ctx.beginPath();ctx.moveTo(front-2,side*27);ctx.quadraticCurveTo(front+reach+5,side*38,front+48,side*10);ctx.stroke()}
+  const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
+  ctx.save();ctx.lineCap='round';
+  if(combo===4&&!f.awakened){
+   // Heavy fourth hit: a broad curved slash follows the one-hand wind-up and whip.
+   const strike=clamp((p-.38)/.28,0,1),arc=Math.sin(strike*Math.PI);
+   if(p>.34&&p<.86){
+    const fade=(.28+.62*arc)*(1-.42*clamp((p-.66)/.2,0,1));
+    ctx.globalAlpha=fade;ctx.strokeStyle='#fff0c8';ctx.lineWidth=6;
+    ctx.shadowColor='#fff0c8';ctx.shadowBlur=17;
+    ctx.beginPath();ctx.moveTo(front-30,13);ctx.quadraticCurveTo(front+13,-53,front+78,-5);ctx.stroke();
+    ctx.globalAlpha=fade*.62;ctx.lineWidth=2.5;ctx.shadowBlur=9;
+    ctx.beginPath();ctx.moveTo(front-20,22);ctx.quadraticCurveTo(front+28,-34,front+86,4);ctx.stroke();
    }
-   ctx.restore();
+  }else if(combo===4){
+   // Preserve the awakened-form slam effect.
+   const drop=clamp((p-.28)/.72,0,1);
+   ctx.globalAlpha=.2+.58*beat;ctx.strokeStyle='#fff0c8';ctx.lineWidth=5;
+   ctx.beginPath();ctx.moveTo(front+1,-31+drop*7);ctx.lineTo(front+22,7+drop*15);ctx.moveTo(front+18,-34+drop*7);ctx.lineTo(front+39,6+drop*15);ctx.stroke();
+   ctx.globalAlpha=.2+.65*drop;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(front+30,25+drop*9,12+drop*22,4+drop*6,0,0,Math.PI*2);ctx.stroke();
+  }else{
+   // Restore the old compact curved slash on all three quick alternating punches.
+   const side=combo===2?1:-1,reach=18+beat*16;
+   ctx.globalAlpha=.2+.58*beat;ctx.strokeStyle=combo===3?'#fff0c9':'#e8f4ff';ctx.lineWidth=combo===3?4:3;
+   ctx.shadowColor=ctx.strokeStyle;ctx.shadowBlur=8;
+   ctx.beginPath();ctx.moveTo(front-10,side*20);ctx.quadraticCurveTo(front+reach,side*31,front+42,side*5);ctx.stroke();
+   if(combo===3){ctx.globalAlpha*=.72;ctx.beginPath();ctx.moveTo(front-2,side*27);ctx.quadraticCurveTo(front+reach+5,side*38,front+48,side*10);ctx.stroke()}
   }
+  ctx.restore();
   return;
  }else if(m.startsWith('gojoBlue')){
   const r=7+Math.sin(p*Math.PI)*8;ctx.save();ctx.globalAlpha=.8;ctx.shadowBlur=20;ctx.shadowColor='#54d9ff';ctx.strokeStyle='#a9f0ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(front+6,-18,r,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.ellipse(front+6,-18,r+9,r+4,game.time*3,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#3cc8ff';ctx.beginPath();ctx.arc(front+6,-18,Math.max(3,r*.5),0,Math.PI*2);ctx.fill();ctx.restore();
@@ -2654,10 +2666,25 @@ function drawHeadHands(f){
    const drop=clamp((progress-.28)/.72,0,1),windup=1-drop,forward=18+(reach+31)*drop,vertical=-23*windup+37*drop,spread=17-9*drop;
    handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
   }else{
-   const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
-   const arc=Math.sin(strike*Math.PI),forward=progress<.31?lerp(reach+8,-18,wind):progress<.55?lerp(-18,reach+62,strike):lerp(reach+62,reach+13,recoil);
-   const side=progress<.55?lerp(-23,13,strike)+arc*25:lerp(13,-7,recoil),lift=progress<.55?-4-arc*18:lerp(-22,3,recoil);
-   handB=P(forward,side,lift);handA=P(8,18,5);handBScale=1.38;handAScale=.92;handBAngle=angle-arc*.3;
+   // M1 4: pull the left fist high behind the head, hold, then whip it forward on a curved path.
+   const wind=clamp(progress/.28,0,1),strike=clamp((progress-.38)/.28,0,1),recoil=clamp((progress-.66)/.34,0,1);
+   const windEase=wind*wind*(3-2*wind),strikeEase=strike*strike*(3-2*strike),recoilEase=recoil*recoil*(3-2*recoil);
+   let forward,side,lift,arc=0;
+   if(progress<.28){
+    forward=lerp(8,-27,windEase);side=lerp(18,27,windEase);lift=lerp(5,-23,windEase);
+   }else if(progress<.38){
+    forward=-27;side=27;lift=-23;
+   }else if(progress<.66){
+    arc=Math.sin(strike*Math.PI);
+    forward=lerp(-27,reach+62,strikeEase);
+    side=lerp(27,-11,strikeEase)-arc*24;
+    lift=lerp(-23,2,strikeEase)-arc*13;
+   }else{
+    forward=lerp(reach+62,reach+14,recoilEase);
+    side=lerp(-11,18,recoilEase);lift=lerp(2,5,recoilEase);
+   }
+   handA=P(forward,side,lift);handB=P(8,-18,5);
+   handAScale=1.4;handBScale=.92;handAAngle=angle+arc*.28;
   }
  }else{
   const base=reach+idle;handA=P(base,15,0);handB=P(base-3,-15,0);
@@ -2808,8 +2835,9 @@ function drawHeadHands(f){
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
  if(combo&&!f.awakened){
-  drawM1HandTrail(f,combo===2?handA:handB,combo===2?'a':'b',x,headY,true,trailColor);
-  drawM1HandTrail(f,combo===2?handB:handA,combo===2?'b':'a',x,headY,false,trailColor);
+  const leftHandActive=combo===2||combo===4;
+  drawM1HandTrail(f,leftHandActive?handA:handB,leftHandActive?'a':'b',x,headY,true,trailColor);
+  drawM1HandTrail(f,leftHandActive?handB:handA,leftHandActive?'b':'a',x,headY,false,trailColor);
  }else if(yutaCombo&&!f.awakened){
   drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
