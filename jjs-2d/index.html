@@ -2627,8 +2627,9 @@ function drawHeadHands(f){
  }else if(yutaCombo){
   if(yutaCombo===4&&!f.awakened){
    const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
-   const forward=progress<.31?lerp(12,-19,wind):progress<.55?lerp(-19,reach+62,strike):lerp(reach+62,reach+13,recoil);
-   handA=P(forward,16,-4);handB=P(8,-18,5);handAScale=1.34;handBScale=.94;handAAngle=angle;
+   const arc=Math.sin(strike*Math.PI),forward=progress<.31?lerp(12,-19,wind):progress<.55?lerp(-19,reach+62,strike):lerp(reach+62,reach+13,recoil);
+   const side=progress<.55?lerp(20,-16,strike)-arc*25:lerp(-16,7,recoil),lift=progress<.55?-4-arc*18:lerp(-22,3,recoil);
+   handA=P(forward,side,lift);handB=P(8,-18,5);handAScale=1.34;handBScale=.94;handAAngle=angle+arc*.3;
   }else{
    const sweep=Math.sin(progress*Math.PI),grip=P(9+sweep*11,-5,15+Math.sin(progress*Math.PI*2)*3),support=P(5+sweep*8,12,14);
    handB=grip;handA=support;handBScale=1.08;handAScale=.9;handBAngle=angle+(yutaCombo%2?-.12:.12);handAAngle=angle;
@@ -2645,8 +2646,9 @@ function drawHeadHands(f){
    handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
   }else{
    const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
-   const forward=progress<.31?lerp(reach+8,-18,wind):progress<.55?lerp(-18,reach+62,strike):lerp(reach+62,reach+13,recoil);
-   handB=P(forward,-16,-4);handA=P(8,18,5);handBScale=1.38;handAScale=.92;handBAngle=angle;
+   const arc=Math.sin(strike*Math.PI),forward=progress<.31?lerp(reach+8,-18,wind):progress<.55?lerp(-18,reach+62,strike):lerp(reach+62,reach+13,recoil);
+   const side=progress<.55?lerp(-23,13,strike)+arc*25:lerp(13,-7,recoil),lift=progress<.55?-4-arc*18:lerp(-22,3,recoil);
+   handB=P(forward,side,lift);handA=P(8,18,5);handBScale=1.38;handAScale=.92;handBAngle=angle-arc*.3;
   }
  }else{
   const base=reach+idle;handA=P(base,15,0);handB=P(base-3,-15,0);
