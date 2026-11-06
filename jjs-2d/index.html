@@ -604,12 +604,13 @@ body.mobile-controls-enabled.game-active .ult-track{
 }
 
 /* Compact main-menu screen orientation control. */
-#screenRotateBtn{position:absolute;z-index:4;right:clamp(16px,3.1vw,44px);bottom:clamp(16px,3.1vh,32px);width:38px;height:38px;display:grid;place-items:center;padding:0;border:1px solid rgba(228,239,255,.48);border-radius:9px;background:rgba(5,12,24,.68);color:#f2f6ff;box-shadow:0 5px 18px #0008,inset 0 0 0 1px #ffffff12;backdrop-filter:blur(7px);cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
-#screenRotateBtn:hover{background:rgba(40,65,91,.88);border-color:#b9d7f5;transform:translateY(-1px)}
-#screenRotateBtn svg{width:21px;height:21px;display:block;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .35s cubic-bezier(.2,.8,.2,1)}
-#screenRotateBtn.is-landscape svg{transform:rotate(90deg)}
+#screenRotateBtn{position:absolute;z-index:9;right:clamp(8px,1.5vw,20px);bottom:clamp(8px,1.5vh,18px);width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+#screenRotateBtn:hover,#screenRotateBtn:focus-visible{background:transparent!important;box-shadow:none!important;color:#dcecff}
+#screenRotateBtn .rotate-glyph{display:block;line-height:1;text-shadow:1px 2px 4px rgba(0,0,0,.9);transform:rotate(0deg);transition:transform .32s ease}
+#screenRotateBtn.is-rotated .rotate-glyph{transform:rotate(90deg)}
 #screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
-@media(max-width:520px){#screenRotateBtn{right:13px;bottom:14px;width:34px;height:34px}}
+@media(max-width:520px){#screenRotateBtn{right:5px;bottom:5px;width:40px;height:40px;font-size:36px}}
+
 
 /* Manual 90-degree game rotation: swap the logical viewport, then rotate the whole UI.
    This works even when the browser/device orientation is locked. */
@@ -638,6 +639,9 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  html.manual-screen-rotated #menu .menu-main{max-height:calc(100vw - 12px)!important;width:min(360px,84vh)!important}
  html.manual-screen-rotated #menu .menu-sub-panel{max-height:calc(100vw - 12px)!important}
 }
+
+/* Keep the manual orientation toggle responsive to mobile browser viewport changes. */
+@media(hover:none) and (pointer:coarse){#screenRotateBtn{touch-action:manipulation}}
 </style>
 </head>
 <body>
@@ -711,9 +715,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 
 <div id="menu">
   <div class="menu-art" aria-hidden="true"></div><div class="menu-screen-shade" aria-hidden="true"></div>
-  <button type="button" id="screenRotateBtn" aria-label="Rotate screen orientation" title="Rotate screen orientation">
-    <svg viewBox="0 0 32 32" aria-hidden="true"><rect x="10" y="8" width="12" height="17" rx="2.2"/><path d="M14 11h4M15 22h2"/><path d="M7.1 13.4a11 11 0 0 1 18-4.2l1.4 1.5"/><path d="M26.5 6.8v4.5H22"/></svg>
-  </button>
+  <button type="button" id="screenRotateBtn" aria-label="Rotate game screen" title="Rotate game screen" aria-pressed="false"><span class="rotate-glyph" aria-hidden="true">⟳</span></button>
   <div class="menu-topline"><div class="menu-brand"><span class="menu-brand-mark">呪</span><span>BALLS SHENANIGAN</span></div><div class="menu-version">BALLS <i>2D</i> <b>FIGHTING GAME</b></div></div>
   <main class="menu-main">
     <div class="menu-logo"><div class="menu-kicker">THE PIXEL BRAWL</div><div class="menu-title">BALLS</div><div class="menu-subtitle">SHENANIGAN</div><div class="menu-title-rule"><span></span><b>2D FIGHTING GAME</b><span></span></div></div>
@@ -752,7 +754,7 @@ function isManualScreenRotated(){return document.documentElement.classList.conta
 function resize(){const rotated=isManualScreenRotated(),root=document.documentElement;if(rotated){root.style.setProperty('--manual-screen-width',innerHeight+'px');root.style.setProperty('--manual-screen-height',innerWidth+'px')}else{root.style.removeProperty('--manual-screen-width');root.style.removeProperty('--manual-screen-height')}W=rotated?innerHeight:innerWidth;H=rotated?innerWidth:innerHeight;canvasNeedsDraw=true;dpr=Math.min(devicePixelRatio||1,MAX_DPR);canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
 function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:innerWidth-x}:{x,y}}
 function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
-addEventListener('resize',resize);resize();
+addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();
 const WORLD={w:2600,h:1500};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
@@ -913,19 +915,12 @@ function startGame(){resetMatch();game.started=true;game.paused=false;document.b
 $('startBtn').onclick=startGame;
 
 function rotateMenuScreen(){
- const root=document.documentElement,button=$('screenRotateBtn'),alreadyRotated=root.classList.contains('manual-screen-rotated');
- if(!alreadyRotated&&innerWidth>=innerHeight){
-  button.dataset.status='ALREADY LANDSCAPE';
-  button.title='The game is already using the landscape screen layout.';
-  return;
- }
- button.removeAttribute('data-status');
- const rotated=!alreadyRotated;
+ const root=document.documentElement,button=$('screenRotateBtn'),rotated=!root.classList.contains('manual-screen-rotated');
  root.classList.toggle('manual-screen-rotated',rotated);
- button.classList.toggle('is-landscape',rotated);
+ button.classList.toggle('is-rotated',rotated);
  button.setAttribute('aria-pressed',rotated?'true':'false');
- button.setAttribute('aria-label',rotated?'Return to normal screen orientation':'Rotate game screen');
- button.title=rotated?'Return to normal screen orientation':'Rotate game screen';
+ button.setAttribute('aria-label',rotated?'Restore original game orientation':'Rotate game screen');
+ button.title=rotated?'Restore original game orientation':'Rotate game screen';
  if(typeof stopMobileJoystick==='function')stopMobileJoystick();
  resize();
  canvasNeedsDraw=true;
