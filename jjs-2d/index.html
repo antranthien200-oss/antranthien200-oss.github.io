@@ -1196,8 +1196,13 @@ function m1Feedback(f,t,angle,hit,finisher){
  const ex=hit?t.x:f.x+Math.cos(angle)*78,ey=hit?t.y:f.y+Math.sin(angle)*78;
  const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=theme.accent||theme.main;
  if(f.awakened)trailStrokes.push({x1:sx,y1:sy,x2:ex,y2:ey,life:.13,max:.13,color:finisher?'#ffdca2':'#f2f6ff',width:finisher?10:6});
- if(hit){burst(t.x,t.y,color,finisher?17:7,finisher?6:3);game.hitStop=Math.max(game.hitStop,finisher?.045:.012);game.shake=Math.max(game.shake,finisher?7:1.8)}
- else burst(ex,ey,color,3,2);
+ if(!f.awakened&&f.char!=='yuta'){
+  if(hit){burst(t.x,t.y,finisher?'#ffe2ad':'#eff7ff',finisher?13:7,finisher?5:3);game.hitStop=Math.max(game.hitStop,finisher?.025:.012);game.shake=Math.max(game.shake,finisher?4:1.8)}
+  else burst(ex,ey,'#d8eaff',3,2);
+ }else{
+  if(hit){burst(t.x,t.y,color,finisher?17:7,finisher?6:3);game.hitStop=Math.max(game.hitStop,finisher?.045:.012);game.shake=Math.max(game.shake,finisher?7:1.8)}
+  else burst(ex,ey,color,3,2);
+ }
 }
 function popText(){/* Floating combat callouts disabled to keep the arena clear. */}
 function burst(x,y,color,n=14,power=3){if(isMobileDevice){n=Math.min(n,10);const overflow=particles.length+n-150;if(overflow>0)particles.splice(0,overflow)}for(let i=0;i<n;i++){let a=rnd(0,Math.PI*2),v=rnd(.7,power);particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(.25,.7),max:.7,size:rnd(2,7),color,shape:Math.random()<.5?'square':'circle'})}}
@@ -1608,10 +1613,8 @@ function useAttack(f,kind){
 if(f.attackCd>0)return;
   f.combo=f.comboTimer>0?(f.combo%4)+1:1;
   const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);
-  const baseFinisher=fin&&!f.awakened;
-  const angle=f.face;f.comboTimer=baseFinisher?1.02:.62;f.attackCd=baseFinisher?.78:fin?.34:.115;f.attackAnim=baseFinisher?.76:fin?.28:.18;f.attackType=baseFinisher?'heavy-punch':'punch';
-  // Hits 1-3 keep their original alternating fist attacks; base-form hit 4 is a slower heavy punch.
-  setMotion(f,'m1_'+f.combo,baseFinisher?.76:fin?.42:.24,angle,t);
+  const angle=f.face;f.comboTimer=.62;f.attackCd=fin?.34:.115;f.attackAnim=fin?.28:.18;f.attackType='punch';
+  setMotion(f,'m1_'+f.combo,fin?.42:.24,angle,t);
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
   const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2);
@@ -1622,26 +1625,13 @@ if(f.attackCd>0)return;
    else{m1Feedback(f,t,angle,false,false);damageBuildingAlongRay(f,angle,range)}
    setMotion(f,'sukunaM1',.18,angle,t);return;
   }
-  if(baseFinisher){
-   const impact=()=>{
-    if(f.dead||t.dead||f.stun>.02||!f.motion||f.motion.name!=='m1_4')return;
-    const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x),inArcNow=Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
-    if(dNow<range&&inArcNow){
-     const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=palette.accent||palette.main;
-     damage(t,10,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
-     m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
-    }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
-   };
-   schedule(impact,485);
-  }else{
-   const hit=d<range&&inArc;
-   if(hit){
-    const dmg=[4,4.2,5,8.5][f.combo-1];
-    damage(t,dmg,f,{stun:fin?.72:.34,invuln:fin?.085:.055,kx:Math.cos(angle)*(fin?9.6:.3),ky:Math.sin(angle)*(fin?9.6:.3),color:fin?'#ffdfba':'#fff'});
-    m1Feedback(f,t,angle,true,fin);
-    if(fin){t.jump=Math.max(t.jump,.16);t.jumpV=Math.max(t.jumpV,1.4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'FINISHER','#ffe0ad',12)}
-   }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,range)}
-  }
+  const hit=d<range&&inArc;
+  if(hit){
+   const dmg=[4,4.2,5,8.5][f.combo-1];
+   damage(t,dmg,f,{stun:fin?.72:.34,invuln:fin?.085:.055,kx:Math.cos(angle)*(fin?9.6:.3),ky:Math.sin(angle)*(fin?9.6:.3),color:fin?'#ffdfba':'#fff'});
+   m1Feedback(f,t,angle,true,fin);
+   if(fin){t.jump=Math.max(t.jump,.16);t.jumpV=Math.max(t.jumpV,1.4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'FINISHER','#ffe0ad',12)}
+  }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,range)}
   return;
  }
  if(kind==='block'){if(!f.block)setMotion(f,'blockGesture',.22,f.face,t);f.block=true;return}
@@ -2442,6 +2432,7 @@ function drawMotionVfx(f,m,p,c){
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
+  if(!f.awakened)return;
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   ctx.save();ctx.lineCap='round';
   if(combo===4&&!f.awakened){
@@ -2662,30 +2653,8 @@ function drawHeadHands(f){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handA=P(forward,15,0);handB=P(reach-13+idle,-18,0);handAScale=1.14;handAAngle=angle+.08;
  }else if(combo===4){
-  if(f.awakened){
-   const drop=clamp((progress-.28)/.72,0,1),windup=1-drop,forward=18+(reach+31)*drop,vertical=-23*windup+37*drop,spread=17-9*drop;
-   handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
-  }else{
-   // M1 4: pull the left fist high behind the head, hold, then whip it forward on a curved path.
-   const wind=clamp(progress/.28,0,1),strike=clamp((progress-.38)/.28,0,1),recoil=clamp((progress-.66)/.34,0,1);
-   const windEase=wind*wind*(3-2*wind),strikeEase=strike*strike*(3-2*strike),recoilEase=recoil*recoil*(3-2*recoil);
-   let forward,side,lift,arc=0;
-   if(progress<.28){
-    forward=lerp(8,-27,windEase);side=lerp(18,27,windEase);lift=lerp(5,-23,windEase);
-   }else if(progress<.38){
-    forward=-27;side=27;lift=-23;
-   }else if(progress<.66){
-    arc=Math.sin(strike*Math.PI);
-    forward=lerp(-27,reach+62,strikeEase);
-    side=lerp(27,-11,strikeEase)-arc*24;
-    lift=lerp(-23,2,strikeEase)-arc*13;
-   }else{
-    forward=lerp(reach+62,reach+14,recoilEase);
-    side=lerp(-11,18,recoilEase);lift=lerp(2,5,recoilEase);
-   }
-   handA=P(forward,side,lift);handB=P(8,-18,5);
-   handAScale=1.4;handBScale=.92;handAAngle=angle+arc*.28;
-  }
+  const drop=clamp((progress-.28)/.72,0,1),windup=1-drop,forward=18+(reach+31)*drop,vertical=-23*windup+37*drop,spread=17-9*drop;
+  handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
  }else{
   const base=reach+idle;handA=P(base,15,0);handB=P(base-3,-15,0);
   if(name){
@@ -2835,9 +2804,14 @@ function drawHeadHands(f){
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
  if(combo&&!f.awakened){
-  const leftHandActive=combo===2||combo===4;
-  drawM1HandTrail(f,leftHandActive?handA:handB,leftHandActive?'a':'b',x,headY,true,trailColor);
-  drawM1HandTrail(f,leftHandActive?handB:handA,leftHandActive?'b':'a',x,headY,false,trailColor);
+  if(combo===4){
+   drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
+   drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
+  }else{
+   const leftHandActive=combo===2;
+   drawM1HandTrail(f,leftHandActive?handA:handB,leftHandActive?'a':'b',x,headY,true,trailColor);
+   drawM1HandTrail(f,leftHandActive?handB:handA,leftHandActive?'b':'a',x,headY,false,trailColor);
+  }
  }else if(yutaCombo&&!f.awakened){
   drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
