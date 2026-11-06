@@ -616,19 +616,19 @@ body.mobile-controls-enabled.game-active .ult-track{
 html.manual-screen-rotated,html.manual-screen-rotated body{overflow:hidden!important}
 html.manual-screen-rotated body{
  position:fixed!important;left:50%!important;top:50%!important;right:auto!important;bottom:auto!important;
- width:100vh!important;height:100vw!important;min-width:0!important;min-height:0!important;
+ width:var(--manual-screen-width)!important;height:var(--manual-screen-height)!important;min-width:0!important;min-height:0!important;
  transform:translate(-50%,-50%) rotate(90deg)!important;transform-origin:center center!important;
 }
 html.manual-screen-rotated #menu .menu-art{background-size:cover!important;background-position:center center!important}
 html.manual-screen-rotated #menu .menu-main{
  top:50%!important;bottom:auto!important;left:50%!important;transform:translate(-50%,-50%)!important;
- width:min(390px,88vh)!important;max-height:calc(100vw - 24px)!important;overflow-y:auto!important;
+ width:min(390px,calc(var(--manual-screen-width) * .46))!important;max-height:calc(var(--manual-screen-height) - 24px)!important;overflow-y:auto!important;
 }
 html.manual-screen-rotated #menu .menu-sub{padding:8px!important}
 html.manual-screen-rotated #menu .menu-sub-panel{
- width:min(780px,92vh)!important;max-height:calc(100vw - 20px)!important;overflow:auto!important;
+ width:min(780px,calc(var(--manual-screen-width) * .92))!important;max-height:calc(var(--manual-screen-height) - 20px)!important;overflow:auto!important;
 }
-html.manual-screen-rotated .fighter-card{width:clamp(160px,26vh,240px)!important}
+html.manual-screen-rotated .fighter-card{width:clamp(160px,calc(var(--manual-screen-width) * .26),240px)!important}
 html.manual-screen-rotated body.mobile-controls-enabled.game-active .bottom{
  bottom:calc(165px + env(safe-area-inset-bottom))!important;
 }
@@ -748,7 +748,7 @@ const MAX_DPR=isMobileDevice?1.35:1.75;
 const $=id=>document.getElementById(id);
 let W=innerWidth,H=innerHeight,dpr=Math.min(devicePixelRatio||1,MAX_DPR),canvasNeedsDraw=true;
 function isManualScreenRotated(){return document.documentElement.classList.contains('manual-screen-rotated')}
-function resize(){const rotated=isManualScreenRotated();W=rotated?innerHeight:innerWidth;H=rotated?innerWidth:innerHeight;canvasNeedsDraw=true;dpr=Math.min(devicePixelRatio||1,MAX_DPR);canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
+function resize(){const rotated=isManualScreenRotated(),root=document.documentElement;if(rotated){root.style.setProperty('--manual-screen-width',innerHeight+'px');root.style.setProperty('--manual-screen-height',innerWidth+'px')}else{root.style.removeProperty('--manual-screen-width');root.style.removeProperty('--manual-screen-height')}W=rotated?innerHeight:innerWidth;H=rotated?innerWidth:innerHeight;canvasNeedsDraw=true;dpr=Math.min(devicePixelRatio||1,MAX_DPR);canvas.width=Math.floor(W*dpr);canvas.height=Math.floor(H*dpr);canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
 function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:innerWidth-x}:{x,y}}
 function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
 addEventListener('resize',resize);resize();
