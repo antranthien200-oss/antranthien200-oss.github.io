@@ -912,13 +912,19 @@ function startGame(){resetMatch();game.started=true;game.paused=false;document.b
 $('startBtn').onclick=startGame;
 
 function rotateMenuScreen(){
- const root=document.documentElement,button=$('screenRotateBtn'),rotated=!root.classList.contains('manual-screen-rotated');
+ const root=document.documentElement,button=$('screenRotateBtn'),alreadyRotated=root.classList.contains('manual-screen-rotated');
+ if(!alreadyRotated&&innerWidth>=innerHeight){
+  button.dataset.status='ALREADY LANDSCAPE';
+  button.title='The game is already using the landscape screen layout.';
+  return;
+ }
+ button.removeAttribute('data-status');
+ const rotated=!alreadyRotated;
  root.classList.toggle('manual-screen-rotated',rotated);
  button.classList.toggle('is-landscape',rotated);
  button.setAttribute('aria-pressed',rotated?'true':'false');
  button.setAttribute('aria-label',rotated?'Return to normal screen orientation':'Rotate game screen');
  button.title=rotated?'Return to normal screen orientation':'Rotate game screen';
- button.removeAttribute('data-status');
  if(typeof stopMobileJoystick==='function')stopMobileJoystick();
  resize();
  canvasNeedsDraw=true;
