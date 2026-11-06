@@ -1192,11 +1192,10 @@ function applyPull(source,target,duration=.48,strength=4.5,color='#75dcff'){
  target.pullSource=source;target.pullTimer=Math.max(target.pullTimer||0,duration);target.pullStrength=Math.max(target.pullStrength||0,strength);target.pullColor=color;
 }
 function m1Feedback(f,t,angle,hit,finisher){
- const sx=f.x+Math.cos(angle)*18,sy=f.y+Math.sin(angle)*18;
  const ex=hit?t.x:f.x+Math.cos(angle)*78,ey=hit?t.y:f.y+Math.sin(angle)*78;
- trailStrokes.push({x1:sx,y1:sy,x2:ex,y2:ey,life:.13,max:.13,color:finisher?'#ffdca2':'#f2f6ff',width:finisher?10:6});
- if(hit){burst(t.x,t.y,finisher?'#ffe2ad':'#eff7ff',finisher?13:7,finisher?5:3);game.hitStop=Math.max(game.hitStop,finisher?.025:.012);game.shake=Math.max(game.shake,finisher?4:1.8)}
- else burst(ex,ey,'#d8eaff',3,2);
+ const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=theme.accent||theme.main;
+ if(hit){burst(t.x,t.y,color,finisher?17:7,finisher?6:3);game.hitStop=Math.max(game.hitStop,finisher?.045:.012);game.shake=Math.max(game.shake,finisher?7:1.8)}
+ else burst(ex,ey,color,3,2);
 }
 function popText(){/* Floating combat callouts disabled to keep the arena clear. */}
 function burst(x,y,color,n=14,power=3){if(isMobileDevice){n=Math.min(n,10);const overflow=particles.length+n-150;if(overflow>0)particles.splice(0,overflow)}for(let i=0;i<n;i++){let a=rnd(0,Math.PI*2),v=rnd(.7,power);particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:rnd(.25,.7),max:.7,size:rnd(2,7),color,shape:Math.random()<.5?'square':'circle'})}}
@@ -1583,17 +1582,32 @@ function useAttack(f,kind){
     const katana=f.yutaHeldKatana;f.yutaHeldKatana=null;f.attackCd=.92;f.comboTimer=0;f.attackAnim=.72;f.attackType='katana';const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;setMotion(f,'yutaDomainSwordRun',.72,angle,t);f.vx+=Math.cos(angle)*8.5;f.vy+=Math.sin(angle)*8.5;showToast('KATANA · '+katana.technique,500);
     schedule(()=>{if(f.dead||f.domainType!=='yuta')return;const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),landed=!t.dead&&d<245&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<1.02;yutaDomainSwordHit(f,t,angle,katana.technique,landed);if(landed){m1Feedback(f,t,angle,true,true);burstLine(f,t,'#f4c8ee',8)}else m1Feedback(f,{x:f.x+Math.cos(angle)*95,y:f.y+Math.sin(angle)*95},angle,false,true)},520);return;
    }
-   f.combo=f.comboTimer>0?(f.combo%4)+1:1;const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);const angle=f.face;f.comboTimer=.58;f.attackCd=fin?.3:.16;f.attackAnim=fin?.34:.2;f.attackType='katana';setMotion(f,'yutaM1_'+f.combo,fin?.38:.24,angle,t);
-   const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),hit=d<(mobileControlsEnabled&&f===player?153:132)&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<(mobileControlsEnabled&&f===player?1.35:1.12);
-   if(hit){const dmg=[4,4.2,4.2,5.5][f.combo-1];damage(t,dmg,f,{stun:fin?.5:.22,kx:Math.cos(angle)*(fin?8:.8),ky:Math.sin(angle)*(fin?8:.8),color:'#f1e8ef',ignoreInvuln:true});m1Feedback(f,t,angle,true,fin);burstLine(f,t,'#f0e8f0',4);if(fin){t.jump=Math.max(t.jump,.18);t.jumpV=Math.max(t.jumpV,1.8);if(!f.awakened)f.meter=clamp(f.meter+4,0,100)}}else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,135)}
+   f.combo=f.comboTimer>0?(f.combo%4)+1:1;const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);const angle=f.face;f.comboTimer=fin?1.02:.58;f.attackCd=fin?.78:.16;f.attackAnim=fin?.76:.2;f.attackType=fin?'heavy-punch':'katana';setMotion(f,'yutaM1_'+f.combo,fin?.76:.24,angle,t);
+   const range=mobileControlsEnabled&&f===player?153:132,arc=mobileControlsEnabled&&f===player?1.35:1.12;
+   const applyYutaFinisher=()=>{
+    if(f.dead||t.dead||f.stun>.02||!f.motion||f.motion.name!=='yutaM1_4')return;
+    const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x),within=Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<arc;
+    if(dNow<range&&within){
+     const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.yuta,color=theme.accent||'#ffaddb';
+     damage(t,8.5,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
+     m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+4,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
+    }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
+   };
+   if(fin){schedule(applyYutaFinisher,390)}
+   else{
+    const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),hit=d<range&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<arc;
+    if(hit){damage(t,[4,4.2,4.2][f.combo-1],f,{stun:.22,kx:Math.cos(angle)*.8,ky:Math.sin(angle)*.8,color:'#f1e8ef',ignoreInvuln:true});m1Feedback(f,t,angle,true,false);burst(t.x,t.y,'#ffaddb',7,3)}
+    else{m1Feedback(f,t,angle,false,false);damageBuildingAlongRay(f,angle,range)}
+   }
    return;
   }
 if(f.attackCd>0)return;
   f.combo=f.comboTimer>0?(f.combo%4)+1:1;
   const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);
-  const angle=f.face;f.comboTimer=.62;f.attackCd=fin?.34:.115;f.attackAnim=fin?.28:.18;f.attackType='punch';
-  // Four-hit hand choreography: left, right, left, then a slower two-hand downward slam.
-  setMotion(f,'m1_'+f.combo,fin?.42:.24,angle,t);
+  const baseFinisher=fin&&!(f.char==='vessel'&&f.awakened);
+  const angle=f.face;f.comboTimer=baseFinisher?1.02:.62;f.attackCd=baseFinisher?.78:fin?.34:.115;f.attackAnim=baseFinisher?.76:fin?.28:.18;f.attackType=baseFinisher?'heavy-punch':'punch';
+  // Hits 1-3 keep their original alternating fist attacks; base-form hit 4 is a slower heavy punch.
+  setMotion(f,'m1_'+f.combo,baseFinisher?.76:fin?.42:.24,angle,t);
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
   const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2);
@@ -1604,13 +1618,25 @@ if(f.attackCd>0)return;
    else{m1Feedback(f,t,angle,false,false);damageBuildingAlongRay(f,angle,range)}
    setMotion(f,'sukunaM1',.18,angle,t);return;
   }
-  const hit=d<range&&inArc;
-  if(hit){
-   const dmg=[4,4.2,5,8.5][f.combo-1];
-   damage(t,dmg,f,{stun:fin?.72:.34,invuln:fin?.085:.055,kx:Math.cos(angle)*(fin?9.6:.3),ky:Math.sin(angle)*(fin?9.6:.3),color:fin?'#ffdfba':'#fff'});
-   m1Feedback(f,t,angle,true,fin);
-   if(fin){t.jump=Math.max(t.jump,.16);t.jumpV=Math.max(t.jumpV,1.4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'FINISHER','#ffe0ad',12)}
-  }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,range)}
+  if(baseFinisher){
+   const impact=()=>{
+    if(f.dead||t.dead||f.stun>.02||!f.motion||f.motion.name!=='m1_4')return;
+    const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x),inArcNow=Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
+    if(dNow<range&&inArcNow){
+     const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=palette.accent||palette.main;
+     damage(t,8.5,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
+     m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
+    }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
+   };
+   schedule(impact,390);
+  }else{
+   const hit=d<range&&inArc;
+   if(hit){
+    const dmg=[4,4.2,5,8.5][f.combo-1];
+    damage(t,dmg,f,{stun:.34,invuln:.055,kx:Math.cos(angle)*.3,ky:Math.sin(angle)*.3,color:(JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored).accent});
+    m1Feedback(f,t,angle,true,false);
+   }else{m1Feedback(f,t,angle,false,false);damageBuildingAlongRay(f,angle,range)}
+  }
   return;
  }
  if(kind==='block'){if(!f.block)setMotion(f,'blockGesture',.22,f.face,t);f.block=true;return}
@@ -2410,24 +2436,8 @@ function drawMotionVfx(f,m,p,c){
  if(!m)return;
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
- if(m.startsWith('m1_')){
-  const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
-  ctx.save();ctx.lineCap='round';ctx.globalAlpha=.2+.58*beat;
-  if(combo===4){
-   // A pair of downward streaks and a ground ring make the fourth hit read as a slam.
-   const drop=clamp((p-.28)/.72,0,1);
-   ctx.strokeStyle='#fff0c8';ctx.lineWidth=5;
-   ctx.beginPath();ctx.moveTo(front+1,-31+drop*7);ctx.lineTo(front+22,7+drop*15);ctx.moveTo(front+18,-34+drop*7);ctx.lineTo(front+39,6+drop*15);ctx.stroke();
-   ctx.globalAlpha=.2+.65*drop;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(front+30,25+drop*9,12+drop*22,4+drop*6,0,0,Math.PI*2);ctx.stroke();
-  }else{
-   // First/third swings arc from the upper (left) side; second from the lower (right).
-   const side=combo===2?1:-1,reach=18+beat*16;
-   ctx.strokeStyle=combo===3?'#fff0c9':'#e8f4ff';ctx.lineWidth=combo===3?4:3;
-   ctx.beginPath();ctx.moveTo(front-10,side*20);ctx.quadraticCurveTo(front+reach,side*31,front+42,side*5);ctx.stroke();
-   if(combo===3){ctx.globalAlpha*=.72;ctx.beginPath();ctx.moveTo(front-2,side*27);ctx.quadraticCurveTo(front+reach+5,side*38,front+48,side*10);ctx.stroke()}
-  }
-  ctx.restore();
- }else if(m.startsWith('gojoBlue')){
+ if(m.startsWith('m1_'))return;
+else if(m.startsWith('gojoBlue')){
   const r=7+Math.sin(p*Math.PI)*8;ctx.save();ctx.globalAlpha=.8;ctx.shadowBlur=20;ctx.shadowColor='#54d9ff';ctx.strokeStyle='#a9f0ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(front+6,-18,r,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.ellipse(front+6,-18,r+9,r+4,game.time*3,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#3cc8ff';ctx.beginPath();ctx.arc(front+6,-18,Math.max(3,r*.5),0,Math.PI*2);ctx.fill();ctx.restore();
  }else if(m.startsWith('gojoRed')){
   const r=5+10*pulse;ctx.save();ctx.globalAlpha=.9;ctx.shadowBlur=22;ctx.shadowColor='#ff405e';ctx.fillStyle='#ff506b';ctx.beginPath();ctx.arc(front+8,-14,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffd6dc';ctx.lineWidth=2;ctx.beginPath();ctx.arc(front+8,-14,r+5,0,Math.PI*2);ctx.stroke();ctx.restore();
@@ -2549,6 +2559,34 @@ function drawTrashManHead(){
 function drawTinyTrashCanScreen(x,y,scale=1,angle=0){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);ctx.fillStyle='#11191c';ctx.fillRect(-10,5,20,5);ctx.fillStyle='#596771';ctx.fillRect(-9,-8,18,15);ctx.fillStyle='#9ba9b2';ctx.fillRect(-10,-11,20,4);ctx.fillStyle='#303b43';ctx.fillRect(-12,-14,24,3);ctx.fillStyle='#c7d1d8';ctx.fillRect(-6,-6,2,10);ctx.fillRect(4,-6,2,10);ctx.strokeStyle='#253039';ctx.lineWidth=1;ctx.strokeRect(-9,-8,18,15);ctx.restore();
 }
+function brightenM1TrailColor(color){
+ const match=/^#([0-9a-f]{6})$/i.exec(color||'');
+ if(!match)return '#eafaff';
+ const n=parseInt(match[1],16),mix=v=>Math.round(v+(255-v)*.38);
+ return 'rgb('+mix((n>>16)&255)+','+mix((n>>8)&255)+','+mix(n&255)+')';
+}
+function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
+ let state=f.m1HandTrailState;
+ const motionName=f.motion&&f.motion.name||'';
+ if(!state||state.name!==motionName){state=f.m1HandTrailState={name:motionName,a:[],b:[]}}
+ const points=state[side];
+ if(!active){points.length=0;return}
+ const now=game.time,dx=hand.x-baseX,dy=hand.y-baseY,last=points[points.length-1];
+ if(!last||Math.hypot(dx-last.x,dy-last.y)>.35||now-last.time>.045)points.push({x:dx,y:dy,time:now});
+ while(points.length>10||(points.length&&now-points[0].time>.145))points.shift();
+ if(points.length<2)return;
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor=color;ctx.shadowBlur=12;
+ for(let i=0;i<points.length-1;i++){
+  const a=points[i],b=points[i+1],recency=(i+1)/(points.length-1),fade=clamp(1-(now-b.time)/.15,0,1);
+  if(fade<=0)continue;
+  const x1=baseX+a.x,y1=baseY+a.y,x2=baseX+b.x,y2=baseY+b.y;
+  ctx.globalAlpha=fade*(.12+.52*recency);ctx.strokeStyle=color;ctx.lineWidth=3+recency*8;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo((x1+x2)*.5,(y1+y2)*.5-2*recency,x2,y2);ctx.stroke();
+  ctx.globalAlpha=fade*(.08+.42*recency);ctx.strokeStyle='#ffffff';ctx.lineWidth=1+recency*2;
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+ }
+ ctx.restore();
+}
 function drawHeadHands(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player';
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/m.duration,0,1):(f.block?.5+.5*Math.sin(game.time*7):0);
@@ -2565,8 +2603,14 @@ function drawHeadHands(f){
  }else if(name==='dashGesture'){
   const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
  }else if(yutaCombo){
-  const sweep=Math.sin(progress*Math.PI),grip=P(9+sweep*11,-5,15+Math.sin(progress*Math.PI*2)*3),support=P(5+sweep*8,12,14);
-  handB=grip;handA=support;handBScale=1.08;handAScale=.9;handBAngle=angle+(yutaCombo%2?-.12:.12);handAAngle=angle;
+  if(yutaCombo===4){
+   const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
+   const forward=progress<.31?lerp(12,-19,wind):progress<.55?lerp(-19,reach+62,strike):lerp(reach+62,reach+13,recoil);
+   handA=P(forward,16,-4);handB=P(8,-18,5);handAScale=1.34;handBScale=.94;handAAngle=angle;
+  }else{
+   const sweep=Math.sin(progress*Math.PI),grip=P(9+sweep*11,-5,15+Math.sin(progress*Math.PI*2)*3),support=P(5+sweep*8,12,14);
+   handB=grip;handA=support;handBScale=1.08;handAScale=.9;handBAngle=angle+(yutaCombo%2?-.12:.12);handAAngle=angle;
+  }
  }else if(combo===1||combo===3){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handB=P(forward,-15,0);handA=P(reach-13+idle,18,0);handBScale=1.12;handBAngle=angle-.08;
@@ -2574,8 +2618,9 @@ function drawHeadHands(f){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handA=P(forward,15,0);handB=P(reach-13+idle,-18,0);handAScale=1.14;handAAngle=angle+.08;
  }else if(combo===4){
-  const drop=clamp((progress-.28)/.72,0,1),windup=1-drop,forward=18+(reach+31)*drop,vertical=-23*windup+37*drop,spread=17-9*drop;
-  handB=P(forward,-spread,vertical);handA=P(forward,spread,vertical);handAScale=1.1;handBScale=1.1;
+  const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
+  const forward=progress<.31?lerp(reach+8,-18,wind):progress<.55?lerp(-18,reach+62,strike):lerp(reach+62,reach+13,recoil);
+  handB=P(forward,-16,-4);handA=P(8,18,5);handBScale=1.38;handAScale=.92;handBAngle=angle;
  }else{
   const base=reach+idle;handA=P(base,15,0);handB=P(base-3,-15,0);
   if(name){
@@ -2723,6 +2768,14 @@ function drawHeadHands(f){
  if(f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  if(f.awakened){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':(f.char==='vessel'?'#f0445a':c.accent);ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
+ const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
+ if(combo){
+  drawM1HandTrail(f,combo===2?handA:handB,combo===2?'a':'b',x,headY,true,trailColor);
+  drawM1HandTrail(f,combo===2?handB:handA,combo===2?'b':'a',x,headY,false,trailColor);
+ }else if(yutaCombo){
+  drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
+  drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
+ }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c);ctx.restore();
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();drawAccessoryOverlays(f,x,headY);
@@ -2766,10 +2819,11 @@ function drawYutaKatana(f){
   if(f.rikaMode)return;
   const m=f.motion,active=!!(m&&(m.name.startsWith('yutaM1_')||m.name==='yutaDomainSwordRun')),combo=active?(Number(m.name.slice(7))||1):0;
   const x=sx(f.x),y=sy(f.y)-f.jump*3,a=active&&Number.isFinite(m.angle)?m.angle:(f.face||0),p=active?clamp(m.t/m.duration,0,1):0;
-  const swing=active?(p-.5)*1.8*(combo%2?1:-1):-.38,follow=active?Math.sin(p*Math.PI)*7:0;
+  const heavyPunch=active&&combo===4;
+  const swing=active&&!heavyPunch?(p-.5)*1.8*(combo%2?1:-1):-.38,follow=active&&!heavyPunch?Math.sin(p*Math.PI)*7:0;
   const handSide=a+Math.PI/2;
   ctx.save();ctx.translate(x+Math.cos(handSide)*9+Math.cos(a)*follow,y+Math.sin(handSide)*9+Math.sin(a)*follow-7);ctx.rotate(a+swing);
-  if(active){ctx.globalAlpha=.34*(1-p);ctx.strokeStyle='#f6e4f4';ctx.lineWidth=5;ctx.beginPath();ctx.arc(42,0,48,combo%2?-.95:.12,combo%2?.28:1.35);ctx.stroke();ctx.globalAlpha=1}
+  if(active&&!heavyPunch){ctx.globalAlpha=.34*(1-p);ctx.strokeStyle='#f6e4f4';ctx.lineWidth=5;ctx.beginPath();ctx.arc(42,0,48,combo%2?-.95:.12,combo%2?.28:1.35);ctx.stroke();ctx.globalAlpha=1}
   // Dark wrapped grip, bright guard, and a long silver blade: visible in Yuta's idle stance and sweeping on every M1.
   ctx.fillStyle='#171923';ctx.fillRect(7,-3,17,6);ctx.fillStyle='#d6c0a3';ctx.fillRect(9,-2,12,4);ctx.fillStyle='#272334';ctx.fillRect(19,-2,8,4);
   ctx.fillStyle='#f0d5eb';ctx.fillRect(24,-6,4,12);ctx.fillStyle='#bba8c8';ctx.fillRect(27,-3,4,6);
