@@ -2462,8 +2462,9 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.globalAlpha=fade*alpha;
     // Original Shrine M1 crescent contour, restored exactly: smooth arc, hollow return and pointed ends.
     ctx.beginPath();ctx.moveTo(-length*.5,0);
-    ctx.bezierCurveTo(-length*.31,-thickness*2.55,length*.31,-thickness*2.55,length*.5,0);
-    ctx.bezierCurveTo(length*.28,-thickness*.58,-length*.28,-thickness*.58,-length*.5,0);
+    // A much deeper, clearly visible bow while preserving the same pointed crescent tips.
+    ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
+    ctx.bezierCurveTo(length*.28,-thickness*1.25,-length*.28,-thickness*1.25,-length*.5,0);
     ctx.closePath();
     ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
     ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;
