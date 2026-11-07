@@ -1621,7 +1621,7 @@ if(f.attackCd>0)return;
   const shrineM1=f.char==='vessel'&&f.awakened,baseM1=!f.awakened;
   const angle=f.face;
   f.comboTimer=shrineM1?.50:baseM1?.52:.62;
-  f.attackCd=shrineM1?.34:baseM1?fin?.28:.09:fin?.34:.115;
+  f.attackCd=shrineM1?fin?.15:.07:baseM1?fin?.28:.09:fin?.34:.115;
   f.attackAnim=shrineM1?.24:baseM1?fin?.24:.15:fin?.28:.18;
   f.attackType=shrineM1?'slash':'punch';
   setMotion(f,'m1_'+f.combo,shrineM1?.34:baseM1?fin?.34:.20:fin?.42:.24,angle,t);if(shrineM1){f.motion.activeDuration=.24;f.motion.vfxFadeOut=.1;f.motion.shrineReach=clamp(dist(f,t)*.56,23,76);f.attackAnim=.24;}
