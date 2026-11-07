@@ -2534,15 +2534,15 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
-    const length=combo===3?142:104,thickness=combo===3?12.5:8.2,scale=combo===3?1.08:1;
-    // Trail and blade share the exact dimensions and center for each hit.
-    drawWhiteRush(slashCenterX,slashCenterY,length,thickness,0,scale,.96);
+    const length=combo===3?142:104,thickness=combo===3?12.5:8.2;
+    // Trail and blade share the exact dimensions, center and scale for each hit.
+    drawWhiteRush(slashCenterX,slashCenterY,length,thickness,0,1,.96);
     drawCrescentSlash(slashCenterX,slashCenterY,length,thickness,0,1);
    }else if(combo===4){
     // Each arm of the X gets its own trail mapped to that arm's inner crescent contour.
-    const length=126,thickness=9.2,trailScale=1.05;
-    drawWhiteRush(slashCenterX,slashCenterY,length,thickness,-.68,trailScale,.52);
-    drawWhiteRush(slashCenterX,slashCenterY,length,thickness,.68,trailScale,.52);
+    const length=126,thickness=9.2;
+    drawWhiteRush(slashCenterX,slashCenterY,length,thickness,-.68,1,.52);
+    drawWhiteRush(slashCenterX,slashCenterY,length,thickness,.68,1,.52);
     drawCrescentSlash(slashCenterX,slashCenterY,length,thickness,-.68,1);
     drawCrescentSlash(slashCenterX,slashCenterY,length,thickness,.68,.98);
    }
