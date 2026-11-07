@@ -2464,29 +2464,17 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.bezierCurveTo(-length*.30,-thickness*2.15,length*.30,-thickness*2.15,length*.5,0);
     ctx.bezierCurveTo(length*.28,-thickness*.46,-length*.28,-thickness*.46,-length*.5,0);
     ctx.closePath();
-    ctx.fillStyle='#030405';ctx.fill();
-    // Deep crimson outer edge plus a crisp white core outline makes the cut read without extra clutter.
-    ctx.strokeStyle='#951b2b';ctx.lineWidth=7;ctx.lineJoin='round';
-    ctx.shadowColor='#f02d48';ctx.shadowBlur=11;ctx.stroke();
-    ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;ctx.stroke();
-    ctx.restore();
+    ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;
+    ctx.fill();ctx.stroke();ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
     const length=combo===3?142:104,thickness=combo===3?12.5:8.2;
-    // One clean centered crescent with restrained impact sparks.
     drawCrescent(slashCenterX,slashCenterY,length,thickness,0,1);
-    ctx.save();ctx.globalAlpha=fade*.9;ctx.fillStyle='#ff5365';ctx.shadowColor='#ff304e';ctx.shadowBlur=9;
-    const sparks=[[-57,-17],[-49,22],[51,-20],[58,15],[0,-43],[0,43]];
-    for(const [dx,dy] of sparks)ctx.fillRect(slashCenterX+dx-2,slashCenterY+dy-2,4,4);
-    ctx.restore();
    }else if(combo===4){
     const x=slashCenterX,y=slashCenterY;
-    // Two clean curved cuts form the finisher X with small red impact flecks.
     drawCrescent(x,y,126,9.2,-.68,1);
     drawCrescent(x,y,126,9.2,.68,.98);
-    ctx.save();ctx.globalAlpha=fade*.9;ctx.fillStyle='#ff5365';ctx.shadowColor='#ff304e';ctx.shadowBlur=10;
-    for(const [dx,dy] of [[-52,-52],[52,-52],[-52,52],[52,52]])ctx.fillRect(x+dx-2,y+dy-2,4,4);
-    ctx.restore();
    }
    return;
   }
