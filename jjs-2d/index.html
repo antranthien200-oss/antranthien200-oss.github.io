@@ -2473,19 +2473,29 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    const drawWhiteRush=(cx,cy,scale=1,alpha=1)=>{
     ctx.save();ctx.translate(cx,cy);ctx.scale(scale,scale);
     ctx.globalAlpha=fade*alpha;
-    ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=5;
-    // Five tapered streaks stream into the back of the crescent, like the reference.
-    const streak=(x1,y1,x2,y2,w,curve)=>{
-     ctx.beginPath();ctx.moveTo(cx+x1,cy+y1);
-     ctx.quadraticCurveTo(cx+(x1+x2)*.5,cy+(y1+y2)*.5+curve,cx+x2,cy+y2);
-     ctx.quadraticCurveTo(cx+(x1+x2)*.56,cy+(y1+y2)*.5+curve+w,cx+x1,cy+y1);
+    ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=13;
+    // Brush-shaped streaks are drawn in local coordinates so they meet the blade cleanly.
+    const brush=(x1,y1,x2,y2,width,bend)=>{
+     ctx.beginPath();
+     ctx.moveTo(x1,y1);
+     ctx.bezierCurveTo(x1+58,y1+bend,x2-72,y2+bend*.45,x2,y2);
+     ctx.bezierCurveTo(x2-34,y2+width*.22,x1+52,y1+width+bend*.7,x1,y1+width*.62);
      ctx.closePath();ctx.fill();
     };
-    streak(-174,-36,-12,-22,5,-3);
-    streak(-190,-15,-7,-9,8,-4);
-    streak(-182,5,-4,1,10,-5);
-    streak(-160,25,-10,13,7,2);
-    streak(-138,43,-17,25,4,4);
+    // Main white rush: broad, slightly curved bands that narrow into the slash.
+    brush(-188,-23,48,-12,15,-13);
+    brush(-176,-45,36,-25,7,-12);
+    brush(-181,3,45,1,12,12);
+    brush(-154,27,29,14,9,15);
+    brush(-130,48,5,29,5,14);
+    // Sharp, separated speed wisps create the ragged edges seen in the reference.
+    ctx.shadowBlur=7;ctx.globalAlpha=fade*alpha*.88;
+    ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ffffff';
+    ctx.lineWidth=2.4;
+    ctx.beginPath();ctx.moveTo(-190,-56);ctx.quadraticCurveTo(-102,-49,-20,-33);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-202,-5);ctx.quadraticCurveTo(-108,-18,-19,-13);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-174,40);ctx.quadraticCurveTo(-97,24,-18,13);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(-85,65);ctx.quadraticCurveTo(-39,39,-5,22);ctx.stroke();
     ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
