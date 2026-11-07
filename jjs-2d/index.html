@@ -2702,8 +2702,8 @@ function drawHeadHands(f){
   const wind=smoothstep01(clamp(progress/.25,0,1));
   const swing=smoothstep01(clamp((progress-.25)/.58,0,1));
   const recover=smoothstep01(clamp((progress-.83)/.17,0,1));
-  const isRight=combo===1,homeSide=isRight?-18:18;
-  const prepSide=isRight?104:(combo===3?-118:-104);
+  const isRight=combo===1||combo===3,homeSide=isRight?-18:18;
+  const prepSide=isRight?(combo===3?118:104):-104;
   const homeForward=reach-13;
   const arc=Math.sin(Math.PI*swing);
   const startForward=homeForward-12;
