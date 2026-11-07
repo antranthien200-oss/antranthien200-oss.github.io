@@ -2453,28 +2453,54 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m.startsWith('m1_')){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   if(f.char==='vessel'&&f.awakened){
-   // Every Shrine slash shares one fixed center point, slightly farther ahead of the fighter.
-   const slashCenterX=front*2.5,slashCenterY=0;
-   // Keep the cut anchored in one place: only its opacity changes, so it cannot jitter with the fist.
-   const fade=clamp((p-.34)/.045,0,1)*vfxFade;
-   const drawCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
+   // All four Shrine M1s use the same centered, forward-gliding hook slash from the reference.
+   const slashTravel=18*smoothstep01(clamp(p/.78,0,1));
+   const slashCenterX=front*2.5+slashTravel,slashCenterY=0;
+   const fade=clamp((p-.27)/.04,0,1)*vfxFade;
+   const drawReferenceCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation+Math.PI/2);
     ctx.globalAlpha=fade*alpha;
-    ctx.beginPath();ctx.moveTo(-length*.5,0);
-    ctx.bezierCurveTo(-length*.30,-thickness*2.15,length*.30,-thickness*2.15,length*.5,0);
-    ctx.bezierCurveTo(length*.28,-thickness*.46,-length*.28,-thickness*.46,-length*.5,0);
+    ctx.beginPath();
+    // Deep, hooked outer curve with a tapered inner return, like the reference silhouette.
+    ctx.moveTo(-length*.52,0);
+    ctx.bezierCurveTo(-length*.24,-thickness*2.8,length*.31,-thickness*3.25,length*.52,-thickness*.18);
+    ctx.bezierCurveTo(length*.36,-thickness*.92,length*.08,-thickness*1.12,-length*.19,-thickness*.56);
+    ctx.bezierCurveTo(-length*.34,-thickness*.28,-length*.44,-thickness*.08,-length*.52,0);
     ctx.closePath();
-    ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
-    ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;
-    ctx.fill();ctx.stroke();ctx.restore();
+    ctx.fillStyle='#030405';ctx.fill();
+    ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=7;
+    ctx.stroke();ctx.restore();
+   };
+   const drawReferenceRush=(cx,cy,scale=1)=>{
+    // Clean white speed streaks trail behind the black crescent; fixed paths avoid flicker.
+    const lines=[
+     [-118,-44,-48,-38,2],[-101,-31,-35,-27,3],
+     [-126,-16,-46,-13,2],[-116,0,-35,2,3.1],
+     [-103,17,-40,17,2.6],[-92,33,-31,30,2],
+     [-112,47,-49,42,1.8]
+    ];
+    ctx.save();ctx.strokeStyle='#ffffff';ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=8;
+    for(let i=0;i<lines.length;i++){
+     const [x1,y1,x2,y2,w]=lines[i];
+     ctx.globalAlpha=fade*(.52+(i%3)*.12);
+     ctx.lineWidth=w*scale;
+     ctx.beginPath();ctx.moveTo(cx+x1,cy+y1);
+     ctx.quadraticCurveTo(cx+(x1+x2)*.52,cy+(y1+y2)*.5+(i-3)*2,cx+x2,cy+y2);
+     ctx.stroke();
+    }
+    ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
-    const length=combo===3?142:104,thickness=combo===3?12.5:8.2;
-    drawCrescent(slashCenterX,slashCenterY,length,thickness,0,1);
+    const length=combo===3?158:142,thickness=combo===3?13.5:12;
+    drawReferenceRush(slashCenterX,slashCenterY,combo===3?1.08:1);
+    drawReferenceCrescent(slashCenterX,slashCenterY,length,thickness,0,1);
    }else if(combo===4){
-    const x=slashCenterX,y=slashCenterY;
-    drawCrescent(x,y,126,9.2,-.68,1);
-    drawCrescent(x,y,126,9.2,.68,.98);
+    // Keep the curved X finisher, built from the same reference-shaped crescents.
+    drawReferenceRush(slashCenterX,slashCenterY,1.05);
+    drawReferenceCrescent(slashCenterX,slashCenterY,142,12,-.68,1);
+    drawReferenceCrescent(slashCenterX,slashCenterY,142,12,.68,.98);
    }
    return;
   }
