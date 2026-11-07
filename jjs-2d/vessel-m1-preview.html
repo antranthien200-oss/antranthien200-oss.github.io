@@ -778,7 +778,7 @@ const CHARS={
   special:'LIMITLESS',specialDesc:'Targeted space-warp reposition; can kick an airborne target.',awakeSpecial:'LIMITLESS',awakeSpecialDesc:'Same teleport special; during the awakening input, G+R triggers the 0.2-second domain variant.',awakening:'SIX EYES',awakeName:'SIX EYES'},
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
   moves:[['CURSED STRIKES','A sliding flurry of punches ending in a kick'],['CRUSHING BLOW','Grab, slam twice, then launch; shockwave on miss'],['DIVERGENT FIST','A wind-up punch with a timed mid-swing input for Black Flash'],['MANJI BLOCK','Block an incoming hit, then punch the attacker back']],
-  awakeMoves:[['DISMANTLE','A barrage of slashes; aerial diagonal slash variant'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Charge, grab, kick upward, then slam down'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
+  awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Charge, grab, kick upward, then slam down'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
   special:'COMBAT INSTINCTS',specialDesc:'Feint-cancel a move windup; punch a nearby throwable to launch it.',awakeSpecial:'CLEAVE',awakeSpecialDesc:'A forward grab followed by repeated slashes; deals 40% of current HP (minimum 10).',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
  restless:{name:'RESTLESS GAMBLER',desc:'Kinji Hakari. Use shutter doors, steel balls, and heavy cursed-energy attacks. Awakening: Idle Death Gamble; hit Jackpot for the immortal rushdown form.',color:'#35cf78',hair:'#8cffb1',coat:'#155a36',accent:'#51e98d',skin:'#e0b49b',hp:100,
   moves:[['RESERVE BALLS','A fast steel-ball projectile; ricochets off walls'],['SHUTTER DOORS','Trap and briefly stun an enemy with doors'],['ROUGH ENERGY','A charged unblockable punch; aerial stomp variant'],['FEVER BREAKER','Kick the target, then dropkick them through shutter doors']],
@@ -1748,7 +1748,7 @@ if(f.attackCd>0)return;
  if(f.char==='ten'&&(!f.awakened||f.tenBase)&&idx===1&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead){const comboTarget=f.tenToadTarget;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;setMotion(f,'megumiAbyss',1.15,f.face,comboTarget);showToast('WELL’S UNKNOWN ABYSS',900);comboTarget.rooted=Math.max(comboTarget.rooted||0,1.15);comboTarget.tenRabbitSwarm={owner:f,life:1.1};[0,1,2].forEach(i=>schedule(()=>{if(f.dead||f.stun>.04||comboTarget.dead||dist(f,comboTarget)>560)return;const a=Math.atan2(comboTarget.y-f.y,comboTarget.x-f.x);damage(comboTarget,4,f,{stun:.22,kx:Math.cos(a)*(i===2?10:2),ky:Math.sin(a)*(i===2?10:2),color:'#a9c0e8',blockAllSides:true,ignoreInvuln:true});if(i===1){comboTarget.jump=.32;comboTarget.jumpV=2.2}if(i===2){comboTarget.jump=.95;comboTarget.jumpV=3.6;game.shake=Math.max(game.shake,8)}burst(comboTarget.x,comboTarget.y,'#c5d5ed',7,3)},220+i*260));return}
 if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);
  const isDomainCast=idx===3&&((f.char==='honored'&&f.awakened)||(f.char==='vessel'&&f.awakened)||(f.char==='perfection'&&f.awakened)||(f.char==='trashman'&&f.awakened));
- if(!isDomainCast&&!(f.char==='vessel'&&!f.awakened&&idx===2))damageBuildingAlongRay(f,angle,Math.min(1100,Math.hypot(aim.x-f.x,aim.y-f.y)+55));
+ if(!isDomainCast&&!(f.char==='vessel'&&!f.awakened&&idx===2)&&!(f.char==='vessel'&&f.awakened&&idx===0))damageBuildingAlongRay(f,angle,Math.min(1100,Math.hypot(aim.x-f.x,aim.y-f.y)+55));
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
@@ -1798,7 +1798,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    if(idx===3){f.counterWindow=.6;f.counterKind='manji';f.skillCd[idx]=20;f.block=false;setMotion(f,'yujiManjiBlock',1.3,angle,t);burst(f.x,f.y,'#f3bb67',12,3);popText(f.x,f.y-55,'MANJI BLOCK','#f3bb67',12)}
   }else{
    if(idx===0){
-    f.skillCd[idx]=18;f.attackAnim=.42;f.invuln=.12;
+    f.skillCd[idx]=18;f.attackAnim=.42;f.invuln=Math.max(f.invuln,.12);
     setMotion(f,'sukunaFlurryWindup',.42,angle,t);
     const serial=(f.sukunaFlurrySerial||0)+1;f.sukunaFlurrySerial=serial;
     burst(f.x,f.y-23,'#ff536b',9,2.8);showToast('DISMANTLE · CATCH',600);
@@ -1818,7 +1818,8 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
      }
     },245);
     return;
-   }   if(idx===1){setMotion(f,'sukunaOpen',3.8,angle,t);f.invuln=.25;f.attackAnim=3.8;f.skillCd[idx]=40;burst(f.x,f.y,'#ff8b37',24,5);showToast('OPEN · FORMING FLAME ARROW',800);schedule(()=>{if(!f.dead){f.invuln=.75;burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,'#ffb34f',30,7);projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:24,life:2.4,maxDistance:780,travelled:0,owner:f,kind:'fire',damage:30,color:'#ff8b37'})}},2700)}
+   }
+   if(idx===1){setMotion(f,'sukunaOpen',3.8,angle,t);f.invuln=.25;f.attackAnim=3.8;f.skillCd[idx]=40;burst(f.x,f.y,'#ff8b37',24,5);showToast('OPEN · FORMING FLAME ARROW',800);schedule(()=>{if(!f.dead){f.invuln=.75;burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,'#ffb34f',30,7);projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:24,life:2.4,maxDistance:780,travelled:0,owner:f,kind:'fire',damage:30,color:'#ff8b37'})}},2700)}
    if(idx===2){f.skillCd[idx]=16;f.attackAnim=.9;if(targetInAim(f,t,355,.55,angle)){f.invuln=.42;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;schedule(()=>{if(!t.dead&&dist(f,t)<170){damage(t,5,f,{stun:.35,kx:Math.cos(angle)*5,ky:Math.sin(angle)*5,color:'#ff536b',ignoreInvuln:true});burst(t.x,t.y,'#ff536b',12,4);schedule(()=>{if(!t.dead&&dist(f,t)<190){damage(t,15,f,{stun:.55,kx:Math.cos(angle)*9,ky:Math.sin(angle)*9,color:'#ff536b',ignoreInvuln:true});t.jump=Math.max(t.jump,.8);t.jumpV=Math.max(t.jumpV,3);schedule(()=>{if(!t.dead&&dist(f,t)<205)damage(t,5,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,big:true,color:'#ff536b',ignoreInvuln:true})},260)}},300)}},180)}else popText(f.x,f.y-55,'RUSH · MISS','#ff6478',12)}
    if(idx===3){if(startDomain(f,'shrine',18,1.25,.165,590,1))f.skillCd[idx]=120}
   }return;
