@@ -2454,7 +2454,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   if(f.char==='vessel'&&f.awakened){
    // Every Shrine slash shares one fixed center point, independent of the active hand or combo.
-   const slashCenterX=front,slashCenterY=0;
+   const slashCenterX=front*2,slashCenterY=0;
    // Keep the cut anchored in one place: only its opacity changes, so it cannot jitter with the fist.
    const fade=clamp((p-.34)/.045,0,1)*vfxFade;
    const drawCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
