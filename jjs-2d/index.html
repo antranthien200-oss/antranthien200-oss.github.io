@@ -1296,7 +1296,7 @@ function setMotion(f,name,duration=.5,angle=f.face,target=null){
 function setSkillMotion(f,idx,angle,target){
  let names,times;
  if(f.char==='honored'){names=f.awakened?['gojoBlueMax','gojoRedMax','gojoPurple','gojoVoid']:['gojoBlue','gojoRed','gojoRapid','gojoTwofold'];times=f.awakened?[1,1.55,1.4,1.5]:[1.95,.8,4,1.4]}
- else if(f.char==='vessel'){names=f.awakened?['sukunaDismantle','sukunaOpen','sukunaRush','sukunaShrine']:['yujiCursedDrag','yujiCrush','yujiDivergent','yujiManjiCounter'];times=f.awakened?[1.15,3.8,4,1.5]:[3,.85,.8,.68]}
+ else if(f.char==='vessel'){names=f.awakened?['sukunaFlurryWindup','sukunaOpen','sukunaRush','sukunaShrine']:['yujiCursedDrag','yujiCrush','yujiDivergent','yujiManjiCounter'];times=f.awakened?[.42,3.8,4,1.5]:[3,.85,.8,.68]}
  else if(f.char==='restless'){names=f.jackpot?['hakariVolley','hakariRushdown','hakariOverwhelming','hakariSurge']:['hakariBall','hakariDoors','hakariRough','hakariFever'];times=f.jackpot?[1.8,1.8,1.7,1.2]:[.45,.65,1.05,1.65]}
  else if(f.char==='ten'){names=f.awakened&&!f.tenBase?['megumiElephant','megumiSerpent','megumiSwarm','megumiMahoraga']:['megumiRabbit','megumiNue','megumiToad','megumiDog'];times=f.awakened&&!f.tenBase?[1.8,1.3,2,2.2]:[1.75,2.2,.85,1.4]}
  else if(f.char==='perfection'){names=f.awakened?['mahitoTransfigure','mahitoDisfigure','mahitoSpikes','mahitoDomain']:['mahitoStockpile','mahitoSoulFire','mahitoFocus','mahitoRepel'];times=f.awakened?[.9,1.5,1.2,2.2]:[.8,1.05,.5,1.1]}
@@ -1309,9 +1309,9 @@ function setSkillMotion(f,idx,angle,target){
 
 function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  if(!f||!t||t.dead||(t.block&&kind!=='megumiSerpent')||t.capturedBy)return false;
- f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabLastX=f.x;f.grabLastY=f.y;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;
+ f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=kind==='sukunaFlurry'?.06:.08;f.grabLastX=f.x;f.grabLastY=f.y;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;
  t.capturedBy=f;t.block=false;t.invuln=0;t.stun=duration+.22;t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
- f.vx=0;f.vy=0;setMotion(f,kind==='yujiDrag'?'yujiCursedDrag':kind==='todoThrow'?'todoSwiftGrab':kind==='toadPull'?'megumiToad':kind==='mahitoTransfigure'?'mahitoTransfigure':kind==='gojoFaceGrater'?'gojoFaceGrater':kind==='sukunaCleave'?'sukunaCleave':kind==='bloodEdge'?'chosoEdge':'megumiSerpent',duration,angle,t);return true;
+ f.vx=0;f.vy=0;setMotion(f,kind==='yujiDrag'?'yujiCursedDrag':kind==='todoThrow'?'todoSwiftGrab':kind==='toadPull'?'megumiToad':kind==='mahitoTransfigure'?'mahitoTransfigure':kind==='gojoFaceGrater'?'gojoFaceGrater':kind==='sukunaCleave'?'sukunaCleave':kind==='sukunaFlurry'?'sukunaFlurry':kind==='bloodEdge'?'chosoEdge':'megumiSerpent',duration,angle,t);return true;
 }
 function releaseGrab(f,launch=true){
  const t=f&&f.grabTarget;if(!t)return;const a=Number.isFinite(f.grabAngle)?f.grabAngle:f.face;t.capturedBy=null;f.grabTarget=null;f.grabKind='';f.grabElapsed=0;
@@ -1328,17 +1328,29 @@ function updateGrab(f,dt){
  else if(kind==='mahitoTransfigure'){t.x=f.x+fx*43;t.y=f.y+fy*43}
  else if(kind==='gojoFaceGrater'){const gap=Math.max(0,dist(f,t)-56),step=Math.min(gap,760*dt);f.x+=fx*step;f.y+=fy*step;collideWorld(f);t.x=f.x+fx*48;t.y=f.y+fy*48}
  else if(kind==='sukunaCleave'){const gap=Math.max(0,dist(f,t)-54),step=Math.min(gap,440*dt);f.x+=fx*step;f.y+=fy*step;collideWorld(f);t.x=f.x+fx*47;t.y=f.y+fy*47}
+ else if(kind==='sukunaFlurry'){t.x=f.x+fx*52;t.y=f.y+fy*52}
  else if(kind==='bloodEdge'){f.x+=fx*35*dt;f.y+=fy*35*dt;collideWorld(f);t.x=f.x+fx*42;t.y=f.y+fy*42}
  else{const orbit=a+progress*Math.PI*2;t.x=f.x+Math.cos(orbit)*43;t.y=f.y+Math.sin(orbit)*28}
  t.vx=0;t.vy=0;t.jump=0;if(t.motion){t.motion.t=f.grabElapsed;t.motion.angle=a}
  const color=f.grabColor||'#e83c57',bodyCenterOffset=kind==='yujiDrag'?23+f.jump*3:0;trailStrokes.push({x1:oldX,y1:oldY-bodyCenterOffset,x2:f.x,y2:f.y-bodyCenterOffset,life:kind==='yujiDrag'?.42:.28,max:kind==='yujiDrag'?.42:.28,color,width:kind==='yujiDrag'?13:8});
  if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
- while(f.grabElapsed>=f.grabTick&&f.grabTick<f.grabDuration){f.grabTick+=kind==='yujiDrag'?.25:kind==='sukunaCleave'?.14:.22;const hit=kind==='yujiDrag'?1.1:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*MAHITO_MODES[f.soulMode].damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='bloodEdge'?1.9:0;if(hit>0)damage(t,hit,f,{stun:.03,color,ignoreInvuln:true,unblockable:true})}
+ while(f.grabElapsed>=f.grabTick&&f.grabTick<f.grabDuration){
+  f.grabTick+=kind==='yujiDrag'?.25:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
+  const hit=kind==='yujiDrag'?1.1:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*MAHITO_MODES[f.soulMode].damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
+  if(hit>0){
+   damage(t,hit,f,{stun:kind==='sukunaFlurry'?.065:.03,color,ignoreInvuln:true,unblockable:true});
+   if(kind==='sukunaFlurry'){
+    const cutIndex=Math.floor(f.grabElapsed/.095),side=cutIndex%2?1:-1;
+    burst(t.x+fx*side*13,t.y-10+((cutIndex%3)-1)*9,color,3,2.7);
+    game.hitStop=Math.max(game.hitStop,.006);
+   }
+  }
+ }
  f.vx=0;f.vy=0;
  if(f.grabElapsed>=f.grabDuration){const finish=kind==='sukunaCleave'?Math.max(10,t.hp*.4):f.grabFinishDamage,finalAngle=f.grabAngle,launch=kind!=='toadPull';releaseGrab(f,false);
-  if(finish>0)damage(t,finish,f,{stun:.8,kx:Math.cos(finalAngle)*(kind==='yujiDrag'?16:12),ky:Math.sin(finalAngle)*(kind==='yujiDrag'?16:12),unblockable:true,big:true,color,ignoreInvuln:true});
-  if(launch){t.vx=Math.cos(finalAngle)*(kind==='yujiDrag'?17:13);t.vy=Math.sin(finalAngle)*(kind==='yujiDrag'?17:13);t.jump=Math.max(t.jump,.28);t.jumpV=Math.max(t.jumpV,2.4)}else t.stun=Math.max(t.stun,.25);
-  setMotion(f,kind==='yujiDrag'?'yujiCursedDragEnd':kind==='todoThrow'?'todoSwiftThrow':kind==='mahitoTransfigure'?'mahitoTransfigureEnd':kind==='gojoFaceGrater'?'gojoFaceGraterEnd':kind==='sukunaCleave'?'sukunaCleaveEnd':kind==='bloodEdge'?'chosoEdgeSlam':'megumiToadRelease',.42,finalAngle,t);
+  if(finish>0)damage(t,finish,f,{stun:.8,kx:Math.cos(finalAngle)*(kind==='yujiDrag'?16:kind==='sukunaFlurry'?17:12),ky:Math.sin(finalAngle)*(kind==='yujiDrag'?16:kind==='sukunaFlurry'?17:12),unblockable:true,big:true,color,ignoreInvuln:true});
+  if(launch){t.vx=Math.cos(finalAngle)*(kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:13);t.vy=Math.sin(finalAngle)*(kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:13);t.jump=Math.max(t.jump,.28);t.jumpV=Math.max(t.jumpV,2.4)}else t.stun=Math.max(t.stun,.25);
+  setMotion(f,kind==='yujiDrag'?'yujiCursedDragEnd':kind==='todoThrow'?'todoSwiftThrow':kind==='mahitoTransfigure'?'mahitoTransfigureEnd':kind==='gojoFaceGrater'?'gojoFaceGraterEnd':kind==='sukunaCleave'?'sukunaCleaveEnd':kind==='sukunaFlurry'?'sukunaFlurryEnd':kind==='bloodEdge'?'chosoEdgeSlam':'megumiToadRelease',.42,finalAngle,t);
   burst(t.x,t.y,color,kind==='yujiDrag'?34:24,7);addDebris(t.x,t.y,color,kind==='yujiDrag'?12:8);game.shake=Math.max(game.shake,kind==='yujiDrag'?13:9);game.hitStop=Math.max(game.hitStop,.075);
   popText(t.x,t.y-60,kind==='yujiDrag'?'CURSED STRIKES':kind==='todoThrow'?'SWIFT KICK':kind==='mahitoTransfigure'?'IDLE TRANSFIGURATION':kind==='sukunaCleave'?'CLEAVE':kind==='gojoFaceGrater'?'FACE GRATER':kind==='bloodEdge'?'BLOOD EDGE':'TOAD PULL',color,15);
  }
@@ -1785,8 +1797,28 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    }if(idx===1){f.skillCd[idx]=15;f.invuln=.3;f.attackAnim=.68;f.jump=0;f.jumpV=0;setMotion(f,'yujiCrush',.68,angle,t);f.yujiCrushDash={angle,speed:18,duration:.23,elapsed:0,sparkTimer:0,hitTargets:new Set()};burst(f.x,f.y-23,'#46d8ff',18,5);burst(f.x,f.y-23,'#d9faff',7,3.5);showToast('CRUSHING BLOW',550);return}if(idx===2){f.skillCd[idx]=18;f.blackFlashWindow=0;f.blackFlashChain=0;f.attackAnim=.50;f.invuln=.08;setMotion(f,'yujiDivergent',.50,angle,t);const attack={resolved:false,angle,hitTarget:null};f.yujiDivergentAttack=attack;showToast('DIVERGENT FIST',500);schedule(()=>{if(f.dead||f.stun>.2||attack.resolved||f.yujiDivergentAttack!==attack)return;const hit=targetInAim(f,t,150,.9,angle);attack.hitTarget=hit?t:null;const endX=hit?t.x:f.x+Math.cos(angle)*88,endY=hit?t.y-23:f.y-23+Math.sin(angle)*88;f.cursedWhiteFlash=.12;f.blackFlashWindow=.22;f.yujiEnergyStrike={x1:f.x+Math.cos(angle)*22,y1:f.y-23+Math.sin(angle)*22,x2:endX,y2:endY,life:.24,max:.24};burst(endX,endY,'#48d5ff',hit?20:12,5);burst(endX,endY,'#d9faff',hit?9:5,3.5);showToast('PRESS 3 NOW FOR BLACK FLASH',450)},240);schedule(()=>{if(attack.resolved){if(f.yujiDivergentAttack===attack)f.yujiDivergentAttack=null;return}attack.resolved=true;if(f.yujiDivergentAttack===attack)f.yujiDivergentAttack=null;f.blackFlashWindow=0;const hit=attack.hitTarget&&!attack.hitTarget.dead&&dist(f,attack.hitTarget)<190?attack.hitTarget:null;if(hit)damage(hit,7.5,f,{stun:.28,kx:Math.cos(angle)*3.5,ky:Math.sin(angle)*3.5,color:'#48cfff',ignoreInvuln:true});},490);return}
    if(idx===3){f.counterWindow=.6;f.counterKind='manji';f.skillCd[idx]=20;f.block=false;setMotion(f,'yujiManjiBlock',1.3,angle,t);burst(f.x,f.y,'#f3bb67',12,3);popText(f.x,f.y-55,'MANJI BLOCK','#f3bb67',12)}
   }else{
-   if(idx===0){f.skillCd[idx]=13;if(f.jump>.1){f.attackAnim=.55;projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42+28,vx:Math.cos(angle)*18,vy:Math.sin(angle)*18+2,r:27,life:1.7,maxDistance:700,travelled:0,owner:f,kind:'slash',damage:25,color:'#ff6478'});burst(f.x,f.y,'#fa526b',18,5);popText(f.x,f.y-55,'AERIAL DISMANTLE','#ff6478',12)}else if(targetInAim(f,t,310,.98,angle)){f.attackAnim=.65;burstLine(f,t,'#fa526b',20);repeatDamage(f,t,1.75,10,85,{range:330,stun:.05,color:'#fa526b',damageType:'bullet',blockedDamage:1,ignoreInvuln:true})}else{burstLine(f,{x:f.x+Math.cos(angle)*280,y:f.y+Math.sin(angle)*280},'#fa526b',18);popText(f.x,f.y-55,'DISMANTLE · MISS','#fa526b',12)}}
-   if(idx===1){setMotion(f,'sukunaOpen',3.8,angle,t);f.invuln=.25;f.attackAnim=3.8;f.skillCd[idx]=40;burst(f.x,f.y,'#ff8b37',24,5);showToast('OPEN · FORMING FLAME ARROW',800);schedule(()=>{if(!f.dead){f.invuln=.75;burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,'#ffb34f',30,7);projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:24,life:2.4,maxDistance:780,travelled:0,owner:f,kind:'fire',damage:30,color:'#ff8b37'})}},2700)}
+   if(idx===0){
+    f.skillCd[idx]=18;f.attackAnim=.42;f.invuln=.12;
+    setMotion(f,'sukunaFlurryWindup',.42,angle,t);
+    const serial=(f.sukunaFlurrySerial||0)+1;f.sukunaFlurrySerial=serial;
+    burst(f.x,f.y-23,'#ff536b',9,2.8);showToast('DISMANTLE · CATCH',600);
+    schedule(()=>{
+     if(f.dead||!game.started||game.over||f.stun>.08||f.sukunaFlurrySerial!==serial||!f.motion||f.motion.name!=='sukunaFlurryWindup')return;
+     f.x+=Math.cos(angle)*21;f.y+=Math.sin(angle)*21;collideWorld(f);f.vx=0;f.vy=0;
+     const caught=targetInAim(f,t,154,.66,angle)&&beginGrab(f,t,'sukunaFlurry',.90,angle,'#f34d67',6.5);
+     if(caught){
+      f.grabTick=.06;f.invuln=Math.max(f.invuln,.12);
+      burst(t.x,t.y-18,'#ff536b',18,4.8);burst(t.x,t.y-18,'#fff0f2',8,3.2);
+      game.hitStop=Math.max(game.hitStop,.045);game.shake=Math.max(game.shake,3.2);
+      popText(t.x,t.y-55,'DISMANTLED','#ff8194',13);
+     }else{
+      setMotion(f,'sukunaFlurryMiss',.3,angle,t);f.vx+=Math.cos(angle)*2.1;f.vy+=Math.sin(angle)*2.1;
+      burst(f.x+Math.cos(angle)*46,f.y+Math.sin(angle)*46-18,'#ff536b',7,2.8);
+      popText(f.x+Math.cos(angle)*50,f.y+Math.sin(angle)*50-48,'DISMANTLE · MISS','#ff8194',11);
+     }
+    },245);
+    return;
+   }   if(idx===1){setMotion(f,'sukunaOpen',3.8,angle,t);f.invuln=.25;f.attackAnim=3.8;f.skillCd[idx]=40;burst(f.x,f.y,'#ff8b37',24,5);showToast('OPEN · FORMING FLAME ARROW',800);schedule(()=>{if(!f.dead){f.invuln=.75;burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,'#ffb34f',30,7);projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:24,life:2.4,maxDistance:780,travelled:0,owner:f,kind:'fire',damage:30,color:'#ff8b37'})}},2700)}
    if(idx===2){f.skillCd[idx]=16;f.attackAnim=.9;if(targetInAim(f,t,355,.55,angle)){f.invuln=.42;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;schedule(()=>{if(!t.dead&&dist(f,t)<170){damage(t,5,f,{stun:.35,kx:Math.cos(angle)*5,ky:Math.sin(angle)*5,color:'#ff536b',ignoreInvuln:true});burst(t.x,t.y,'#ff536b',12,4);schedule(()=>{if(!t.dead&&dist(f,t)<190){damage(t,15,f,{stun:.55,kx:Math.cos(angle)*9,ky:Math.sin(angle)*9,color:'#ff536b',ignoreInvuln:true});t.jump=Math.max(t.jump,.8);t.jumpV=Math.max(t.jumpV,3);schedule(()=>{if(!t.dead&&dist(f,t)<205)damage(t,5,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,big:true,color:'#ff536b',ignoreInvuln:true})},260)}},300)}},180)}else popText(f.x,f.y-55,'RUSH · MISS','#ff6478',12)}
    if(idx===3){if(startDomain(f,'shrine',18,1.25,.165,590,1))f.skillCd[idx]=120}
   }return;
@@ -2448,6 +2480,38 @@ function drawPixelSkillVfx(f,m,p,c){
 
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
+ if(m==='sukunaFlurryWindup'||m==='sukunaFlurry'||m==='sukunaFlurryMiss'||m==='sukunaFlurryEnd'||m==='captured_sukunaFlurry'){
+  ctx.save();const a=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;ctx.rotate(a);
+  if(m==='captured_sukunaFlurry'){
+   const cuts=[
+    [-25,-27,49,-.72,-12,4.3,0],[8,-22,62,.46,13,5.2,1],
+    [-5,-3,39,-.18,9,3.2,0],[25,10,53,-1.02,-8,4.1,1],
+    [-24,22,36,.78,-9,2.7,0],[5,28,48,.98,11,3.7,1],
+    [-35,-3,31,1.16,7,2.6,1],[30,-28,34,-.42,6,2.5,0]
+   ];
+   const fade=.7+.3*Math.sin(Math.PI*p);
+   for(let i=0;i<cuts.length;i++){
+    const [x,y,len,rot,curve,width,shape]=cuts[i],pulse=.58+.42*Math.sin(p*18+i*1.7);
+    ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.globalAlpha=fade*pulse*vfxFade;ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.strokeStyle='#74142d';ctx.lineWidth=width+3.2;ctx.shadowColor='#ff405f';ctx.shadowBlur=7;ctx.beginPath();
+    if(shape===0){ctx.moveTo(-len*.5,curve*.15);ctx.bezierCurveTo(-len*.22,curve*1.6,len*.15,-curve*1.15,len*.5,-curve*.1)}
+    else{ctx.moveTo(-len*.5,-curve*.3);ctx.lineTo(-len*.12,curve*1.2);ctx.lineTo(len*.12,-curve*.85);ctx.lineTo(len*.5,curve*.25)}
+    ctx.stroke();ctx.strokeStyle='#fff0f2';ctx.lineWidth=Math.max(.9,width*.34);ctx.shadowColor='#fff0f2';ctx.shadowBlur=3;ctx.stroke();ctx.restore();
+   }
+   ctx.globalAlpha=.55*fade*vfxFade;ctx.fillStyle='#ff7890';ctx.shadowColor='#ff4968';ctx.shadowBlur=5;
+   for(let i=0;i<6;i++){const x=Math.cos(i*2.4+p*8)*(17+(i%3)*9),y=Math.sin(i*2.4+p*8)*(13+(i%2)*10);ctx.beginPath();ctx.arc(x,y,1.4+(i%2)*.6,0,Math.PI*2);ctx.fill()}
+  }else if(m==='sukunaFlurryWindup'){
+   const pull=1-clamp(p/.58,0,1);ctx.globalAlpha=.2+.55*pull;ctx.strokeStyle='#ff526d';ctx.lineWidth=2.5;ctx.shadowColor='#ff405f';ctx.shadowBlur=9;ctx.beginPath();ctx.arc(-25,-4,19+pull*10,-1.1,1.05);ctx.stroke();
+   ctx.globalAlpha=.35+.45*pull;ctx.fillStyle='#ff657d';for(let i=0;i<4;i++){const q=i*Math.PI*.5+p*4;ctx.beginPath();ctx.arc(-31+Math.cos(q)*9,-5+Math.sin(q)*9,1.5,0,Math.PI*2);ctx.fill()}
+  }else if(m==='sukunaFlurry'){
+   const pulse=.55+.45*Math.sin(p*42);ctx.globalAlpha=.25+.4*pulse;ctx.strokeStyle='#ff536d';ctx.lineWidth=2.5;ctx.shadowColor='#ff405f';ctx.shadowBlur=7;
+   for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(24+i*5,-17+i*13);ctx.quadraticCurveTo(43+i*7,-23+i*13,59+i*5,-9+i*13);ctx.stroke()}
+  }else{
+   ctx.globalAlpha=.8*vfxFade;ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.2;ctx.shadowColor='#ff405f';ctx.shadowBlur=10;ctx.beginPath();ctx.moveTo(9,-22);ctx.lineTo(28,-7);ctx.lineTo(44,-19);ctx.stroke();
+   ctx.beginPath();ctx.arc(38,0,13,-.9,.9);ctx.stroke();
+  }
+  ctx.restore();return;
+ }
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
@@ -2822,7 +2886,21 @@ function drawHeadHands(f){
    }else if(name==='gojoLimitless'){
     handA=P(38+20*pulse,13,-4);handB=P(10,-20,5);handAScale=1.18;
    }else if(name.startsWith('yuji')||name.startsWith('sukuna')){
-    if(name==='yujiDivergent'){
+    if(name==='sukunaFlurryWindup'){
+      const pull=clamp(progress/.35,0,1),thrust=smoothstep01(clamp((progress-.35)/.34,0,1)),recover=smoothstep01(clamp((progress-.78)/.22,0,1));
+      const forward=progress<.35?lerp(13,-38,pull):progress<.78?lerp(-38,reach+58,thrust):lerp(reach+58,reach+12,recover);
+      handB=P(forward,-18,-4-(progress<.35?10*pull:3));handA=P(7,19,5);
+      handBScale=1.32;handAScale=.9;handBAngle=angle-.08;
+     }else if(name==='sukunaFlurry'){
+      const beat=Math.floor(progress*12)%2,whip=Math.sin(progress*Math.PI*12),lead=reach+34+Math.abs(whip)*12,side=beat===0?-18:18;
+      handB=P(beat===0?lead:12,side,-4-whip*5);handA=P(beat===1?lead:9,-side,5+whip*3);
+      handBScale=beat===0?1.27:.94;handAScale=beat===1?1.27:.94;
+      handBAngle=angle+(beat===0?-.2:.12);handAAngle=angle+(beat===1?.2:-.12);
+     }else if(name==='sukunaFlurryEnd'){
+      handB=P(reach+35,-16,-6);handA=P(10,18,4);handBScale=1.25;handAScale=.9;handBAngle=angle-.12;
+     }else if(name==='sukunaFlurryMiss'){
+      handB=P(reach+32,-18,-3);handA=P(8,18,5);handBScale=1.24;handAScale=.92;
+     }else if(name==='yujiDivergent'){
       const windup=1-clamp(progress/.30,0,1),punch=clamp((progress-.24)/.20,0,1),eased=punch*punch*(3-2*punch),recoil=clamp((progress-.58)/.42,0,1);
       const forward=progress<.44?lerp(-16,reach+56,eased):lerp(reach+56,12,recoil*recoil*(3-2*recoil));
       handB=P(forward,-18,-4-8*windup);handA=P(8+10*eased,19,4-2*eased);handBScale=1.24;handAScale=.96;handBAngle=angle-.08*(1-recoil);
