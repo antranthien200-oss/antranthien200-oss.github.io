@@ -2472,30 +2472,40 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    };
    const drawWhiteRush=(cx,cy,scale=1,alpha=1)=>{
     ctx.save();ctx.translate(cx,cy);ctx.scale(scale,scale);
-    ctx.globalAlpha=fade*alpha;
-    ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=13;
-    // Brush-shaped streaks are drawn in local coordinates so they meet the blade cleanly.
-    const brush=(x1,y1,x2,y2,width,bend)=>{
+    ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=3;
+    // The trail is a fan of parabolic ribbons: wide at the trailing edge and tapering into the slash.
+    const parabolaBand=(x0,y0,x1,y1,width,bend,opacity=1)=>{
+     const steps=28,upper=[],lower=[];
+     for(let i=0;i<=steps;i++){
+      const t=i/steps,x=x0+(x1-x0)*t;
+      const y=y0+(y1-y0)*t+4*bend*t*(1-t);
+      const taper=width*Math.pow(1-t,.82)*(0.88+0.12*Math.sin(Math.PI*t));
+      upper.push([x,y-taper*.5]);lower.push([x,y+taper*.5]);
+     }
+     ctx.globalAlpha=fade*alpha*opacity;
      ctx.beginPath();
-     ctx.moveTo(x1,y1);
-     ctx.bezierCurveTo(x1+58,y1+bend,x2-72,y2+bend*.45,x2,y2);
-     ctx.bezierCurveTo(x2-34,y2+width*.22,x1+52,y1+width+bend*.7,x1,y1+width*.62);
+     ctx.moveTo(upper[0][0],upper[0][1]);
+     for(let i=1;i<upper.length;i++)ctx.lineTo(upper[i][0],upper[i][1]);
+     for(let i=lower.length-1;i>=0;i--)ctx.lineTo(lower[i][0],lower[i][1]);
      ctx.closePath();ctx.fill();
     };
-    // Main white rush: broad, slightly curved bands that narrow into the slash.
-    brush(-188,-23,48,-12,15,-13);
-    brush(-176,-45,36,-25,7,-12);
-    brush(-181,3,45,1,12,12);
-    brush(-154,27,29,14,9,15);
-    brush(-130,48,5,29,5,14);
-    // Sharp, separated speed wisps create the ragged edges seen in the reference.
-    ctx.shadowBlur=7;ctx.globalAlpha=fade*alpha*.88;
-    ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ffffff';
-    ctx.lineWidth=2.4;
-    ctx.beginPath();ctx.moveTo(-190,-56);ctx.quadraticCurveTo(-102,-49,-20,-33);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-202,-5);ctx.quadraticCurveTo(-108,-18,-19,-13);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-174,40);ctx.quadraticCurveTo(-97,24,-18,13);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-85,65);ctx.quadraticCurveTo(-39,39,-5,22);ctx.stroke();
+    // Broad middle ribbon with smaller parabolic arcs fanning above and below it.
+    parabolaBand(-202,-18,34,-8,25,-25,1);
+    parabolaBand(-190,-43,22,-22,11,-19,.92);
+    parabolaBand(-195,8,30,5,17,19,.96);
+    parabolaBand(-164,31,16,15,12,22,.88);
+    parabolaBand(-146,54,-2,29,8,16,.82);
+    // Fine parabolic hairlines reinforce the same quadratic flow, without random jitter.
+    ctx.globalAlpha=fade*alpha*.82;ctx.shadowBlur=1.5;
+    ctx.strokeStyle='#ffffff';ctx.lineCap='round';ctx.lineWidth=2;
+    const parabolaLine=(x0,y0,x1,y1,bend)=>{
+     ctx.beginPath();ctx.moveTo(x0,y0);
+     const xm=(x0+x1)*.5,ym=(y0+y1)*.5+bend;
+     ctx.quadraticCurveTo(xm,ym,x1,y1);ctx.stroke();
+    };
+    parabolaLine(-196,-58,5,-31,-22);
+    parabolaLine(-211,-2,9,-5,-17);
+    parabolaLine(-184,47,2,25,19);
     ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
