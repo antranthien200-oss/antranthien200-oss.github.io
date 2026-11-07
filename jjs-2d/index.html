@@ -2474,78 +2474,82 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.save();ctx.translate(cx,cy);ctx.scale(scale,scale);
     ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';
 
-    // Quadratic ribbons: each centerline is a true 2D parabola, with a brush tip at both ends.
-    const parabolicRibbon=(x0,y0,qx,qy,x1,y1,width,opacity=1,blur=0)=>{
-     const steps=36,upper=[],lower=[];
+    // Build narrow, genuinely parabolic ribbons with directional taper.
+    const parabolicRibbon=(x0,y0,x1,y1,bend,width,opacity=1,blur=0,flow='feed')=>{
+     const steps=34,upper=[],lower=[];
      for(let i=0;i<=steps;i++){
       const t=i/steps,u=1-t;
-      const x=u*u*x0+2*u*t*qx+t*t*x1;
-      const y=u*u*y0+2*u*t*qy+t*t*y1;
-      const dx=2*u*(qx-x0)+2*t*(x1-qx);
-      const dy=2*u*(qy-y0)+2*t*(y1-qy);
-      const d=Math.hypot(dx,dy)||1,nx=-dy/d,ny=dx/d;
-      const taper=Math.pow(Math.sin(Math.PI*t),.58);
-      const half=width*.5*taper*(.82+.18*t);
+      const x=x0+(x1-x0)*t;
+      const y=y0+(y1-y0)*t+4*bend*t*(1-t);
+      const dx=x1-x0,dy=(y1-y0)+4*bend*(1-2*t),length=Math.hypot(dx,dy)||1;
+      const nx=-dy/length,ny=dx/length;
+      let taper;
+      if(flow==='tail')taper=.07+.93*Math.pow(t,.72);
+      else if(flow==='line')taper=.12+.88*Math.pow(Math.sin(Math.PI*t),.42);
+      else taper=.76+.24*Math.sin(Math.PI*t)-.48*t;
+      const half=width*Math.max(.06,taper)*.5;
       upper.push([x+nx*half,y+ny*half]);
       lower.push([x-nx*half,y-ny*half]);
      }
-     ctx.globalAlpha=fade*alpha*opacity;
-     ctx.shadowBlur=blur;
+     ctx.globalAlpha=fade*alpha*opacity;ctx.shadowBlur=blur;
      ctx.beginPath();ctx.moveTo(upper[0][0],upper[0][1]);
      for(let i=1;i<upper.length;i++)ctx.lineTo(upper[i][0],upper[i][1]);
      for(let i=lower.length-1;i>=0;i--)ctx.lineTo(lower[i][0],lower[i][1]);
      ctx.closePath();ctx.fill();
     };
 
-    // Main pressure wave: one thick, bright horizontal sweep from the attacker's side.
-    parabolicRibbon(-132,-13,-72,-24,8,-9,30,1,11);
-    parabolicRibbon(-127,-5,-65,-17,8,-4,15,.92,7);
-    parabolicRibbon(-119,5,-59,-1,5,3,8,.88,5);
+    // The reference has a fast, nearly level rush from the left, not a radial fan.
+    parabolicRibbon(-222,-17,5,-12,-7,22,1,12,'feed');
+    parabolicRibbon(-216,-5,4,-4,1,10,.86,8,'feed');
+    parabolicRibbon(-218,-32,-7,-25,-6,6,.86,5,'feed');
+    parabolicRibbon(-224,-46,-18,-34,-5,2.8,.78,3,'feed');
+    parabolicRibbon(-206,7,-15,3,3,3.8,.72,3,'feed');
 
-    // Upper speed stack. These are long, nearly horizontal streaks, not a symmetrical fan.
-    parabolicRibbon(-130,-39,-72,-47,-1,-28,8,.86,6);
-    parabolicRibbon(-121,-49,-65,-53,-10,-35,3.2,.78,3);
-    parabolicRibbon(-112,-30,-59,-35,5,-22,4.5,.76,3);
-    parabolicRibbon(-104,-21,-56,-25,8,-15,2.5,.7,2);
-
-    // The bright white curl folds around the inner side of the black crescent.
-    // Its broad upper shoulder flows out of the horizontal rush and narrows into a lower hook.
-    ctx.globalAlpha=fade*alpha;ctx.shadowBlur=14;
+    // A single open, bowed white brush sweep sits just inside the black crescent.
+    // It is deliberately asymmetric and ends in a lower-left point, not a closed loop.
+    ctx.globalAlpha=fade*alpha;ctx.shadowBlur=15;
     ctx.beginPath();
-    ctx.moveTo(-34,-25);
-    ctx.quadraticCurveTo(17,-17,28,10);
-    ctx.quadraticCurveTo(36,35,3,57);
-    ctx.quadraticCurveTo(-4,63,-23,72);
-    ctx.quadraticCurveTo(-4,43,-8,25);
-    ctx.quadraticCurveTo(-10,2,-34,-25);
+    ctx.moveTo(-25,-39);
+    ctx.bezierCurveTo(3,-38,26,-23,34,-5);
+    ctx.bezierCurveTo(39,10,22,24,7,38);
+    ctx.lineTo(-12,56);
+    ctx.bezierCurveTo(-5,35,3,23,8,10);
+    ctx.bezierCurveTo(15,-6,-2,-25,-25,-39);
     ctx.closePath();ctx.fill();
 
-    // White inner highlight gives the curl a brushy, layered center instead of a flat white blob.
-    ctx.globalAlpha=fade*alpha*.82;ctx.shadowBlur=8;
-    ctx.beginPath();ctx.moveTo(-20,-18);
-    ctx.quadraticCurveTo(16,-7,19,15);
-    ctx.quadraticCurveTo(19,33,-9,53);
-    ctx.quadraticCurveTo(5,27,0,12);
-    ctx.quadraticCurveTo(-5,-3,-20,-18);
+    // Layered white fold, kept subtle so the center reads as a brush sweep rather than a blob.
+    ctx.globalAlpha=fade*alpha*.46;ctx.shadowBlur=5;
+    ctx.beginPath();ctx.moveTo(-7,-24);
+    ctx.quadraticCurveTo(18,-10,18,5);
+    ctx.quadraticCurveTo(15,20,-5,40);
+    ctx.quadraticCurveTo(5,17,4,7);
+    ctx.quadraticCurveTo(3,-8,-7,-24);
     ctx.closePath();ctx.fill();
 
-    // Lower brush tails sweep diagonally back to the left, away from the crescent.
-    parabolicRibbon(-113,57,-58,43,20,17,10,.92,7);
-    parabolicRibbon(-99,70,-46,49,13,24,5.5,.86,4);
-    parabolicRibbon(-83,80,-34,57,6,31,3,.76,2);
-    parabolicRibbon(-125,40,-72,31,-1,13,4,.74,3);
+    // Small tapered streaks across the upper edge; they stay almost horizontal.
+    parabolicRibbon(-206,-54,-8,-37,-5,1.9,.74,2,'line');
+    parabolicRibbon(-191,-40,4,-29,-3,1.7,.7,2,'line');
+    parabolicRibbon(-202,-25,9,-19,-2,1.5,.64,1,'line');
 
-    // Short, broken hairlines add the fine streak texture visible through the white blur.
-    ctx.globalAlpha=fade*alpha*.66;ctx.shadowBlur=1.2;
-    ctx.strokeStyle='#ffffff';ctx.lineCap='round';ctx.lineWidth=1.7;
-    const hairline=(x0,y0,qx,qy,x1,y1)=>{
-     ctx.beginPath();ctx.moveTo(x0,y0);ctx.quadraticCurveTo(qx,qy,x1,y1);ctx.stroke();
+    // The bottom of the effect throws thin, sharp parabolic strokes down and left.
+    parabolicRibbon(-157,76,13,34,8,8,.92,4,'tail');
+    parabolicRibbon(-143,87,17,41,7,4.8,.88,2.5,'tail');
+    parabolicRibbon(-181,69,2,27,7,3.7,.8,2,'tail');
+    parabolicRibbon(-119,94,20,48,5,2.7,.78,1.5,'tail');
+    parabolicRibbon(-194,59,-10,23,5,2.2,.74,1.2,'tail');
+
+    // Fine hairlines run inside the lower brush streaks for the screenshot's dry-brush texture.
+    ctx.globalAlpha=fade*alpha*.76;ctx.shadowBlur=1.2;
+    ctx.strokeStyle='#ffffff';ctx.lineCap='butt';ctx.lineWidth=1;
+    const lowerHairline=(x0,y0,x1,y1,bend)=>{
+     ctx.beginPath();ctx.moveTo(x0,y0);
+     ctx.quadraticCurveTo((x0+x1)*.5,(y0+y1)*.5+bend,x1,y1);
+     ctx.stroke();
     };
-    hairline(-129,-57,-67,-57,-19,-39);
-    hairline(-136,-32,-78,-39,-24,-24);
-    hairline(-128,20,-73,15,-18,7);
-    hairline(-112,76,-54,58,12,28);
-    hairline(-91,86,-45,66,8,39);
+    lowerHairline(-180,83,7,39,7);
+    lowerHairline(-166,92,12,45,6);
+    lowerHairline(-205,68,-8,31,5);
+    lowerHairline(-143,100,18,53,5);
     ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
