@@ -2453,9 +2453,8 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m.startsWith('m1_')){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   if(f.char==='vessel'&&f.awakened){
-   const reach=f.motion&&Number.isFinite(f.motion.shrineReach)?f.motion.shrineReach:50;
-   const homeForward=reach-13,homeSide=combo===1?-18:18,prepSide=combo===1?96:combo===3?-112:-96;
-   const slashForward=homeForward+1;
+   // Every Shrine slash shares one fixed center point, independent of the active hand or combo.
+   const slashCenterX=front,slashCenterY=0;
    // Keep the cut anchored in one place: only its opacity changes, so it cannot jitter with the fist.
    const fade=clamp((p-.34)/.045,0,1)*vfxFade;
    const drawCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
@@ -2471,15 +2470,14 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    };
    if(combo===1||combo===2||combo===3){
     const length=combo===3?142:104,thickness=combo===3?12.5:8.2;
-    const slashSide=(homeSide+prepSide)*.5;
-    // One solid cut plus two fixed edge streaks; no moving ghost copies.
-    drawCrescent(slashForward,slashSide,length,thickness,0,1);
+    // Same center for right-hand, left-hand and heavy left-hand swings.
+    drawCrescent(slashCenterX,slashCenterY,length,thickness,0,1);
     ctx.save();ctx.globalAlpha=fade*.78;ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(slashForward-9,slashSide-35);ctx.lineTo(slashForward+9,slashSide-35);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(slashForward-9,slashSide+35);ctx.lineTo(slashForward+9,slashSide+35);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(slashCenterX-9,slashCenterY-35);ctx.lineTo(slashCenterX+9,slashCenterY-35);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(slashCenterX-9,slashCenterY+35);ctx.lineTo(slashCenterX+9,slashCenterY+35);ctx.stroke();
     ctx.restore();
    }else if(combo===4){
-    const x=slashForward+3,y=0;
+    const x=slashCenterX,y=slashCenterY;
     drawCrescent(x,y,126,9.2,-.68,1);
     drawCrescent(x,y,126,9.2,.68,.98);
     ctx.save();ctx.globalAlpha=fade*.82;ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;
