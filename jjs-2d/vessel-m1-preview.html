@@ -2461,8 +2461,15 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(scale,scale);
     ctx.globalAlpha=fade*alpha;
     ctx.beginPath();
-    ctx.arc(0,0,70,-2.16,2.16,false);
-    ctx.arc(0,0,39,2.16,-2.16,true);
+    // Shallow C-shaped blade: one broad outer bow and one tighter inner return.
+    // Both ends taper to distinct sharp points; it is not a closed circular ring.
+    ctx.moveTo(-80,-45);
+    ctx.bezierCurveTo(-45,-37,-6,-14,28,13);
+    ctx.bezierCurveTo(60,38,76,66,66,91);
+    ctx.bezierCurveTo(58,113,35,126,12,128);
+    ctx.bezierCurveTo(35,114,47,98,48,80);
+    ctx.bezierCurveTo(50,57,27,33,-3,10);
+    ctx.bezierCurveTo(-34,-16,-62,-37,-80,-45);
     ctx.closePath();
     ctx.fillStyle='#030405';ctx.fill();
     ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
