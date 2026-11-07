@@ -2453,61 +2453,49 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m.startsWith('m1_')){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   if(f.char==='vessel'&&f.awakened){
-   // Reference silhouette: an asymmetric, thick black hook on the right with broad white brush trails behind it.
+   // A true open crescent slash: thick outer arc, hollow inner arc and two pointed ends.
    const slashTravel=18*smoothstep01(clamp(p/.78,0,1));
    const slashCenterX=front*2.5+slashTravel,slashCenterY=0;
    const fade=clamp((p-.25)/.045,0,1)*vfxFade;
-   const drawWhiteBrush=(cx,cy,scale=1,rotation=0,alpha=1)=>{
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(scale,scale);
-    ctx.globalAlpha=fade*alpha;ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=9;
-    // Broad, irregular tapered streaks fan left from the point of impact.
-    ctx.beginPath();
-    ctx.moveTo(-166,-43);ctx.bezierCurveTo(-118,-48,-47,-34,16,-24);
-    ctx.bezierCurveTo(-42,-30,-111,-55,-166,-43);ctx.closePath();ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-177,-20);ctx.bezierCurveTo(-113,-31,-39,-20,22,-12);
-    ctx.bezierCurveTo(-45,-8,-120,-7,-177,-20);ctx.closePath();ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-170,-2);ctx.bezierCurveTo(-112,-27,-38,-20,31,-1);
-    ctx.bezierCurveTo(-34,8,-109,19,-170,-2);ctx.closePath();ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-151,19);ctx.bezierCurveTo(-101,4,-35,5,24,10);
-    ctx.bezierCurveTo(-36,25,-103,42,-151,19);ctx.closePath();ctx.fill();
-    ctx.beginPath();
-    ctx.moveTo(-135,46);ctx.bezierCurveTo(-91,25,-36,25,12,29);
-    ctx.bezierCurveTo(-39,46,-94,65,-135,46);ctx.closePath();ctx.fill();
-    // A few narrow, tapered white wisps break up the edges of the brush bundle.
-    ctx.globalAlpha=fade*alpha*.82;ctx.shadowBlur=5;ctx.lineWidth=2.2;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(-154,-31);ctx.quadraticCurveTo(-91,-25,-19,-18);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(-142,34);ctx.quadraticCurveTo(-84,17,-22,13);ctx.stroke();
-    ctx.restore();
-   };
-   const drawBlackHook=(cx,cy,scale=1,rotation=0,alpha=1)=>{
+   const drawCrescentSlash=(cx,cy,scale=1,rotation=0,alpha=1)=>{
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);ctx.scale(scale,scale);
     ctx.globalAlpha=fade*alpha;
     ctx.beginPath();
-    // The hook is deliberately lopsided: pointed top, thick outer-right belly, curling lower tip.
-    ctx.moveTo(-20,-48);
-    ctx.bezierCurveTo(8,-49,42,-34,53,-7);
-    ctx.bezierCurveTo(66,22,49,51,22,66);
-    ctx.bezierCurveTo(4,76,-14,64,-17,48);
-    ctx.bezierCurveTo(-20,33,-7,22,8,10);
-    ctx.bezierCurveTo(22,-1,17,-14,5,-26);
-    ctx.bezierCurveTo(-6,-36,-16,-41,-20,-48);
+    ctx.arc(0,0,70,-2.16,2.16,false);
+    ctx.arc(0,0,39,2.16,-2.16,true);
     ctx.closePath();
     ctx.fillStyle='#030405';ctx.fill();
     ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
-    ctx.shadowColor='#ffffff';ctx.shadowBlur=8;ctx.stroke();
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=7;ctx.stroke();
+    ctx.restore();
+   };
+   const drawWhiteRush=(cx,cy,scale=1,alpha=1)=>{
+    ctx.save();ctx.translate(cx,cy);ctx.scale(scale,scale);
+    ctx.globalAlpha=fade*alpha;
+    ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=5;
+    // Five tapered streaks stream into the back of the crescent, like the reference.
+    const streak=(x1,y1,x2,y2,w,curve)=>{
+     ctx.beginPath();ctx.moveTo(cx+x1,cy+y1);
+     ctx.quadraticCurveTo(cx+(x1+x2)*.5,cy+(y1+y2)*.5+curve,cx+x2,cy+y2);
+     ctx.quadraticCurveTo(cx+(x1+x2)*.56,cy+(y1+y2)*.5+curve+w,cx+x1,cy+y1);
+     ctx.closePath();ctx.fill();
+    };
+    streak(-174,-36,-12,-22,5,-3);
+    streak(-190,-15,-7,-9,8,-4);
+    streak(-182,5,-4,1,10,-5);
+    streak(-160,25,-10,13,7,2);
+    streak(-138,43,-17,25,4,4);
     ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
-    drawWhiteBrush(slashCenterX,slashCenterY,combo===3?1.08:1);
-    drawBlackHook(slashCenterX,slashCenterY,combo===3?1.08:1);
+    const scale=combo===3?1.12:1;
+    drawWhiteRush(slashCenterX,slashCenterY,scale,.96);
+    drawCrescentSlash(slashCenterX,slashCenterY,scale,0,1);
    }else if(combo===4){
-    // Two copies of the same hooked blade preserve the curved X finisher.
-    drawWhiteBrush(slashCenterX,slashCenterY,1.05);
-    drawBlackHook(slashCenterX,slashCenterY,1,-.48,1);
-    drawBlackHook(slashCenterX,slashCenterY,1,.48,.98);
+    // Cross two matching curved crescents for the fourth-hit X.
+    drawWhiteRush(slashCenterX,slashCenterY,1.05,.96);
+    drawCrescentSlash(slashCenterX,slashCenterY,1.02,-.48,1);
+    drawCrescentSlash(slashCenterX,slashCenterY,1.02,.48,.98);
    }
    return;
   }
