@@ -1624,7 +1624,7 @@ if(f.attackCd>0)return;
   f.attackCd=shrineM1?.055:baseM1?fin?.28:.09:fin?.34:.115;
   f.attackAnim=shrineM1?.105:baseM1?fin?.24:.15:fin?.28:.18;
   f.attackType=shrineM1?'slash':'punch';
-  setMotion(f,'m1_'+f.combo,shrineM1?.155:baseM1?fin?.34:.20:fin?.42:.24,angle,t);
+  setMotion(f,'m1_'+f.combo,shrineM1?.255:baseM1?fin?.34:.20:fin?.42:.24,angle,t);if(shrineM1){f.motion.activeDuration=.155;f.motion.vfxFadeOut=.1;f.attackAnim=.155;}
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
   const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2);
@@ -2446,17 +2446,20 @@ function drawPixelSkillVfx(f,m,p,c){
  return true;
 }
 
-function drawMotionVfx(f,m,p,c){
+function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   if(f.char==='vessel'&&f.awakened){
-   // The crescent itself stays horizontal; the hand choreography supplies the cross-body motion.
-   const release=smoothstep01(clamp((p-.21)/.30,0,1));
-   const fade=clamp((p-.17)/.10,0,1)*clamp((1-p)/.31,0,1);
-   const travel=release*release*(3-2*release);
+   const target=f.motion&&f.motion.target,reach=target?clamp(Math.hypot(target.x-f.x,target.y-f.y)*.56,23,76):50;
+   const homeForward=reach-13,prepForward=combo===1?-58:homeForward+(combo===3?108:82);
+   const wind=smoothstep01(clamp(p/.22,0,1));
+   const swing=smoothstep01(clamp((p-.18)/.48,0,1));
+   const slashForward=combo===4?homeForward+14:(p<.22?lerp(homeForward,prepForward,wind):p<.66?lerp(prepForward,homeForward,swing):homeForward);
+   // The slash appears with the return swing and then fades away over 0.1 seconds.
+   const fade=clamp((p-.22)/.10,0,1)*vfxFade;
    const drawCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
     ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation+Math.PI/2);
     ctx.globalAlpha=fade*alpha;
@@ -2465,21 +2468,23 @@ function drawMotionVfx(f,m,p,c){
     ctx.bezierCurveTo(length*.28,-thickness*.46,-length*.28,-thickness*.46,-length*.5,0);
     ctx.closePath();
     ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=3.1;ctx.lineJoin='round';
-    ctx.shadowColor='#ffffff';ctx.shadowBlur=2.5;
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=3.5;
     ctx.fill();ctx.stroke();ctx.restore();
    };
-   if(combo===1){
-    // Right hand crosses to the left side, then sends one small level slash forward.
-    drawCrescent(front+20+48*travel,-5,70,5.8,-.04);
-   }else if(combo===2){
-    // Left hand mirrors the first action, cutting back across the opposite side.
-    drawCrescent(front+20+48*travel,5,70,5.8,.04);
-   }else if(combo===3){
-    // Continue with the left hand for a heavier, still-horizontal slash.
-    drawCrescent(front+35+54*travel,0,122,10.5,0);
+   if(combo===1||combo===2||combo===3){
+    const direction=combo===1?1:-1;
+    const length=combo===3?132:88,thickness=combo===3?11.5:7;
+    // A ghosted arc and two speed strokes trail behind the moving cut.
+    drawCrescent(slashForward-direction*18,0,length*.78,thickness*.48,0,.28);
+    drawCrescent(slashForward,0,length,thickness,0,1);
+    ctx.save();ctx.globalAlpha=fade*.72;ctx.strokeStyle='#ffffff';ctx.lineWidth=2;
+    ctx.beginPath();ctx.moveTo(slashForward-direction*26,-18);ctx.quadraticCurveTo(slashForward-direction*12,-26,slashForward,-31);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(slashForward-direction*26,18);ctx.quadraticCurveTo(slashForward-direction*12,26,slashForward,31);ctx.stroke();
+    ctx.restore();
    }else if(combo===4){
-    // Both hands release together; the two curved cuts cross into the finisher X.
-    const x=front+34+58*travel,y=0;
+    const x=slashForward,y=0;
+    drawCrescent(x-16,y,116,8.4,-.68,.35);
+    drawCrescent(x+16,y,116,8.4,.68,.35);
     drawCrescent(x,y,116,8.4,-.68,1);
     drawCrescent(x,y,116,8.4,.68,.98);
    }
@@ -2676,7 +2681,7 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
 function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
 function drawHeadHands(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player';
- const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/m.duration,0,1):(f.block?.5+.5*Math.sin(game.time*7):0);
+ const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
  const target=(m&&!name.startsWith('m1_')&&!name.startsWith('yutaM1_')&&Number.isFinite(m.angle))?{x:f.x+Math.cos(m.angle)*100,y:f.y+Math.sin(m.angle)*100}:liveTarget;
  const dx=target.x-f.x,dy=target.y-(f.y-23),distance=Math.hypot(dx,dy)||1;
@@ -2700,38 +2705,39 @@ function drawHeadHands(f){
    handB=grip;handA=support;handBScale=1.08;handAScale=.9;handBAngle=angle+(yutaCombo%2?-.12:.12);handAAngle=angle;
   }
  }else if(f.char==='vessel'&&f.awakened&&(combo===1||combo===2||combo===3)){
-  // Shrine M1: pull the active fist across the body, then whip it forward and recover.
-  const wind=smoothstep01(clamp(progress/.24,0,1));
-  const swing=smoothstep01(clamp((progress-.20)/.34,0,1));
-  const recover=smoothstep01(clamp((progress-.59)/.41,0,1));
-  const isRight=combo===1,reachScale=combo===3?1.26:1;
-  const nativeSide=isRight?-18:18,crossSide=-nativeSide;
-  const startForward=combo===3?-14:-11;
-  const endForward=reach+(combo===3?66:48);
-  const endSide=nativeSide*(combo===3?.72:.82);
-  const lift=combo===3?-8:-5;
-  const forward=progress<.24?lerp(reach-12,startForward,wind):progress<.59?lerp(startForward,endForward,swing):lerp(endForward,reach-12,recover);
-  const side=progress<.24?lerp(nativeSide,crossSide,wind):progress<.59?lerp(crossSide,endSide,swing):lerp(endSide,nativeSide,recover);
-  const vertical=progress<.24?lerp(0,lift,wind):progress<.59?lerp(lift,-2,swing):lerp(-2,0,recover);
-  const active=P(forward,side,vertical),rest=P(reach-13+idle,-nativeSide,0);
-  if(combo===1){handB=active;handA=rest;handBScale=1.2;handBAngle=angle-.12*(1-swing)}
-  else{handA=active;handB=rest;handAScale=combo===3?1.27:1.2;handAAngle=angle+.12*(1-swing)}
- }else if(combo===4&&f.char==='vessel'&&f.awakened){
-  // Both fists pull across opposite sides, cross at center, then snap out together.
-  const wind=smoothstep01(clamp(progress/.23,0,1));
-  const swing=smoothstep01(clamp((progress-.19)/.39,0,1));
+  // Shrine M1: plant the active fist on the opposite side, then sweep it back to its home position.
+  const wind=smoothstep01(clamp(progress/.22,0,1));
+  const swing=smoothstep01(clamp((progress-.18)/.48,0,1));
   const recover=smoothstep01(clamp((progress-.66)/.34,0,1));
-  const phase=(cross,native)=>{
-   if(progress<.23)return {forward:lerp(reach-10,-12,wind),side:lerp(native,cross,wind)};
-   if(progress<.66)return {forward:lerp(-12,reach+56,swing),side:lerp(cross,-native*.55,swing)};
-   return {forward:lerp(reach+56,reach-8,recover),side:lerp(-native*.55,native,recover)};
-  };
-  const right=phase(19,-17),left=phase(-19,17);
-  const cross=clamp(swing,0,1);
-  handB=P(right.forward,right.side,-5-4*Math.sin(progress*Math.PI));
-  handA=P(left.forward,left.side,-5-4*Math.sin(progress*Math.PI));
+  const isRight=combo===1,nativeSide=isRight?-18:18;
+  const homeForward=reach-13+idle*.35;
+  // Right fist loads behind the head; left fist loads far to the right. M1 3 extends that same left-hand sweep.
+  const prepForward=combo===1?-58:homeForward+(combo===3?108:82);
+  const lift=combo===3?-10:(isRight?-6:-3);
+  const windForward=lerp(homeForward,prepForward,wind);
+  const sweepForward=lerp(prepForward,homeForward,swing);
+  const forward=progress<.22?windForward:progress<.66?sweepForward:lerp(homeForward,homeForward+idle*.15,recover);
+  const side=nativeSide+(progress<.22?lerp(0,isRight?3:-3,wind):progress<.66?lerp(isRight?3:-3,0,swing):0);
+  const vertical=progress<.22?lerp(0,lift,wind):progress<.66?lerp(lift,0,swing):0;
+  const active=P(forward,side,vertical),rest=P(homeForward,-nativeSide,0);
+  if(combo===1){handB=active;handA=rest;handBScale=1.2;handBAngle=angle+lerp(-.2,.12,swing)*(1-recover)}
+  else{handA=active;handB=rest;handAScale=combo===3?1.3:1.2;handAAngle=angle+lerp(.2,-.12,swing)*(1-recover)}
+ }else if(combo===4&&f.char==='vessel'&&f.awakened){
+  // Both fists load on opposite sides, then sweep back through each other into the X finisher.
+  const wind=smoothstep01(clamp(progress/.23,0,1));
+  const swing=smoothstep01(clamp((progress-.19)/.45,0,1));
+  const recover=smoothstep01(clamp((progress-.66)/.34,0,1));
+  const homeForward=reach-10;
+  const farLeft=-58,farRight=homeForward+104;
+  const rightForward=progress<.23?lerp(homeForward,farLeft,wind):progress<.66?lerp(farLeft,homeForward,swing):homeForward;
+  const leftForward=progress<.23?lerp(homeForward,farRight,wind):progress<.66?lerp(farRight,homeForward,swing):homeForward;
+  const rightSide=progress<.23?lerp(-17,17,wind):progress<.66?lerp(17,-17,swing):lerp(-17,-17,recover);
+  const leftSide=progress<.23?lerp(17,-17,wind):progress<.66?lerp(-17,17,swing):lerp(17,17,recover);
+  handB=P(rightForward,rightSide,-5-5*Math.sin(progress*Math.PI));
+  handA=P(leftForward,leftSide,-5-5*Math.sin(progress*Math.PI));
   handAScale=1.2;handBScale=1.2;
-  handBAngle=angle-.22*cross;handAAngle=angle+.22*cross;
+  const cross=clamp(swing,0,1);
+  handBAngle=angle-.28*cross;handAAngle=angle+.28*cross;
  }else if(combo===1||combo===3){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handB=P(forward,-15,0);handA=P(reach-13+idle,18,0);handBScale=1.12;handBAngle=angle-.08;
@@ -2916,7 +2922,7 @@ function drawHeadHands(f){
   drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
- ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c);ctx.restore();
+ ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();drawAccessoryOverlays(f,x,headY);
  if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
