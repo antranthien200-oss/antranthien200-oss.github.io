@@ -2458,7 +2458,7 @@ function drawMotionVfx(f,m,p,c){
    const fade=clamp((p-.17)/.10,0,1)*clamp((1-p)/.31,0,1);
    const travel=release*release*(3-2*release);
    const drawCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
-    ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation);
+    ctx.save();ctx.translate(cx,cy);ctx.rotate(rotation+Math.PI/2);
     ctx.globalAlpha=fade*alpha;
     ctx.beginPath();ctx.moveTo(-length*.5,0);
     ctx.bezierCurveTo(-length*.30,-thickness*2.15,length*.30,-thickness*2.15,length*.5,0);
