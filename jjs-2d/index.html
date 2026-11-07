@@ -2453,8 +2453,8 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m.startsWith('m1_')){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
   if(f.char==='vessel'&&f.awakened){
-   // Every Shrine slash shares one fixed center point, independent of the active hand or combo.
-   const slashCenterX=front*2,slashCenterY=0;
+   // Every Shrine slash shares one fixed center point, slightly farther ahead of the fighter.
+   const slashCenterX=front*2.5,slashCenterY=0;
    // Keep the cut anchored in one place: only its opacity changes, so it cannot jitter with the fist.
    const fade=clamp((p-.34)/.045,0,1)*vfxFade;
    const drawCrescent=(cx,cy,length,thickness,rotation=0,alpha=1)=>{
@@ -2470,18 +2470,13 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    };
    if(combo===1||combo===2||combo===3){
     const length=combo===3?142:104,thickness=combo===3?12.5:8.2;
-    // Same center for right-hand, left-hand and heavy left-hand swings.
+    // One clean centered crescent keeps the hand choreography easy to read.
     drawCrescent(slashCenterX,slashCenterY,length,thickness,0,1);
-    ctx.save();ctx.globalAlpha=fade*.78;ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;ctx.lineCap='round';
-    ctx.beginPath();ctx.moveTo(slashCenterX-9,slashCenterY-35);ctx.lineTo(slashCenterX+9,slashCenterY-35);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(slashCenterX-9,slashCenterY+35);ctx.lineTo(slashCenterX+9,slashCenterY+35);ctx.stroke();
-    ctx.restore();
    }else if(combo===4){
     const x=slashCenterX,y=slashCenterY;
+    // Two clean curved cuts form the finisher X; no extra crossing streaks.
     drawCrescent(x,y,126,9.2,-.68,1);
     drawCrescent(x,y,126,9.2,.68,.98);
-    ctx.save();ctx.globalAlpha=fade*.82;ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;
-    ctx.beginPath();ctx.moveTo(x-20,-58);ctx.lineTo(x+20,58);ctx.moveTo(x+20,-58);ctx.lineTo(x-20,58);ctx.stroke();ctx.restore();
    }
    return;
   }
@@ -2703,37 +2698,37 @@ function drawHeadHands(f){
    handB=grip;handA=support;handBScale=1.08;handAScale=.9;handBAngle=angle+(yutaCombo%2?-.12:.12);handAAngle=angle;
   }
  }else if(f.char==='vessel'&&f.awakened&&(combo===1||combo===2||combo===3)){
-  // Clear cross-body choreography: load far across the head, then sweep back to the hand's starting side.
-  const wind=smoothstep01(clamp(progress/.30,0,1));
-  const swing=smoothstep01(clamp((progress-.30)/.52,0,1));
-  const recover=smoothstep01(clamp((progress-.82)/.18,0,1));
+  // One readable three-part motion: load across the body, carve one broad bow, then settle.
+  const wind=smoothstep01(clamp(progress/.25,0,1));
+  const swing=smoothstep01(clamp((progress-.25)/.58,0,1));
+  const recover=smoothstep01(clamp((progress-.83)/.17,0,1));
   const isRight=combo===1,homeSide=isRight?-18:18;
-  const prepSide=isRight?96:(combo===3?-112:-96);
+  const prepSide=isRight?104:(combo===3?-118:-104);
   const homeForward=reach-13;
-  const sweepArc=Math.sin(Math.PI*swing);
-  // The hand follows a bowed return path instead of sliding in a straight line across the body.
-  const forward=progress<.30?homeForward-10*wind:progress<.82?lerp(homeForward-10,homeForward+4,swing)+sweepArc*(combo===3?36:28):homeForward+4*(1-recover);
-  const side=progress<.30?lerp(homeSide,prepSide,wind):progress<.82?lerp(prepSide,homeSide,swing):homeSide;
-  const vertical=progress<.30?lerp(0,combo===3?-12:-7,wind):progress<.82?lerp(combo===3?-12:-7,0,swing)-sweepArc*(combo===3?5:3):0;
+  const arc=Math.sin(Math.PI*swing);
+  const startForward=homeForward-12;
+  const forward=progress<.25?lerp(homeForward,startForward,wind):progress<.83?lerp(startForward,homeForward+8,swing)+arc*(combo===3?82:68):lerp(homeForward+8,homeForward,recover);
+  const side=progress<.25?lerp(homeSide,prepSide,wind):progress<.83?lerp(prepSide,homeSide,swing):homeSide;
+  const lift=combo===3?-15:-9;
+  const vertical=progress<.25?lerp(0,lift,wind):progress<.83?lerp(lift,0,swing)-arc*13:0;
   const active=P(forward,side,vertical),rest=P(homeForward,-homeSide,0);
-  if(combo===1){handB=active;handA=rest;handBScale=1.23;handBAngle=angle+lerp(-.34,.24,swing)*(1-recover)}
-  else{handA=active;handB=rest;handAScale=combo===3?1.36:1.23;handAAngle=angle+lerp(.34,-.24,swing)*(1-recover)}
+  if(combo===1){handB=active;handA=rest;handBScale=1.23;handBAngle=angle-.52*arc}
+  else{handA=active;handB=rest;handAScale=combo===3?1.34:1.23;handAAngle=angle+.52*arc}
  }else if(combo===4&&f.char==='vessel'&&f.awakened){
-  // Both fists load wide on opposite sides, then sweep through the center together to make the X.
-  const wind=smoothstep01(clamp(progress/.30,0,1));
-  const swing=smoothstep01(clamp((progress-.30)/.55,0,1));
+  // Both hands take mirrored broad arcs, crossing once at the end to make the X.
+  const wind=smoothstep01(clamp(progress/.25,0,1));
+  const swing=smoothstep01(clamp((progress-.25)/.60,0,1));
   const recover=smoothstep01(clamp((progress-.85)/.15,0,1));
   const homeForward=reach-10;
-  const sweepArc=Math.sin(Math.PI*swing);
-  // Both fists carve mirrored bowed paths before crossing back into the X.
-  const forward=progress<.30?homeForward-10*wind:progress<.85?lerp(homeForward-10,homeForward+4,swing)+sweepArc*30:homeForward+4*(1-recover);
-  const rightSide=progress<.30?lerp(-18,96,wind):progress<.85?lerp(96,-18,swing):-18;
-  const leftSide=progress<.30?lerp(18,-96,wind):progress<.85?lerp(-96,18,swing):18;
-  handB=P(forward,rightSide,-5-8*sweepArc);
-  handA=P(forward,leftSide,-5+8*sweepArc);
+  const arc=Math.sin(Math.PI*swing);
+  const forward=progress<.25?lerp(homeForward,homeForward-12,wind):progress<.85?lerp(homeForward-12,homeForward+8,swing)+arc*76:lerp(homeForward+8,homeForward,recover);
+  const rightSide=progress<.25?lerp(-18,104,wind):progress<.85?lerp(104,-18,swing):-18;
+  const leftSide=progress<.25?lerp(18,-104,wind):progress<.85?lerp(-104,18,swing):18;
+  handB=P(forward,rightSide,-6-arc*17);
+  handA=P(forward,leftSide,-6+arc*17);
   handAScale=1.24;handBScale=1.24;
-  const cross=clamp(swing,0,1);
-  handBAngle=angle-.42*cross;handAAngle=angle+.42*cross;
+  const turn=arc;
+  handBAngle=angle-.56*turn;handAAngle=angle+.56*turn;
  }else if(combo===1||combo===3){
   const strike=Math.sin(Math.PI*progress),forward=reach+10+30*strike;
   handB=P(forward,-15,0);handA=P(reach-13+idle,18,0);handBScale=1.12;handBAngle=angle-.08;
