@@ -2712,9 +2712,11 @@ function drawHeadHands(f){
   const isRight=combo===1,homeSide=isRight?-18:18;
   const prepSide=isRight?96:(combo===3?-112:-96);
   const homeForward=reach-13;
-  const forward=homeForward+(progress<.30?-3*wind:progress<.82?2*swing:2*(1-recover));
+  const sweepArc=Math.sin(Math.PI*swing);
+  // The hand follows a bowed return path instead of sliding in a straight line across the body.
+  const forward=progress<.30?homeForward-10*wind:progress<.82?lerp(homeForward-10,homeForward+4,swing)+sweepArc*(combo===3?36:28):homeForward+4*(1-recover);
   const side=progress<.30?lerp(homeSide,prepSide,wind):progress<.82?lerp(prepSide,homeSide,swing):homeSide;
-  const vertical=progress<.30?lerp(0,combo===3?-12:-7,wind):progress<.82?lerp(combo===3?-12:-7,0,swing):0;
+  const vertical=progress<.30?lerp(0,combo===3?-12:-7,wind):progress<.82?lerp(combo===3?-12:-7,0,swing)-sweepArc*(combo===3?5:3):0;
   const active=P(forward,side,vertical),rest=P(homeForward,-homeSide,0);
   if(combo===1){handB=active;handA=rest;handBScale=1.23;handBAngle=angle+lerp(-.34,.24,swing)*(1-recover)}
   else{handA=active;handB=rest;handAScale=combo===3?1.36:1.23;handAAngle=angle+lerp(.34,-.24,swing)*(1-recover)}
@@ -2724,12 +2726,13 @@ function drawHeadHands(f){
   const swing=smoothstep01(clamp((progress-.30)/.55,0,1));
   const recover=smoothstep01(clamp((progress-.85)/.15,0,1));
   const homeForward=reach-10;
-  const forward=homeForward+(progress<.30?-3*wind:progress<.85?2*swing:2*(1-recover));
+  const sweepArc=Math.sin(Math.PI*swing);
+  // Both fists carve mirrored bowed paths before crossing back into the X.
+  const forward=progress<.30?homeForward-10*wind:progress<.85?lerp(homeForward-10,homeForward+4,swing)+sweepArc*30:homeForward+4*(1-recover);
   const rightSide=progress<.30?lerp(-18,96,wind):progress<.85?lerp(96,-18,swing):-18;
   const leftSide=progress<.30?lerp(18,-96,wind):progress<.85?lerp(-96,18,swing):18;
-  const arc=Math.sin(progress*Math.PI);
-  handB=P(forward,rightSide,-5-8*arc);
-  handA=P(forward,leftSide,-5+8*arc);
+  handB=P(forward,rightSide,-5-8*sweepArc);
+  handA=P(forward,leftSide,-5+8*sweepArc);
   handAScale=1.24;handBScale=1.24;
   const cross=clamp(swing,0,1);
   handBAngle=angle-.42*cross;handAAngle=angle+.42*cross;
