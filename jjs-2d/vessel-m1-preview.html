@@ -1631,7 +1631,7 @@ function useAttack(f,kind){
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
  if(f.block)return;
  const c=CHARS[f.char],t=targetOf(f);
- if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*12.3;f.vy+=dy/l*12.3;f.qDashHold=.1;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
+ if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.38,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;f.qDashHold=.1;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0)return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind!=='special'&&kind!=='m1'&&kind!=='1'&&kind!=='4')return;
@@ -3066,12 +3066,12 @@ function drawHeadHands(f){
  if(name==='blockGesture'){
   const brace=0.5+0.5*Math.sin(game.time*7);handA=P(13+brace*4,22,-10-brace*3);handB=P(13+brace*4,-22,-10-brace*3);handAScale=1.16;handBScale=1.16;
  }else if(name==='dashGesture'){
-  const tuck=Math.sin(Math.PI*progress);
-  // A clear forward-driving pose: lead fist ahead, trail fist pulled behind the head.
-  handA=P(25+5*tuck,10,-5-3*tuck);
-  handB=P(-10-4*tuck,-12,6+2*tuck);
-  handAScale=1.12;handBScale=1.06;
-  handAAngle=angle;handBAngle=angle;
+  // Alternate the lead fist through two quick drive strokes while the support fist stays close.
+  const pump=Math.sin(progress*Math.PI*2),leadA=Math.max(0,pump),leadB=Math.max(0,-pump);
+  handA=P(12+36*leadA,16-5*leadA,-4-6*leadA);
+  handB=P(12+36*leadB,-16+5*leadB,-4-6*leadB);
+  handAScale=1.08+.12*leadA;handBScale=1.08+.12*leadB;
+  handAAngle=angle-.3*pump;handBAngle=angle+.3*pump;
  }else if(yutaCombo){
   if(yutaCombo===4&&!f.awakened){
    const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
