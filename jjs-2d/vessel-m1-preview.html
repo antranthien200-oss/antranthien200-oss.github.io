@@ -3535,19 +3535,21 @@ function drawDomainHandsignPose(f,cx,headY,headR,theme,p){
  if(t>.62){const flash=clamp((t-.62)/.12,0,1)*(1-clamp((t-.9)/.1,0,1));ctx.save();ctx.globalAlpha=flash*.5;ctx.strokeStyle=theme.accent;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,headY+headR*.1,headR*.52+Math.sin(game.time*14)*2,0,Math.PI*2);ctx.stroke();ctx.restore()}
 }
 function drawDomainHandsignCutin(f,p,accent){
- const t=clamp(p,0,1),cx=W*.5,cy=H*.5;
- const theme=getFighterTheme(f),compact=W/H<1.15;
+ const t=clamp(p,0,1),cx=W*.5,cy=H*.465;
+ const theme=getFighterTheme(f),compact=W/H<1.15,wide=W/H>2;
  const enter=clamp(t/.14,0,1),enterEase=1-Math.pow(1-enter,3);
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
- // Full-bleed horizontal banner. It stays centered and only its width changes on exit.
- const panelW=W*1.06,panelH=compact?H*.69:H*.66;
+ // A compact, angled cut-in with the fighter centered in the panel.
+ const panelW=compact?W*.66:wide?W*.64:W*.76;
+ const panelH=compact?H*.46:wide?H*.50:H*.39;
  const panelScaleX=Math.max(.004,(.78+.22*enterEase)*(1-fold));
- const panelScaleY=.9+.1*enterEase;
+ const panelScaleY=.92+.08*enterEase;
  ctx.save();
- // Darken the arena once for the cut-in; let the background return as the banner closes.
+ // Darken the arena once for the cut-in; let the background return as the panel closes.
  ctx.globalAlpha=.5*(1-.9*fold);ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
  ctx.save();
  ctx.translate(cx,cy);
+ ctx.rotate(-23*Math.PI/180);
  ctx.scale(panelScaleX,panelScaleY);
  const left=-panelW/2,top=-panelH/2;
  const bg=ctx.createLinearGradient(left,top,left+panelW,top+panelH);
@@ -3556,15 +3558,14 @@ function drawDomainHandsignCutin(f,p,accent){
  ctx.strokeStyle='#171d20';ctx.lineWidth=3;ctx.strokeRect(left,top,panelW,panelH);
  ctx.strokeStyle=accent;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(left+3,top+7);ctx.lineTo(left+panelW-3,top+7);ctx.stroke();
  ctx.strokeStyle='#aab3b5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(left+3,top+panelH-7);ctx.lineTo(left+panelW-3,top+panelH-7);ctx.stroke();
- // Fine diagonal texture stays clipped inside the one screen-wide rectangle.
+ // Fine diagonal texture stays clipped inside the angled rectangle.
  ctx.save();ctx.beginPath();ctx.rect(left,top,panelW,panelH);ctx.clip();ctx.globalAlpha=.12;ctx.strokeStyle='#65737a';ctx.lineWidth=1;
- for(let i=0;i<12;i++){const xx=left+panelW*(.02+i*.09);ctx.beginPath();ctx.moveTo(xx,top+panelH*.05);ctx.lineTo(xx+panelW*.09,top+panelH*.95);ctx.stroke()}
+ for(let i=0;i<10;i++){const xx=left+panelW*(.02+i*.1);ctx.beginPath();ctx.moveTo(xx,top+panelH*.05);ctx.lineTo(xx+panelW*.08,top+panelH*.95);ctx.stroke()}
  ctx.restore();
- // Fade the contents a little faster than the panel so the words do not become unreadable as it narrows.
+ // Keep the figure and the two English labels visible while the panel folds away.
  ctx.globalAlpha=clamp(1-fold*1.18,0,1);
- const headR=clamp(Math.min(panelW,panelH)*.125,21,55);
- const avatarX=compact?0:-panelW*.29;
- const avatarY=compact?-panelH*.16:-panelH*.035;
+ const headR=clamp(Math.min(panelW,panelH)*.13,22,55);
+ const avatarX=0,avatarY=0;
  const poseProgress=clamp(t/.72,0,1),spring=1+Math.sin(enterEase*Math.PI)*.045;
  const headScale=headR/14.8*spring;
  const headGlow=ctx.createRadialGradient(avatarX,avatarY,headR*.35,avatarX,avatarY,headR*1.85);
@@ -3574,27 +3575,13 @@ function drawDomainHandsignCutin(f,p,accent){
  drawPixelatedCircle(avatarX,avatarY,headR*spring,theme,Math.max(2.4,headR/6));
  drawAccessoryOverlays(f,avatarX,avatarY,headScale);
  drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress);
- if(compact){
-  const titleY=panelH*.245;
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172025';
-  ctx.font='1000 '+clamp(panelW*.075,17,30)+'px system-ui';
-  ctx.fillText('DOMAIN',0,titleY);
-  ctx.fillText('EXPANSION',0,titleY+clamp(panelH*.075,24,38));
-  ctx.fillStyle=accent;ctx.fillRect(-panelW*.17,titleY+clamp(panelH*.12,43,63),panelW*.34,4);
-  ctx.fillStyle='#53616a';ctx.font='900 '+clamp(panelW*.032,9,12)+'px system-ui';
-  ctx.fillText(domainName(f.domainType),0,titleY+clamp(panelH*.18,64,88));
- }else{
-  const tx=panelW*.19;
-  ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#172025';
-  ctx.font='1000 '+clamp(panelW*.058,22,42)+'px system-ui';
-  ctx.fillText('DOMAIN',tx,-panelH*.105);
-  ctx.fillText('EXPANSION',tx,panelH*.035);
-  ctx.fillStyle=accent;ctx.fillRect(tx-panelW*.13,panelH*.115,panelW*.26,5);
-  ctx.fillStyle='#53616a';ctx.font='900 '+clamp(panelW*.021,10,15)+'px system-ui';
-  ctx.fillText(domainName(f.domainType),tx,panelH*.205);
-  ctx.textAlign='left';ctx.fillStyle='#77838a';ctx.font='900 '+clamp(panelW*.015,8,11)+'px system-ui';
-  ctx.fillText('領域展開',left+panelW*.06,top+panelH*.14);
- }
+ ctx.textBaseline='middle';ctx.fillStyle='#172025';ctx.textAlign='center';
+ const titleSize=clamp(panelW*.04,15,31);
+ ctx.font='1000 '+titleSize+'px system-ui';
+ // DOMAIN sits along the upper-left edge; EXPANSION balances it on the lower-right.
+ ctx.fillText('DOMAIN',-panelW*.31,-panelH*.34);
+ ctx.font='1000 '+clamp(titleSize*.9,14,28)+'px system-ui';
+ ctx.fillText('EXPANSION',panelW*.29,panelH*.34);
  ctx.restore();
  ctx.restore();
 }
