@@ -4375,11 +4375,19 @@ function updateEffectsViewportBounds(){
 function effectsViewportContains(x,y,pad=0){
  return x+pad>=effectsViewportLeft&&x-pad<=effectsViewportRight&&y+pad>=effectsViewportTop&&y-pad<=effectsViewportBottom;
 }
-function drawEffects(){
- updateEffectsViewportBounds();if(game.domainClash)drawDomainClashArena();
- const activeDomainView=[player,enemy].find(domainIsActive);for(const f of [player,enemy]){
-  const visibleInDomainView=!activeDomainView||domainViewMatches(f,activeDomainView),clashant=!!(game.domainClash&&game.domainClash.members.includes(f));
+function drawDomainBackdrops(){
+ // Paint full-screen domain backgrounds before any fighter, skill, projectile or particle visuals.
+ updateEffectsViewportBounds();
+ if(game.domainClash)drawDomainClashArena();
+ for(const f of [player,enemy]){
+  const clashant=!!(game.domainClash&&game.domainClash.members.includes(f));
   if(f&&!f.dead&&!clashant&&(f.domainTimer>0||f.domainWindup>0||f.domainType==='void02'))drawDomainArena(f);
+ }
+}
+function drawEffects(){
+ updateEffectsViewportBounds();
+ const activeDomainView=[player,enemy].find(domainIsActive);for(const f of [player,enemy]){
+  const visibleInDomainView=!activeDomainView||domainViewMatches(f,activeDomainView);
   if(f&&!f.dead&&visibleInDomainView&&f.bloodRain)drawBloodRain(f);
   if(f&&!f.dead&&visibleInDomainView&&f.char==='restless'&&(f.awakeMode==='gamble'||f.jackpot)&&f.domainType!=='hakari')drawIdleDeathGamble(f)
  }
@@ -4536,6 +4544,7 @@ function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
+ drawDomainBackdrops();
  if(!isFullScreenDomainActive()){drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons()}drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
