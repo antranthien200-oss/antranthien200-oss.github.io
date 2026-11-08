@@ -4080,7 +4080,7 @@ function isFullScreenDomainActive(){
  return !game.domainClash&&[player,enemy].some(f=>f&&!f.dead&&f.domainTimer>0&&['void','shrine','soul','hakari','yuta','trash'].includes(f.domainType));
 }
 function drawYujiDomainSmokeBackground(){
- const w=W,h=H,t=game.time||0,cache=getYujiSmokeBackgroundCache(w,h);
+ const w=W,h=H,t=0,cache=getYujiSmokeBackgroundCache(w,h);
  ctx.drawImage(cache.canvas,0,0,w,h);
  // Reuse the two soft cloud sprites with direct image draws (no per-cloud transforms).
  const sprites=getYujiSmokeCloudSprites(),edge=(x,phase=0)=>yujiDomainSmokeEdge(x,h,0,phase);
