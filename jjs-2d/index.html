@@ -3524,7 +3524,7 @@ function drawDomainHandsignCutin(f,p,accent){
  ctx.globalAlpha=.5*(1-.9*fold);ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
  ctx.save();
  ctx.translate(cx,cy);
- ctx.rotate(-23*Math.PI/180);
+ ctx.rotate(-15*Math.PI/180);
  ctx.scale(panelScaleX,panelScaleY);
  const left=-panelW/2,top=-panelH/2;
  const bg=ctx.createLinearGradient(left,top,left+panelW,top+panelH);
@@ -3533,10 +3533,6 @@ function drawDomainHandsignCutin(f,p,accent){
  ctx.strokeStyle='#171d20';ctx.lineWidth=3;ctx.strokeRect(left,top,panelW,panelH);
  ctx.strokeStyle=accent;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(left+3,top+7);ctx.lineTo(left+panelW-3,top+7);ctx.stroke();
  ctx.strokeStyle='#aab3b5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(left+3,top+panelH-7);ctx.lineTo(left+panelW-3,top+panelH-7);ctx.stroke();
- // Fine diagonal texture stays clipped inside the angled rectangle.
- ctx.save();ctx.beginPath();ctx.rect(left,top,panelW,panelH);ctx.clip();ctx.globalAlpha=.12;ctx.strokeStyle='#65737a';ctx.lineWidth=1;
- for(let i=0;i<10;i++){const xx=left+panelW*(.02+i*.1);ctx.beginPath();ctx.moveTo(xx,top+panelH*.05);ctx.lineTo(xx+panelW*.08,top+panelH*.95);ctx.stroke()}
- ctx.restore();
  // Keep the figure and the two English labels visible while the panel folds away.
  ctx.globalAlpha=clamp(1-fold*1.18,0,1);
  const headR=clamp(Math.min(panelW,panelH)*.13,22,55);
