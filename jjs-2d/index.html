@@ -2673,7 +2673,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.restore();
    }
   };
-  clapFlames(19,-18,clapA,0);clapFlames(19,-18,clapB,.32);
+  clapFlames(14,0,clapA,0);clapFlames(14,0,clapB,.32);
   if(p>.43&&p<.78){
    const form=smoothstep01((p-.43)/.35),scale=.34+.36*form;
    drawSukunaFlameArrowGlyph(28,-17,scale,vfxFade*(.82+.12*Math.sin(game.time*15)));
@@ -3169,11 +3169,11 @@ function drawHeadHands(f){
       const lift=progress<.48?-22*pulse:25*pulse;handA=P(24+24*pulse,12,lift);handB=P(24+24*pulse,-12,lift);handAScale=1.2;handBScale=1.2;
      }else if(name==='sukunaFireArrowCast'){
       if(progress<.22){
-       const q=progress/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(26,4,clap),forward=14+clap*8;
-       handA=P(forward,spread,-10-clap*7);handB=P(forward,-spread,-10-clap*7);handAScale=1.2;handBScale=1.2;
+       const q=progress/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(25,3,clap),forward=lerp(10,14,clap);
+       handA=P(forward,spread,0);handB=P(forward,-spread,0);handAScale=1.2;handBScale=1.2;
       }else if(progress<.44){
-       const q=(progress-.22)/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(25,3,clap),forward=15+clap*9;
-       handA=P(forward,spread,-11-clap*8);handB=P(forward,-spread,-11-clap*8);handAScale=1.23;handBScale=1.23;
+       const q=(progress-.22)/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(23,2.5,clap),forward=lerp(10,14,clap);
+       handA=P(forward,spread,0);handB=P(forward,-spread,0);handAScale=1.23;handBScale=1.23;
       }else if(progress<.78){
        const pull=smoothstep01((progress-.44)/.34);
        handA=P(23+45*pull,-16,-12-3*pull);handB=P(12-25*pull,-18,-4-12*pull);
