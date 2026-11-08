@@ -3482,57 +3482,138 @@ function drawPixelSignHand(x,y,scale,rotation,skin,sleeve,variant='palm'){
  }
  ctx.restore();
 }
-function drawDomainSignHand(x,y,angle,theme,scale,style){
+function drawDomainSignHand(x,y,angle,theme,scale,style,form=1){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
- drawPixelatedCircle(0,0,7.6,theme,2);
- ctx.fillStyle=theme.main;
- // Pixel fingers are attached to the same round floating fist.
- if(style==='two'||style==='crossed'){
-  ctx.fillRect(-4,-14,3,10);ctx.fillRect(2,-15,3,11);ctx.fillRect(-4,-12,9,2);
-  if(style==='crossed'){ctx.fillRect(-6,-11,3,7);ctx.fillRect(3,-17,3,5)}
- }else if(style==='clasp'){
-  ctx.fillRect(-6,-14,3,10);ctx.fillRect(-1,-16,3,12);ctx.fillRect(4,-14,3,10);ctx.fillRect(-7,-8,14,2);ctx.fillRect(-4,-5,9,2);
- }else if(style==='interlock'){
-  ctx.fillRect(-7,-13,3,10);ctx.fillRect(-2,-15,3,12);ctx.fillRect(3,-14,3,11);ctx.fillRect(-8,-9,16,2);ctx.fillRect(-5,-4,11,2);
+ ctx.lineCap='round';ctx.lineJoin='round';
+ const ink=theme.shadow||'#111820',main=theme.main||'#7da7d8',accent=theme.accent||main;
+ const strokeCurve=(draw,width)=>{
+  ctx.beginPath();draw();ctx.strokeStyle=ink;ctx.lineWidth=width+2.3;ctx.stroke();
+  ctx.strokeStyle=main;ctx.lineWidth=width;ctx.stroke();
+  ctx.globalAlpha=.42;ctx.strokeStyle=accent;ctx.lineWidth=Math.max(.65,width*.22);ctx.stroke();ctx.globalAlpha=1;
+ };
+ // Wrist and palm have a continuous silhouette rather than a detached round fist.
+ ctx.beginPath();ctx.moveTo(-3.8,4);ctx.quadraticCurveTo(-4.2,7,-3.4,10);
+ ctx.quadraticCurveTo(0,12,3.4,10);ctx.quadraticCurveTo(4.2,7,3.8,4);ctx.closePath();
+ ctx.fillStyle=ink;ctx.fill();
+ ctx.beginPath();ctx.moveTo(-2.9,4.2);ctx.quadraticCurveTo(-3.2,7,-2.6,9.1);
+ ctx.quadraticCurveTo(0,10.6,2.6,9.1);ctx.quadraticCurveTo(3.2,7,2.9,4.2);ctx.closePath();
+ ctx.fillStyle=main;ctx.fill();
+ ctx.beginPath();ctx.moveTo(-6,2);ctx.quadraticCurveTo(-8,-1,-7,-4);
+ ctx.quadraticCurveTo(-6,-7,-2,-6);ctx.quadraticCurveTo(2,-7,5,-5);
+ ctx.quadraticCurveTo(8,-3,7,1);ctx.quadraticCurveTo(6,5,2,6);
+ ctx.quadraticCurveTo(-3,7,-6,4);ctx.closePath();ctx.fillStyle=ink;ctx.fill();
+ ctx.beginPath();ctx.moveTo(-5.1,1.5);ctx.quadraticCurveTo(-6.5,-1,-5.7,-3.7);
+ ctx.quadraticCurveTo(-4.8,-5.7,-1.8,-4.9);ctx.quadraticCurveTo(2,-5.8,4.2,-4.1);
+ ctx.quadraticCurveTo(6.6,-2.5,5.9,.8);ctx.quadraticCurveTo(5,4,1.8,4.9);
+ ctx.quadraticCurveTo(-2.5,5.8,-5.1,1.5);ctx.closePath();ctx.fillStyle=main;ctx.fill();
+ const f=clamp(form,0,1),length=7+9*f;
+ const finger=(sx,sy,cx,cy,ex,ey,width=2.45)=>strokeCurve(()=>{
+  ctx.moveTo(sx,sy);ctx.quadraticCurveTo(cx,cy,ex,ey);
+ },width);
+ if(style==='crossed'){
+  // Two long fingers cross as they rise; the curled fingers stay tucked below them.
+  finger(-3,-2,-5,-7,4,-7-length,2.55);
+  finger(2,-2,5,-7,-4,-7-length*.94,2.55);
+  finger(-5,0,-7,-2,-5,-4,2.1);
+  finger(4,1,7,-1,6,-3,2.1);
+ }else if(style==='fist'){
+  finger(-4,-2,-7,-5,-3,-6,2.3);
+  finger(0,-3,-2,-7,2,-7,2.3);
+  finger(4,-2,7,-5,4,-6,2.3);
  }else if(style==='fan'){
-  ctx.fillRect(-8,-12,3,9);ctx.fillRect(-3,-16,3,13);ctx.fillRect(2,-16,3,13);ctx.fillRect(7,-12,3,9);ctx.fillRect(-8,-5,16,2);
- }else{ctx.fillRect(-3,-13,6,9)}
+  finger(-5,-2,-8,-8,-9-length*.62,-8-length*.5,2.35);
+  finger(-2,-4,-4,-10,-4-length*.18,-10-length,2.45);
+  finger(1,-4,1,-10,1+length*.12,-10-length*1.04,2.45);
+  finger(4,-2,7,-8,7+length*.58,-8-length*.58,2.35);
+ }else if(style==='interlock'){
+  finger(-5,-2,-8,-8,-5-length*.18,-8-length*.74,2.45);
+  finger(-1,-4,-3,-10,0,-10-length,2.55);
+  finger(3,-3,7,-8,5+length*.12,-8-length*.85,2.45);
+  finger(-5,1,-7,-1,-6,-3,2.1);
+ }else{
+  // Clasp: fingers curve together as the palms meet.
+  finger(-5,-2,-7,-8,-4-length*.12,-8-length*.82,2.45);
+  finger(-1,-4,-2,-10,0,-10-length,2.55);
+  finger(3,-3,7,-8,4+length*.12,-8-length*.82,2.45);
+ }
+ // The thumb curls inward to make each hand read as a palm, not a fan of lines.
+ finger(5,0,10,-2,8,-5,2.5);
  ctx.restore();
 }
-function drawDomainHandsignPose(f,cx,headY,headR,theme,p){
- const t=clamp(p,0,1),smooth=x=>{x=clamp(x,0,1);return x*x*(3-2*x)};
- const raise=smooth(t/.46),pulse=Math.sin(game.time*8)*.8;
- const leftStart={x:cx-headR*1.7,y:headY+headR*1.15},rightStart={x:cx+headR*1.7,y:headY+headR*1.15};
+function drawDomainHandsignPose(f,cx,headY,headR,theme,p,armsOnly=false){
+ const t=clamp(p,0,1);
+ const ease=x=>{x=clamp(x,0,1);return x*x*x*(x*(x*6-15)+10)};
  const mix=(a,b,k)=>a+(b-a)*k;
+ const mixAngle=(a,b,k)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*k;
+ const bezier=(a,b,c,d,u)=>{
+  const v=1-u;
+  return {x:v*v*v*a.x+3*v*v*u*b.x+3*v*u*u*c.x+u*u*u*d.x,
+          y:v*v*v*a.y+3*v*v*u*b.y+3*v*u*u*c.y+u*u*u*d.y};
+ };
+ const leftStart={x:cx-headR*1.7,y:headY+headR*1.15};
+ const rightStart={x:cx+headR*1.7,y:headY+headR*1.15};
+ const leftMove=ease(t/.70),rightMove=ease((t-.035)/.68);
+ const mixPos=(start,end,side,u)=>{
+  const c1={x:start.x+side*headR*.42,y:start.y-headR*.48};
+  const c2={x:end.x+side*headR*.22,y:end.y-headR*.52};
+  return bezier(start,c1,c2,end,u);
+ };
  const domain=f.domainType||'void';
- let leftEnd,rightEnd,leftAngle=-.4,rightAngle=.4,leftStyle='clasp',rightStyle='clasp';
+ let leftEnd,rightEnd,leftTargetAngle=-.4,rightTargetAngle=.4,leftStyle='clasp',rightStyle='clasp';
  if(domain==='void'){
-  // Gojo: crossed index/middle fingers raised beside the head; the other fist supports the wrist.
+  // Gojo: crossed index and middle fingers, supported by the opposite fist.
   leftEnd={x:cx+headR*.52,y:headY-headR*.55};rightEnd={x:cx-headR*.52,y:headY+headR*.13};
-  leftAngle=-.12;rightAngle=-1.12;leftStyle='crossed';rightStyle='fist';
+  leftTargetAngle=-.12;rightTargetAngle=-1.12;leftStyle='crossed';rightStyle='fist';
  }else if(domain==='shrine'){
-  // Sukuna: both hands lock together in the Enmaten seal.
+  // Sukuna: both hands close together for the Enmaten seal.
   leftEnd={x:cx-headR*.22,y:headY+headR*.28};rightEnd={x:cx+headR*.22,y:headY+headR*.28};
-  leftAngle=-.23;rightAngle=.23;leftStyle='interlock';rightStyle='interlock';
+  leftTargetAngle=-.23;rightTargetAngle=.23;leftStyle='interlock';rightStyle='interlock';
  }else if(domain==='hakari'){
-  // Hakari: hands rise to chest height and press together into a compact clasp.
   leftEnd={x:cx-headR*.31,y:headY+headR*.53};rightEnd={x:cx+headR*.31,y:headY+headR*.53};
-  leftAngle=-.4;rightAngle=.4;leftStyle='clasp';rightStyle='clasp';
+  leftTargetAngle=-.4;rightTargetAngle=.4;leftStyle='clasp';rightStyle='clasp';
  }else if(domain==='yuta'){
-  // Yuta: palms align at the chest for the vow with Rika.
   leftEnd={x:cx-headR*.18,y:headY+headR*.36};rightEnd={x:cx+headR*.18,y:headY+headR*.36};
-  leftAngle=-.12;rightAngle=.12;leftStyle='interlock';rightStyle='interlock';
+  leftTargetAngle=-.12;rightTargetAngle=.12;leftStyle='interlock';rightStyle='interlock';
  }else{
-  // Mahito: hands lift beside the head and open into a flower-like seal.
   leftEnd={x:cx-headR*.7,y:headY-headR*.47};rightEnd={x:cx+headR*.7,y:headY-headR*.47};
-  leftAngle=-.7;rightAngle=.7;leftStyle='fan';rightStyle='fan';
+  leftTargetAngle=-.7;rightTargetAngle=.7;leftStyle='fan';rightStyle='fan';
  }
- const lx=mix(leftStart.x,leftEnd.x,raise),ly=mix(leftStart.y,leftEnd.y,raise);
- const rx=mix(rightStart.x,rightEnd.x,raise),ry=mix(rightStart.y,rightEnd.y,raise);
- const settle=clamp((t-.63)/.25,0,1),tremor=(1-settle)*pulse*.5;
- drawDomainSignHand(lx-tremor,ly,leftAngle,theme,headR/14.8*.98,leftStyle);
- drawDomainSignHand(rx+tremor,ry,rightAngle,theme,headR/14.8*.98,rightStyle);
- if(t>.62){const flash=clamp((t-.62)/.12,0,1)*(1-clamp((t-.9)/.1,0,1));ctx.save();ctx.globalAlpha=flash*.5;ctx.strokeStyle=theme.accent;ctx.lineWidth=2;ctx.beginPath();ctx.arc(cx,headY+headR*.1,headR*.52+Math.sin(game.time*14)*2,0,Math.PI*2);ctx.stroke();ctx.restore()}
+ const leftPos=mixPos(leftStart,leftEnd,-1,leftMove);
+ const rightPos=mixPos(rightStart,rightEnd,1,rightMove);
+ const settle=ease((t-.68)/.22);
+ const breathe=Math.sin(game.time*2.8)*headR*.012*settle;
+ const rebound=Math.sin(Math.PI*leftMove)*headR*.025;
+ leftPos.y+=breathe-rebound;rightPos.y+=breathe-Math.sin(Math.PI*rightMove)*headR*.025;
+ const leftAngle=mixAngle(-.85,leftTargetAngle,leftMove);
+ const rightAngle=mixAngle(.85,rightTargetAngle,rightMove);
+ const handScale=headR/14.8*.98;
+ if(armsOnly){
+  const drawArm=(side,pos,angle)=>{
+   const shoulder={x:cx+side*headR*.68,y:headY+headR*.27};
+   const wrist={x:pos.x-Math.sin(angle)*8*handScale,y:pos.y+Math.cos(angle)*8*handScale};
+   const c1={x:shoulder.x+side*headR*.24,y:shoulder.y+headR*.72};
+   const c2={x:wrist.x+side*headR*.18,y:wrist.y+headR*.28};
+   const arm=()=>{
+    ctx.beginPath();ctx.moveTo(shoulder.x,shoulder.y);
+    ctx.bezierCurveTo(c1.x,c1.y,c2.x,c2.y,wrist.x,wrist.y);
+   };
+   ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+   arm();ctx.strokeStyle=theme.shadow;ctx.lineWidth=headR*.205;ctx.stroke();
+   arm();ctx.strokeStyle=theme.main;ctx.lineWidth=headR*.15;ctx.stroke();
+   arm();ctx.globalAlpha=.5;ctx.strokeStyle=theme.accent;ctx.lineWidth=Math.max(1,headR*.025);ctx.stroke();
+   ctx.restore();
+  };
+  drawArm(-1,leftPos,leftAngle);drawArm(1,rightPos,rightAngle);
+  return;
+ }
+ const form=ease((t-.16)/.48);
+ drawDomainSignHand(leftPos.x,leftPos.y,leftAngle,theme,handScale,leftStyle,form);
+ drawDomainSignHand(rightPos.x,rightPos.y,rightAngle,theme,handScale,rightStyle,form);
+ if(t>.62){
+  const flash=ease((t-.62)/.12)*(1-ease((t-.9)/.1));
+  ctx.save();ctx.globalAlpha=flash*.42;ctx.strokeStyle=theme.accent;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(cx,headY+headR*.1,headR*.52+Math.sin(game.time*7)*1.4,0,Math.PI*2);ctx.stroke();ctx.restore();
+ }
 }
 function drawDomainHandsignCutin(f,p,accent){
  const t=clamp(p,0,1),cx=W*.5,cy=H*.465;
@@ -3573,6 +3654,7 @@ function drawDomainHandsignCutin(f,p,accent){
  headGlow.addColorStop(0,accent+'30');headGlow.addColorStop(1,accent+'00');
  ctx.fillStyle=headGlow;ctx.beginPath();ctx.arc(avatarX,avatarY,headR*1.85,0,Math.PI*2);ctx.fill();
  drawAccessoryAura(f,avatarX,avatarY,headScale);
+ drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress,true);
  drawPixelatedCircle(avatarX,avatarY,headR*spring,theme,Math.max(2.4,headR/6));
  drawAccessoryOverlays(f,avatarX,avatarY,headScale);
  drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress);
