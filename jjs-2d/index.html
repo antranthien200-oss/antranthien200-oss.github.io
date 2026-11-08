@@ -2014,98 +2014,103 @@ function drawSukunaFireZones(){
  for(const zone of fireZones){
   const x=sx(zone.x),y=sy(zone.y),r=zone.radius,fade=clamp(zone.life/.8,0,1);
   const hash=n=>{const v=Math.sin(n*127.1+zone.seed*311.7)*43758.5453;return v-Math.floor(v)};
-  const point=i=>{
-   const a=zone.angle+(hash(i*3+1)-.5)*Math.PI,rad=Math.sqrt(hash(i*3+2))*.91*r;
-   const lx=Math.cos(a-zone.angle)*rad,ly=Math.sin(a-zone.angle)*rad*.78,ca=Math.cos(zone.angle),sa=Math.sin(zone.angle);
-   return {x:lx*ca-ly*sa,y:lx*sa+ly*ca};
-  };
-  const wind=3.5+2.2*Math.sin(game.time*2.15+zone.seed),gust=Math.sin(game.time*5.2+zone.seed)*1.8;
-  const patchCount=isMobileDevice?4:8,licks=isMobileDevice?2:3;
-  const embers=isMobileDevice?12:26,smokeCount=isMobileDevice?1:3;
-  const ca=Math.cos(zone.angle),sa=Math.sin(zone.angle);
-  const tx=(px,py)=>px*ca-py*sa,ty=(px,py)=>px*sa+py*ca;
-  ctx.save();ctx.translate(x,y);
+  // Points are sampled inside a true forward-facing half-disc (not a flattened oval).
+  const point=i=>{const a=(hash(i*3+1)-.5)*Math.PI,rad=Math.sqrt(hash(i*3+2))*.93*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad}};
+  const wind=4+2.4*Math.sin(game.time*2.15+zone.seed),gust=Math.sin(game.time*5.2+zone.seed)*2;
+  const patchCount=isMobileDevice?6:12,flamesPerPatch=isMobileDevice?3:4;
+  const emberCount=isMobileDevice?12:26,smokeCount=isMobileDevice?1:2;
+  ctx.save();ctx.translate(x,y);ctx.rotate(zone.angle);ctx.globalAlpha=fade;
 
-  // Batch all ground glows into one path; avoid per-particle gradients and shadows.
-  ctx.beginPath();
+  // One soft semicircular heat bed makes the area read as a clear half-circle.
+  ctx.beginPath();ctx.moveTo(0,-r);ctx.arc(0,0,r,-Math.PI/2,Math.PI/2,false);ctx.closePath();
+  const bed=ctx.createRadialGradient(r*.18,0,2,r*.36,0,r);
+  bed.addColorStop(0,'rgba(255,95,23,.17)');bed.addColorStop(.58,'rgba(221,61,17,.105)');bed.addColorStop(1,'rgba(153,37,12,0)');
+  ctx.fillStyle=bed;ctx.fill();
+  // A restrained curved edge hints at the radius without creating a magic ring.
+  ctx.beginPath();ctx.arc(0,0,r,-Math.PI/2,Math.PI/2,false);
+  ctx.globalAlpha=fade*.18;ctx.strokeStyle='#ff8b38';ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=fade;
+
   const patches=[];
+  ctx.beginPath();
   for(let i=0;i<patchCount;i++){
-   const p=point(i+20),length=34+hash(i+120)*55;
-   const angle=(hash(i+220)-.5)*.46+Math.sin(game.time*1.7+i)*.04;
+   const p=point(i+20),length=46+hash(i+120)*80;
+   const angle=(hash(i+220)-.5)*.56+Math.sin(game.time*1.7+i)*.05;
    const flicker=.78+.22*Math.sin(game.time*12+i*2.31+zone.seed);
-   const a=zone.angle+angle,pc=Math.cos(a),ps=Math.sin(a);
-   patches.push({p,length,angle,a,pc,ps,flicker});
-   ctx.ellipse(p.x,p.y,length*.52,3.8+hash(i+420)*2.8,a,0,Math.PI*2);
+   patches.push({p,length,angle,flicker});
+   ctx.ellipse(p.x,p.y,length*.52,4+hash(i+420)*4,angle,0,Math.PI*2);
   }
-  ctx.globalAlpha=fade*.42;ctx.fillStyle='rgba(255,92,24,.22)';ctx.fill();
+  // Batched heat glow: one fill for every patch.
+  ctx.globalAlpha=fade*.34;ctx.fillStyle='rgba(255,91,24,.25)';ctx.fill();
 
-  // Broken low base lines are drawn together in a single stroke.
+  // Join the fire bases into irregular, broken ground-hugging strips.
   ctx.beginPath();
   for(const patch of patches){
-   const {p,length,pc,ps}=patch;
-   const x1=p.x-tx(length*.5,0),y1=p.y-ty(length*.5,0);
-   const x2=p.x+tx(length*.5,0),y2=p.y+ty(length*.5,0);
-   const controlX=p.x+tx(-length*.12,gust*.18),controlY=p.y+ty(-length*.12,gust*.18);
-   ctx.moveTo(x1,y1);ctx.quadraticCurveTo(controlX,controlY,x2,y2);
+   const {p,length,angle}=patch,ca=Math.cos(angle),sa=Math.sin(angle);
+   const x1=p.x-ca*length*.5,y1=p.y-sa*length*.5;
+   const x2=p.x+ca*length*.5,y2=p.y+sa*length*.5;
+   ctx.moveTo(x1,y1);
+   ctx.quadraticCurveTo(p.x-ca*length*.12-sa*gust*.22,p.y-sa*length*.12+ca*gust*.22,x2,y2);
   }
-  ctx.globalAlpha=fade*.48;ctx.strokeStyle='rgba(255,142,42,.54)';ctx.lineWidth=2;ctx.lineCap='round';ctx.stroke();
+  ctx.globalAlpha=fade*.58;ctx.strokeStyle='rgba(255,135,39,.7)';ctx.lineWidth=2.8;ctx.lineCap='round';ctx.stroke();
 
-  // All flame tongues share two batched paths: outer orange flames and hot inner cores.
-  ctx.beginPath();
+  // Create different-sized tongues; most stay low while a few rise much higher.
+  const specs=[];
   for(let i=0;i<patches.length;i++){
-   const patch=patches[i],{p,length,pc,ps}=patch;
-   for(let j=0;j<licks;j++){
-    const along=(j/(licks-1)-.5)*length+(hash(i*13+j+620)-.5)*7;
-    const h=7+hash(i*17+j+720)*13,width=2.8+hash(i*19+j+820)*2.8;
-    const sway=wind*(.6+hash(i*23+j+920)*.7)+gust+Math.sin(game.time*17+i*1.8+j*2.7)*1.8;
-    const rise=.82+.18*Math.sin(game.time*16+i*2.4+j*3.1+zone.seed);
-    const tipX=sway+h*.16,tipY=-h*rise;
-    const X=(lx,ly)=>p.x+lx*pc-ly*ps,Y=(lx,ly)=>p.y+lx*ps+ly*pc;
-    ctx.moveTo(X(along-width,1),Y(along-width,1));
-    ctx.bezierCurveTo(X(along-width*1.15,-h*.18),Y(along-width*1.15,-h*.18),
-      X(along+tipX-width*.9,-h*.34),Y(along+tipX-width*.9,-h*.34),
-      X(along+tipX,tipY),Y(along+tipX,tipY));
-    ctx.bezierCurveTo(X(along+tipX+width*.78,-h*.56),Y(along+tipX+width*.78,-h*.56),
-      X(along+tipX+width*1.2,-h*.2),Y(along+tipX+width*1.2,-h*.2),
-      X(along+width,1),Y(along+width,1));
-    ctx.closePath();
+   const patch=patches[i];
+   const count=flamesPerPatch+(hash(i+510)>.52?1:0);
+   for(let j=0;j<count;j++){
+    const size=hash(i*17+j+720);
+    const along=(j/(count-1)-.5)*patch.length+(hash(i*13+j+620)-.5)*11;
+    const h=12+Math.pow(size,1.12)*35;
+    const width=3.8+Math.pow(hash(i*19+j+820),.85)*7;
+    const sway=wind*(.6+hash(i*23+j+920)*.7)+gust+Math.sin(game.time*17+i*1.8+j*2.7)*3;
+    const rise=.72+.28*Math.sin(game.time*16+i*2.4+j*3.1+zone.seed);
+    const tipX=sway+h*.2,tipY=-h*rise;
+    specs.push({x:patch.p.x+Math.cos(patch.angle)*along,y:patch.p.y+Math.sin(patch.angle)*along,
+      angle:patch.angle,h,width,tipX,tipY,rise,flicker:patch.flicker});
    }
   }
-  ctx.globalAlpha=fade*.92;ctx.fillStyle='#f36a22';ctx.fill();
 
+  // Outer orange-red flame silhouettes, all rendered in a single path.
   ctx.beginPath();
-  for(let i=0;i<patches.length;i++){
-   const patch=patches[i],{p,length,pc,ps}=patch;
-   for(let j=0;j<licks;j++){
-    const along=(j/(licks-1)-.5)*length+(hash(i*13+j+620)-.5)*7;
-    const h=7+hash(i*17+j+720)*13,width=2.8+hash(i*19+j+820)*2.8;
-    const tipX=wind*(.6+hash(i*23+j+920)*.7)+gust+h*.16,tipY=-h*(.82+.18*Math.sin(game.time*16+i*2.4+j*3.1+zone.seed));
-    const X=(lx,ly)=>p.x+lx*pc-ly*ps,Y=(lx,ly)=>p.y+lx*ps+ly*pc;
-    ctx.moveTo(X(along-width*.28,0),Y(along-width*.28,0));
-    ctx.quadraticCurveTo(X(along-width*.15,-h*.18),Y(along-width*.15,-h*.18),X(along+tipX*.42,-h*.43),Y(along+tipX*.42,-h*.43));
-    ctx.quadraticCurveTo(X(along+width*.24,-h*.15),Y(along+width*.24,-h*.15),X(along+width*.28,0),Y(along+width*.28,0));
-    ctx.closePath();
-   }
+  for(const f of specs){
+   ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle);
+   ctx.moveTo(-f.width,1);
+   ctx.bezierCurveTo(-f.width*1.15,-f.h*.18,f.tipX-f.width*.9,-f.h*.34,f.tipX,f.tipY);
+   ctx.bezierCurveTo(f.tipX+f.width*.78,-f.h*.56,f.tipX+f.width*1.2,-f.h*.2,f.width,1);
+   ctx.closePath();ctx.restore();
   }
-  ctx.globalAlpha=fade*.78;ctx.fillStyle='#ffd071';ctx.fill();
+  ctx.globalAlpha=fade*.96;ctx.fillStyle='#ef6421';ctx.fill();
 
-  // Moving embers are a single lightweight line batch, drifting with the gust.
+  // Inner golden cores give the larger flames depth without costly per-flame gradients.
   ctx.beginPath();
-  for(let i=0;i<embers;i++){
-   const p=point(i+1120),phase=(game.time*(10+hash(i+1220)*7)+hash(i+1320)*42)%32;
-   const drift=phase*(.22+hash(i+1420)*.12)+wind*.65,ex=p.x+drift,ey=p.y-phase*.64;
-   ctx.moveTo(ex-1.1,ey+1.8);ctx.lineTo(ex+1.2+wind*.18,ey-1.9);
+  for(const f of specs){
+   ctx.save();ctx.translate(f.x,f.y);ctx.rotate(f.angle);
+   const w=f.width*.43,h=f.h*.68,tx=f.tipX*.38,ty=f.tipY*.68;
+   ctx.moveTo(-w,0);
+   ctx.quadraticCurveTo(-w*.65,-h*.36,tx,ty);
+   ctx.quadraticCurveTo(w*.72,-h*.31,w,0);
+   ctx.closePath();ctx.restore();
   }
-  ctx.globalAlpha=fade*.72;ctx.strokeStyle='#ffb74c';ctx.lineWidth=1.35;ctx.stroke();
+  ctx.globalAlpha=fade*.82;ctx.fillStyle='#ffd070';ctx.fill();
 
-  // Just a few soft smoke curls, also batched to keep frame cost low.
+  // Moving ember streaks travel out of the fire with the changing gust.
+  ctx.beginPath();
+  for(let i=0;i<emberCount;i++){
+   const p=point(i+1120),phase=(game.time*(10+hash(i+1220)*7)+hash(i+1320)*42)%35;
+   const drift=phase*(.24+hash(i+1420)*.13)+wind*.65,ex=p.x+drift,ey=p.y-phase*.58;
+   ctx.moveTo(ex-1.7,ey+2.4);ctx.lineTo(ex+1.5+wind*.2,ey-2.8);
+  }
+  ctx.globalAlpha=fade*.78;ctx.strokeStyle='#ffbd58';ctx.lineWidth=1.5;ctx.stroke();
+
+  // Smoke is subtle and sparse; a few drifting curves are enough.
   ctx.beginPath();
   for(let i=0;i<smokeCount;i++){
-   const p=point(i+1620),phase=(game.time*6.2+hash(i+1720)*20)%24,drift=wind*phase*.22+Math.sin(game.time*2+i)*4;
+   const p=point(i+1620),phase=(game.time*5.8+hash(i+1720)*18)%22,drift=wind*phase*.2+Math.sin(game.time*2+i)*4;
    ctx.moveTo(p.x,p.y);
-   ctx.bezierCurveTo(p.x-2+drift*.4,p.y-phase*.3,p.x+3+drift,p.y-phase*.65,p.x+drift,p.y-phase);
+   ctx.bezierCurveTo(p.x-3+drift*.35,p.y-phase*.32,p.x+4+drift,p.y-phase*.68,p.x+drift,p.y-phase);
   }
-  ctx.globalAlpha=fade*.12;ctx.strokeStyle='rgba(154,145,133,.72)';ctx.lineWidth=2.4;ctx.lineCap='round';ctx.stroke();
+  ctx.globalAlpha=fade*.13;ctx.strokeStyle='rgba(155,147,135,.8)';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.stroke();
   ctx.restore();
  }
 }
