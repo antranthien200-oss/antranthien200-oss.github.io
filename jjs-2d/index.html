@@ -1804,8 +1804,10 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     burst(f.x,f.y-23,'#ff536b',9,2.8);showToast('DISMANTLE · CATCH',600);
     schedule(()=>{
      if(f.dead||!game.started||game.over||f.stun>.08||f.sukunaFlurrySerial!==serial||!f.motion||f.motion.name!=='sukunaFlurryWindup')return;
-     f.x+=Math.cos(angle)*21;f.y+=Math.sin(angle)*21;collideWorld(f);f.vx=0;f.vy=0;
-     const caught=targetInAim(f,t,154,.66,angle)&&beginGrab(f,t,'sukunaFlurry',.90,angle,'#f34d67',6.5);
+     const inRange=targetInAim(f,t,154,.66,angle);
+     const dashDistance=inRange?Math.min(105,Math.max(0,dist(f,t)-62)):105;
+     f.x+=Math.cos(angle)*dashDistance;f.y+=Math.sin(angle)*dashDistance;collideWorld(f);f.vx=0;f.vy=0;
+     const caught=inRange&&beginGrab(f,t,'sukunaFlurry',.90,angle,'#f34d67',6.5);
      if(caught){
       f.grabTick=.06;f.invuln=Math.max(f.invuln,.12);
       burst(t.x,t.y-18,'#ff536b',18,4.8);burst(t.x,t.y-18,'#fff0f2',8,3.2);
@@ -2522,8 +2524,28 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    const pull=1-clamp(p/.58,0,1);ctx.globalAlpha=.2+.55*pull;ctx.strokeStyle='#ff526d';ctx.lineWidth=2.5;ctx.shadowColor='#ff405f';ctx.shadowBlur=9;ctx.beginPath();ctx.arc(-25,-4,19+pull*10,-1.1,1.05);ctx.stroke();
    ctx.globalAlpha=.35+.45*pull;ctx.fillStyle='#ff657d';for(let i=0;i<4;i++){const q=i*Math.PI*.5+p*4;ctx.beginPath();ctx.arc(-31+Math.cos(q)*9,-5+Math.sin(q)*9,1.5,0,Math.PI*2);ctx.fill()}
   }else if(m==='sukunaFlurry'){
-   const pulse=.55+.45*Math.sin(p*42);ctx.globalAlpha=.25+.4*pulse;ctx.strokeStyle='#ff536d';ctx.lineWidth=2.5;ctx.shadowColor='#ff405f';ctx.shadowBlur=7;
-   for(let i=0;i<3;i++){ctx.beginPath();ctx.moveTo(24+i*5,-17+i*13);ctx.quadraticCurveTo(43+i*7,-23+i*13,59+i*5,-9+i*13);ctx.stroke()}
+   // Launch a simultaneous fan of M1-shaped dismantle crescents from the attacker.
+   const cuts=[
+    [0,-43,43,2.8,-.58,.88],[1,-30,56,3.5,-.39,.96],
+    [2,-16,48,3.0,-.22,.92],[0,-2,66,4.1,-.06,1],
+    [1,13,53,3.4,.16,.96],[2,28,45,2.9,.34,.9],
+    [0,42,39,2.6,.52,.86],[2,0,35,2.4,.08,.82]
+   ];
+   const appear=clamp(p/.12,0,1),fade=clamp((1-p)/.2,0,1);
+   for(let i=0;i<cuts.length;i++){
+    const [lane,y,length,thickness,rotation,opacity]=cuts[i];
+    const travel=27+p*104+lane*8;
+    ctx.save();ctx.translate(travel,y);ctx.rotate(rotation+Math.PI/2);
+    ctx.globalAlpha=appear*fade*opacity*vfxFade;
+    ctx.beginPath();ctx.moveTo(-length*.5,0);
+    ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
+    ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
+    ctx.closePath();ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;ctx.lineJoin='round';
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=6;ctx.fill();ctx.stroke();ctx.restore();
+   }
+   // Red launch pressure behind the volley makes the release feel heavier.
+   ctx.globalAlpha=(.25+.35*Math.sin(p*34))*fade*vfxFade;ctx.strokeStyle='#ff405f';ctx.lineWidth=3;ctx.shadowColor='#ff294d';ctx.shadowBlur=12;
+   for(let i=0;i<5;i++){const y=-34+i*17;ctx.beginPath();ctx.moveTo(12,y);ctx.lineTo(39,y+(i-2)*2);ctx.stroke()}
   }else{
    ctx.globalAlpha=.8*vfxFade;ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.2;ctx.shadowColor='#ff405f';ctx.shadowBlur=10;ctx.beginPath();ctx.moveTo(9,-22);ctx.lineTo(28,-7);ctx.lineTo(44,-19);ctx.stroke();
    ctx.beginPath();ctx.arc(38,0,13,-.9,.9);ctx.stroke();
