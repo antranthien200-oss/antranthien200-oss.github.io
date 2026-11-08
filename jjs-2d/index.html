@@ -3975,6 +3975,7 @@ function drawDomainArenaContent(f){
   try{renderDomainArenaFrame(f)}finally{ctx=screenCtx}cache.last=game.time;
  }
  ctx.drawImage(cache.canvas,0,0,W,H);
+ if(type==='shrine')drawYujiBlackWaterRipples(W,H,game.time,(x)=>yujiDomainSmokeEdge(x,H,game.time));
 }
 function domainPolygon(points,fill,stroke=null,width=1){
  ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();
@@ -4015,16 +4016,17 @@ function getYujiSmokeCloudSprites(){
  });
  return yujiSmokeCloudSprites;
 }
-const YUJI_RIPPLE_POINTS=Array.from({length:160},(_,i)=>{
+const YUJI_RIPPLE_POINTS=Array.from({length:128},(_,i)=>{
  const a=i/160*Math.PI*2;
  return {c:Math.cos(a),s:Math.sin(a),s3:Math.sin(a*3),c3:Math.cos(a*3),s7:Math.sin(a*7),c7:Math.cos(a*7)};
 });
+function yujiDomainSmokeEdge(x,h,t,phase=0){return h*(.535+.032*Math.sin(x*.0085+t*.22+phase)+.019*Math.sin(x*.021-t*.3+phase*1.7)+.009*Math.sin(x*.047+t*.42+phase*.6));}
 function isFullScreenYujiShrineDomain(){
  return !game.domainClash&&[player,enemy].some(f=>f&&!f.dead&&f.domainType==='shrine'&&f.domainTimer>0&&f.domainFlashTimer<=0);
 }
 function drawYujiDomainSmokeBackground(){
  const w=W,h=H,t=game.time||0;
- const edge=(x,phase=0)=>h*(.535+.032*Math.sin(x*.0085+t*.22+phase)+.019*Math.sin(x*.021-t*.3+phase*1.7)+.009*Math.sin(x*.047+t*.42+phase*.6));
+ const edge=(x,phase=0)=>yujiDomainSmokeEdge(x,h,t,phase);
  ctx.save();
  ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
  ctx.fillStyle='#020205';ctx.fillRect(0,0,w,h);
@@ -4070,22 +4072,21 @@ function drawYujiDomainSmokeBackground(){
   ctx.bezierCurveTo(x-w*.035+drift,y-h*.045,x+w*.025-drift,y+h*.052,x+w*.075,y-h*.018);
   ctx.stroke();ctx.restore();
  }
- drawYujiBlackWaterRipples(w,h,t,edge);
+
  ctx.restore();
 }
 function drawYujiBlackWaterRipples(w,h,t,edge){
-  // A tiny source at the red/black intersection emits many widely spaced oval rings.
+  // Seven fine, widely spaced ovals expand from a tiny source at the red/black intersection.
   const cx=w*.5,cy=edge(cx),ovalRatio=.48;
   const maxRadius=Math.max(Math.hypot(cx,(h-cy)/ovalRatio),Math.hypot(w-cx,(h-cy)/ovalRatio))*1.035;
   const expansionSpeed=Math.max(130,h*.20),life=maxRadius/expansionSpeed;
-  const ringCount=Math.max(8,Math.min(16,Math.ceil(maxRadius/112)));
-  const stagger=life/ringCount,startRadius=Math.max(2,h*.0015);
+  const ringCount=7,stagger=life/ringCount,startRadius=Math.max(1.5,h*.0012);
   ctx.save();
   ctx.beginPath();
   const clipStep=Math.max(3,w/118);
   for(let x=0;x<=w;x+=clipStep){const y=edge(x);if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}
   ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.clip();
-  ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(238,244,250,.72)';ctx.strokeStyle='#f1f5fa';
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(238,244,250,.58)';ctx.strokeStyle='#f1f5fa';
   for(let ring=0;ring<ringCount;ring++){
    const age=((t+ring*stagger)%life+life)%life;
    const radius=startRadius+age*expansionSpeed;
@@ -4093,8 +4094,8 @@ function drawYujiBlackWaterRipples(w,h,t,edge){
    const progress=radius/maxRadius,phase3=t*.42+ring*.8,phase7=-t*.25+ring;
    const sin3=Math.sin(phase3),cos3=Math.cos(phase3),sin7=Math.sin(phase7),cos7=Math.cos(phase7);
    ctx.globalAlpha=Math.pow(1-progress,1.05)*.9;
-   ctx.shadowBlur=Math.max(3,h*.009)*(1-progress*.45);
-   ctx.lineWidth=Math.max(2,h*.0042)*(1-progress*.12);
+   ctx.shadowBlur=Math.max(.7,h*.0022)*(1-progress*.5);
+   ctx.lineWidth=Math.max(1,h*.0021)*(1-progress*.12);
    ctx.beginPath();
    for(let i=0;i<YUJI_RIPPLE_POINTS.length;i++){
     const p=YUJI_RIPPLE_POINTS[i];
@@ -4352,7 +4353,7 @@ function effectsViewportContains(x,y,pad=0){
  return x+pad>=effectsViewportLeft&&x-pad<=effectsViewportRight&&y+pad>=effectsViewportTop&&y-pad<=effectsViewportBottom;
 }
 function drawEffects(){
- updateEffectsViewportBounds();drawSukunaFireZones();for(const s of trailStrokes){const x1=sx(s.x1),y1=sy(s.y1),x2=sx(s.x2),y2=sy(s.y2),mx=(x1+x2)*.5,my=(y1+y2)*.5;if(!effectsViewportContains(mx,my,Math.hypot(x2-x1,y2-y1)*.5+s.width*2))continue;ctx.save();ctx.globalAlpha=clamp(s.life/s.max,0,1)*.82;ctx.strokeStyle=s.color;ctx.lineWidth=s.width;ctx.lineCap='round';ctx.shadowBlur=s.width*1.4;ctx.shadowColor=s.color;ctx.beginPath();ctx.moveTo(sx(s.x1),sy(s.y1));ctx.lineTo(sx(s.x2),sy(s.y2));ctx.stroke();ctx.restore()}for(const d of doorTraps){if(!effectsViewportContains(sx(d.x),sy(d.y),58))continue;ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore()}if(game.domainClash)drawDomainClashArena();
+ const hideUnderDomain=isFullScreenYujiShrineDomain();updateEffectsViewportBounds();if(!hideUnderDomain){drawSukunaFireZones();for(const s of trailStrokes){const x1=sx(s.x1),y1=sy(s.y1),x2=sx(s.x2),y2=sy(s.y2),mx=(x1+x2)*.5,my=(y1+y2)*.5;if(!effectsViewportContains(mx,my,Math.hypot(x2-x1,y2-y1)*.5+s.width*2))continue;ctx.save();ctx.globalAlpha=clamp(s.life/s.max,0,1)*.82;ctx.strokeStyle=s.color;ctx.lineWidth=s.width;ctx.lineCap='round';ctx.shadowBlur=s.width*1.4;ctx.shadowColor=s.color;ctx.beginPath();ctx.moveTo(sx(s.x1),sy(s.y1));ctx.lineTo(sx(s.x2),sy(s.y2));ctx.stroke();ctx.restore()}for(const d of doorTraps){if(!effectsViewportContains(sx(d.x),sy(d.y),58))continue;ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore()}}if(game.domainClash)drawDomainClashArena();
  const activeDomainView=[player,enemy].find(domainIsActive);for(const f of [player,enemy]){
   const visibleInDomainView=!activeDomainView||domainViewMatches(f,activeDomainView),clashant=!!(game.domainClash&&game.domainClash.members.includes(f));
   if(f&&!f.dead&&!clashant&&(f.domainTimer>0||f.domainWindup>0||f.domainType==='void02'))drawDomainArena(f);
