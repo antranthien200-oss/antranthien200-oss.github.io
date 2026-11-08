@@ -1290,8 +1290,27 @@ function damage(target,amount,source,opts={}){
    const a=Math.atan2(source.y-target.y,source.x-target.x),strong=kind==='todoBrothers';setMotion(target,strong?'todoBrothersCounter':'todoDreamCounter',strong?.85:.7,a,source);damage(source,strong?28:13,target,{stun:strong?1:.8,kx:Math.cos(a)*(strong?17:12),ky:Math.sin(a)*(strong?17:12),big:true,unblockable:true,color:'#e3c579'});burst(target.x,target.y,strong?'#f5d990':'#e3c579',30,7);return;
   }
   if(kind==='manji'){
-   const a=Math.atan2(source.y-target.y,source.x-target.x);target.invuln=Math.max(target.invuln,2.2);target.stun=0;target.block=false;target.vx*=.2;target.vy*=.2;setMotion(target,'yujiManjiBlock',1.15,a,source);burst(target.x,target.y,'#f3bb67',14,3);
-   schedule(()=>{if(target.dead||source.dead)return;setMotion(target,'yujiManjiCounter',1.3,a,source);target.vx+=Math.cos(a)*2.2;target.vy+=Math.sin(a)*2.2;schedule(()=>{if(target.dead||source.dead)return;source.invuln=0;damage(source,8.5,target,{stun:.68,kx:Math.cos(a)*10,ky:Math.sin(a)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});burst(target.x,target.y,'#f3bb67',18,5);burst(source.x,source.y,'#ffd58b',12,4);showToast('MANJI BLOCK · COUNTER',650)},650)},1100);return;
+   const a=Math.atan2(source.y-target.y,source.x-target.x),serial=(target.manjiCounterSerial||0)+1;target.manjiCounterSerial=serial;
+   target.invuln=Math.max(target.invuln,.72);target.stun=0;target.block=false;target.vx=0;target.vy=0;target.rooted=Math.max(target.rooted||0,.42);
+   source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;source.stun=Math.max(source.stun,.42);source.rooted=Math.max(source.rooted||0,.42);source.vx=0;source.vy=0;
+   setMotion(target,'yujiManjiBlock',.2,a,source);burst(target.x,target.y,'#f3bb67',18,4.2);burst(source.x,source.y,'#ffd58b',7,3);
+   schedule(()=>{
+    if(target.dead||source.dead||target.manjiCounterSerial!==serial)return;
+    const strikeAngle=Math.atan2(source.y-target.y,source.x-target.x);
+    target.face=strikeAngle;target.rooted=Math.max(target.rooted||0,.22);
+    source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;source.stun=Math.max(source.stun,.22);source.rooted=Math.max(source.rooted||0,.22);source.vx=0;source.vy=0;
+    setMotion(target,'yujiManjiCounter',.3,strikeAngle,source);
+    schedule(()=>{
+     if(target.dead||source.dead||target.manjiCounterSerial!==serial)return;
+     const hitAngle=Math.atan2(source.y-target.y,source.x-target.x);
+     source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;
+     damage(source,8.5,target,{stun:.68,kx:Math.cos(hitAngle)*10,ky:Math.sin(hitAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
+     burst(target.x,target.y,'#f3bb67',24,5.8);burst(source.x,source.y,'#ffd58b',18,4.8);
+     game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
+     showToast('MANJI BLOCK · COUNTER',650);
+    },110);
+   },170);
+   return;
   }
   if(kind==='door'&&(opts.damageType||'melee')==='bullet'){burst(target.x,target.y,'#d9a4ff',14,4);showToast('DOORS SHATTERED',550);return}
   if(kind==='door'&&(opts.damageType||'melee')==='melee'){
@@ -1992,7 +2011,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     else if(targetInAim(f,t,225,.88,angle)&&beginGrab(f,t,'yujiDrag',3,angle,'#e3344e',4.3)){showToast('CURSED STRIKES · DRAG COMBO',700);popText(f.x,f.y-55,'KEEP AIMING · 3 SECONDS','#ff8b9d',12)}
     else{f.vx+=Math.cos(angle)*3;burst(f.x,f.y,'#ffb16d',12,4);popText(f.x,f.y-50,'CURSED STRIKES · WHIFF','#ffc078',11)}
    }if(idx===1){f.skillCd[idx]=15;f.invuln=.3;f.attackAnim=.68;f.jump=0;f.jumpV=0;setMotion(f,'yujiCrush',.68,angle,t);f.yujiCrushDash={angle,speed:18,duration:.23,elapsed:0,sparkTimer:0,hitTargets:new Set()};burst(f.x,f.y-23,'#46d8ff',18,5);burst(f.x,f.y-23,'#d9faff',7,3.5);showToast('CRUSHING BLOW',550);return}if(idx===2){f.skillCd[idx]=18;f.blackFlashWindow=0;f.blackFlashChain=0;f.attackAnim=.50;f.invuln=.08;setMotion(f,'yujiDivergent',.50,angle,t);const attack={resolved:false,angle,hitTarget:null};f.yujiDivergentAttack=attack;showToast('DIVERGENT FIST',500);schedule(()=>{if(f.dead||f.stun>.2||attack.resolved||f.yujiDivergentAttack!==attack)return;const hit=targetInAim(f,t,150,.9,angle);attack.hitTarget=hit?t:null;const endX=hit?t.x:f.x+Math.cos(angle)*88,endY=hit?t.y-23:f.y-23+Math.sin(angle)*88;f.cursedWhiteFlash=.12;f.blackFlashWindow=.22;f.yujiEnergyStrike={x1:f.x+Math.cos(angle)*22,y1:f.y-23+Math.sin(angle)*22,x2:endX,y2:endY,life:.24,max:.24};burst(endX,endY,'#48d5ff',hit?20:12,5);burst(endX,endY,'#d9faff',hit?9:5,3.5);showToast('PRESS 3 NOW FOR BLACK FLASH',450)},240);schedule(()=>{if(attack.resolved){if(f.yujiDivergentAttack===attack)f.yujiDivergentAttack=null;return}attack.resolved=true;if(f.yujiDivergentAttack===attack)f.yujiDivergentAttack=null;f.blackFlashWindow=0;const hit=attack.hitTarget&&!attack.hitTarget.dead&&dist(f,attack.hitTarget)<190?attack.hitTarget:null;if(hit)damage(hit,7.5,f,{stun:.28,kx:Math.cos(angle)*3.5,ky:Math.sin(angle)*3.5,color:'#48cfff',ignoreInvuln:true});},490);return}
-   if(idx===3){f.counterWindow=.6;f.counterKind='manji';f.skillCd[idx]=20;f.block=false;setMotion(f,'yujiManjiBlock',1.3,angle,t);burst(f.x,f.y,'#f3bb67',12,3);popText(f.x,f.y-55,'MANJI BLOCK','#f3bb67',12)}
+   if(idx===3){f.counterWindow=.6;f.counterKind='manji';f.skillCd[idx]=20;f.block=false;setMotion(f,'yujiManjiBlock',.55,angle,t);burst(f.x,f.y,'#f3bb67',14,3.6);popText(f.x,f.y-55,'MANJI BLOCK','#f3bb67',12)}
   }else{
    if(idx===0){
     f.skillCd[idx]=18;f.attackAnim=.42;f.invuln=Math.max(f.invuln,.12);
