@@ -1437,7 +1437,6 @@ function updateVesselAwakenSequence(f,dt){
   f.face=a;setPose('sukunaHeadCarryWindup',seq.dashDuration,a);
   f.x+=dx*28*60*dt;f.y+=dy*28*60*dt;collideWorld(f);
   const sx=f.x-oldX,sy=f.y-oldY,lenSq=sx*sx+sy*sy||1;
-  trailStrokes.push({x1:oldX-dx*20,y1:oldY-dy*20-23,x2:f.x,y2:f.y-23,life:.24,max:.24,color:'#ff405f',width:18});
   seq.sparkTimer=(seq.sparkTimer??0)-dt;if(seq.sparkTimer<=0){seq.sparkTimer=.035;burst(f.x-dx*18,f.y-dy*18-23,'#ff526b',4,4.5);burst(f.x-dx*18,f.y-dy*18-23,'#fff0f2',2,3)}
   const along=clamp(((t.x-oldX)*sx+(t.y-oldY)*sy)/lenSq,0,1);
   const nearX=oldX+sx*along,nearY=oldY+sy*along;
@@ -1469,10 +1468,6 @@ function updateVesselAwakenSequence(f,dt){
   f.jump=.06+Math.abs(Math.sin(game.time*23))*.07;
   t.x=f.x-dx*72+px*9;t.y=f.y-dy*72+py*9;t.jump=0;
   if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
-  if(Math.hypot(f.x-oldX,f.y-oldY)>1){
-   trailStrokes.push({x1:oldX,y1:oldY-23,x2:f.x,y2:f.y-23,life:.27,max:.27,color:'#fa536a',width:15});
-   if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
-  }
   seq.sparkTimer-=dt;if(seq.sparkTimer<=0){seq.sparkTimer=.055;burst(f.x-dx*36,f.y-dy*36-23,'#ff536b',4,3.8);burst(f.x-dx*36,f.y-dy*36-23,'#fff0f2',2,2.8)}
   if(seq.elapsed>=seq.carryDuration){
    seq.phase='throw';seq.elapsed=0;seq.throwAngle=a;
@@ -2900,15 +2895,8 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
   const pulse=.58+.42*Math.sin(game.time*32),run=m==='sukunaHeadCarryRun';
   ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ff526b';ctx.shadowColor='#ed263f';ctx.shadowBlur=run?19:25;ctx.lineWidth=run?5:6;
-  if(m==='sukunaHeadCarryWindup'){
-   const charge=1-p;ctx.globalAlpha=vfxFade*(.5+.35*charge);
-   ctx.beginPath();ctx.arc(-30,-3,25+17*charge,-1.35,1.1);ctx.stroke();
-   ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.2;ctx.globalAlpha=vfxFade*.8;
-   for(let i=0;i<5;i++){const a=-1.2+i*.48+p*3;ctx.beginPath();ctx.moveTo(-30+Math.cos(a)*17,-3+Math.sin(a)*17);ctx.lineTo(-30+Math.cos(a)*38,-3+Math.sin(a)*38);ctx.stroke()}
-  }else if(run){
-   for(let i=0;i<7;i++){const y=-42+i*14;ctx.globalAlpha=vfxFade*(.28+.2*pulse);ctx.beginPath();ctx.moveTo(-96,y);ctx.bezierCurveTo(-67,y-10*Math.sin(game.time*22+i),-41,y+7*Math.sin(game.time*18+i),-12,y);ctx.stroke()}
-   ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.3;ctx.globalAlpha=vfxFade*.42;
-   for(let i=0;i<4;i++){const y=-31+i*20;ctx.beginPath();ctx.moveTo(-73,y);ctx.lineTo(-25,y-5);ctx.stroke()}
+  if(m==='sukunaHeadCarryWindup'||run){
+   // Keep the dash and head-carry animation clean: no curse-like speed streaks.
   }else if(m==='sukunaHeadCarryThrow'){
    const snap=Math.sin(p*Math.PI);ctx.globalAlpha=vfxFade*(.5+.45*pulse);ctx.beginPath();ctx.arc(25,0,34+28*p,-1.55+p*.5,1.45+p*.55);ctx.stroke();
    ctx.strokeStyle='#fff0f2';ctx.lineWidth=3;ctx.globalAlpha=vfxFade*(.4+.45*snap);ctx.beginPath();ctx.arc(25,0,27+23*p,-1.42+p*.5,1.3+p*.55);ctx.stroke();
