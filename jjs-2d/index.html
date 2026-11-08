@@ -3969,7 +3969,7 @@ function drawDomainArenaContent(f){
  if(cache.width!==W||cache.height!==H||cache.scale!==scale||cache.type!==type){
   cache.width=W;cache.height=H;cache.scale=scale;cache.type=type;cache.canvas.width=pixelWidth;cache.canvas.height=pixelHeight;cache.last=-Infinity;
  }
- const interval=isMobileDevice?1/24:1/30;
+ const interval=1/60;
  if(game.time-cache.last>=interval||cache.last===-Infinity){
   const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,W,H);ctx=frameCtx;
   try{renderDomainArenaFrame(f)}finally{ctx=screenCtx}cache.last=game.time;
