@@ -2484,6 +2484,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m==='sukunaFlurryWindup'||m==='sukunaFlurry'||m==='sukunaFlurryMiss'||m==='sukunaFlurryEnd'||m==='captured_sukunaFlurry'){
   ctx.save();const a=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;ctx.rotate(a);
   if(m==='captured_sukunaFlurry'){
+   const fade=clamp(1-p,0,1); // Fade the flurry as the capture animation finishes.
    // Use the exact awakened M1 crescent silhouette: solid black interior and fine white rim.
    // Each cut keeps its own scale, placement and angle so the flurry feels irregular but consistent.
    const cuts=[
