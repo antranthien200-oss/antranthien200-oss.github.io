@@ -2485,19 +2485,19 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   ctx.save();const a=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;ctx.rotate(a);
   if(m==='captured_sukunaFlurry'){
    const cuts=[
-    [-25,-27,49,-.72,-12,4.3,0],[8,-22,62,.46,13,5.2,1],
-    [-5,-3,39,-.18,9,3.2,0],[25,10,53,-1.02,-8,4.1,1],
-    [-24,22,36,.78,-9,2.7,0],[5,28,48,.98,11,3.7,1],
-    [-35,-3,31,1.16,7,2.6,1],[30,-28,34,-.42,6,2.5,0]
+    [-25,-27,49,-.72,-12,3.2,0],[8,-22,62,.46,13,3.8,1],
+    [-5,-3,39,-.18,9,2.4,0],[25,10,53,-1.02,-8,3.1,1],
+    [-24,22,36,.78,-9,2.0,0],[5,28,48,.98,11,2.8,1],
+    [-35,-3,31,1.16,7,1.95,1],[30,-28,34,-.42,6,1.9,0]
    ];
    const fade=.7+.3*Math.sin(Math.PI*p);
    for(let i=0;i<cuts.length;i++){
     const [x,y,len,rot,curve,width,shape]=cuts[i],pulse=.58+.42*Math.sin(p*18+i*1.7);
     ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.globalAlpha=fade*pulse*vfxFade;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.strokeStyle='#74142d';ctx.lineWidth=width+3.2;ctx.shadowColor='#ff405f';ctx.shadowBlur=7;ctx.beginPath();
+    ctx.strokeStyle='#74142d';ctx.lineWidth=width+1.4;ctx.shadowColor='#ff405f';ctx.shadowBlur=7;ctx.beginPath();
     if(shape===0){ctx.moveTo(-len*.5,curve*.15);ctx.bezierCurveTo(-len*.22,curve*1.6,len*.15,-curve*1.15,len*.5,-curve*.1)}
     else{ctx.moveTo(-len*.5,-curve*.3);ctx.lineTo(-len*.12,curve*1.2);ctx.lineTo(len*.12,-curve*.85);ctx.lineTo(len*.5,curve*.25)}
-    ctx.stroke();ctx.strokeStyle='#fff0f2';ctx.lineWidth=Math.max(.9,width*.34);ctx.shadowColor='#fff0f2';ctx.shadowBlur=3;ctx.stroke();ctx.restore();
+    ctx.stroke();ctx.strokeStyle='#fff0f2';ctx.lineWidth=Math.max(.7,width*.27);ctx.shadowColor='#fff0f2';ctx.shadowBlur=3;ctx.stroke();ctx.restore();
    }
    ctx.globalAlpha=.55*fade*vfxFade;ctx.fillStyle='#ff7890';ctx.shadowColor='#ff4968';ctx.shadowBlur=5;
    for(let i=0;i<6;i++){const x=Math.cos(i*2.4+p*8)*(17+(i%3)*9),y=Math.sin(i*2.4+p*8)*(13+(i%2)*10);ctx.beginPath();ctx.arc(x,y,1.4+(i%2)*.6,0,Math.PI*2);ctx.fill()}
