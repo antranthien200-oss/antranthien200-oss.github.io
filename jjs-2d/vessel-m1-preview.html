@@ -3540,8 +3540,9 @@ function drawDomainHandsignCutin(f,p,accent){
  const enter=clamp(t/.14,0,1),enterEase=1-Math.pow(1-enter,3);
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
- const panelW=compact?W*.66:wide?W*.64:W*.76;
- const panelH=compact?H*.46:wide?H*.50:H*.39;
+ // Stretch the banner beyond the screen edges so its short end caps are not visible.
+ const panelW=compact?W*1.00:wide?W*1.08:W*1.00;
+ const panelH=compact?H*.34:wide?H*.16:H*.25;
  const panelScaleX=Math.max(.004,(.78+.22*enterEase)*(1-fold));
  const panelScaleY=.92+.08*enterEase;
  ctx.save();
