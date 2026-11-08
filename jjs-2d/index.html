@@ -790,7 +790,7 @@ const CHARS={
   special:'LIMITLESS',specialDesc:'Targeted space-warp reposition; can kick an airborne target.',awakeSpecial:'LIMITLESS',awakeSpecialDesc:'Same teleport special; during the awakening input, G+R triggers the 0.2-second domain variant.',awakening:'SIX EYES',awakeName:'SIX EYES'},
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
   moves:[['CURSED STRIKES','A sliding flurry of punches ending in a kick'],['CRUSHING BLOW','Grab, slam twice, then launch; shockwave on miss'],['DIVERGENT FIST','A wind-up punch with a timed mid-swing input for Black Flash'],['MANJI BLOCK','Block an incoming hit, then punch the attacker back']],
-  awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Charge, grab, kick upward, then slam down'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
+  awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['HEAD CARRY','Dash, seize the opponent by the head, drag them, throw them, then leap and slam down'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
   special:'COMBAT INSTINCTS',specialDesc:'Feint-cancel a move windup; punch a nearby throwable to launch it.',awakeSpecial:'CLEAVE',awakeSpecialDesc:'A forward grab followed by repeated slashes; deals 40% of current HP (minimum 10).',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
  restless:{name:'RESTLESS GAMBLER',desc:'Kinji Hakari. Use shutter doors, steel balls, and heavy cursed-energy attacks. Awakening: Idle Death Gamble; hit Jackpot for the immortal rushdown form.',color:'#35cf78',hair:'#8cffb1',coat:'#155a36',accent:'#51e98d',skin:'#e0b49b',hp:100,
   moves:[['RESERVE BALLS','A fast steel-ball projectile; ricochets off walls'],['SHUTTER DOORS','Trap and briefly stun an enemy with doors'],['ROUGH ENERGY','A charged unblockable punch; aerial stomp variant'],['FEVER BREAKER','Kick the target, then dropkick them through shutter doors']],
@@ -1343,7 +1343,7 @@ function setMotion(f,name,duration=.5,angle=f.face,target=null){
 function setSkillMotion(f,idx,angle,target){
  let names,times;
  if(f.char==='honored'){names=f.awakened?['gojoBlueMax','gojoRedMax','gojoPurple','gojoVoid']:['gojoBlue','gojoRed','gojoRapid','gojoTwofold'];times=f.awakened?[1,1.55,1.4,1.5]:[1.95,.8,4,1.4]}
- else if(f.char==='vessel'){names=f.awakened?['sukunaFlurryWindup','sukunaOpen','sukunaRush','sukunaShrine']:['yujiCursedDrag','yujiCrush','yujiDivergent','yujiManjiCounter'];times=f.awakened?[.42,3.8,4,1.5]:[3,.85,.8,.68]}
+ else if(f.char==='vessel'){names=f.awakened?['sukunaFlurryWindup','sukunaOpen','sukunaHeadCarryWindup','sukunaShrine']:['yujiCursedDrag','yujiCrush','yujiDivergent','yujiManjiCounter'];times=f.awakened?[.42,3.8,.42,1.5]:[3,.85,.8,.68]}
  else if(f.char==='restless'){names=f.jackpot?['hakariVolley','hakariRushdown','hakariOverwhelming','hakariSurge']:['hakariBall','hakariDoors','hakariRough','hakariFever'];times=f.jackpot?[1.8,1.8,1.7,1.2]:[.45,.65,1.05,1.65]}
  else if(f.char==='ten'){names=f.awakened&&!f.tenBase?['megumiElephant','megumiSerpent','megumiSwarm','megumiMahoraga']:['megumiRabbit','megumiNue','megumiToad','megumiDog'];times=f.awakened&&!f.tenBase?[1.8,1.3,2,2.2]:[1.75,2.2,.85,1.4]}
  else if(f.char==='perfection'){names=f.awakened?['mahitoTransfigure','mahitoDisfigure','mahitoSpikes','mahitoDomain']:['mahitoStockpile','mahitoSoulFire','mahitoFocus','mahitoRepel'];times=f.awakened?[.9,1.5,1.2,2.2]:[.8,1.05,.5,1.1]}
@@ -1400,6 +1400,131 @@ function updateGrab(f,dt){
   setMotion(f,kind==='yujiDrag'?'yujiCursedDragEnd':kind==='todoThrow'?'todoSwiftThrow':kind==='mahitoTransfigure'?'mahitoTransfigureEnd':kind==='gojoFaceGrater'?'gojoFaceGraterEnd':kind==='sukunaCleave'?'sukunaCleaveEnd':kind==='sukunaFlurry'?'sukunaFlurryEnd':kind==='bloodEdge'?'chosoEdgeSlam':'megumiToadRelease',.42,finalAngle,t);
   burst(t.x,t.y,color,kind==='yujiDrag'?34:24,7);addDebris(t.x,t.y,color,kind==='yujiDrag'?12:8);game.shake=Math.max(game.shake,kind==='yujiDrag'?13:9);game.hitStop=Math.max(game.hitStop,.075);
   popText(t.x,t.y-60,kind==='yujiDrag'?'CURSED STRIKES':kind==='todoThrow'?'SWIFT KICK':kind==='mahitoTransfigure'?'IDLE TRANSFIGURATION':kind==='sukunaCleave'?'CLEAVE':kind==='gojoFaceGrater'?'FACE GRATER':kind==='bloodEdge'?'BLOOD EDGE':'TOAD PULL',color,15);
+ }
+}
+
+
+function updateVesselAwakenSequence(f,dt){
+ const seq=f&&f.vesselAwakenSequence;if(!seq)return;
+ const t=seq.target;
+ if(f.dead||!t||t.dead){
+  if(t&&t.capturedBy===f){t.capturedBy=null;t.stun=Math.min(t.stun||0,.2)}
+  if(t&&t.motion&&t.motion.name.startsWith('captured_sukunaHeadCarry'))t.motion=null;
+  f.vesselAwakenSequence=null;f.rooted=0;f.invuln=Math.min(f.invuln||0,.25);return;
+ }
+ f.stun=0;f.rooted=99;f.invuln=999;f.block=false;f.vx=0;f.vy=0;
+ const setPose=(name,duration,angle)=>{
+  if(!f.motion||f.motion.name!==name)setMotion(f,name,duration,angle,t);
+  f.motion.duration=duration;f.motion.t=seq.elapsed;f.motion.angle=angle;f.motion.target=t;
+ };
+ if(seq.phase==='dash'){
+  const a=seq.angle,dx=Math.cos(a),dy=Math.sin(a),oldX=f.x,oldY=f.y;
+  f.face=a;setPose('sukunaHeadCarryWindup',seq.dashDuration,a);
+  f.x+=dx*20*60*dt;f.y+=dy*20*60*dt;collideWorld(f);
+  const sx=f.x-oldX,sy=f.y-oldY,lenSq=sx*sx+sy*sy||1;
+  const along=clamp(((t.x-oldX)*sx+(t.y-oldY)*sy)/lenSq,0,1);
+  const nearX=oldX+sx*along,nearY=oldY+sy*along;
+  if(Math.hypot(t.x-nearX,t.y-nearY)<58&&!t.block&&!t.capturedBy){
+   seq.phase='carry';seq.elapsed=0;seq.carryDuration=1.12;seq.angle=a;
+   t.capturedBy=f;t.block=false;t.invuln=0;t.stun=99;t.vx=0;t.vy=0;t.jump=0;t.jumpV=0;
+   t.motion={name:'captured_sukunaHeadCarry',t:0,duration:seq.carryDuration,angle:a,target:f};
+   setMotion(f,'sukunaHeadCarryRun',seq.carryDuration,a,t);f.motion.t=0;
+   burst(t.x,t.y-23,'#ff526b',20,5);burst(t.x,t.y-23,'#ffe8ec',8,3.5);
+   game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
+   popText(t.x,t.y-58,'CAUGHT · NO ESCAPE','#ff8194',13);
+   return;
+  }
+  seq.elapsed+=dt;
+  if(seq.elapsed>=seq.dashDuration){
+   f.vesselAwakenSequence=null;f.rooted=0;f.invuln=.18;f.vx=dx*2.2;f.vy=dy*2.2;
+   setMotion(f,'sukunaHeadCarryMiss',.34,a,t);
+   burst(f.x+dx*46,f.y+dy*46-18,'#ff536b',10,3.2);
+   popText(f.x+dx*60,f.y+dy*60-48,'RUSH · MISS','#ff8194',12);
+  }
+  return;
+ }
+ t.capturedBy=f;t.block=false;t.invuln=0;t.stun=99;t.vx=0;t.vy=0;t.jumpV=0;
+ if(seq.phase==='carry'){
+  seq.elapsed+=dt;
+  const aim=aimedAt(f),a=f.team==='player'?Math.atan2(aim.y-f.y,aim.x-f.x):seq.angle,dx=Math.cos(a),dy=Math.sin(a),px=-dy,py=dx;
+  seq.angle=a;f.face=a;setPose('sukunaHeadCarryRun',seq.carryDuration,a);
+  const oldX=f.x,oldY=f.y;f.x+=dx*360*dt;f.y+=dy*360*dt;collideWorld(f);
+  f.jump=.06+Math.abs(Math.sin(game.time*23))*.07;
+  t.x=f.x-dx*72+px*9;t.y=f.y-dy*72+py*9;t.jump=0;
+  if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
+  if(Math.hypot(f.x-oldX,f.y-oldY)>1){
+   trailStrokes.push({x1:oldX,y1:oldY-23,x2:f.x,y2:f.y-23,life:.22,max:.22,color:'#fa536a',width:9});
+   if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
+  }
+  if(seq.elapsed>=seq.carryDuration){
+   seq.phase='throw';seq.elapsed=0;seq.throwAngle=a;
+   setMotion(f,'sukunaHeadCarryThrow',.25,a,t);f.motion.t=0;
+   showToast('THROW · SLAM',500);
+  }
+  return;
+ }
+ if(seq.phase==='throw'){
+  seq.elapsed+=dt;
+  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.25,0,1),ease=p*p*(3-2*p);
+  setPose('sukunaHeadCarryThrow',.25,a);
+  const behind=72-108*ease;
+  t.x=f.x-dx*behind;t.y=f.y-dy*behind;t.jump=.12+Math.sin(p*Math.PI)*3.1;
+  if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
+  if(p>=1){
+   seq.phase='leap';seq.elapsed=0;seq.throwStartX=f.x+dx*69;seq.throwStartY=f.y+dy*69;
+   seq.throwVx=15.5*dx;seq.throwVy=15.5*dy;
+   t.x=seq.throwStartX;t.y=seq.throwStartY;t.jump=1.8;
+   t.motion={name:'captured_sukunaHeadCarryThrown',t:0,duration:.42,angle:a,target:f};
+   setMotion(f,'sukunaHeadCarryLeap',.42,a,t);f.motion.t=0;f.jump=.5;f.jumpV=0;
+   burst(t.x,t.y-25,'#ff5b70',17,4.6);burst(f.x,f.y-24,'#fff0f2',12,4);
+  }
+  return;
+ }
+ if(seq.phase==='leap'){
+  seq.elapsed+=dt;
+  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.42,0,1);
+  setPose('sukunaHeadCarryLeap',.42,a);
+  t.x=seq.throwStartX+seq.throwVx*60*seq.elapsed;
+  t.y=seq.throwStartY+seq.throwVy*60*seq.elapsed;
+  t.jump=1.6+Math.sin(p*Math.PI)*2.1;
+  if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
+  f.x+=dx*19.2*60*dt;f.y+=dy*19.2*60*dt;collideWorld(f);
+  f.jump=.5+Math.sin(p*Math.PI)*5.4;
+  trailStrokes.push({x1:f.x-dx*34,y1:f.y-dy*34-23,x2:f.x,y2:f.y-23,life:.18,max:.18,color:'#ff536b',width:13});
+  if(seq.elapsed>=.42){
+   f.x=clamp(t.x-dx*38,48,WORLD.w-48);f.y=clamp(t.y-dy*38,48,WORLD.h-48);collideWorld(f);
+   t.x=f.x+dx*36;t.y=f.y+dy*36;t.jump=3.2;
+   seq.phase='slam';seq.elapsed=0;
+   setPose('sukunaHeadCarrySlam',.32,a);
+   burst(f.x,f.y-28,'#ff536b',24,6);game.shake=Math.max(game.shake,6);
+  }
+  return;
+ }
+ if(seq.phase==='slam'){
+  seq.elapsed+=dt;
+  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.32,0,1),ease=p*p*(3-2*p);
+  setPose('sukunaHeadCarrySlam',.32,a);
+  f.jump=5.4*(1-ease);
+  t.x=f.x+dx*36;t.y=f.y+dy*36;t.jump=3.2*(1-ease);
+  if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
+  if(seq.elapsed>=.32){
+   const impactX=t.x,impactY=t.y;
+   t.capturedBy=null;t.invuln=0;t.stun=0;t.jump=0;t.jumpV=0;
+   t.motion={name:'captured_sukunaHeadCarryImpact',t:0,duration:.42,angle:a,target:f};
+   damage(t,38,f,{stun:1.05,kx:dx*10,ky:dy*10-2,unblockable:true,big:true,ignoreInvuln:true,color:'#f34b63'});
+   for(const other of tenTargets(f)){
+    if(!other||other===t||other.dead||Math.hypot(other.x-impactX,other.y-impactY)>132)continue;
+    const odx=other.x-impactX,ody=other.y-impactY,ol=Math.hypot(odx,ody)||1;
+    damage(other,12,f,{stun:.58,kx:odx/ol*7,ky:ody/ol*7,unblockable:true,big:true,ignoreInvuln:true,color:'#ff687d'});
+   }
+   t.vx=dx*5.5;t.vy=dy*5.5;t.jump=.5;t.jumpV=1.8;
+   f.sukunaHeadCarrySlamFx={x:impactX,y:impactY,angle:a,expiresAt:game.time+.72};
+   burst(impactX,impactY,'#f23c58',54,9);burst(impactX,impactY,'#ffc1ca',25,6);burst(impactX,impactY,'#24202a',19,5);
+   addDebris(impactX,impactY,'#b94053',18);game.shake=Math.max(game.shake,16);game.hitStop=Math.max(game.hitStop,.105);
+   popText(impactX,impactY-72,'SHRINE SLAM','#ff8194',20);
+   f.vesselAwakenSequence=null;f.rooted=0;f.invuln=.24;f.jump=0;f.jumpV=0;f.vx=0;f.vy=0;
+   setMotion(f,'sukunaHeadCarryRecovery',.42,a,t);
+  }
  }
 }
 
@@ -1632,6 +1757,7 @@ function updateTrashManEffects(f,dt){
 }
 function useAttack(f,kind){
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||game.cutsceneTimer>0)return;
+ if(f.vesselAwakenSequence)return;
  if(f.sukunaFireCast>0)return;
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
  if(f.block)return;
@@ -1898,7 +2024,15 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
      },2520);
      return;
     }
-   if(idx===2){f.skillCd[idx]=16;f.attackAnim=.9;if(targetInAim(f,t,355,.55,angle)){f.invuln=.42;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;schedule(()=>{if(!t.dead&&dist(f,t)<170){damage(t,5,f,{stun:.35,kx:Math.cos(angle)*5,ky:Math.sin(angle)*5,color:'#ff536b',ignoreInvuln:true});burst(t.x,t.y,'#ff536b',12,4);schedule(()=>{if(!t.dead&&dist(f,t)<190){damage(t,15,f,{stun:.55,kx:Math.cos(angle)*9,ky:Math.sin(angle)*9,color:'#ff536b',ignoreInvuln:true});t.jump=Math.max(t.jump,.8);t.jumpV=Math.max(t.jumpV,3);schedule(()=>{if(!t.dead&&dist(f,t)<205)damage(t,5,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,big:true,color:'#ff536b',ignoreInvuln:true})},260)}},300)}},180)}else popText(f.x,f.y-55,'RUSH · MISS','#ff6478',12)}
+   if(idx===2){
+    f.skillCd[idx]=22;f.attackAnim=.42;f.invuln=.35;f.stun=0;f.rooted=99;f.vx=0;f.vy=0;
+    const dashDuration=.42;
+    f.vesselAwakenSequence={phase:'dash',elapsed:0,target:t,angle,dashDuration,serial:(f.vesselAwakenSerial||0)+1};
+    f.vesselAwakenSerial=f.vesselAwakenSequence.serial;
+    setMotion(f,'sukunaHeadCarryWindup',dashDuration,angle,t);
+    burst(f.x,f.y-23,'#ff536b',15,4);burst(f.x,f.y-23,'#fff0f2',6,3);
+    showToast('DISMANTLE · HEAD CARRY',750);return;
+   }
    if(idx===3){if(startDomain(f,'shrine',18,1.25,.165,590,1))f.skillCd[idx]=120}
   }return;
  }
@@ -1994,7 +2128,7 @@ if(f.char==='choso'){
  }
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
@@ -2237,7 +2371,7 @@ function updateTenEffects(f,dt){
   }
  } if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);updateHud();if(f.hp<=0){f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
-function updateFighter(f,dt){if(f.dead)return;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&h.grabTarget===f){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+function updateFighter(f,dt){if(f.dead)return;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}const crushDash=f.yujiCrushDash,crushDashActive=!!(crushDash&&f.stun<=.02&&f.rooted<=0);
   if(crushDash&&!crushDashActive)f.yujiCrushDash=null;
   if(crushDashActive){f.vx=Math.cos(crushDash.angle)*crushDash.speed;f.vy=Math.sin(crushDash.angle)*crushDash.speed;f.jump=0;f.jumpV=0}
@@ -2443,7 +2577,7 @@ function updateMobileCooldowns(){
 }
 function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;$('pHealth').style.width=(player.hp/player.maxHp*100)+'%';$('eHealth').style.width=(enemy.hp/enemy.maxHp*100)+'%';$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100);$('ultFill').style.width=awakeningPct+'%';$('ultFill').classList.toggle('draining',player.awakened);$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();}
 
-function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)$('awakeningCutscene').classList.remove('active');return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud()}
+function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)$('awakeningCutscene').classList.remove('active');return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud()}
 function sx(x){return x-camera.x+W/2}function sy(y){return y-camera.y+H/2}
 function rect(x,y,w,h,c,stroke){ctx.fillStyle=c;ctx.fillRect(sx(x),sy(y),w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sx(x),sy(y),w,h)}}
 function drawMap(){
@@ -2733,6 +2867,26 @@ function drawPixelSkillVfx(f,m,p,c){
 
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
+ if(m==='sukunaHeadCarryWindup'||m==='sukunaHeadCarryRun'||m==='sukunaHeadCarryThrow'||m==='sukunaHeadCarryLeap'||m==='sukunaHeadCarrySlam'||m==='sukunaHeadCarryRecovery'){
+  ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
+  const pulse=.55+.45*Math.sin(game.time*25),run=m==='sukunaHeadCarryRun';
+  ctx.globalAlpha=vfxFade*(run?.42:.72);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ff526b';ctx.shadowColor='#ed263f';ctx.shadowBlur=run?12:18;ctx.lineWidth=run?3:4;
+  if(m==='sukunaHeadCarryWindup'){
+   ctx.beginPath();ctx.arc(-25,-3,20+12*p,-1.25,.95);ctx.stroke();
+   for(let i=0;i<4;i++){const a=-1+i*.52+p*2;ctx.beginPath();ctx.moveTo(-25+Math.cos(a)*15,-3+Math.sin(a)*15);ctx.lineTo(-25+Math.cos(a)*27,-3+Math.sin(a)*27);ctx.stroke()}
+  }else if(run){
+   for(let i=0;i<5;i++){const y=-33+i*16;ctx.globalAlpha=vfxFade*(.2+.18*pulse);ctx.beginPath();ctx.moveTo(-74,y);ctx.quadraticCurveTo(-48,y-7*Math.sin(game.time*17+i),-20,y);ctx.stroke()}
+  }else if(m==='sukunaHeadCarryThrow'){
+   ctx.globalAlpha=vfxFade*(.35+.45*pulse);ctx.beginPath();ctx.arc(22,0,28+18*p,-1.45+p*.4,1.35+p*.5);ctx.stroke();
+  }else if(m==='sukunaHeadCarryLeap'){
+   for(let i=0;i<5;i++){const x=-28+i*13;ctx.globalAlpha=vfxFade*.58;ctx.beginPath();ctx.moveTo(x,25);ctx.quadraticCurveTo(x-8,-8,x+Math.sin(game.time*12+i)*5,-43);ctx.stroke()}
+  }else if(m==='sukunaHeadCarrySlam'){
+   ctx.globalAlpha=vfxFade*(.45+.4*pulse);ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-9,-42);ctx.lineTo(24,5);ctx.lineTo(53,23);ctx.moveTo(40,-38);ctx.lineTo(14,4);ctx.stroke();
+  }else{
+   ctx.globalAlpha=vfxFade*.5;ctx.beginPath();ctx.arc(23,0,22+p*12,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.restore();return;
+ }
  if(m==='sukunaFireArrowCast'){
   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
   const clapA=Math.exp(-Math.pow((p-.18)/.035,2)),clapB=Math.exp(-Math.pow((p-.405)/.035,2));
@@ -3207,7 +3361,19 @@ function drawHeadHands(f){
    }else if(name==='gojoLimitless'){
     handA=P(38+20*pulse,13,-4);handB=P(10,-20,5);handAScale=1.18;
    }else if(name.startsWith('yuji')||name.startsWith('sukuna')){
-    if(name==='sukunaFlurryWindup'){
+    if(name==='sukunaHeadCarryWindup'){
+     const load=smoothstep01(progress/.72);handB=P(-24-25*load,-16,-7);handA=P(14,18,-8);handBScale=1.34;handAScale=.9;handBAngle=angle+Math.PI*.72;
+    }else if(name==='sukunaHeadCarryRun'){
+     const stride=Math.sin(game.time*23);handB=P(-49,8,-7+stride*3);handA=P(18+8*stride,-19,-5);handBScale=1.38;handAScale=.92;handBAngle=angle+Math.PI*.78;
+    }else if(name==='sukunaHeadCarryThrow'){
+     const swing=smoothstep01(progress);handB=P(lerp(-49,reach+48,swing),lerp(8,-14,swing),-8-Math.sin(progress*Math.PI)*16);handA=P(9,-19,7);handBScale=1.38;handAScale=.94;handBAngle=angle-.22;
+    }else if(name==='sukunaHeadCarryLeap'){
+     const rise=Math.sin(progress*Math.PI);handB=P(-20-rise*13,19,-15-rise*13);handA=P(-12-rise*15,-19,-12-rise*15);handAScale=1.18;handBScale=1.18;
+    }else if(name==='sukunaHeadCarrySlam'){
+     const drop=smoothstep01(progress);handB=P(lerp(-16,reach+56,drop),-15,lerp(-38,18,drop));handA=P(lerp(-12,reach+28,drop),17,lerp(-32,15,drop));handAScale=1.24;handBScale=1.32;
+    }else if(name==='sukunaHeadCarryRecovery'){
+     handA=P(22,17,-8);handB=P(22,-17,-8);handAScale=1.08;handBScale=1.08;
+    }else if(name==='sukunaFlurryWindup'){
       const pull=clamp(progress/.35,0,1),thrust=smoothstep01(clamp((progress-.35)/.34,0,1)),recover=smoothstep01(clamp((progress-.78)/.22,0,1));
       const forward=progress<.35?lerp(13,-38,pull):progress<.78?lerp(-38,reach+58,thrust):lerp(reach+58,reach+12,recover);
       handB=P(forward,-18,-4-(progress<.35?10*pull:3));handA=P(7,19,5);
@@ -4120,6 +4286,30 @@ function drawYujiCrushEffects(){
 }
 
 
+
+function drawSukunaHeadCarryEffects(){
+ for(const f of [player,enemy]){
+  if(!f)continue;
+  const seq=f.vesselAwakenSequence;
+  if(seq&&seq.phase==='carry'&&seq.target&&!seq.target.dead){
+   const a=seq.angle||f.face,dx=Math.cos(a),dy=Math.sin(a),px=-dy,py=dx,t=seq.target;
+   const hx=sx(f.x-dx*48+px*7),hy=sy(f.y-dy*48+py*7)-23;
+   const tx=sx(t.x),ty=sy(t.y)-23;
+   ctx.save();ctx.lineCap='round';ctx.strokeStyle='#40101c';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(tx,ty);ctx.stroke();
+   ctx.strokeStyle='#ff6077';ctx.lineWidth=4;ctx.shadowColor='#ff405e';ctx.shadowBlur=9;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(tx,ty);ctx.stroke();
+   ctx.fillStyle='#ffe8eb';ctx.beginPath();ctx.arc(hx,hy,5.2,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+  const fx=f.sukunaHeadCarrySlamFx;if(!fx)continue;
+  const left=fx.expiresAt-game.time;if(left<=0){f.sukunaHeadCarrySlamFx=null;continue}
+  const p=clamp(1-left/.72,0,1),fade=clamp(left/.72,0,1),radius=20+p*148,x=sx(fx.x),y=sy(fx.y);
+  ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade*.75;ctx.fillStyle='rgba(244,55,83,.18)';ctx.beginPath();ctx.ellipse(0,5,radius*.82,radius*.34,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=fade;ctx.shadowColor='#ff405e';ctx.shadowBlur=18;ctx.strokeStyle='#ff6077';ctx.lineWidth=5*(1-p)+1;ctx.beginPath();ctx.ellipse(0,4,radius,radius*.36,0,0,Math.PI*2);ctx.stroke();
+  ctx.shadowBlur=0;ctx.strokeStyle='#ffe8ed';ctx.lineWidth=2.4*(1-p)+.5;ctx.beginPath();ctx.ellipse(0,4,radius*.68,radius*.23,0,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#f24762';ctx.lineWidth=3;for(let i=0;i<10;i++){const a=i*Math.PI/5,inner=14+p*8,outer=radius*(.72+.12*(i%2));ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner*.36);ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer*.36);ctx.stroke()}
+  ctx.restore();
+ }
+}
+
 function drawYujiSkillImpactEffects(){
  for(const f of [player,enemy]){
   if(!f)continue;
@@ -4162,7 +4352,7 @@ function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
- drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawTrashManEffects();drawTrashManDomainCan();
+ drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  // Handsign cut-ins are the top gameplay layer: the fighter and HUD cannot obscure the pose.
  if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
