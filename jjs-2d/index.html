@@ -1197,6 +1197,23 @@ function activateDomain(f){
  const opponent=f===player?enemy:player;if(opponent&&opponent.domainTimer>0&&canDomainClash(f,opponent))beginDomainClash(f,opponent);
  showToast(domainName(f.domainType)+' · OPEN',1200);
 }
+
+function spawnShrineDomainSlashes(x,y,faceAngle){
+ // Each Shrine tick leaves a small fan of M1-shaped curved cuts.
+ // The cuts alternate between the standard black/white and inverted white/black palettes.
+ const count=isMobileDevice?2:3,sideAngle=faceAngle+Math.PI/2;
+ for(let i=0;i<count;i++){
+  const offset=i-(count-1)*.5,angle=faceAngle+offset*.48+rnd(-.12,.12);
+  particles.push({
+   x:x+Math.cos(sideAngle)*offset*9+rnd(-3,3),
+   y:y-23+Math.sin(sideAngle)*offset*9+rnd(-5,5),
+   vx:Math.cos(angle)*rnd(1.1,2.1),vy:Math.sin(angle)*rnd(1.1,2.1),
+   life:.24,max:.24,size:i===1?112:96+((i+1)%2)*12,
+   thickness:i===1?6.8:5.1,shape:'domainSlash',rot:angle,reverse:i%2===1
+  });
+ }
+}
+
 function updateDomainState(f,dt){
  f.domainFlashTimer=Math.max(0,(f.domainFlashTimer||0)-dt);
  if(game.domainClash&&game.domainClash.members.includes(f))return;
@@ -1211,7 +1228,7 @@ function updateDomainState(f,dt){
   if(!chimeraSuppress){
   if(f.domainType==='shrine'){
    f.domainTick-=dt;
-   if(f.domainTick<=0){f.domainTick=.165;if(inside){const a=Math.atan2(t.y-f.y,t.x-f.x);damage(t,2,f,{stun:.04,color:'#f34a60',damageType:'domain',blockedDamage:.5,ignoreInvuln:true});trailStrokes.push({x1:t.x+Math.cos(a+1.15)*42,y1:t.y+Math.sin(a+1.15)*42,x2:t.x-Math.cos(a+1.15)*42,y2:t.y-Math.sin(a+1.15)*42,life:.13,max:.13,color:'#ff5267',width:5});burst(t.x+rnd(-28,28),t.y+rnd(-28,28),'#fb5267',2,3)}}
+   if(f.domainTick<=0){f.domainTick=.165;if(inside){const a=Math.atan2(t.y-f.y,t.x-f.x);damage(t,2,f,{stun:.04,color:'#f34a60',damageType:'domain',blockedDamage:.5,ignoreInvuln:true});spawnShrineDomainSlashes(t.x,t.y,a);burst(t.x+rnd(-28,28),t.y+rnd(-28,28),'#fb5267',2,3)}}
   }else if(f.domainType==='void'){
    f.domainTick-=dt;
    if(f.domainTick<=0){f.domainTick=.35;if(inside){t.stun=Math.max(t.stun,.42);t.invuln=0;burst(t.x+rnd(-18,18),t.y+rnd(-18,18),'#b9caff',2,2)}}
@@ -4487,6 +4504,21 @@ function drawEffects(){
    ctx.save();ctx.translate(px,py);ctx.rotate(p.rot||0);const size=p.size;
    ctx.beginPath();ctx.moveTo(0,-size*.76);ctx.quadraticCurveTo(size*.72,-size*.13,size*.3,size*.38);ctx.quadraticCurveTo(0,size*.66,-size*.3,size*.38);ctx.quadraticCurveTo(-size*.72,-size*.13,0,-size*.76);ctx.closePath();ctx.fill();
    ctx.fillStyle='#ffd26b';ctx.beginPath();ctx.moveTo(0,-size*.43);ctx.quadraticCurveTo(size*.28,-size*.02,0,size*.34);ctx.quadraticCurveTo(-size*.28,-size*.02,0,-size*.43);ctx.fill();
+   ctx.restore();
+  }else if(p.shape==='domainSlash'){
+   const life=clamp(p.life/p.max,0,1),progress=1-life,length=p.size||100,thickness=p.thickness||5;
+   ctx.save();ctx.translate(px,py);ctx.rotate((p.rot||0)+Math.PI/2);ctx.scale(.88+progress*.12,.88+progress*.12);
+   ctx.globalAlpha=life*.96;ctx.lineJoin='round';ctx.lineCap='round';
+   ctx.beginPath();ctx.moveTo(-length*.5,0);
+   ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
+   ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
+   ctx.closePath();
+   ctx.fillStyle=p.reverse?'#ffffff':'#030405';ctx.strokeStyle=p.reverse?'#030405':'#ffffff';
+   ctx.lineWidth=p.reverse?2.2:2.4;ctx.shadowColor=p.reverse?'rgba(0,0,0,.58)':'rgba(255,255,255,.82)';ctx.shadowBlur=p.reverse?1.5:3.8;
+   ctx.fill();ctx.stroke();
+   // A restrained inner edge glint keeps the slash crisp as it fades.
+   ctx.globalAlpha=life*.55;ctx.strokeStyle=p.reverse?'rgba(0,0,0,.6)':'rgba(255,255,255,.7)';ctx.lineWidth=1;
+   ctx.beginPath();ctx.moveTo(-length*.16,-thickness*1.55);ctx.quadraticCurveTo(0,-thickness*2.1,length*.16,-thickness*1.55);ctx.stroke();
    ctx.restore();
   }else if(p.shape==='square')ctx.fillRect(px,py,p.size,p.size);
   else{ctx.beginPath();ctx.arc(px,py,p.size/2,0,Math.PI*2);ctx.fill()}
