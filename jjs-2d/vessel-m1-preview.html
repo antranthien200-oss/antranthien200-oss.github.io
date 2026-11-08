@@ -941,13 +941,13 @@ $('mobileControlsToggle').onclick=()=>{mobileControlsEnabled=!mobileControlsEnab
 const mobileJoystick=$('mobileJoystick'),mobileJoyKnob=$('mobileJoyKnob');
 let mobileJoyPointer=null;
 // Last non-neutral joystick direction controls facing and attack aim in mobile mode.
-const mobileFacing={x:1,y:0};
+const mobileFacing={x:1,y:0},mobileMove={x:0,y:0};
 function updateMobileAimPointer(){
  const range=Math.max(120,Math.min(W,H)*.65);
  mouse.x=W/2+mobileFacing.x*range;
  mouse.y=H/2+mobileFacing.y*range;
 }
-function clearMobileJoyKeys(){['w','a','s','d'].forEach(k=>keys.delete(k));if(mobileJoyKnob)mobileJoyKnob.style.transform='translate(-50%,-50%)'}
+function clearMobileJoyKeys(){['w','a','s','d'].forEach(k=>keys.delete(k));mobileMove.x=0;mobileMove.y=0;if(mobileJoyKnob)mobileJoyKnob.style.transform='translate(-50%,-50%)'}
 function moveMobileJoystick(e){
  const rect=mobileJoystick.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,delta=screenDeltaToGame(e.clientX-cx,e.clientY-cy);
  let dx=delta.x,dy=delta.y,max=rect.width*.31,len=Math.hypot(dx,dy)||0;
@@ -959,8 +959,9 @@ function moveMobileJoystick(e){
   const directionLength=Math.hypot(dx,dy)||1;
   mobileFacing.x=dx/directionLength;
   mobileFacing.y=dy/directionLength;
+  mobileMove.x=dx/max;mobileMove.y=dy/max;
   updateMobileAimPointer();
- }
+ }else{mobileMove.x=0;mobileMove.y=0}
  if(Math.abs(dx)>threshold)keys.add(dx<0?'a':'d');
  if(Math.abs(dy)>threshold)keys.add(dy<0?'w':'s');
 }
@@ -1987,8 +1988,8 @@ if(f.char==='choso'){
  }
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(keys.has('w')||keys.has('arrowup'))y--;if(keys.has('s')||keys.has('arrowdown'))y++;if(keys.has('a')||keys.has('arrowleft'))x--;if(keys.has('d')||keys.has('arrowright'))x++;let l=Math.hypot(x,y)||1;x/=l;y/=l;
- if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){player.vx+=x*.8*dt*60;player.vy+=y*.8*dt*60;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(keys.has('w')||keys.has('arrowup'))y--;if(keys.has('s')||keys.has('arrowdown'))y++;if(keys.has('a')||keys.has('arrowleft'))x--;if(keys.has('d')||keys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x=mobileMove.x;y=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+ if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
   else if(!wantsBlock&&player.block){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
