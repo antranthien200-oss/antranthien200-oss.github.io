@@ -3843,9 +3843,13 @@ function drawDomainHandsignCutin(f,p,accent){
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
- const panelW=compact?W*4.00:wide?W*4.32:W*4.00;
  const panelH=compact?H*.68:wide?H*.32:H*.50;
- // Keep the banner's long axis full length; pop it open and closed across its thickness.
+ const nominalPanelW=compact?W*4.00:wide?W*4.32:W*4.00;
+ const cutinAngle=-6.7*Math.PI/180;
+ // Fit the rotated banner's visible height to the viewport, while keeping it wider than the screen.
+ const verticalRoom=H*.92;
+ const maxPanelW=(verticalRoom-panelH*Math.cos(cutinAngle))/Math.max(.01,Math.abs(Math.sin(cutinAngle)));
+ const panelW=Math.max(W*1.05,Math.min(nominalPanelW,maxPanelW));
  const panelScaleX=1;
  const panelScaleY=Math.max(.004,(.08+.92*enterEase)*(1-fold));
  ctx.save();
@@ -3853,7 +3857,7 @@ function drawDomainHandsignCutin(f,p,accent){
  ctx.globalAlpha=.5*(1-.9*fold);ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
  ctx.save();
  ctx.translate(cx,cy);
- ctx.rotate(-6.7*Math.PI/180);
+ ctx.rotate(cutinAngle);
  ctx.scale(panelScaleX,panelScaleY);
  const left=-panelW/2,top=-panelH/2;
  const bg=ctx.createLinearGradient(left,top,left+panelW,top+panelH);
@@ -3907,6 +3911,12 @@ function drawDomainHandsignCutin(f,p,accent){
 }
 const domainClashFrameCache={canvas:document.createElement('canvas'),last:-Infinity,width:0,height:0,scale:0,clash:null};
 function drawDomainClashArena(){
+ const viewScale=cameraViewScale();
+ if(viewScale===1){drawDomainClashArenaContent();return}
+ ctx.save();ctx.translate(W/2,H/2);ctx.scale(viewScale,viewScale);ctx.translate(-W/2,-H/2);
+ try{drawDomainClashArenaContent()}finally{ctx.restore()}
+}
+function drawDomainClashArenaContent(){
  const q=game.domainClash;if(!q)return;
  const a=q.members[0],b=q.members[1],cx=sx((a.x+b.x)*.5),cy=sy((a.y+b.y)*.5),r=860;
  if(cx+r<0||cy+r<0||cx-r>W||cy-r>H)return;
@@ -3967,6 +3977,12 @@ function drawVoid02Bubble(f){
  ctx.save();const g=ctx.createRadialGradient(cx,cy,8,cx,cy,r);g.addColorStop(0,'rgba(224,232,255,'+(0.34*p)+')');g.addColorStop(.55,'rgba(25,33,62,'+(0.5*p)+')');g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.9*p;ctx.strokeStyle='#f1f4ff';ctx.lineWidth=6;ctx.shadowBlur=22;ctx.shadowColor='#dce7ff';ctx.beginPath();ctx.arc(cx,cy,r*(.72+.28*(1-p)),0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.55*p;ctx.strokeStyle='#8299e8';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,r*.82,game.time*3,game.time*3+Math.PI*1.35);ctx.stroke();ctx.restore();
 }
 function drawDomainArena(f){
+ const viewScale=cameraViewScale();
+ if(viewScale===1){drawDomainArenaContent(f);return}
+ ctx.save();ctx.translate(W/2,H/2);ctx.scale(viewScale,viewScale);ctx.translate(-W/2,-H/2);
+ try{drawDomainArenaContent(f)}finally{ctx.restore()}
+}
+function drawDomainArenaContent(f){
  if(!f)return;
  const type=f.domainType;
  if(f.domainWindup>0){renderDomainArenaFrame(f);return}
@@ -4417,9 +4433,9 @@ function draw(){
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
- // Handsign cut-ins are the top gameplay layer: the fighter and HUD cannot obscure the pose.
- if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  ctx.restore();
+ // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
+ if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  if(!game.started){camera.x=1100;camera.y=750;drawMenuBackdrop()}else if(!mobileControlsEnabled){ctx.save();ctx.translate(mouse.x,mouse.y);ctx.strokeStyle='#eaf7ffcc';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.moveTo(-14,0);ctx.lineTo(-5,0);ctx.moveTo(5,0);ctx.lineTo(14,0);ctx.moveTo(0,-14);ctx.lineTo(0,-5);ctx.moveTo(0,5);ctx.lineTo(0,14);ctx.stroke();ctx.restore()}else if(mobileControlsEnabled){drawMobileEnemyPointer()}
 }
 function drawMenuBackdrop(){ctx.save();ctx.fillStyle='#0a111b66';ctx.fillRect(0,0,W,H);ctx.restore()}
