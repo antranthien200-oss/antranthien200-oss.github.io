@@ -1864,24 +1864,24 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
      f.sukunaFireSerial=serial;f.sukunaFireCast=castDuration;f.stun=0;f.rooted=0;f.block=false;
      f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.counterWindow=0;f.skillCd[idx]=40;
      setMotion(f,'sukunaFireArrowCast',castDuration,angle,t);
-     fireBurst(f.x+Math.cos(angle)*20,f.y+Math.sin(angle)*20-18,8);showToast('OPEN · DOUBLE CLAP · FLAME ARROW',950);
+     fireBurst(f.x+Math.cos(angle)*24,f.y-23+Math.sin(angle)*24,8);showToast('OPEN · DOUBLE CLAP · FLAME ARROW',950);
      const valid=()=>!f.dead&&f.sukunaFireSerial===serial&&f.sukunaFireCast>0;
      schedule(()=>{
       if(!valid())return;
-      const x=f.x+Math.cos(angle)*27,y=f.y+Math.sin(angle)*27-19;
+      const x=f.x+Math.cos(angle)*24,y=f.y-23+Math.sin(angle)*24;
       fireBurst(x,y,13);
       for(let i=0;i<6;i++){const a=angle+Math.PI/2+(i-2.5)*.19;burst(x+Math.cos(a)*8,y+Math.sin(a)*8,'#ffb24b',1,2.5)}
       game.shake=Math.max(game.shake,1.8);
      },560);
      schedule(()=>{
       if(!valid())return;
-      const x=f.x+Math.cos(angle)*27,y=f.y+Math.sin(angle)*27-19;
+      const x=f.x+Math.cos(angle)*24,y=f.y-23+Math.sin(angle)*24;
       fireBurst(x,y,18);
       game.shake=Math.max(game.shake,2.6);game.hitStop=Math.max(game.hitStop,.018);
      },1230);
      schedule(()=>{
       if(!valid())return;
-      const x=f.x+Math.cos(angle)*42,y=f.y+Math.sin(angle)*42-21;
+      const x=f.x+Math.cos(angle)*42,y=f.y-23+Math.sin(angle)*42;
       fireBurst(x,y,17);
       projectiles.push({x,y,vx:Math.cos(angle)*21,vy:Math.sin(angle)*21,r:19,life:2.2,maxDistance:980,travelled:0,flightLength:980,owner:f,kind:'sukunaFireArrow',damage:10,color:'#ff8b37'});
       game.shake=Math.max(game.shake,4);showToast('FLAME ARROW · RELEASED',650);
@@ -2699,7 +2699,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.restore();
    }
   };
-  clapFlames(14,0,clapA,0);clapFlames(14,0,clapB,.32);
+  clapFlames(24,0,clapA,0);clapFlames(24,0,clapB,.32);
   if(p>.43&&p<.78){
    const form=smoothstep01((p-.43)/.35),scale=.34+.36*form;
    drawSukunaFlameArrowGlyph(28,-17,scale,vfxFade*(.82+.12*Math.sin(game.time*15)));
@@ -3195,11 +3195,12 @@ function drawHeadHands(f){
       const lift=progress<.48?-22*pulse:25*pulse;handA=P(24+24*pulse,12,lift);handB=P(24+24*pulse,-12,lift);handAScale=1.2;handBScale=1.2;
      }else if(name==='sukunaFireArrowCast'){
       if(progress<.22){
-       const q=progress/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(25,3,clap),forward=lerp(10,14,clap);
-       handA=P(forward,spread,0);handB=P(forward,-spread,0);handAScale=1.2;handBScale=1.2;
+       const q=progress/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(14,1.2,clap),forward=24;
+       // Both hands travel toward each other along the fighter's facing axis, not across it.
+       handA=P(forward+spread,0,0);handB=P(forward-spread,0,0);handAScale=1.2;handBScale=1.2;
       }else if(progress<.44){
-       const q=(progress-.22)/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(23,2.5,clap),forward=lerp(10,14,clap);
-       handA=P(forward,spread,0);handB=P(forward,-spread,0);handAScale=1.23;handBScale=1.23;
+       const q=(progress-.22)/.22,clap=q<.7?smoothstep01(q/.7):1-smoothstep01((q-.7)/.3),spread=lerp(13,1.2,clap),forward=24;
+       handA=P(forward+spread,0,0);handB=P(forward-spread,0,0);handAScale=1.23;handBScale=1.23;
       }else if(progress<.78){
        const pull=smoothstep01((progress-.44)/.34);
        handA=P(23+45*pull,-16,-12-3*pull);handB=P(12-25*pull,-18,-4-12*pull);
