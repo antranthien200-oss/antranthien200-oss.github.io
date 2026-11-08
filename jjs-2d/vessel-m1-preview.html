@@ -1197,7 +1197,7 @@ function m1Feedback(f,t,angle,hit,finisher){
  const sx=f.x+Math.cos(angle)*18,sy=f.y+Math.sin(angle)*18;
  const ex=hit?t.x:f.x+Math.cos(angle)*78,ey=hit?t.y:f.y+Math.sin(angle)*78;
  const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=theme.accent||theme.main;
- if(f.awakened)trailStrokes.push({x1:sx,y1:sy,x2:ex,y2:ey,life:.13,max:.13,color:finisher?'#ffdca2':'#f2f6ff',width:finisher?10:6});
+
  if(!f.awakened&&f.char!=='yuta'){
   if(hit){burst(t.x,t.y,finisher?'#ffe2ad':'#eff7ff',finisher?18:9,finisher?6:4);game.hitStop=Math.max(game.hitStop,finisher?.04:.016);game.shake=Math.max(game.shake,finisher?5.5:2.4)}
   else burst(ex,ey,'#d8eaff',3,2);
@@ -1988,7 +1988,7 @@ if(f.char==='choso'){
  }
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(keys.has('w')||keys.has('arrowup'))y--;if(keys.has('s')||keys.has('arrowdown'))y++;if(keys.has('a')||keys.has('arrowleft'))x--;if(keys.has('d')||keys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x=mobileMove.x;y=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(keys.has('w')||keys.has('arrowup'))y--;if(keys.has('s')||keys.has('arrowdown'))y++;if(keys.has('a')||keys.has('arrowleft'))x--;if(keys.has('d')||keys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
@@ -3314,7 +3314,7 @@ function drawHeadHands(f){
  if(f.awakened){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':(f.char==='vessel'?'#f0445a':c.accent);ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
- if(combo&&!f.awakened){
+ if(combo&&!(f.char==='vessel'&&f.awakened)){
   if(combo===4){
    drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
    drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
@@ -3323,7 +3323,7 @@ function drawHeadHands(f){
    drawM1HandTrail(f,leftHandActive?handA:handB,leftHandActive?'a':'b',x,headY,true,trailColor);
    drawM1HandTrail(f,leftHandActive?handB:handA,leftHandActive?'b':'a',x,headY,false,trailColor);
   }
- }else if(yutaCombo&&!f.awakened){
+ }else if(yutaCombo){
   drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
