@@ -4079,37 +4079,47 @@ function drawYujiDomainSmokeBackground(){
  ctx.restore();
 }
 function drawYujiBlackWaterRipples(w,h,t,edge){
- // One large, centered horizontal oval ripple viewed from a shallow angle.
- const cx=w*.5,boundary=edge(cx);
- const blackHeight=Math.max(1,h-boundary);
- const cy=boundary+blackHeight*.5;
- const ovalRatio=.48;
- // Keep the entire oval visible inside the black water region and viewport.
- const maxRadius=Math.max(8,Math.min(w*.47,blackHeight*.44/ovalRatio));
- const cycle=((t*.17)%1+1)%1;
- ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
- ctx.shadowColor='rgba(238,244,250,.56)';
- for(let ring=0;ring<4;ring++){
-  const p=(cycle+ring*.24)%1;
-  const grow=.075+.925*p;
-  const radius=maxRadius*grow;
-  // Fade smoothly while the oval expands, before it reaches the edge of the screen.
-  const alpha=Math.pow(1-p,1.25)*.82;
-  ctx.globalAlpha=alpha;
-  ctx.shadowBlur=Math.max(2,h*.008)*(1-p*.45);
-  ctx.strokeStyle='#e8edf2';
-  ctx.lineWidth=Math.max(1.8,h*.0035)*(1-p*.12);
+  // The source sits exactly on the red/black boundary at the horizontal midpoint.
+  const cx=w*.5,cy=edge(cx),ovalRatio=.48;
+  // The visible water area is below the irregular smoke boundary.
+  const maxRadius=Math.max(
+   Math.hypot(cx,(h-cy)/ovalRatio),
+   Math.hypot(w-cx,(h-cy)/ovalRatio)
+  )*1.035;
+  const expansionSpeed=Math.max(130,h*.20);
+  const life=maxRadius/expansionSpeed;
+  const stagger=.46;
+  ctx.save();
   ctx.beginPath();
-  for(let seg=0;seg<=128;seg++){
-   const a=seg/128*Math.PI*2;
-   const wobble=1+Math.sin(a*3+t*.42+ring*.8)*.004+Math.sin(a*7-t*.25+ring)*.002;
-   const x=cx+Math.cos(a)*radius*wobble;
-   const y=cy+Math.sin(a)*radius*ovalRatio*wobble;
-   if(seg===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  const clipStep=Math.max(3,w/180);
+  for(let x=0;x<=w;x+=clipStep){
+   const y=edge(x);
+   if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   }
-  ctx.stroke();
- }
- ctx.restore();
+  ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.clip();
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.shadowColor='rgba(238,244,250,.72)';
+  for(let ring=0;ring<4;ring++){
+   const age=((t+ring*stagger)%life+life)%life;
+   const radius=age*expansionSpeed;
+   if(radius<3||radius>maxRadius)continue;
+   const progress=radius/maxRadius;
+   // Keep each ring clear near the source, then let it fade gradually as it leaves view.
+   ctx.globalAlpha=Math.pow(1-progress,1.05)*.9;
+   ctx.shadowBlur=Math.max(3,h*.009)*(1-progress*.45);
+   ctx.strokeStyle='#f1f5fa';
+   ctx.lineWidth=Math.max(2,h*.0042)*(1-progress*.12);
+   ctx.beginPath();
+   for(let seg=0;seg<=160;seg++){
+    const a=seg/160*Math.PI*2;
+    const wobble=1+Math.sin(a*3+t*.42+ring*.8)*.003+Math.sin(a*7-t*.25+ring)*.0015;
+    const x=cx+Math.cos(a)*radius*wobble;
+    const y=cy+Math.sin(a)*radius*ovalRatio*wobble;
+    if(seg===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   }
+   ctx.stroke();
+  }
+  ctx.restore();
 }
 function drawShrineDomainInterior(cx,cy,r){
  drawYujiDomainSmokeBackground();
