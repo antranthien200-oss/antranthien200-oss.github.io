@@ -650,11 +650,24 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 
 /* Keep the manual orientation toggle responsive to mobile browser viewport changes. */
 @media(hover:none) and (pointer:coarse){#screenRotateBtn{touch-action:manipulation}}
+
+/* Vessel awakening: a text-only manga speech panel beside the fighter. */
+#awakeningCutscene.vessel-dialogue{position:fixed;inset:0;display:none;align-items:initial;justify-content:initial;overflow:hidden;pointer-events:none;background:transparent;animation:none!important}
+#awakeningCutscene.vessel-dialogue.active{display:block;animation:none!important}
+#awakeningCutscene.vessel-dialogue:before,#awakeningCutscene.vessel-dialogue:after{display:none!important;content:none!important}
+#awakeningCutscene.vessel-dialogue .awaken-backdrop-lines,
+#awakeningCutscene.vessel-dialogue .awaken-flash,
+#awakeningCutscene.vessel-dialogue .awaken-content{display:none!important}
+#awakeningCutscene .vessel-awakening-dialogue{display:none;position:absolute;left:0;top:0;width:min(230px,58vw);padding:11px 13px;background:#fff;color:#111;border:3px solid #090909;box-shadow:4px 5px 0 rgba(0,0,0,.72);font:800 clamp(13px,1.45vw,17px)/1.25 Georgia,"Times New Roman",serif;letter-spacing:-.015em;text-align:center;text-shadow:none;white-space:normal}
+#awakeningCutscene.vessel-dialogue.active .vessel-awakening-dialogue{display:block;animation:vesselDialogueIn .18s cubic-bezier(.18,.82,.24,1) both}
+#awakeningCutscene .vessel-awakening-dialogue:after{content:"";position:absolute;left:20px;bottom:-10px;width:14px;height:14px;background:#fff;border-right:3px solid #090909;border-bottom:3px solid #090909;transform:rotate(45deg)}
+@keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(7px) scale(.92)}100%{opacity:1;transform:translateY(0) scale(1)}}
+
 </style>
 </head>
 <body>
 <canvas id="game"></canvas><div id="vignette"></div><div id="hitFlash"></div>
-<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div></div>
+<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div></div>
 <div class="hud" id="hud" style="display:none">
   <div class="toprow">
     <div class="fighter-card">
@@ -1047,7 +1060,14 @@ function playAwakeningCutscene(f){
  $('awakenCutsceneName').textContent=c.awakening;
  $('awakenCutsceneSubtitle').textContent=(f.char==='vessel'?'KING OF CURSES':c.awakeName)+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
- el.classList.remove('active');void el.offsetWidth;el.classList.add('active');
+ el.classList.remove('active','vessel-dialogue');
+ el._speaker=f;
+ if(f.char==='vessel'){
+  el.classList.add('vessel-dialogue');
+  $('vesselAwakeningDialogue').textContent="You're such an annoying brat...";
+ }
+ el.style.left='0px';el.style.top='0px';
+ void el.offsetWidth;el.classList.add('active');
  game.cutsceneTimer=1.55;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
@@ -2651,7 +2671,7 @@ function updateMobileCooldowns(){
 }
 function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;$('pHealth').style.width=(player.hp/player.maxHp*100)+'%';$('eHealth').style.width=(enemy.hp/enemy.maxHp*100)+'%';$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100);$('ultFill').style.width=awakeningPct+'%';$('ultFill').classList.toggle('draining',player.awakened);$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();}
 
-function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)$('awakeningCutscene').classList.remove('active');return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)(()=>{const cutscene=$('awakeningCutscene');cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null})();return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -4204,8 +4224,8 @@ function drawYujiBlackWaterRipples(w,h,t){
    if(radius>maxRadius)continue;
    const progress=radius/maxRadius;
    ctx.globalAlpha=Math.pow(1-progress,1.05)*.94;
-   ctx.shadowBlur=Math.max(1.3,h*.0034)*(1-progress*.5);
-   ctx.lineWidth=Math.max(2.2,h*.004)*(1-progress*.12);
+   ctx.shadowBlur=Math.max(.9,h*.0022)*(1-progress*.48);
+   ctx.lineWidth=Math.max(1.1,h*.0022)*(1-progress*.18);
    ctx.beginPath();ctx.ellipse(cx,cy,radius,radius*ratio,0,0,Math.PI*2);ctx.stroke();
   }
   ctx.restore();
@@ -4621,14 +4641,66 @@ function drawYujiSkillImpactEffects(){
   }
  }
 }
+
+function drawVesselAwakeningSmoke(f){
+ if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,visualTime=game.time+(game.cutsceneTimer>0?1.55-game.cutsceneTimer:0),mobile=isMobileDevice;
+ const count=mobile?6:9;
+ ctx.save();ctx.globalCompositeOperation='source-over';ctx.lineCap='round';ctx.lineJoin='round';
+ // Dark translucent plumes curl upward from both sides of the body, with a deep-red rim.
+ for(let i=0;i<count;i++){
+  const side=i%2?1:-1,lane=Math.floor(i/2),phase=visualTime*(1.05+(i%3)*.13)+i*1.83;
+  const startX=x+side*(17+lane*5)+Math.sin(phase*.72)*5;
+  const startY=y+7+Math.cos(phase*1.1)*3;
+  const rise=35+(i%4)*11,drift=Math.sin(phase*1.22)*15+side*(4+lane*2);
+  const endX=startX+drift,endY=startY-rise;
+  const c1x=startX+Math.sin(phase)*13+side*8,c1y=startY-rise*.24;
+  const c2x=endX+Math.cos(phase*1.3)*15-side*10,c2y=startY-rise*.72;
+  const width=5.5+(i%3)*2.1;
+  const path=()=>{ctx.beginPath();ctx.moveTo(startX,startY);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,endX,endY)};
+  ctx.globalAlpha=.3+(i%3)*.055;ctx.shadowColor='#b41435';ctx.shadowBlur=11+(i%3)*3;
+  ctx.strokeStyle='#8f102b';ctx.lineWidth=width+6;path();ctx.stroke();
+  ctx.globalAlpha=.48+(i%2)*.08;ctx.shadowColor='#020207';ctx.shadowBlur=7;
+  ctx.strokeStyle='#09070d';ctx.lineWidth=width;path();ctx.stroke();
+  ctx.globalAlpha=.32;ctx.shadowBlur=2;ctx.strokeStyle='#e12a4a';ctx.lineWidth=1.15;path();ctx.stroke();
+ }
+ // A few soft smoke pockets keep the aura cloud-like rather than looking like sharp trails.
+ for(let i=0;i<4;i++){
+  const phase=visualTime*1.25+i*1.7,px=x+Math.sin(phase)*30+(i%2?16:-16),py=y-7-((visualTime*17+i*23)%44);
+  const rx=11+(i%3)*4,ry=8+(i%2)*4;
+  const fog=ctx.createRadialGradient(px,py,1,px,py,rx*1.8);
+  fog.addColorStop(0,'rgba(9,5,12,.62)');fog.addColorStop(.48,'rgba(104,9,33,.34)');fog.addColorStop(1,'rgba(104,9,33,0)');
+  ctx.globalAlpha=.72;ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(px,py,rx*1.8,ry*1.8,Math.sin(phase)*.35,0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();
+}
+function positionVesselAwakeningDialogue(){
+ const overlay=$('awakeningCutscene');
+ if(!overlay||!overlay.classList.contains('active')||!overlay.classList.contains('vessel-dialogue'))return;
+ const f=overlay._speaker,box=$('vesselAwakeningDialogue');
+ if(!f||f.dead||!box)return;
+ const zoom=cameraViewScale(),shakeX=Math.sin(game.time*71)*game.shake,shakeY=Math.cos(game.time*59)*game.shake*.62;
+ let px=W*.5+(f.x-camera.x)/zoom+shakeX;
+ let py=H*.5+(f.y-72-camera.y)/zoom+shakeY;
+ let viewW=W,viewH=H;
+ if(isManualScreenRotated()){const gx=px;px=innerWidth-py;py=gx;viewW=innerWidth;viewH=innerHeight}
+ const boxW=Math.min(230,viewW*.58),left=clamp(px<viewW*.62?px+19:px-boxW-19,8,Math.max(8,viewW-boxW-8));
+ const top=clamp(py-10,8,Math.max(8,viewH-76));
+ box.style.left=left+'px';box.style.top=top+'px';
+}
+
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawDomainBackdrops();
- if(!isFullScreenDomainActive()){drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons()}drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
+ if(!isFullScreenDomainActive()){drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
+ // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
+ if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);
+ drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
+ positionVesselAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
  if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  if(!game.started){camera.x=1100;camera.y=750;drawMenuBackdrop()}else if(!mobileControlsEnabled){ctx.save();ctx.translate(mouse.x,mouse.y);ctx.strokeStyle='#eaf7ffcc';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.moveTo(-14,0);ctx.lineTo(-5,0);ctx.moveTo(5,0);ctx.lineTo(14,0);ctx.moveTo(0,-14);ctx.lineTo(0,-5);ctx.moveTo(0,5);ctx.lineTo(0,14);ctx.stroke();ctx.restore()}else if(mobileControlsEnabled){drawMobileEnemyPointer()}
