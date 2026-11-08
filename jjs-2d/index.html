@@ -3999,31 +3999,60 @@ function drawVoidDomainInterior(cx,cy,r){
  ctx.shadowBlur=34;ctx.shadowColor='#eaf2ff';ctx.fillStyle='#020308';ctx.beginPath();ctx.arc(cx,cy,r*.205,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.beginPath();ctx.arc(cx,cy,r*.218,0,Math.PI*2);ctx.stroke();ctx.globalAlpha=.9;ctx.strokeStyle='#9cafd0';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(cx,cy,r*.27,r*.095,game.time*.22,0,Math.PI*2);ctx.stroke();
  ctx.restore();
 }
-function drawShrineDomainInterior(cx,cy,r){
+function drawYujiDomainSmokeBackground(){
+ const w=W,h=H,t=game.time||0;
+ const edge=(x,phase=0)=>h*(.535+.032*Math.sin(x*.0085+t*.22+phase)+.019*Math.sin(x*.021-t*.3+phase*1.7)+.009*Math.sin(x*.047+t*.42+phase*.6));
  ctx.save();
- const sky=ctx.createLinearGradient(0,cy-r,0,cy+r);sky.addColorStop(0,'#06070d');sky.addColorStop(.32,'#220811');sky.addColorStop(.65,'#651321');sky.addColorStop(1,'#17060b');ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);domainGlow(cx,cy-r*.28,r*.78,'#f02e4c',.46);
- for(let i=0;i<30;i++){const x=cx-r+((i*137+game.time*7)%(r*2)),y=cy-r*.55+(i%7)*r*.14;ctx.globalAlpha=.1+(i%4)*.035;ctx.fillStyle=i%2?'#d82946':'#7e1429';ctx.beginPath();ctx.ellipse(x,y,42+(i%5)*18,12+(i%3)*10,Math.sin(i)*.2,0,Math.PI*2);ctx.fill()}
- // Distant ridges, broken stakes and torii gates.
- for(let layer=0;layer<3;layer++){const y0=cy+r*(.04+layer*.105);ctx.fillStyle=['#170a11','#210b14','#310d18'][layer];ctx.beginPath();ctx.moveTo(0,H);for(let i=0;i<=18;i++){const x=i*W/18,peak=y0-(i%3)*r*.055-(i%5===0?r*.12:0);ctx.lineTo(x,peak);ctx.lineTo(x+W/36,peak+r*.16)}ctx.lineTo(W,H);ctx.closePath();ctx.fill()}
- for(let i=0;i<5;i++){const x=cx-r*.92+i*r*.46,y=cy-r*.05+(i%2)*r*.12,s=.6+(i%3)*.18;ctx.save();ctx.translate(x,y);ctx.scale(s,s);ctx.fillStyle='#08090d';ctx.strokeStyle='#9b263c';ctx.lineWidth=4;ctx.fillRect(-5,-112,10,150);ctx.fillRect(-78,-100,156,12);ctx.fillRect(-91,-117,182,13);ctx.fillRect(-67,-132,134,9);ctx.strokeRect(-78,-100,156,12);ctx.restore()}
- // Huge layered shrine building.
- const base=cy+r*.43,top=cy-r*.66;
- domainPolygon([[cx-r*.56,base],[cx-r*.5,cy-r*.26],[cx-r*.38,cy-r*.2],[cx-r*.34,top+r*.2],[cx+r*.34,top+r*.2],[cx+r*.38,cy-r*.2],[cx+r*.5,cy-r*.26],[cx+r*.56,base]],'#0b080d','#5e1425',5);
- domainPolygon([[cx-r*.59,top+r*.39],[cx-r*.49,top+r*.22],[cx-r*.32,top+r*.12],[cx,top],[cx+r*.32,top+r*.12],[cx+r*.49,top+r*.22],[cx+r*.59,top+r*.39],[cx+r*.45,top+r*.36],[cx,top+r*.2],[cx-r*.45,top+r*.36]],'#08090e','#a52c43',5);
- domainPolygon([[cx-r*.48,top+r*.23],[cx-r*.37,top+r*.07],[cx-r*.22,top+r*.02],[cx,top-r*.11],[cx+r*.22,top+r*.02],[cx+r*.37,top+r*.07],[cx+r*.48,top+r*.23],[cx+r*.33,top+r*.2],[cx,top+r*.08],[cx-r*.33,top+r*.2]],'#111017','#742037',4);
- ctx.fillStyle='#08090d';ctx.fillRect(cx-r*.36,top+r*.35,r*.72,r*.76);
- const entrance=ctx.createLinearGradient(cx,top+r*.36,cx,base);entrance.addColorStop(0,'#ff5260');entrance.addColorStop(.35,'#5c1023');entrance.addColorStop(1,'#100910');ctx.fillStyle=entrance;ctx.fillRect(cx-r*.2,top+r*.36,r*.4,r*.58);
- ctx.strokeStyle='#a82c43';ctx.lineWidth=10;ctx.strokeRect(cx-r*.22,top+r*.34,r*.44,r*.62);ctx.fillStyle='#0b0a10';ctx.fillRect(cx-r*.105,top+r*.53,r*.21,r*.36);ctx.fillStyle='#f34a60';ctx.fillRect(cx-r*.035,top+r*.55,r*.07,r*.32);
- for(let side of [-1,1]){const x=cx+side*r*.31;ctx.fillStyle='#19131b';ctx.fillRect(x-r*.035,top+r*.35,r*.07,r*.72);ctx.fillStyle='#a32943';ctx.fillRect(x-r*.01,top+r*.37,r*.02,r*.68);for(let k=0;k<7;k++){ctx.fillStyle=k%2?'#55172b':'#28121d';ctx.fillRect(x-r*.032,top+r*(.42+k*.085),r*.064,r*.024)}ctx.fillStyle='#080a0f';ctx.fillRect(x-r*.08,top+r*.32,r*.16,r*.055)}
- for(let i=0;i<17;i++){const x=cx-r*.48+i*r*.06,y=top+r*(.25+Math.abs(i-8)*.015);ctx.strokeStyle=i%2?'#8f263c':'#3b1725';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+(i-8)*2,y+r*.13);ctx.stroke();ctx.fillStyle='#7b1b32';ctx.fillRect(x-5,y-7,10,5)}
- // Stairs and the cracked sacrificial courtyard.
- for(let i=0;i<8;i++){const yy=cy+r*(.03+i*.05),ww=r*(.38+(i/8)*.09);ctx.fillStyle=i%2?'#20121a':'#35131e';ctx.fillRect(cx-ww,yy,ww*2,r*.045);ctx.fillStyle='#a52b42';ctx.fillRect(cx-ww,yy,ww*2,3)}
- ctx.fillStyle='#110b11';ctx.fillRect(0,cy+r*.48,W,H-cy-r*.48);
- for(let i=-12;i<=12;i++){ctx.strokeStyle=i%3===0?'#8c2138':'#43202c';ctx.globalAlpha=i%3===0?.45:.28;ctx.lineWidth=i%3===0?2:1;ctx.beginPath();ctx.moveTo(cx+i*r*.065,cy+r*.38);ctx.lineTo(cx+i*r*.42,H);ctx.stroke()}
- for(let i=0;i<28;i++){const x=cx+Math.sin(i*9.7)*r*(.18+(i%5)*.11),y=cy+r*(.5+(i%6)*.07);ctx.globalAlpha=.5;ctx.strokeStyle=i%3?'#6e2033':'#ff4a60';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.sin(i*4)*r*.07,y+r*.04);ctx.lineTo(x+r*.025,y+r*.075);ctx.stroke()}
- for(let i=0;i<18;i++){const x=cx-r+((i*97)%(r*2)),y=cy+r*(.67+(i%4)*.075),s=12+(i%5)*7;domainPolygon([[x-s,y+s*.4],[x-s*.55,y-s*.5],[x+s*.1,y-s],[x+s,y-s*.12],[x+s*.75,y+s*.55]],i%2?'#29212a':'#17151d','#713044',2)}
- for(let i=0;i<42;i++){const x=cx-r+((i*71+game.time*(8+i%4))%(r*2)),y=cy-r+((i*43-game.time*17)%(r*2));ctx.globalAlpha=.25+.45*Math.abs(Math.sin(game.time*2+i));ctx.fillStyle=i%4?'#ff5268':'#ffd0c8';ctx.fillRect(x,y,i%6===0?3:2,i%6===0?5:2)}
+ ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;
+ ctx.fillStyle='#020205';ctx.fillRect(0,0,w,h);
+ const redSky=ctx.createLinearGradient(0,0,0,h*.62);
+ redSky.addColorStop(0,'#a80025');redSky.addColorStop(.27,'#90001f');redSky.addColorStop(.68,'#610014');redSky.addColorStop(1,'#260008');
+ ctx.fillStyle=redSky;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(w,0);
+ const edgeStep=Math.max(7,w/118);
+ for(let x=w;x>=0;x-=edgeStep)ctx.lineTo(x,edge(x));
+ ctx.lineTo(0,0);ctx.closePath();ctx.fill();
+ // Layered, wandering smoke bands break up the red-to-black edge.
+ for(let layer=0;layer<4;layer++){
+  ctx.beginPath();
+  const step=Math.max(8,w/105);
+  for(let x=-step;x<=w+step;x+=step){
+   const y=edge(x,layer*.71)+(layer-1.5)*h*.027+Math.sin(x*.016+t*.26+layer*1.4)*h*.012;
+   if(x===-step)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+  }
+  ctx.globalAlpha=.72;
+  ctx.strokeStyle=layer%2?'rgba(10,2,7,.62)':'rgba(157,13,39,.36)';
+  ctx.lineWidth=h*(.025+layer*.008);
+  ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.shadowColor=layer%2?'#080207':'#96001f';ctx.shadowBlur=Math.max(7,h*.026);
+  ctx.stroke();
+ }
+ ctx.shadowBlur=0;
+ // Soft clouds drift slowly along the border; their edges dissolve into the black.
+ for(let i=0;i<44;i++){
+  const span=w*1.28,raw=i*w*.618+(i%2?1:-.72)*t*w*.012+i*13;
+  const x=((raw%span)+span)%span-w*.14;
+  const y=edge(x,i*.13)+Math.sin(t*.38+i*1.71)*h*.031+((i%5)-2)*h*.016;
+  const rx=w*(.018+(i%6)*.008),ry=h*(.018+(i%4)*.011);
+  ctx.save();ctx.translate(x,y);ctx.rotate(Math.sin(i*2.1+t*.19)*.16);ctx.scale(rx,ry);
+  const cloud=ctx.createRadialGradient(0,0,0,0,0,1);
+  if(i%3===0){cloud.addColorStop(0,'rgba(194,22,51,.34)');cloud.addColorStop(.38,'rgba(124,8,32,.25)');cloud.addColorStop(1,'rgba(20,0,7,0)')}
+  else{cloud.addColorStop(0,'rgba(8,3,9,.62)');cloud.addColorStop(.42,'rgba(41,3,13,.34)');cloud.addColorStop(1,'rgba(12,0,4,0)')}
+  ctx.fillStyle=cloud;ctx.beginPath();ctx.arc(0,0,1,0,Math.PI*2);ctx.fill();ctx.restore();
+ }
+ // Thin curling wisps give the smoke a rolling, uneven silhouette.
+ for(let i=0;i<13;i++){
+  const x=(i/12)*w, y=edge(x,i*.3)+(i%3-1)*h*.035;
+  const drift=Math.sin(t*.25+i*1.9)*w*.025;
+  ctx.save();ctx.globalAlpha=.2+(i%4)*.025;ctx.strokeStyle=i%2?'#c01a3b':'#27030d';
+  ctx.lineWidth=Math.max(2,h*(.004+(i%3)*.002));ctx.lineCap='round';
+  ctx.beginPath();ctx.moveTo(x-w*.075,y+h*.025);
+  ctx.bezierCurveTo(x-w*.035+drift,y-h*.045,x+w*.025-drift,y+h*.052,x+w*.075,y-h*.018);
+  ctx.stroke();ctx.restore();
+ }
  ctx.restore();
+}
+function drawShrineDomainInterior(cx,cy,r){
+ drawYujiDomainSmokeBackground();
 }
 function drawSoulDomainInterior(cx,cy,r){
  ctx.save();
@@ -4134,6 +4163,11 @@ function renderDomainArenaFrame(f){
  if(f.domainFlashTimer>0){const reveal=clamp(1-f.domainFlashTimer/.92,0,1),ease=reveal*reveal*(3-2*reveal),radius=Math.max(2,Math.hypot(W,H)*1.15*ease);ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.clip();}
  // Five bespoke environments: every major landmark is composed from layered canvas geometry.
  const domainR=f.domainVisualRadius||860;
+ if(type==='shrine'){
+  drawShrineDomainInterior(cx,cy,domainR);
+  ctx.restore();
+  return;
+ }
  if(type==='void')drawVoidDomainInterior(cx,cy,domainR);
   else if(type==='trash')drawTrashDomainInterior(cx,cy,domainR);
  else if(type==='shrine')drawShrineDomainInterior(cx,cy,domainR);
