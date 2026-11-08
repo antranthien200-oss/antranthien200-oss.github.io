@@ -3596,7 +3596,7 @@ function drawDomainHandsignCutin(f,p,accent){
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
- const panelW=compact?W*2.00:wide?W*2.16:W*2.00;
+ const panelW=compact?W*4.00:wide?W*4.32:W*4.00;
  const panelH=compact?H*.34:wide?H*.16:H*.25;
  // Keep the banner's long axis full length; pop it open and closed across its thickness.
  const panelScaleX=1;
@@ -3615,12 +3615,13 @@ function drawDomainHandsignCutin(f,p,accent){
  ctx.strokeStyle='#171d20';ctx.lineWidth=3;ctx.strokeRect(left,top,panelW,panelH);
  // Two dark parallel rails sit just inside the banner's long edges.
  ctx.strokeStyle='#101418';ctx.lineWidth=2.5;ctx.beginPath();
- ctx.moveTo(left+3,top+14);ctx.lineTo(left+panelW-3,top+14);
- ctx.moveTo(left+3,top+panelH-14);ctx.lineTo(left+panelW-3,top+panelH-14);
+ ctx.moveTo(left+3,top+22);ctx.lineTo(left+panelW-3,top+22);
+ ctx.moveTo(left+3,top+panelH-22);ctx.lineTo(left+panelW-3,top+panelH-22);
  ctx.stroke();
  // Keep the figure and the two English labels visible while the panel folds away.
  ctx.globalAlpha=clamp(1-fold*1.18,0,1);
- const headR=clamp(Math.min(panelW,panelH)*.13,22,55);
+ // Enlarge the fighter to balance the much longer banner without crowding its height.
+ const headR=clamp(panelH*.235,29,62);
  const avatarX=0,avatarY=0;
  const poseProgress=clamp(t/.72,0,1),spring=1+Math.sin(enterEase*Math.PI)*.045;
  const headScale=headR/14.8*spring;
@@ -3633,12 +3634,12 @@ function drawDomainHandsignCutin(f,p,accent){
  drawAccessoryOverlays(f,avatarX,avatarY,headScale);
  drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress);
  ctx.textBaseline='middle';ctx.fillStyle='#172025';ctx.textAlign='center';
- const titleSize=clamp(panelW*.04,15,31);
+ const titleSize=clamp(W*.024,22,31);
  ctx.font='1000 '+titleSize+'px system-ui';
- // DOMAIN sits along the upper-left edge; EXPANSION balances it on the lower-right.
- ctx.fillText('DOMAIN',-panelW*.31,-panelH*.34);
- ctx.font='1000 '+clamp(titleSize*.9,14,28)+'px system-ui';
- ctx.fillText('EXPANSION',panelW*.29,panelH*.34);
+ // Each title is centered directly on a long border, half outside and half inside.
+ ctx.fillText('DOMAIN',-W*.34,top);
+ ctx.font='1000 '+clamp(titleSize*.9,20,28)+'px system-ui';
+ ctx.fillText('EXPANSION',W*.34,top+panelH);
  ctx.restore();
  ctx.restore();
 }
