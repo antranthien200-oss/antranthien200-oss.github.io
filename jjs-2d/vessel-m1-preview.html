@@ -2985,12 +2985,12 @@ function drawAccessoryOverlays(f,x,y,scale=1){
  }
  ctx.restore();
 }
-function drawFloatingHand(x,y,angle,theme,scale=1){
- // Small floating pixel-circle fist: no fingers, glove, shine, or extra details.
+function drawFloatingHand(x,y,angle,theme,scale=1,directional=false){
+ // Directional mode is only used during the Flame Arrow clap, making its 90-degree turn visible.
  ctx.save();
  ctx.translate(Math.round(x),Math.round(y));
  ctx.rotate(angle);
- ctx.scale(scale,scale);
+ ctx.scale(scale*(directional?1.2:1),scale*(directional?.78:1));
  drawPixelatedCircle(0,0,7.6,theme,2.0);
  ctx.restore();
 }
@@ -3323,7 +3323,7 @@ function drawHeadHands(f){
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
- if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
+ if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{const flameClapPose=name==='sukunaFireArrowCast'&&progress<.44;drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale,flameClapPose);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale,flameClapPose)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();drawAccessoryOverlays(f,x,headY);
  if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
