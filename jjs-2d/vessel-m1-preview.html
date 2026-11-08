@@ -4120,8 +4120,8 @@ function drawYujiBlackWaterRipples(w,h,t,edge){
    const progress=radius/maxRadius,phase3=t*.42+ring*.8,phase7=-t*.25+ring;
    const sin3=Math.sin(phase3),cos3=Math.cos(phase3),sin7=Math.sin(phase7),cos7=Math.cos(phase7);
    ctx.globalAlpha=Math.pow(1-progress,1.05)*.94;
-   ctx.shadowBlur=Math.max(1.2,h*.0031)*(1-progress*.5);
-   ctx.lineWidth=Math.max(1.8,h*.00325)*(1-progress*.12);
+   ctx.shadowBlur=Math.max(1.3,h*.0034)*(1-progress*.5);
+   ctx.lineWidth=Math.max(2.2,h*.004)*(1-progress*.12);
    ctx.beginPath();
    for(let i=0;i<YUJI_RIPPLE_POINTS.length;i++){
     const p=YUJI_RIPPLE_POINTS[i];
