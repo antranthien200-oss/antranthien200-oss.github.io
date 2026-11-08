@@ -1631,7 +1631,7 @@ function useAttack(f,kind){
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
  if(f.block)return;
  const c=CHARS[f.char],t=targetOf(f);
- if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.56,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;f.qDashHold=.1;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
+ if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13.38;f.vy+=dy/l*13.38;f.qDashHold=.1;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0)return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind!=='special'&&kind!=='m1'&&kind!=='1'&&kind!=='4')return;
@@ -3051,7 +3051,7 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
 function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
 function drawHeadHands(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player';
- const m=f.motion,name=m?(m.name==='dashGesture'?'':m.name):(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
+ const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
  const lockShrineM1=!!(m&&f.char==='vessel'&&f.awakened&&name.startsWith('m1_')&&Number.isFinite(m.angle));
@@ -3065,6 +3065,8 @@ function drawHeadHands(f){
  const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0,yutaCombo=name.startsWith('yutaM1_')?(Number(name.slice(7))||1):0;
  if(name==='blockGesture'){
   const brace=0.5+0.5*Math.sin(game.time*7);handA=P(13+brace*4,22,-10-brace*3);handB=P(13+brace*4,-22,-10-brace*3);handAScale=1.16;handBScale=1.16;
+ }else if(name==='dashGesture'){
+  const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
  }else if(yutaCombo){
   if(yutaCombo===4&&!f.awakened){
    const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
