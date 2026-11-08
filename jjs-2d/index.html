@@ -1804,7 +1804,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     burst(f.x,f.y-23,'#ff536b',9,2.8);showToast('DISMANTLE · CATCH',600);
     schedule(()=>{
      if(f.dead||!game.started||game.over||f.stun>.08||f.sukunaFlurrySerial!==serial||!f.motion||f.motion.name!=='sukunaFlurryWindup')return;
-     const inRange=targetInAim(f,t,154,.66,angle);
+     const inRange=targetInAim(f,t,280,1.05,angle);
      const dashDistance=inRange?Math.min(105,Math.max(0,dist(f,t)-62)):105;
      f.x+=Math.cos(angle)*dashDistance;f.y+=Math.sin(angle)*dashDistance;collideWorld(f);f.vx=0;f.vy=0;
      const caught=inRange&&beginGrab(f,t,'sukunaFlurry',.90,angle,'#f34d67',6.5);
