@@ -2055,10 +2055,62 @@ function drawSukunaFireZones(){
  for(const zone of fireZones){
   const x=sx(zone.x),y=sy(zone.y),r=zone.radius,fade=clamp(zone.life/.85,0,1);
   if(!effectsViewportContains(x,y,r+100))continue;
-  const hash=n=>{const v=Math.sin(n*127.1+zone.seed*311.7)*43758.5453;return v-Math.floor(v)};
-  const point=(i,limit=.96)=>{const a=hash(i*4+1)*Math.PI*2,rad=Math.sqrt(hash(i*4+2))*limit*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad}};
-  const wind=4.5+2.6*Math.sin(game.time*2.1+zone.seed),gust=Math.sin(game.time*5.4+zone.seed)*2.2;
   const flameCount=isMobileDevice?24:48,edgeCount=isMobileDevice?11:22,embers=isMobileDevice?15:34,smokeCount=isMobileDevice?1:3;
+  let layout=zone.renderLayout;
+  // Flame positions, sizes and random-looking variation are static per zone; build them once.
+  if(!layout||layout.mobile!==isMobileDevice||layout.radius!==r||layout.seed!==zone.seed){
+   const hash=n=>{const v=Math.sin(n*127.1+zone.seed*311.7)*43758.5453;return v-Math.floor(v)};
+   const point=(i,limit=.96)=>{const a=hash(i*4+1)*Math.PI*2,rad=Math.sqrt(hash(i*4+2))*limit*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad}};
+   const clusterCount=Math.ceil((flameCount-edgeCount)/3),clusters=[];
+   for(let k=0;k<clusterCount;k++)clusters.push(point(k+40,.73));
+   const flames=[];
+   for(let i=0;i<flameCount;i++){
+    let fx,fy;
+    if(i<edgeCount){
+     const a=i/edgeCount*Math.PI*2+(hash(i+1880)-.5)*.13;
+     const rad=r*(.895+hash(i+1980)*.055);
+     fx=Math.cos(a)*rad;fy=Math.sin(a)*rad;
+    }else{
+     const cluster=clusters[Math.floor((i-edgeCount)/3)%clusterCount],spread=9+hash(i+120)*23,a=hash(i+220)*Math.PI*2;
+     fx=cluster.x+Math.cos(a)*spread;fy=cluster.y+Math.sin(a)*spread;
+     const d=Math.hypot(fx,fy),limit=r*.84;if(d>limit){fx=fx/d*limit;fy=fy/d*limit}
+    }
+    const size=hash(i+320);
+    flames.push({
+     x:fx,y:fy,h:13+Math.pow(size,.82)*59,w:3.5+Math.pow(hash(i+420),.72)*10.5,
+     leanFactor:.42+hash(i+520)*.8,leanPhase:i*2.17,
+     angleBase:(hash(i+620)-.5)*.48,anglePhase:i,
+     flickerPhase:i*2.63+zone.seed,
+     core:.48+.2*hash(i+720),coreVisible:hash(i+810)>=.18,
+     coreHeight:.42+.12*hash(i+910)
+    });
+   }
+   const emberLayout=[];
+   for(let i=0;i<embers;i++){
+    const p=point(i+1120);
+    emberLayout.push({x:p.x,y:p.y,speed:8+hash(i+1220)*8,phase:hash(i+1320)*46,drift:.2+hash(i+1420)*.12});
+   }
+   const smokeLayout=[];
+   for(let i=0;i<smokeCount;i++){
+    const p=point(i+1620);
+    smokeLayout.push({x:p.x,y:p.y,phase:hash(i+1720)*19,index:i});
+   }
+   const perimeter=[];
+   for(let i=0;i<=96;i++){
+    const a=i/96*Math.PI*2;
+    const wobble=.009*Math.sin(a*7+zone.seed)+.006*Math.sin(a*13+zone.seed*1.7)+.003*Math.sin(a*23+zone.seed*.6);
+    const rr=r*(.976+wobble);
+    perimeter.push({x:Math.cos(a)*rr,y:Math.sin(a)*rr});
+   }
+   layout=zone.renderLayout={mobile:isMobileDevice,radius:r,seed:zone.seed,flames,embers:emberLayout,smoke:smokeLayout,perimeter};
+  }
+  const wind=4.5+2.6*Math.sin(game.time*2.1+zone.seed),gust=Math.sin(game.time*5.4+zone.seed)*2.2;
+  const flames=layout.flames;
+  for(const f of flames){
+   f.lean=wind*f.leanFactor+gust+Math.sin(game.time*15+f.leanPhase)*3;
+   f.angle=f.angleBase+Math.sin(game.time*1.9+f.anglePhase)*.035;
+   f.flicker=.76+.24*Math.sin(game.time*17+f.flickerPhase);
+  }
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
 
   // Filled circular heat footprint with a softly defined, slightly uneven burn edge.
@@ -2070,71 +2122,63 @@ function drawSukunaFireZones(){
 
   // A broken, organic perimeter makes the affected ground read as one full circle.
   ctx.beginPath();
-  for(let i=0;i<=96;i++){
-   const a=i/96*Math.PI*2;
-   const wobble=.009*Math.sin(a*7+zone.seed)+.006*Math.sin(a*13+zone.seed*1.7)+.003*Math.sin(a*23+zone.seed*.6);
-   const rr=r*(.976+wobble),px=Math.cos(a)*rr,py=Math.sin(a)*rr;
-   if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  for(let i=0;i<layout.perimeter.length;i++){
+   const p=layout.perimeter[i];
+   if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);
   }
   ctx.closePath();ctx.globalAlpha=fade*.34;ctx.strokeStyle='#a9431d';ctx.lineWidth=10;ctx.stroke();
   ctx.globalAlpha=fade*.29;ctx.strokeStyle='#ff8a3d';ctx.lineWidth=2.2;ctx.stroke();
 
-  // Interior fire remains irregular; a loose outer fringe follows the circular edge.
-  const flames=[],clusterCount=Math.ceil((flameCount-edgeCount)/3),clusters=[];
-  for(let k=0;k<clusterCount;k++)clusters.push(point(k+40,.73));
-  for(let i=0;i<flameCount;i++){
-   let fx,fy;
-   if(i<edgeCount){
-    const a=i/edgeCount*Math.PI*2+(hash(i+1880)-.5)*.13;
-    const rad=r*(.895+hash(i+1980)*.055);
-    fx=Math.cos(a)*rad;fy=Math.sin(a)*rad;
-   }else{
-    const cluster=clusters[Math.floor((i-edgeCount)/3)%clusterCount],spread=9+hash(i+120)*23,a=hash(i+220)*Math.PI*2;
-    fx=cluster.x+Math.cos(a)*spread;fy=cluster.y+Math.sin(a)*spread;
-    const d=Math.hypot(fx,fy),limit=r*.84;if(d>limit){fx=fx/d*limit;fy=fy/d*limit}
-   }
-   const size=hash(i+320),height=13+Math.pow(size,.82)*59,width=3.5+Math.pow(hash(i+420),.72)*10.5;
-   const lean=wind*(.42+hash(i+520)*.8)+gust+Math.sin(game.time*15+i*2.17)*3;
-   const angle=(hash(i+620)-.5)*.48+Math.sin(game.time*1.9+i)*.035;
-   flames.push({x:fx,y:fy,h:height,w:width,lean,angle,
-    flicker:.76+.24*Math.sin(game.time*17+i*2.63+zone.seed),core:.48+.2*hash(i+720)});
-  }
-
-  // Outer orange flames share one batched path.
+  // Outer orange flames share one batched path; their positions remain individually irregular.
   ctx.beginPath();
   for(const f of flames){
-   const c=Math.cos(f.angle),s=Math.sin(f.angle),tx=f.lean+f.h*.13,ty=-f.h*f.flicker,X=(lx,ly)=>f.x+lx*c-ly*s,Y=(lx,ly)=>f.y+lx*s+ly*c,w=f.w,h=f.h;
-   ctx.moveTo(X(-w,1),Y(-w,1));
-   ctx.bezierCurveTo(X(-w*1.25,-h*.14),Y(-w*1.25,-h*.14),X(tx-w*.9,-h*.4),Y(tx-w*.9,-h*.4),X(tx,ty),Y(tx,ty));
-   ctx.bezierCurveTo(X(tx+w*.88,-h*.62),Y(tx+w*.88,-h*.62),X(tx+w*1.28,-h*.2),Y(tx+w*1.28,-h*.2),X(w,1),Y(w,1));
+   const c=Math.cos(f.angle),s=Math.sin(f.angle),tx=f.lean+f.h*.13,ty=-f.h*f.flicker,w=f.w,h=f.h;
+   ctx.moveTo(f.x-w*c-s,f.y-w*s+c);
+   ctx.bezierCurveTo(
+    f.x-w*1.25*c+h*.14*s,f.y-w*1.25*s-h*.14*c,
+    f.x+(tx-w*.9)*c+h*.4*s,f.y+(tx-w*.9)*s-h*.4*c,
+    f.x+tx*c-ty*s,f.y+tx*s+ty*c
+   );
+   ctx.bezierCurveTo(
+    f.x+(tx+w*.88)*c+h*.62*s,f.y+(tx+w*.88)*s-h*.62*c,
+    f.x+(tx+w*1.28)*c+h*.2*s,f.y+(tx+w*1.28)*s-h*.2*c,
+    f.x+w*c-s,f.y+w*s+c
+   );
    ctx.closePath();
   }
   ctx.globalAlpha=fade*.96;ctx.fillStyle='#ed551c';ctx.fill();
 
   // Uneven golden cores are also batched; some flames remain darker than others.
   ctx.beginPath();
-  for(let i=0;i<flames.length;i++){
-   const f=flames[i];if(hash(i+810)<.18)continue;
-   const c=Math.cos(f.angle),s=Math.sin(f.angle),w=f.w*f.core,h=f.h*(.42+.12*hash(i+910)),tx=f.lean*.36+f.h*.045,ty=-h*.78,X=(lx,ly)=>f.x+lx*c-ly*s,Y=(lx,ly)=>f.y+lx*s+ly*c;
-   ctx.moveTo(X(-w*.7,0),Y(-w*.7,0));
-   ctx.quadraticCurveTo(X(-w*.68,-h*.35),Y(-w*.68,-h*.35),X(tx,ty),Y(tx,ty));
-   ctx.quadraticCurveTo(X(w*.8,-h*.3),Y(w*.8,-h*.3),X(w*.7,0),Y(w*.7,0));ctx.closePath();
+  for(const f of flames){
+   if(!f.coreVisible)continue;
+   const c=Math.cos(f.angle),s=Math.sin(f.angle),w=f.w*f.core,h=f.h*f.coreHeight,tx=f.lean*.36+f.h*.045,ty=-h*.78;
+   ctx.moveTo(f.x-w*.7*c,f.y-w*.7*s);
+   ctx.quadraticCurveTo(
+    f.x-w*.68*c+h*.35*s,f.y-w*.68*s-h*.35*c,
+    f.x+tx*c-ty*s,f.y+tx*s+ty*c
+   );
+   ctx.quadraticCurveTo(
+    f.x+w*.8*c+h*.3*s,f.y+w*.8*s-h*.3*c,
+    f.x+w*.7*c,f.y+w*.7*s
+   );
+   ctx.closePath();
   }
   ctx.globalAlpha=fade*.8;ctx.fillStyle='#ffd071';ctx.fill();
 
   // Embers rise and drift; no rows or spokes connect the flames.
   ctx.beginPath();
-  for(let i=0;i<embers;i++){
-   const p=point(i+1120),phase=(game.time*(8+hash(i+1220)*8)+hash(i+1320)*46)%38;
-   const ex=p.x+phase*(.2+hash(i+1420)*.12)+wind*.5,ey=p.y-phase*.62;
+  for(const p of layout.embers){
+   const phase=(game.time*p.speed+p.phase)%38;
+   const ex=p.x+phase*p.drift+wind*.5,ey=p.y-phase*.62;
    ctx.moveTo(ex-1.3,ey+2);ctx.lineTo(ex+1.2+gust*.12,ey-2.2);
   }
   ctx.globalAlpha=fade*.76;ctx.strokeStyle='#ffbd58';ctx.lineWidth=1.35;ctx.lineCap='round';ctx.stroke();
 
   // Soft, sparse smoke.
   ctx.beginPath();
-  for(let i=0;i<smokeCount;i++){
-   const p=point(i+1620),phase=(game.time*5.5+hash(i+1720)*19)%24,drift=wind*phase*.18+Math.sin(game.time*2+i)*5;
+  for(const p of layout.smoke){
+   const phase=(game.time*5.5+p.phase)%24,drift=wind*phase*.18+Math.sin(game.time*2+p.index)*5;
    ctx.moveTo(p.x,p.y);ctx.bezierCurveTo(p.x-3+drift*.35,p.y-phase*.32,p.x+4+drift,p.y-phase*.68,p.x+drift,p.y-phase);
   }
   ctx.globalAlpha=fade*.12;ctx.strokeStyle='rgba(155,147,135,.8)';ctx.lineWidth=2.4;ctx.lineCap='round';ctx.stroke();
@@ -4006,11 +4050,17 @@ function drawTenSummons(){
  }
  for(const f of [player,enemy,trainingDummy]){if(!f||!f.tenRabbitSwarm||!f.tenRabbitSwarm.target||f.dead)continue;const target=f.tenRabbitSwarm.target||f;if(target.dead)continue;const x=sx(target.x),y=sy(target.y);ctx.save();ctx.globalAlpha=.8*clamp(f.tenRabbitSwarm.life/1.8,0,1);for(let i=0;i<10;i++){const q=game.time*3+i*Math.PI/5,rx=Math.cos(q)*42,ry=Math.sin(q*1.4)*24;drawPixelSpriteGrid(['.B..B.','BBMMBB','BMMMMB','.BMMB.','..BB..'],x+rx,y+ry,2.2,{B:'#65748e',M:i%2?'#eff3ff':'#b8c7df'})}ctx.restore()}
 }
-function effectsViewportContains(x,y,pad=0){
- const viewScale=cameraViewScale(),halfW=W*viewScale*.5,halfH=H*viewScale*.5;
- return x+pad>=W*.5-halfW&&x-pad<=W*.5+halfW&&y+pad>=H*.5-halfH&&y-pad<=H*.5+halfH;
+let effectsViewportLeft=0,effectsViewportRight=0,effectsViewportTop=0,effectsViewportBottom=0;
+function updateEffectsViewportBounds(){
+ const viewScale=cameraViewScale(),halfW=W*viewScale*.5,halfH=H*viewScale*.5,shake=(game.shake||0)+2;
+ effectsViewportLeft=W*.5-halfW-shake;effectsViewportRight=W*.5+halfW+shake;
+ effectsViewportTop=H*.5-halfH-shake;effectsViewportBottom=H*.5+halfH+shake;
 }
-function drawEffects(){drawSukunaFireZones();for(const s of trailStrokes){const x1=sx(s.x1),y1=sy(s.y1),x2=sx(s.x2),y2=sy(s.y2),mx=(x1+x2)*.5,my=(y1+y2)*.5;if(!effectsViewportContains(mx,my,Math.hypot(x2-x1,y2-y1)*.5+s.width*2))continue;ctx.save();ctx.globalAlpha=clamp(s.life/s.max,0,1)*.82;ctx.strokeStyle=s.color;ctx.lineWidth=s.width;ctx.lineCap='round';ctx.shadowBlur=s.width*1.4;ctx.shadowColor=s.color;ctx.beginPath();ctx.moveTo(sx(s.x1),sy(s.y1));ctx.lineTo(sx(s.x2),sy(s.y2));ctx.stroke();ctx.restore()}for(const d of doorTraps){if(!effectsViewportContains(sx(d.x),sy(d.y),58))continue;ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore()}if(game.domainClash)drawDomainClashArena();
+function effectsViewportContains(x,y,pad=0){
+ return x+pad>=effectsViewportLeft&&x-pad<=effectsViewportRight&&y+pad>=effectsViewportTop&&y-pad<=effectsViewportBottom;
+}
+function drawEffects(){
+ updateEffectsViewportBounds();drawSukunaFireZones();for(const s of trailStrokes){const x1=sx(s.x1),y1=sy(s.y1),x2=sx(s.x2),y2=sy(s.y2),mx=(x1+x2)*.5,my=(y1+y2)*.5;if(!effectsViewportContains(mx,my,Math.hypot(x2-x1,y2-y1)*.5+s.width*2))continue;ctx.save();ctx.globalAlpha=clamp(s.life/s.max,0,1)*.82;ctx.strokeStyle=s.color;ctx.lineWidth=s.width;ctx.lineCap='round';ctx.shadowBlur=s.width*1.4;ctx.shadowColor=s.color;ctx.beginPath();ctx.moveTo(sx(s.x1),sy(s.y1));ctx.lineTo(sx(s.x2),sy(s.y2));ctx.stroke();ctx.restore()}for(const d of doorTraps){if(!effectsViewportContains(sx(d.x),sy(d.y),58))continue;ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore()}if(game.domainClash)drawDomainClashArena();
  const activeDomainView=[player,enemy].find(domainIsActive);for(const f of [player,enemy]){
   const visibleInDomainView=!activeDomainView||domainViewMatches(f,activeDomainView),clashant=!!(game.domainClash&&game.domainClash.members.includes(f));
   if(f&&!f.dead&&!clashant&&(f.domainTimer>0||f.domainWindup>0||f.domainType==='void02'))drawDomainArena(f);
