@@ -4049,8 +4049,41 @@ function drawYujiDomainSmokeBackground(){
   ctx.bezierCurveTo(x-w*.035+drift,y-h*.045,x+w*.025-drift,y+h*.052,x+w*.075,y-h*.018);
   ctx.stroke();ctx.restore();
  }
+ drawYujiBlackWaterRipples(w,h,t,edge);
  ctx.restore();
 }
+function drawYujiBlackWaterRipples(w,h,t,edge){
+ // Surface rings only; the falling droplet is deliberately never drawn.
+ const sites=[
+  {x:.17,y:.73,phase:.08,size:.98},
+  {x:.52,y:.84,phase:.43,size:.76},
+  {x:.84,y:.71,phase:.71,size:1.08}
+ ];
+ ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
+ for(let i=0;i<sites.length;i++){
+  const site=sites[i],cx=w*site.x,cy=Math.max(h*site.y,edge(cx)+h*.145);
+  const maxRX=Math.min(w*.155,h*.56)*site.size,maxRY=maxRX*.31;
+  const cycle=((t*.34+site.phase)%1+1)%1;
+  for(let ring=0;ring<4;ring++){
+   const p=(cycle+ring*.25)%1;
+   const rx=maxRX*(.12+.88*p),ry=maxRY*(.12+.88*p);
+   ctx.globalAlpha=.22*(1-p)*(ring%2?.78:1);
+   ctx.strokeStyle=ring%2?'#b7aeb8':'#e0d9df';
+   ctx.lineWidth=Math.max(.9,h*.0026)*(1-p*.2);
+   ctx.beginPath();
+   for(let seg=0;seg<=64;seg++){
+    const a=seg/64*Math.PI*2;
+    const wobble=1+Math.sin(a*3+t*.55+i*1.7+ring)*.014+Math.sin(a*7-t*.31+i*2.3)*.007;
+    const x=cx+Math.cos(a)*rx*wobble;
+    const y=cy+Math.sin(a)*ry*wobble;
+    if(seg===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
+   }
+   ctx.stroke();
+  }
+ }
+ ctx.restore();
+}
+
 function drawShrineDomainInterior(cx,cy,r){
  drawYujiDomainSmokeBackground();
 }
