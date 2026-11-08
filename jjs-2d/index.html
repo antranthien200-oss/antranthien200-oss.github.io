@@ -2484,23 +2484,39 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m==='sukunaFlurryWindup'||m==='sukunaFlurry'||m==='sukunaFlurryMiss'||m==='sukunaFlurryEnd'||m==='captured_sukunaFlurry'){
   ctx.save();const a=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;ctx.rotate(a);
   if(m==='captured_sukunaFlurry'){
+   // Use the exact awakened M1 crescent silhouette: solid black interior and fine white rim.
+   // Each cut keeps its own scale, placement and angle so the flurry feels irregular but consistent.
    const cuts=[
-    [-25,-27,49,-.72,-12,3.2,0],[8,-22,62,.46,13,3.8,1],
-    [-5,-3,39,-.18,9,2.4,0],[25,10,53,-1.02,-8,3.1,1],
-    [-24,22,36,.78,-9,2.0,0],[5,28,48,.98,11,2.8,1],
-    [-35,-3,31,1.16,7,1.95,1],[30,-28,34,-.42,6,1.9,0]
+    [-25,-27,49,3.2,-.72,.96],
+    [8,-22,62,4.0,.46,.92],
+    [-5,-3,39,2.7,-.18,.94],
+    [25,10,53,3.5,-1.02,.9],
+    [-24,22,36,2.3,.78,.88],
+    [5,28,48,3.1,.98,.94],
+    [-35,-3,31,2.2,1.16,.84],
+    [30,-28,34,2.4,-.42,.9]
    ];
-   const fade=.7+.3*Math.sin(Math.PI*p);
+   const pulse=.88+.12*Math.sin(game.time*21);
    for(let i=0;i<cuts.length;i++){
-    const [x,y,len,rot,curve,width,shape]=cuts[i],pulse=.58+.42*Math.sin(p*18+i*1.7);
-    ctx.save();ctx.translate(x,y);ctx.rotate(rot);ctx.globalAlpha=fade*pulse*vfxFade;ctx.lineCap='round';ctx.lineJoin='round';
-    ctx.strokeStyle='#74142d';ctx.lineWidth=width+1.4;ctx.shadowColor='#ff405f';ctx.shadowBlur=7;ctx.beginPath();
-    if(shape===0){ctx.moveTo(-len*.5,curve*.15);ctx.bezierCurveTo(-len*.22,curve*1.6,len*.15,-curve*1.15,len*.5,-curve*.1)}
-    else{ctx.moveTo(-len*.5,-curve*.3);ctx.lineTo(-len*.12,curve*1.2);ctx.lineTo(len*.12,-curve*.85);ctx.lineTo(len*.5,curve*.25)}
-    ctx.stroke();ctx.strokeStyle='#fff0f2';ctx.lineWidth=Math.max(.7,width*.27);ctx.shadowColor='#fff0f2';ctx.shadowBlur=3;ctx.stroke();ctx.restore();
+    const [x,y,length,thickness,rotation,opacity]=cuts[i];
+    const stagger=.82+.18*Math.sin(game.time*16+i*1.37);
+    ctx.save();ctx.translate(x,y);ctx.rotate(rotation+Math.PI/2);
+    ctx.globalAlpha=fade*pulse*stagger*opacity*vfxFade;
+    ctx.beginPath();ctx.moveTo(-length*.5,0);
+    ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
+    ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
+    ctx.closePath();
+    ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;ctx.lineJoin='round';
+    ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;
+    ctx.fill();ctx.stroke();
+    ctx.restore();
    }
-   ctx.globalAlpha=.55*fade*vfxFade;ctx.fillStyle='#ff7890';ctx.shadowColor='#ff4968';ctx.shadowBlur=5;
-   for(let i=0;i<6;i++){const x=Math.cos(i*2.4+p*8)*(17+(i%3)*9),y=Math.sin(i*2.4+p*8)*(13+(i%2)*10);ctx.beginPath();ctx.arc(x,y,1.4+(i%2)*.6,0,Math.PI*2);ctx.fill()}
+   // Tiny white contact glints complement the crescents without becoming extra slash shapes.
+   ctx.globalAlpha=.48*fade*vfxFade;ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=4;
+   for(let i=0;i<4;i++){
+    const x=-12+i*8,y=(i%2?1:-1)*(10+(i%3)*7);
+    ctx.beginPath();ctx.arc(x,y,1.1+(i%2)*.35,0,Math.PI*2);ctx.fill();
+   }
   }else if(m==='sukunaFlurryWindup'){
    const pull=1-clamp(p/.58,0,1);ctx.globalAlpha=.2+.55*pull;ctx.strokeStyle='#ff526d';ctx.lineWidth=2.5;ctx.shadowColor='#ff405f';ctx.shadowBlur=9;ctx.beginPath();ctx.arc(-25,-4,19+pull*10,-1.1,1.05);ctx.stroke();
    ctx.globalAlpha=.35+.45*pull;ctx.fillStyle='#ff657d';for(let i=0;i<4;i++){const q=i*Math.PI*.5+p*4;ctx.beginPath();ctx.arc(-31+Math.cos(q)*9,-5+Math.sin(q)*9,1.5,0,Math.PI*2);ctx.fill()}
