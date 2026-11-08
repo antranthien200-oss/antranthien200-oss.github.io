@@ -4123,8 +4123,8 @@ function getYujiSmokeBackgroundCache(w,h){
 
 let sukunaPagodaCache={canvas:null,width:0,height:0};
 function drawSukunaPagodaArchitecture(w,h){
- const scale=Math.min(w*.68/680,h*.36/430),width=680*scale,height=430*scale,sx=scale,sy=scale,left=(w-width)*.5,bottom=h*.965;
- ctx.save();ctx.translate(left,bottom-height);ctx.scale(sx,sy);
+ const scale=Math.min(w*.68/680,h*.36/430),width=680*scale,height=430*scale,sx=scale,sy=scale,left=(w-width)*.5,ringCenterY=yujiDomainSmokeEdge(w*.5,h,0),centerY=ringCenterY-h*.035,top=centerY-height*.5;
+ ctx.save();ctx.translate(left,top);ctx.scale(sx,sy);
  ctx.globalAlpha=.48;ctx.fillStyle='#020205';ctx.beginPath();ctx.ellipse(340,414,338,27,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
  const poly=(pts,fill,stroke='#130c12',line=5)=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke()}};
  const beam=(x,y,ww,hh,fill,edge='#180d14',line=4)=>{ctx.fillStyle=fill;ctx.fillRect(x,y,ww,hh);if(edge){ctx.strokeStyle=edge;ctx.lineWidth=line;ctx.strokeRect(x,y,ww,hh)}};
