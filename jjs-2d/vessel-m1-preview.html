@@ -4079,16 +4079,13 @@ function drawYujiDomainSmokeBackground(){
  ctx.restore();
 }
 function drawYujiBlackWaterRipples(w,h,t,edge){
- // One large, centered water ripple viewed at a shallow, tilted angle.
+ // One large, centered horizontal oval ripple viewed from a shallow angle.
  const cx=w*.5,boundary=edge(cx);
  const blackHeight=Math.max(1,h-boundary);
  const cy=boundary+blackHeight*.5;
- const ovalRatio=.48,tilt=-12*Math.PI/180;
- const cosTilt=Math.cos(tilt),sinTilt=Math.sin(tilt);
- // Fit the rotated oval's full bounds inside the black water region and viewport.
- const widthFactor=Math.hypot(cosTilt,ovalRatio*sinTilt);
- const heightFactor=Math.hypot(sinTilt,ovalRatio*cosTilt);
- const maxRadius=Math.max(8,Math.min(w*.47/widthFactor,blackHeight*.44/heightFactor));
+ const ovalRatio=.48;
+ // Keep the entire oval visible inside the black water region and viewport.
+ const maxRadius=Math.max(8,Math.min(w*.47,blackHeight*.44/ovalRatio));
  const cycle=((t*.17)%1+1)%1;
  ctx.save();ctx.lineCap='round';ctx.lineJoin='round';
  ctx.shadowColor='rgba(238,244,250,.56)';
@@ -4106,10 +4103,8 @@ function drawYujiBlackWaterRipples(w,h,t,edge){
   for(let seg=0;seg<=128;seg++){
    const a=seg/128*Math.PI*2;
    const wobble=1+Math.sin(a*3+t*.42+ring*.8)*.004+Math.sin(a*7-t*.25+ring)*.002;
-   const ovalX=Math.cos(a)*radius*wobble;
-   const ovalY=Math.sin(a)*radius*ovalRatio*wobble;
-   const x=cx+ovalX*cosTilt-ovalY*sinTilt;
-   const y=cy+ovalX*sinTilt+ovalY*cosTilt;
+   const x=cx+Math.cos(a)*radius*wobble;
+   const y=cy+Math.sin(a)*radius*ovalRatio*wobble;
    if(seg===0)ctx.moveTo(x,y);else ctx.lineTo(x,y);
   }
   ctx.stroke();
