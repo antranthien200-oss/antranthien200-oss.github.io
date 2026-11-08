@@ -3485,11 +3485,12 @@ function drawPixelSignHand(x,y,scale,rotation,skin,sleeve,variant='palm'){
 function drawDomainSignHand(x,y,angle,theme,scale,style,form=1){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
  ctx.lineCap='round';ctx.lineJoin='round';
+ const baseAlpha=ctx.globalAlpha;
  const ink=theme.shadow||'#111820',main=theme.main||'#7da7d8',accent=theme.accent||main;
  const strokeCurve=(draw,width)=>{
   ctx.beginPath();draw();ctx.strokeStyle=ink;ctx.lineWidth=width+2.3;ctx.stroke();
   ctx.strokeStyle=main;ctx.lineWidth=width;ctx.stroke();
-  ctx.globalAlpha=.42;ctx.strokeStyle=accent;ctx.lineWidth=Math.max(.65,width*.22);ctx.stroke();ctx.globalAlpha=1;
+  ctx.globalAlpha=baseAlpha*.42;ctx.strokeStyle=accent;ctx.lineWidth=Math.max(.65,width*.22);ctx.stroke();ctx.globalAlpha=baseAlpha;
  };
  // Wrist and palm have a continuous silhouette rather than a detached round fist.
  ctx.beginPath();ctx.moveTo(-3.8,4);ctx.quadraticCurveTo(-4.2,7,-3.4,10);
@@ -3543,7 +3544,6 @@ function drawDomainSignHand(x,y,angle,theme,scale,style,form=1){
 function drawDomainHandsignPose(f,cx,headY,headR,theme,p,armsOnly=false){
  const t=clamp(p,0,1);
  const ease=x=>{x=clamp(x,0,1);return x*x*x*(x*(x*6-15)+10)};
- const mix=(a,b,k)=>a+(b-a)*k;
  const mixAngle=(a,b,k)=>a+Math.atan2(Math.sin(b-a),Math.cos(b-a))*k;
  const bezier=(a,b,c,d,u)=>{
   const v=1-u;
