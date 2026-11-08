@@ -2001,12 +2001,16 @@ function collideWorld(f){f.x=clamp(f.x,45,WORLD.w-45);f.y=clamp(f.y,45,WORLD.h-4
 function tenTargets(f){return [player,enemy,trainingDummy].filter(t=>t&&!t.dead&&t!==f&&t.team!==f.team)}
 function tenNearestTarget(f,range=Infinity){const list=tenTargets(f).map(t=>({t,d:dist(f,t)})).filter(v=>v.d<=range).sort((a,b)=>a.d-b.d);return list.length?list[0].t:null}
 function tenAreaHit(x,y,r,source,amount,opts={}){for(const target of tenTargets(source)){const d=Math.hypot(target.x-x,target.y-y);if(d<=r+18){const a=Math.atan2(target.y-y,target.x-x);damage(target,amount,source,{...opts,kx:Math.cos(a)*(opts.push??7),ky:Math.sin(a)*(opts.push??7)})}}}
-function spawnSukunaFireZone(x,y,owner){
- const zone={x:clamp(x,55,WORLD.w-55),y:clamp(y,55,WORLD.h-55),life:5.8,max:5.8,radius:270,tick:.12,owner,seed:Math.random()*Math.PI*2};
+function sukunaFireZoneContains(target,zone,padding=0){
+ const dx=target.x-zone.x,dy=target.y-zone.y,d=Math.hypot(dx,dy),forward=dx*Math.cos(zone.angle)+dy*Math.sin(zone.angle);
+ return d<=zone.radius+padding&&forward>=-padding;
+}
+function spawnSukunaFireZone(x,y,owner,angle=0){
+ const zone={x:clamp(x,55,WORLD.w-55),y:clamp(y,55,WORLD.h-55),life:5.8,max:5.8,radius:270,tick:.12,owner,angle,seed:Math.random()*Math.PI*2};
  fireZones.push(zone);
  fireBurst(zone.x,zone.y,28);
  game.shake=Math.max(game.shake,10);
- for(const target of tenTargets(owner)){if(Math.hypot(target.x-zone.x,target.y-zone.y)<=zone.radius)damage(target,9,owner,{stun:.28,kx:0,ky:0,big:true,unblockable:true,ignoreInvuln:true,color:'#ff8438'})}
+ for(const target of tenTargets(owner)){if(sukunaFireZoneContains(target,zone))damage(target,9,owner,{stun:.28,kx:0,ky:0,big:true,unblockable:true,ignoreInvuln:true,color:'#ff8438'})}
 }
 function updateSukunaFireZones(dt){
  for(let i=fireZones.length-1;i>=0;i--){
@@ -2014,7 +2018,7 @@ function updateSukunaFireZones(dt){
   if(zone.tick<=0&&zone.life>0){
    zone.tick=.42;
    for(const target of tenTargets(zone.owner)){
-    if(Math.hypot(target.x-zone.x,target.y-zone.y)<=zone.radius-5){
+    if(sukunaFireZoneContains(target,zone,-5)){
      damage(target,4.2,zone.owner,{stun:0,invuln:0,kx:0,ky:0,unblockable:true,ignoreInvuln:true,color:'#ff8739'});
     }
    }
@@ -2026,7 +2030,11 @@ function drawSukunaFireZones(){
  for(const zone of fireZones){
   const x=sx(zone.x),y=sy(zone.y),r=zone.radius,fade=clamp(zone.life/.8,0,1);
   const hash=n=>{const v=Math.sin(n*127.1+zone.seed*311.7)*43758.5453;return v-Math.floor(v)};
-  const point=i=>{const a=hash(i*3+1)*Math.PI*2,rad=Math.sqrt(hash(i*3+2))*.91*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad*.78}};
+  const point=i=>{
+   const a=zone.angle+(hash(i*3+1)-.5)*Math.PI,rad=Math.sqrt(hash(i*3+2))*.91*r;
+   const lx=Math.cos(a-zone.angle)*rad,ly=Math.sin(a-zone.angle)*rad*.78,ca=Math.cos(zone.angle),sa=Math.sin(zone.angle);
+   return {x:lx*ca-ly*sa,y:lx*sa+ly*ca};
+  };
   const wind=3.5+2.2*Math.sin(game.time*2.15+zone.seed),gust=Math.sin(game.time*5.2+zone.seed)*1.8;
   const patchCount=isMobileDevice?14:23;
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
@@ -2247,7 +2255,7 @@ function updateProjectiles(dt){
    const outside=p.x<20||p.y<20||p.x>WORLD.w-20||p.y>WORLD.h-20;
    if(hit||p.travelled>=p.flightLength||p.life<=0||outside){
     const x=hit?hit.x:clamp(p.x,55,WORLD.w-55),y=hit?hit.y:clamp(p.y,55,WORLD.h-55);
-    spawnSukunaFireZone(x,y,p.owner);
+    spawnSukunaFireZone(x,y,p.owner,Math.atan2(p.vy,p.vx));
     fireBurst(x,y,24);
     if(hit)popText(x,y-72,'FLAME ARROW · BURNING','#ffb34e',16);
     projectiles.splice(i,1);
