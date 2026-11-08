@@ -4112,16 +4112,16 @@ function drawYujiBlackWaterRipples(w,h,t,edge){
   const clipStep=Math.max(3,w/118);
   for(let x=0;x<=w;x+=clipStep){const y=edge(x);if(x===0)ctx.moveTo(x,y);else ctx.lineTo(x,y)}
   ctx.lineTo(w,h);ctx.lineTo(0,h);ctx.closePath();ctx.clip();
-  ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(238,244,250,.58)';ctx.strokeStyle='#f1f5fa';
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowColor='rgba(238,244,250,.72)';ctx.strokeStyle='#f1f5fa';
   for(let ring=0;ring<ringCount;ring++){
    const age=((t+ring*stagger)%life+life)%life;
    const radius=startRadius+age*expansionSpeed;
    if(radius>maxRadius)continue;
    const progress=radius/maxRadius,phase3=t*.42+ring*.8,phase7=-t*.25+ring;
    const sin3=Math.sin(phase3),cos3=Math.cos(phase3),sin7=Math.sin(phase7),cos7=Math.cos(phase7);
-   ctx.globalAlpha=Math.pow(1-progress,1.05)*.9;
-   ctx.shadowBlur=Math.max(.7,h*.0022)*(1-progress*.5);
-   ctx.lineWidth=Math.max(1,h*.0021)*(1-progress*.12);
+   ctx.globalAlpha=Math.pow(1-progress,1.05)*.94;
+   ctx.shadowBlur=Math.max(1.2,h*.0031)*(1-progress*.5);
+   ctx.lineWidth=Math.max(1.8,h*.00325)*(1-progress*.12);
    ctx.beginPath();
    for(let i=0;i<YUJI_RIPPLE_POINTS.length;i++){
     const p=YUJI_RIPPLE_POINTS[i];
