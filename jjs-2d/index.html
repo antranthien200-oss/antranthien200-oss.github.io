@@ -1421,6 +1421,7 @@ function updateVesselAwakenSequence(f,dt){
   const a=seq.angle,dx=Math.cos(a),dy=Math.sin(a),oldX=f.x,oldY=f.y;
   f.face=a;setPose('sukunaHeadCarryWindup',seq.dashDuration,a);
   f.x+=dx*28*60*dt;f.y+=dy*28*60*dt;collideWorld(f);
+  trailStrokes.push({x1:oldX-dx*20,y1:oldY-dy*20-23,x2:f.x,y2:f.y-23,life:.24,max:.24,color:'#ff405f',width:18});
   const sx=f.x-oldX,sy=f.y-oldY,lenSq=sx*sx+sy*sy||1;
   seq.sparkTimer=(seq.sparkTimer??0)-dt;if(seq.sparkTimer<=0){seq.sparkTimer=.035;burst(f.x-dx*18,f.y-dy*18-23,'#ff526b',4,4.5);burst(f.x-dx*18,f.y-dy*18-23,'#fff0f2',2,3)}
   const along=clamp(((t.x-oldX)*sx+(t.y-oldY)*sy)/lenSq,0,1);
@@ -1450,6 +1451,10 @@ function updateVesselAwakenSequence(f,dt){
   const aim=aimedAt(f),a=f.team==='player'?Math.atan2(aim.y-f.y,aim.x-f.x):seq.angle,dx=Math.cos(a),dy=Math.sin(a),px=-dy,py=dx;
   seq.angle=a;f.face=a;setPose('sukunaHeadCarryRun',seq.carryDuration,a);
   const oldX=f.x,oldY=f.y;f.x+=dx*475*dt;f.y+=dy*475*dt;collideWorld(f);
+  if(Math.hypot(f.x-oldX,f.y-oldY)>1){
+   trailStrokes.push({x1:oldX,y1:oldY-23,x2:f.x,y2:f.y-23,life:.27,max:.27,color:'#fa536a',width:15});
+   if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
+  }
   f.jump=.06+Math.abs(Math.sin(game.time*23))*.07;
   t.x=f.x-dx*72+px*9;t.y=f.y-dy*72+py*9;t.jump=0;
   if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
@@ -2870,9 +2875,9 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const pulse=.55+.45*Math.sin(game.time*25),run=m==='sukunaHeadCarryRun';
   ctx.globalAlpha=vfxFade*(run?.42:.72);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ff526b';ctx.shadowColor='#ed263f';ctx.shadowBlur=run?12:18;ctx.lineWidth=run?3:4;
   if(m==='sukunaHeadCarryWindup'){
-   ctx.beginPath();ctx.arc(-25,-3,20+12*p,-1.25,.95);ctx.stroke();
+   // Dash trail is rendered by trailStrokes; no extra curved curse-like line.
   }else if(run){
-   for(let i=0;i<5;i++){const y=-33+i*16;ctx.globalAlpha=vfxFade*(.2+.18*pulse);ctx.beginPath();ctx.moveTo(-74,y);ctx.quadraticCurveTo(-48,y-7*Math.sin(game.time*17+i),-20,y);ctx.stroke()}
+   // Keep the actual moving trail; remove the decorative wavy multi-line effect.
   }else if(m==='sukunaHeadCarryThrow'){
    ctx.globalAlpha=vfxFade*(.35+.45*pulse);ctx.beginPath();ctx.arc(22,0,28+18*p,-1.45+p*.4,1.35+p*.5);ctx.stroke();
   }else if(m==='sukunaHeadCarryLeap'){
