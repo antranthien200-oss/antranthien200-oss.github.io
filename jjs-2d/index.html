@@ -979,8 +979,9 @@ function mobileAimAtTarget(){
  const candidates=[enemy];
  if(trainingDummy&&!trainingDummy.dead&&dist(player,trainingDummy)<980)candidates.push(trainingDummy);
  let target=candidates.filter(t=>t&&!t.dead).sort((a,b)=>dist(player,a)-dist(player,b))[0]||enemy;
- mouse.x=clamp(target.x-camera.x+W/2,12,W-12);
- mouse.y=clamp(target.y-camera.y+H/2,12,H-12);
+ const scale=cameraViewScale();
+ mouse.x=clamp(W/2+(target.x-camera.x)/scale,12,W-12);
+ mouse.y=clamp(H/2+(target.y-camera.y)/scale,12,H-12);
 }
 function mobileButtonAction(action){
  if(!game.started||game.paused||game.over||!player||player.dead)return;
@@ -1299,7 +1300,9 @@ function damage(target,amount,source,opts={}){
  updateHud();
 }
 function circleHit(x,y,r,source,amount,opts={}){let target=source===player?targetOf(source):player;if(target.dead)return;let d=Math.hypot(target.x-x,target.y-y),mobileBonus=mobileControlsEnabled&&source===player?14:0;if(d<r+18+mobileBonus){let ang=Math.atan2(target.y-y,target.x-x);damage(target,amount,source,{...opts,kx:Math.cos(ang)*(opts.push||4),ky:Math.sin(ang)*(opts.push||4)})}}
-function aimWorld(){return {x:mouse.x-W/2+camera.x,y:mouse.y-H/2+camera.y}}
+const MOBILE_CAMERA_ZOOM=1.5;
+function cameraViewScale(){return mobileControlsEnabled?MOBILE_CAMERA_ZOOM:1}
+function aimWorld(){const scale=cameraViewScale();return {x:camera.x+(mouse.x-W/2)*scale,y:camera.y+(mouse.y-H/2)*scale}}
 let camera={x:1100,y:750};
 function activeMoves(f){if(f.char==='yuta'){if(f.domainType==='yuta'&&f.domainTimer>0){const moves=(f.awakened?CHARS.yuta.awakeMoves:CHARS.yuta.moves).map(m=>m.slice());moves[3]=f.yutaHeldKatana?['KATANA · '+f.yutaHeldKatana.technique,'Press M1 to run and activate the copied technique']:f.yutaJacobReady?["JACOB'S LADDER",'Press 4 while aiming at a target']:['AUTHENTIC MUTUAL LOVE · '+Math.min(4,f.yutaDomainHits||0)+'/4','Walk near one of the four landed katanas'];return moves}if(f.rikaMode)return f.awakened?YUTA_RIKA_AWAKE_MOVES:YUTA_RIKA_MOVES;if(f.awakened){const moves=CHARS.yuta.awakeMoves.map(m=>m.slice());moves[1]=['COPY: '+YUTA_COPY_OPTIONS[(f.yutaCopyIndex||0)%YUTA_COPY_OPTIONS.length],'Cycle the copied technique with G'];return moves}return CHARS.yuta.moves}if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
 function targetOf(f){if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<112&&dist(f,trainingDummy)<980)return trainingDummy;}return f===player?enemy:player}
@@ -2371,7 +2374,7 @@ function updateMobileCooldowns(){
 }
 function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;$('pHealth').style.width=(player.hp/player.maxHp*100)+'%';$('eHealth').style.width=(enemy.hp/enemy.maxHp*100)+'%';$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100);$('ultFill').style.width=awakeningPct+'%';$('ultFill').classList.toggle('draining',player.awakened);$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();}
 
-function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)$('awakeningCutscene').classList.remove('active');return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updateDomainClash(dt);runScheduledTasks();updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=Math.pow(.97,dt*60);p.vy*=Math.pow(.97,dt*60);p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);camera.x=clamp(camera.x,W/2,WORLD.w-W/2);camera.y=clamp(camera.y,H/2,WORLD.h-H/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud()}
+function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)$('awakeningCutscene').classList.remove('active');return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updateDomainClash(dt);runScheduledTasks();updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=Math.pow(.97,dt*60);p.vy*=Math.pow(.97,dt*60);p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud()}
 function sx(x){return x-camera.x+W/2}function sy(y){return y-camera.y+H/2}
 function rect(x,y,w,h,c,stroke){ctx.fillStyle=c;ctx.fillRect(sx(x),sy(y),w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sx(x),sy(y),w,h)}}
 function drawMap(){
@@ -2466,10 +2469,12 @@ function drawMap(){
 
   ctx=screenCtx;W=screenW;H=screenH;camera.x=camX;camera.y=camY;mapCacheDirty=false;
  }
- const sourceX=clamp(camera.x-W/2,0,Math.max(0,WORLD.w-W));
- const sourceY=clamp(camera.y-H/2,0,Math.max(0,WORLD.h-H));
- const sourceW=Math.min(W,WORLD.w-sourceX),sourceH=Math.min(H,WORLD.h-sourceY);
- ctx.drawImage(mapCanvas,sourceX,sourceY,sourceW,sourceH,0,0,W,H);
+ const viewScale=cameraViewScale(),viewW=W*viewScale,viewH=H*viewScale;
+ const sourceX=clamp(camera.x-viewW/2,0,Math.max(0,WORLD.w-viewW));
+ const sourceY=clamp(camera.y-viewH/2,0,Math.max(0,WORLD.h-viewH));
+ const sourceW=Math.min(viewW,WORLD.w-sourceX),sourceH=Math.min(viewH,WORLD.h-sourceY);
+ const destX=sourceX-camera.x+W/2,destY=sourceY-camera.y+H/2;
+ ctx.drawImage(mapCanvas,sourceX,sourceY,sourceW,sourceH,destX,destY,sourceW,sourceH);
 }function drawLimb(x,y,len,w,angle,color,edge){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=edge||'#101820';ctx.fillRect(-1,-w/2-1,len+2,w+2);ctx.fillStyle=color;ctx.fillRect(0,-w/2,len,w);ctx.fillStyle='#ffffff22';ctx.fillRect(2,-w/2+1,len-5,2);ctx.fillStyle=color;ctx.fillRect(len-7,-w/2-2,9,w+4);ctx.restore();
 }
@@ -3921,13 +3926,13 @@ function drawEffects(){drawSukunaFireZones();for(const s of trailStrokes){ctx.sa
  for(const t of texts){ctx.save();ctx.globalAlpha=clamp(t.life/t.max,0,1);ctx.fillStyle='#070b12';ctx.font=`1000 ${t.size}px system-ui`;ctx.textAlign='center';ctx.fillText(t.text,sx(t.x)+2,sy(t.y)+2);ctx.fillStyle=t.color;ctx.fillText(t.text,sx(t.x),sy(t.y));ctx.restore()}}
 function drawMobileEnemyPointer(){
  if(!mobileControlsEnabled||!game.started||game.paused||!player||player.dead||!enemy||enemy.dead)return;
- const ex=sx(enemy.x),ey=sy(enemy.y);
+ const zoom=cameraViewScale(),ex=W/2+(sx(enemy.x)-W/2)/zoom,ey=H/2+(sy(enemy.y)-H/2)/zoom;
  // Treat HUD and the lower touch-control band as occluded screen space.
  const left=24,right=W-24;
  const top=Math.min(102,H*.2);
  const bottom=H-Math.min(218,H*.29);
  if(ex>=left&&ex<=right&&ey>=top&&ey<=bottom)return;
- const ox=clamp(sx(player.x),left,right),oy=clamp(sy(player.y),top,bottom);
+ const ox=clamp(W/2+(sx(player.x)-W/2)/zoom,left,right),oy=clamp(H/2+(sy(player.y)-H/2)/zoom,top,bottom);
  const dx=ex-ox,dy=ey-oy,len=Math.hypot(dx,dy);
  if(len<1)return;
  let t=Infinity;
@@ -4029,6 +4034,7 @@ function drawYujiSkillImpactEffects(){
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
+ const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons();drawEffects();drawYujiCrushEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  // Handsign cut-ins are the top gameplay layer: the fighter and HUD cannot obscure the pose.
