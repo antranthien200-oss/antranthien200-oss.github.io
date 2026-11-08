@@ -3515,8 +3515,8 @@ function drawDomainHandsignCutin(f,p,accent){
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
- const panelW=compact?W*8.00:wide?W*8.64:W*8.00;
- const panelH=compact?H*.34:wide?H*.16:H*.25;
+ const panelW=compact?W*4.00:wide?W*4.32:W*4.00;
+ const panelH=compact?H*.68:wide?H*.32:H*.50;
  // Keep the banner's long axis full length; pop it open and closed across its thickness.
  const panelScaleX=1;
  const panelScaleY=Math.max(.004,(.08+.92*enterEase)*(1-fold));
@@ -3540,7 +3540,7 @@ function drawDomainHandsignCutin(f,p,accent){
  // Keep the figure and the two English labels visible while the panel folds away.
  ctx.globalAlpha=clamp(1-fold*1.18,0,1);
  // Enlarge the fighter to balance the much longer banner without crowding its height.
- const headR=clamp(panelH*.235,29,62);
+ const headR=clamp(panelH*.235,29,120);
  const avatarX=0,avatarY=0;
  const poseProgress=clamp(t/.72,0,1),spring=1+Math.sin(enterEase*Math.PI)*.045;
  const headScale=headR/14.8*spring;
