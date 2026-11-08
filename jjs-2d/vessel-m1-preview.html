@@ -3543,8 +3543,9 @@ function drawDomainHandsignCutin(f,p,accent){
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
  const panelW=compact?W*2.00:wide?W*2.16:W*2.00;
  const panelH=compact?H*.34:wide?H*.16:H*.25;
- const panelScaleX=Math.max(.004,(.78+.22*enterEase)*(1-fold));
- const panelScaleY=.92+.08*enterEase;
+ // Keep the banner's long axis full length; pop it open and closed across its thickness.
+ const panelScaleX=1;
+ const panelScaleY=Math.max(.004,(.08+.92*enterEase)*(1-fold));
  ctx.save();
  // Darken the arena once for the cut-in; let the background return as the panel closes.
  ctx.globalAlpha=.5*(1-.9*fold);ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
