@@ -1883,7 +1883,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
       if(!valid())return;
       const x=f.x+Math.cos(angle)*42,y=f.y-23+Math.sin(angle)*42;
       fireBurst(x,y,17);
-      projectiles.push({x,y,vx:Math.cos(angle)*21,vy:Math.sin(angle)*21,r:19,life:2.2,maxDistance:980,travelled:0,flightLength:980,owner:f,kind:'sukunaFireArrow',damage:10,color:'#ff8b37'});
+      projectiles.push({x,y,vx:Math.cos(angle)*21,vy:Math.sin(angle)*21,r:19,life:2.2,maxDistance:980,travelled:0,flightLength:980,owner:f,kind:'sukunaFireArrow',damage:18,color:'#ff8b37'});
       game.shake=Math.max(game.shake,4);showToast('FLAME ARROW · RELEASED',650);
      },2520);
      return;
@@ -2009,16 +2009,16 @@ function spawnSukunaFireZone(x,y,owner,angle=0){
  fireZones.push(zone);
  fireBurst(zone.x,zone.y,28);
  game.shake=Math.max(game.shake,10);
- for(const target of tenTargets(owner)){if(sukunaFireZoneContains(target,zone))damage(target,9,owner,{stun:.28,kx:0,ky:0,big:true,unblockable:true,ignoreInvuln:true,color:'#ff8438'})}
+ for(const target of tenTargets(owner)){if(sukunaFireZoneContains(target,zone))damage(target,18,owner,{stun:.32,kx:0,ky:0,big:true,unblockable:true,ignoreInvuln:true,color:'#ff8438'})}
 }
 function updateSukunaFireZones(dt){
  for(let i=fireZones.length-1;i>=0;i--){
   const zone=fireZones[i];zone.life-=dt;zone.tick-=dt;
   if(zone.tick<=0&&zone.life>0){
-   zone.tick=.42;
+   zone.tick=.36;
    for(const target of tenTargets(zone.owner)){
     if(sukunaFireZoneContains(target,zone,-5)){
-     damage(target,4.2,zone.owner,{stun:0,invuln:0,kx:0,ky:0,unblockable:true,ignoreInvuln:true,color:'#ff8739'});
+     damage(target,7.5,zone.owner,{stun:0,invuln:0,kx:0,ky:0,unblockable:true,ignoreInvuln:true,color:'#ff8739'});
     }
    }
   }
