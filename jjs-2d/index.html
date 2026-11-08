@@ -790,7 +790,7 @@ const CHARS={
   special:'LIMITLESS',specialDesc:'Targeted space-warp reposition; can kick an airborne target.',awakeSpecial:'LIMITLESS',awakeSpecialDesc:'Same teleport special; during the awakening input, G+R triggers the 0.2-second domain variant.',awakening:'SIX EYES',awakeName:'SIX EYES'},
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
   moves:[['CURSED STRIKES','A sliding flurry of punches ending in a kick'],['CRUSHING BLOW','Grab, slam twice, then launch; shockwave on miss'],['DIVERGENT FIST','A wind-up punch with a timed mid-swing input for Black Flash'],['MANJI BLOCK','Block an incoming hit, then punch the attacker back']],
-  awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['HEAD CARRY','Dash, seize the opponent by the head, drag them, throw them, then leap and slam down'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
+  awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Explosive dash, one-hand head carry, brutal throw, aerial chase, and ground slam'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
   special:'COMBAT INSTINCTS',specialDesc:'Feint-cancel a move windup; punch a nearby throwable to launch it.',awakeSpecial:'CLEAVE',awakeSpecialDesc:'A forward grab followed by repeated slashes; deals 40% of current HP (minimum 10).',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
  restless:{name:'RESTLESS GAMBLER',desc:'Kinji Hakari. Use shutter doors, steel balls, and heavy cursed-energy attacks. Awakening: Idle Death Gamble; hit Jackpot for the immortal rushdown form.',color:'#35cf78',hair:'#8cffb1',coat:'#155a36',accent:'#51e98d',skin:'#e0b49b',hp:100,
   moves:[['RESERVE BALLS','A fast steel-ball projectile; ricochets off walls'],['SHUTTER DOORS','Trap and briefly stun an enemy with doors'],['ROUGH ENERGY','A charged unblockable punch; aerial stomp variant'],['FEVER BREAKER','Kick the target, then dropkick them through shutter doors']],
@@ -1420,17 +1420,19 @@ function updateVesselAwakenSequence(f,dt){
  if(seq.phase==='dash'){
   const a=seq.angle,dx=Math.cos(a),dy=Math.sin(a),oldX=f.x,oldY=f.y;
   f.face=a;setPose('sukunaHeadCarryWindup',seq.dashDuration,a);
-  f.x+=dx*20*60*dt;f.y+=dy*20*60*dt;collideWorld(f);
+  f.x+=dx*28*60*dt;f.y+=dy*28*60*dt;collideWorld(f);
   const sx=f.x-oldX,sy=f.y-oldY,lenSq=sx*sx+sy*sy||1;
+  trailStrokes.push({x1:oldX-dx*20,y1:oldY-dy*20-23,x2:f.x,y2:f.y-23,life:.24,max:.24,color:'#ff405f',width:18});
+  seq.sparkTimer=(seq.sparkTimer??0)-dt;if(seq.sparkTimer<=0){seq.sparkTimer=.035;burst(f.x-dx*18,f.y-dy*18-23,'#ff526b',4,4.5);burst(f.x-dx*18,f.y-dy*18-23,'#fff0f2',2,3)}
   const along=clamp(((t.x-oldX)*sx+(t.y-oldY)*sy)/lenSq,0,1);
   const nearX=oldX+sx*along,nearY=oldY+sy*along;
   if(Math.hypot(t.x-nearX,t.y-nearY)<58&&!t.block&&!t.capturedBy){
-   seq.phase='carry';seq.elapsed=0;seq.carryDuration=1.12;seq.angle=a;
+   seq.phase='carry';seq.elapsed=0;seq.carryDuration=.84;seq.angle=a;seq.sparkTimer=0;
    t.capturedBy=f;t.block=false;t.invuln=0;t.stun=99;t.vx=0;t.vy=0;t.jump=0;t.jumpV=0;
    t.motion={name:'captured_sukunaHeadCarry',t:0,duration:seq.carryDuration,angle:a,target:f};
    setMotion(f,'sukunaHeadCarryRun',seq.carryDuration,a,t);f.motion.t=0;
-   burst(t.x,t.y-23,'#ff526b',20,5);burst(t.x,t.y-23,'#ffe8ec',8,3.5);
-   game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
+   burst(t.x,t.y-23,'#ff526b',30,6);burst(t.x,t.y-23,'#ffe8ec',14,4.2);
+   game.hitStop=Math.max(game.hitStop,.055);game.shake=Math.max(game.shake,7);
    popText(t.x,t.y-58,'CAUGHT · NO ESCAPE','#ff8194',13);
    return;
   }
@@ -1448,64 +1450,65 @@ function updateVesselAwakenSequence(f,dt){
   seq.elapsed+=dt;
   const aim=aimedAt(f),a=f.team==='player'?Math.atan2(aim.y-f.y,aim.x-f.x):seq.angle,dx=Math.cos(a),dy=Math.sin(a),px=-dy,py=dx;
   seq.angle=a;f.face=a;setPose('sukunaHeadCarryRun',seq.carryDuration,a);
-  const oldX=f.x,oldY=f.y;f.x+=dx*360*dt;f.y+=dy*360*dt;collideWorld(f);
+  const oldX=f.x,oldY=f.y;f.x+=dx*475*dt;f.y+=dy*475*dt;collideWorld(f);
   f.jump=.06+Math.abs(Math.sin(game.time*23))*.07;
   t.x=f.x-dx*72+px*9;t.y=f.y-dy*72+py*9;t.jump=0;
   if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
   if(Math.hypot(f.x-oldX,f.y-oldY)>1){
-   trailStrokes.push({x1:oldX,y1:oldY-23,x2:f.x,y2:f.y-23,life:.22,max:.22,color:'#fa536a',width:9});
+   trailStrokes.push({x1:oldX,y1:oldY-23,x2:f.x,y2:f.y-23,life:.27,max:.27,color:'#fa536a',width:15});
    if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
   }
+  seq.sparkTimer-=dt;if(seq.sparkTimer<=0){seq.sparkTimer=.055;burst(f.x-dx*36,f.y-dy*36-23,'#ff536b',4,3.8);burst(f.x-dx*36,f.y-dy*36-23,'#fff0f2',2,2.8)}
   if(seq.elapsed>=seq.carryDuration){
    seq.phase='throw';seq.elapsed=0;seq.throwAngle=a;
-   setMotion(f,'sukunaHeadCarryThrow',.25,a,t);f.motion.t=0;
+   setMotion(f,'sukunaHeadCarryThrow',.18,a,t);f.motion.t=0;
    showToast('THROW · SLAM',500);
   }
   return;
  }
  if(seq.phase==='throw'){
   seq.elapsed+=dt;
-  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.25,0,1),ease=p*p*(3-2*p);
+  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.18,0,1),ease=p*p*(3-2*p);
   setPose('sukunaHeadCarryThrow',.25,a);
-  const behind=72-108*ease;
-  t.x=f.x-dx*behind;t.y=f.y-dy*behind;t.jump=.12+Math.sin(p*Math.PI)*3.1;
+  const behind=72-124*ease;
+  t.x=f.x-dx*behind;t.y=f.y-dy*behind;t.jump=.2+Math.sin(p*Math.PI)*4.6;
   if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
   if(p>=1){
    seq.phase='leap';seq.elapsed=0;seq.throwStartX=f.x+dx*69;seq.throwStartY=f.y+dy*69;
-   seq.throwVx=15.5*dx;seq.throwVy=15.5*dy;
-   t.x=seq.throwStartX;t.y=seq.throwStartY;t.jump=1.8;
+   seq.throwVx=21.5*dx;seq.throwVy=21.5*dy;
+   t.x=seq.throwStartX;t.y=seq.throwStartY;t.jump=2.8;
    t.motion={name:'captured_sukunaHeadCarryThrown',t:0,duration:.42,angle:a,target:f};
-   setMotion(f,'sukunaHeadCarryLeap',.42,a,t);f.motion.t=0;f.jump=.5;f.jumpV=0;
+   setMotion(f,'sukunaHeadCarryLeap',.32,a,t);f.motion.t=0;f.jump=.5;f.jumpV=0;
    burst(t.x,t.y-25,'#ff5b70',17,4.6);burst(f.x,f.y-24,'#fff0f2',12,4);
   }
   return;
  }
  if(seq.phase==='leap'){
   seq.elapsed+=dt;
-  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.42,0,1);
+  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.32,0,1);
   setPose('sukunaHeadCarryLeap',.42,a);
   t.x=seq.throwStartX+seq.throwVx*60*seq.elapsed;
   t.y=seq.throwStartY+seq.throwVy*60*seq.elapsed;
-  t.jump=1.6+Math.sin(p*Math.PI)*2.1;
+  t.jump=2.2+Math.sin(p*Math.PI)*2.7;
   if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
-  f.x+=dx*19.2*60*dt;f.y+=dy*19.2*60*dt;collideWorld(f);
-  f.jump=.5+Math.sin(p*Math.PI)*5.4;
+  f.x+=dx*25.5*60*dt;f.y+=dy*25.5*60*dt;collideWorld(f);
+  f.jump=.8+Math.sin(p*Math.PI)*7.2;
   trailStrokes.push({x1:f.x-dx*34,y1:f.y-dy*34-23,x2:f.x,y2:f.y-23,life:.18,max:.18,color:'#ff536b',width:13});
-  if(seq.elapsed>=.42){
+  if(seq.elapsed>=.32){
    f.x=clamp(t.x-dx*38,48,WORLD.w-48);f.y=clamp(t.y-dy*38,48,WORLD.h-48);collideWorld(f);
-   t.x=f.x+dx*36;t.y=f.y+dy*36;t.jump=3.2;
+   t.x=f.x+dx*36;t.y=f.y+dy*36;t.jump=4.5;
    seq.phase='slam';seq.elapsed=0;
-   setPose('sukunaHeadCarrySlam',.32,a);
+   setPose('sukunaHeadCarrySlam',.22,a);
    burst(f.x,f.y-28,'#ff536b',24,6);game.shake=Math.max(game.shake,6);
   }
   return;
  }
  if(seq.phase==='slam'){
   seq.elapsed+=dt;
-  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.32,0,1),ease=p*p*(3-2*p);
-  setPose('sukunaHeadCarrySlam',.32,a);
-  f.jump=5.4*(1-ease);
-  t.x=f.x+dx*36;t.y=f.y+dy*36;t.jump=3.2*(1-ease);
+  const a=seq.throwAngle,dx=Math.cos(a),dy=Math.sin(a),p=clamp(seq.elapsed/.22,0,1),ease=p*p*(3-2*p);
+  setPose('sukunaHeadCarrySlam',.22,a);
+  f.jump=8.1*(1-ease);
+  t.x=f.x+dx*36;t.y=f.y+dy*36;t.jump=4.5*(1-ease);
   if(t.motion){t.motion.t=seq.elapsed;t.motion.angle=a}
   if(seq.elapsed>=.32){
    const impactX=t.x,impactY=t.y;
@@ -1519,9 +1522,9 @@ function updateVesselAwakenSequence(f,dt){
    }
    t.vx=dx*5.5;t.vy=dy*5.5;t.jump=.5;t.jumpV=1.8;
    f.sukunaHeadCarrySlamFx={x:impactX,y:impactY,angle:a,expiresAt:game.time+.72};
-   burst(impactX,impactY,'#f23c58',54,9);burst(impactX,impactY,'#ffc1ca',25,6);burst(impactX,impactY,'#24202a',19,5);
-   addDebris(impactX,impactY,'#b94053',18);game.shake=Math.max(game.shake,16);game.hitStop=Math.max(game.hitStop,.105);
-   popText(impactX,impactY-72,'SHRINE SLAM','#ff8194',20);
+   burst(impactX,impactY,'#f23c58',72,10);burst(impactX,impactY,'#ffc1ca',36,7);burst(impactX,impactY,'#24202a',30,6);
+   addDebris(impactX,impactY,'#b94053',28);game.shake=Math.max(game.shake,20);game.hitStop=Math.max(game.hitStop,.13);
+   popText(impactX,impactY-72,'RUSH · SLAM','#ff8194',22);
    f.vesselAwakenSequence=null;f.rooted=0;f.invuln=.24;f.jump=0;f.jumpV=0;f.vx=0;f.vy=0;
    setMotion(f,'sukunaHeadCarryRecovery',.42,a,t);
   }
@@ -2026,12 +2029,12 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     }
    if(idx===2){
     f.skillCd[idx]=22;f.attackAnim=.42;f.invuln=.35;f.stun=0;f.rooted=99;f.vx=0;f.vy=0;
-    const dashDuration=.42;
+    const dashDuration=.30;
     f.vesselAwakenSequence={phase:'dash',elapsed:0,target:t,angle,dashDuration,serial:(f.vesselAwakenSerial||0)+1};
     f.vesselAwakenSerial=f.vesselAwakenSequence.serial;
     setMotion(f,'sukunaHeadCarryWindup',dashDuration,angle,t);
     burst(f.x,f.y-23,'#ff536b',15,4);burst(f.x,f.y-23,'#fff0f2',6,3);
-    showToast('DISMANTLE · HEAD CARRY',750);return;
+    showToast('RUSH · CATCH',750);return;
    }
    if(idx===3){if(startDomain(f,'shrine',18,1.25,.165,590,1))f.skillCd[idx]=120}
   }return;
@@ -2869,22 +2872,27 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
  if(m==='sukunaHeadCarryWindup'||m==='sukunaHeadCarryRun'||m==='sukunaHeadCarryThrow'||m==='sukunaHeadCarryLeap'||m==='sukunaHeadCarrySlam'||m==='sukunaHeadCarryRecovery'){
   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
-  const pulse=.55+.45*Math.sin(game.time*25),run=m==='sukunaHeadCarryRun';
-  ctx.globalAlpha=vfxFade*(run?.42:.72);ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ff526b';ctx.shadowColor='#ed263f';ctx.shadowBlur=run?12:18;ctx.lineWidth=run?3:4;
+  const pulse=.58+.42*Math.sin(game.time*32),run=m==='sukunaHeadCarryRun';
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.strokeStyle='#ff526b';ctx.shadowColor='#ed263f';ctx.shadowBlur=run?19:25;ctx.lineWidth=run?5:6;
   if(m==='sukunaHeadCarryWindup'){
-   ctx.beginPath();ctx.arc(-25,-3,20+12*p,-1.25,.95);ctx.stroke();
-   for(let i=0;i<4;i++){const a=-1+i*.52+p*2;ctx.beginPath();ctx.moveTo(-25+Math.cos(a)*15,-3+Math.sin(a)*15);ctx.lineTo(-25+Math.cos(a)*27,-3+Math.sin(a)*27);ctx.stroke()}
+   const charge=1-p;ctx.globalAlpha=vfxFade*(.5+.35*charge);
+   ctx.beginPath();ctx.arc(-30,-3,25+17*charge,-1.35,1.1);ctx.stroke();
+   ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.2;ctx.globalAlpha=vfxFade*.8;
+   for(let i=0;i<5;i++){const a=-1.2+i*.48+p*3;ctx.beginPath();ctx.moveTo(-30+Math.cos(a)*17,-3+Math.sin(a)*17);ctx.lineTo(-30+Math.cos(a)*38,-3+Math.sin(a)*38);ctx.stroke()}
   }else if(run){
-   for(let i=0;i<5;i++){const y=-33+i*16;ctx.globalAlpha=vfxFade*(.2+.18*pulse);ctx.beginPath();ctx.moveTo(-74,y);ctx.quadraticCurveTo(-48,y-7*Math.sin(game.time*17+i),-20,y);ctx.stroke()}
+   for(let i=0;i<7;i++){const y=-42+i*14;ctx.globalAlpha=vfxFade*(.28+.2*pulse);ctx.beginPath();ctx.moveTo(-96,y);ctx.bezierCurveTo(-67,y-10*Math.sin(game.time*22+i),-41,y+7*Math.sin(game.time*18+i),-12,y);ctx.stroke()}
+   ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.3;ctx.globalAlpha=vfxFade*.42;
+   for(let i=0;i<4;i++){const y=-31+i*20;ctx.beginPath();ctx.moveTo(-73,y);ctx.lineTo(-25,y-5);ctx.stroke()}
   }else if(m==='sukunaHeadCarryThrow'){
-   ctx.globalAlpha=vfxFade*(.35+.45*pulse);ctx.beginPath();ctx.arc(22,0,28+18*p,-1.45+p*.4,1.35+p*.5);ctx.stroke();
+   const snap=Math.sin(p*Math.PI);ctx.globalAlpha=vfxFade*(.5+.45*pulse);ctx.beginPath();ctx.arc(25,0,34+28*p,-1.55+p*.5,1.45+p*.55);ctx.stroke();
+   ctx.strokeStyle='#fff0f2';ctx.lineWidth=3;ctx.globalAlpha=vfxFade*(.4+.45*snap);ctx.beginPath();ctx.arc(25,0,27+23*p,-1.42+p*.5,1.3+p*.55);ctx.stroke();
   }else if(m==='sukunaHeadCarryLeap'){
-   for(let i=0;i<5;i++){const x=-28+i*13;ctx.globalAlpha=vfxFade*.58;ctx.beginPath();ctx.moveTo(x,25);ctx.quadraticCurveTo(x-8,-8,x+Math.sin(game.time*12+i)*5,-43);ctx.stroke()}
+   for(let i=0;i<7;i++){const x=-39+i*13;ctx.globalAlpha=vfxFade*.72;ctx.beginPath();ctx.moveTo(x,32);ctx.bezierCurveTo(x-14,-3,x+11,-25,x+Math.sin(game.time*17+i)*7,-58);ctx.stroke()}
+   ctx.strokeStyle='#fff0f2';ctx.lineWidth=2.5;ctx.globalAlpha=vfxFade*.65;ctx.beginPath();ctx.arc(0,-10,42,-2.8,-.25);ctx.stroke();
   }else if(m==='sukunaHeadCarrySlam'){
-   ctx.globalAlpha=vfxFade*(.45+.4*pulse);ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-9,-42);ctx.lineTo(24,5);ctx.lineTo(53,23);ctx.moveTo(40,-38);ctx.lineTo(14,4);ctx.stroke();
-  }else{
-   ctx.globalAlpha=vfxFade*.5;ctx.beginPath();ctx.arc(23,0,22+p*12,0,Math.PI*2);ctx.stroke();
-  }
+   ctx.globalAlpha=vfxFade*(.65+.3*pulse);ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-22,-56);ctx.lineTo(17,-8);ctx.lineTo(62,30);ctx.moveTo(43,-54);ctx.lineTo(12,-4);ctx.lineTo(48,27);ctx.stroke();
+   ctx.strokeStyle='#fff0f2';ctx.lineWidth=3;ctx.globalAlpha=vfxFade*.7;ctx.beginPath();ctx.moveTo(-6,-47);ctx.lineTo(22,2);ctx.lineTo(51,25);ctx.stroke();
+  }else{ctx.globalAlpha=vfxFade*.65;ctx.beginPath();ctx.arc(23,0,26+p*18,0,Math.PI*2);ctx.stroke()}
   ctx.restore();return;
  }
  if(m==='sukunaFireArrowCast'){
@@ -3362,17 +3370,22 @@ function drawHeadHands(f){
     handA=P(38+20*pulse,13,-4);handB=P(10,-20,5);handAScale=1.18;
    }else if(name.startsWith('yuji')||name.startsWith('sukuna')){
     if(name==='sukunaHeadCarryWindup'){
-     const load=smoothstep01(progress/.72);handB=P(-24-25*load,-16,-7);handA=P(14,18,-8);handBScale=1.34;handAScale=.9;handBAngle=angle+Math.PI*.72;
+     const load=smoothstep01(progress/.58),snap=smoothstep01(progress);
+     handB=P(-24-43*load,-20,-8-6*snap);handA=P(16+8*snap,22,-10);handBScale=1.46;handAScale=.88;handBAngle=angle+Math.PI*.78;
     }else if(name==='sukunaHeadCarryRun'){
-     const stride=Math.sin(game.time*23);handB=P(-49,8,-7+stride*3);handA=P(18+8*stride,-19,-5);handBScale=1.38;handAScale=.92;handBAngle=angle+Math.PI*.78;
+     const stride=Math.sin(game.time*31),drive=Math.abs(Math.cos(game.time*31));
+     handB=P(-58-8*drive,10,-9+stride*5);handA=P(22+13*stride,-22,-7-drive*3);handBScale=1.48;handAScale=.88;handBAngle=angle+Math.PI*.82;
     }else if(name==='sukunaHeadCarryThrow'){
-     const swing=smoothstep01(progress);handB=P(lerp(-49,reach+48,swing),lerp(8,-14,swing),-8-Math.sin(progress*Math.PI)*16);handA=P(9,-19,7);handBScale=1.38;handAScale=.94;handBAngle=angle-.22;
+     const swing=smoothstep01(progress),snap=Math.sin(progress*Math.PI);
+     handB=P(lerp(-58,reach+72,swing),lerp(10,-20,swing),-12-snap*25);handA=P(lerp(8,reach+27,swing),-19,lerp(8,-18,swing));handBScale=1.48;handAScale=1.12;handBAngle=angle-.3;
     }else if(name==='sukunaHeadCarryLeap'){
-     const rise=Math.sin(progress*Math.PI);handB=P(-20-rise*13,19,-15-rise*13);handA=P(-12-rise*15,-19,-12-rise*15);handAScale=1.18;handBScale=1.18;
+     const rise=Math.sin(progress*Math.PI);
+     handB=P(-25-rise*22,20,-23-rise*24);handA=P(-18-rise*18,-22,-18-rise*20);handAScale=1.28;handBScale=1.32;handBAngle=angle-.2;handAAngle=angle+.18;
     }else if(name==='sukunaHeadCarrySlam'){
-     const drop=smoothstep01(progress);handB=P(lerp(-16,reach+56,drop),-15,lerp(-38,18,drop));handA=P(lerp(-12,reach+28,drop),17,lerp(-32,15,drop));handAScale=1.24;handBScale=1.32;
+     const drop=smoothstep01(progress),whip=Math.sin(progress*Math.PI);
+     handB=P(lerp(-28,reach+78,drop),-17,lerp(-52,28,drop)-whip*8);handA=P(lerp(-20,reach+48,drop),19,lerp(-43,24,drop)-whip*6);handAScale=1.4;handBScale=1.48;handBAngle=angle-.4*whip;handAAngle=angle+.32*whip;
     }else if(name==='sukunaHeadCarryRecovery'){
-     handA=P(22,17,-8);handB=P(22,-17,-8);handAScale=1.08;handBScale=1.08;
+     handA=P(25,19,-11);handB=P(25,-19,-11);handAScale=1.12;handBScale=1.12;
     }else if(name==='sukunaFlurryWindup'){
       const pull=clamp(progress/.35,0,1),thrust=smoothstep01(clamp((progress-.35)/.34,0,1)),recover=smoothstep01(clamp((progress-.78)/.22,0,1));
       const forward=progress<.35?lerp(13,-38,pull):progress<.78?lerp(-38,reach+58,thrust):lerp(reach+58,reach+12,recover);
@@ -4301,9 +4314,9 @@ function drawSukunaHeadCarryEffects(){
   }
   const fx=f.sukunaHeadCarrySlamFx;if(!fx)continue;
   const left=fx.expiresAt-game.time;if(left<=0){f.sukunaHeadCarrySlamFx=null;continue}
-  const p=clamp(1-left/.72,0,1),fade=clamp(left/.72,0,1),radius=20+p*148,x=sx(fx.x),y=sy(fx.y);
+  const p=clamp(1-left/.72,0,1),fade=clamp(left/.72,0,1),radius=24+p*195,x=sx(fx.x),y=sy(fx.y);
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade*.75;ctx.fillStyle='rgba(244,55,83,.18)';ctx.beginPath();ctx.ellipse(0,5,radius*.82,radius*.34,0,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=fade;ctx.shadowColor='#ff405e';ctx.shadowBlur=18;ctx.strokeStyle='#ff6077';ctx.lineWidth=5*(1-p)+1;ctx.beginPath();ctx.ellipse(0,4,radius,radius*.36,0,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=fade;ctx.shadowColor='#ff405e';ctx.shadowBlur=26;ctx.strokeStyle='#ff6077';ctx.lineWidth=7*(1-p)+1.5;ctx.beginPath();ctx.ellipse(0,4,radius,radius*.36,0,0,Math.PI*2);ctx.stroke();
   ctx.shadowBlur=0;ctx.strokeStyle='#ffe8ed';ctx.lineWidth=2.4*(1-p)+.5;ctx.beginPath();ctx.ellipse(0,4,radius*.68,radius*.23,0,0,Math.PI*2);ctx.stroke();
   ctx.strokeStyle='#f24762';ctx.lineWidth=3;for(let i=0;i<10;i++){const a=i*Math.PI/5,inner=14+p*8,outer=radius*(.72+.12*(i%2));ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner*.36);ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer*.36);ctx.stroke()}
   ctx.restore();
