@@ -2919,9 +2919,9 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   }else if(run){
    // Keep the actual moving trail; remove the decorative wavy multi-line effect.
   }else if(m==='sukunaHeadCarryThrow'){
-   ctx.globalAlpha=vfxFade*(.35+.45*pulse);ctx.beginPath();ctx.arc(22,0,28+18*p,-1.45+p*.4,1.35+p*.5);ctx.stroke();
+   // Keep the thrower's hand animation and release particles; no decorative curse-like arc.
   }else if(m==='sukunaHeadCarryLeap'){
-   for(let i=0;i<5;i++){const x=-28+i*13;ctx.globalAlpha=vfxFade*.58;ctx.beginPath();ctx.moveTo(x,25);ctx.quadraticCurveTo(x-8,-8,x+Math.sin(game.time*12+i)*5,-43);ctx.stroke()}
+   // The opponent's flight is shown by the character motion and the actual player trailStrokes only.
   }else if(m==='sukunaHeadCarrySlam'){
    ctx.globalAlpha=vfxFade*(.45+.4*pulse);ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-9,-42);ctx.lineTo(24,5);ctx.lineTo(53,23);ctx.moveTo(40,-38);ctx.lineTo(14,4);ctx.stroke();
   }else{
