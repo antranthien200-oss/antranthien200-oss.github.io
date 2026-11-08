@@ -2531,7 +2531,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
     ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
     ctx.closePath();
-    ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=3.2;ctx.lineJoin='round';
+    ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;ctx.lineJoin='round';
     ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;
     ctx.fill();ctx.stroke();ctx.restore();
    };
@@ -2568,12 +2568,12 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
     ctx.restore();
    };
    if(combo===1||combo===2||combo===3){
-    const length=combo===3?142:104,thickness=combo===3?12.5:8.2;
+    const length=combo===3?142:104,thickness=combo===3?9.5:6.2;
     drawCrescentSlash(slashCenterX,slashCenterY,length,thickness,0,1);
     drawSlashAccent(slashCenterX,slashCenterY,length,thickness,0,1);
    }else if(combo===4){
     // The finisher keeps its crossed crescents, each with a restrained edge glint.
-    const length=126,thickness=9.2;
+    const length=126,thickness=7;
     drawCrescentSlash(slashCenterX,slashCenterY,length,thickness,-.68,1);
     drawCrescentSlash(slashCenterX,slashCenterY,length,thickness,.68,.98);
     drawSlashAccent(slashCenterX,slashCenterY,length,thickness,-.68,.65);
