@@ -2029,26 +2029,47 @@ function drawSukunaFireZones(){
  for(const zone of fireZones){
   const x=sx(zone.x),y=sy(zone.y),r=zone.radius,fade=clamp(zone.life/.85,0,1);
   const hash=n=>{const v=Math.sin(n*127.1+zone.seed*311.7)*43758.5453;return v-Math.floor(v)};
-  const point=i=>{const a=hash(i*4+1)*Math.PI*2,rad=Math.sqrt(hash(i*4+2))*.96*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad}};
+  const point=(i,limit=.96)=>{const a=hash(i*4+1)*Math.PI*2,rad=Math.sqrt(hash(i*4+2))*limit*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad}};
   const wind=4.5+2.6*Math.sin(game.time*2.1+zone.seed),gust=Math.sin(game.time*5.4+zone.seed)*2.2;
-  const flameCount=isMobileDevice?17:36,embers=isMobileDevice?15:34,smokeCount=isMobileDevice?1:3;
+  const flameCount=isMobileDevice?24:48,edgeCount=isMobileDevice?11:22,embers=isMobileDevice?15:34,smokeCount=isMobileDevice?1:3;
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
 
-  // A soft full-circle heat bed, without visible outlines, spokes, or flame rows.
-  const bed=ctx.createRadialGradient(-r*.08,-r*.04,r*.025,0,0,r);
-  bed.addColorStop(0,'rgba(255,91,22,.16)');bed.addColorStop(.42,'rgba(214,57,16,.11)');
-  bed.addColorStop(.76,'rgba(135,34,12,.065)');bed.addColorStop(1,'rgba(90,20,8,0)');
+  // Filled circular heat footprint with a softly defined, slightly uneven burn edge.
+  const bed=ctx.createRadialGradient(-r*.035,-r*.025,r*.025,0,0,r*1.035);
+  bed.addColorStop(0,'rgba(255,91,22,.105)');bed.addColorStop(.48,'rgba(225,66,19,.105)');
+  bed.addColorStop(.78,'rgba(190,48,14,.145)');bed.addColorStop(.94,'rgba(151,35,12,.19)');
+  bed.addColorStop(1,'rgba(105,24,9,.055)');bed.addColorStop(1,'rgba(90,20,8,0)');
   ctx.fillStyle=bed;ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.fill();
 
-  // Random clusters with irregular spacing; flame sizes and angles vary independently.
-  const flames=[],clusterCount=Math.ceil(flameCount/3),clusters=[];
-  for(let k=0;k<clusterCount;k++)clusters.push(point(k+40));
+  // A broken, organic perimeter makes the affected ground read as one full circle.
+  ctx.beginPath();
+  for(let i=0;i<=96;i++){
+   const a=i/96*Math.PI*2;
+   const wobble=.009*Math.sin(a*7+zone.seed)+.006*Math.sin(a*13+zone.seed*1.7)+.003*Math.sin(a*23+zone.seed*.6);
+   const rr=r*(.976+wobble),px=Math.cos(a)*rr,py=Math.sin(a)*rr;
+   if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  }
+  ctx.closePath();ctx.globalAlpha=fade*.34;ctx.strokeStyle='#a9431d';ctx.lineWidth=10;ctx.stroke();
+  ctx.globalAlpha=fade*.29;ctx.strokeStyle='#ff8a3d';ctx.lineWidth=2.2;ctx.stroke();
+
+  // Interior fire remains irregular; a loose outer fringe follows the circular edge.
+  const flames=[],clusterCount=Math.ceil((flameCount-edgeCount)/3),clusters=[];
+  for(let k=0;k<clusterCount;k++)clusters.push(point(k+40,.73));
   for(let i=0;i<flameCount;i++){
-   const cluster=clusters[Math.floor(i/3)%clusterCount],spread=10+hash(i+120)*26,a=hash(i+220)*Math.PI*2;
+   let fx,fy;
+   if(i<edgeCount){
+    const a=i/edgeCount*Math.PI*2+(hash(i+1880)-.5)*.13;
+    const rad=r*(.895+hash(i+1980)*.055);
+    fx=Math.cos(a)*rad;fy=Math.sin(a)*rad;
+   }else{
+    const cluster=clusters[Math.floor((i-edgeCount)/3)%clusterCount],spread=9+hash(i+120)*23,a=hash(i+220)*Math.PI*2;
+    fx=cluster.x+Math.cos(a)*spread;fy=cluster.y+Math.sin(a)*spread;
+    const d=Math.hypot(fx,fy),limit=r*.84;if(d>limit){fx=fx/d*limit;fy=fy/d*limit}
+   }
    const size=hash(i+320),height=13+Math.pow(size,.82)*59,width=3.5+Math.pow(hash(i+420),.72)*10.5;
    const lean=wind*(.42+hash(i+520)*.8)+gust+Math.sin(game.time*15+i*2.17)*3;
    const angle=(hash(i+620)-.5)*.48+Math.sin(game.time*1.9+i)*.035;
-   flames.push({x:cluster.x+Math.cos(a)*spread,y:cluster.y+Math.sin(a)*spread,h:height,w:width,lean,angle,
+   flames.push({x:fx,y:fy,h:height,w:width,lean,angle,
     flicker:.76+.24*Math.sin(game.time*17+i*2.63+zone.seed),core:.48+.2*hash(i+720)});
   }
 
@@ -2074,7 +2095,7 @@ function drawSukunaFireZones(){
   }
   ctx.globalAlpha=fade*.8;ctx.fillStyle='#ffd071';ctx.fill();
 
-  // Embers rise and drift; no lines connect the fire clusters.
+  // Embers rise and drift; no rows or spokes connect the flames.
   ctx.beginPath();
   for(let i=0;i<embers;i++){
    const p=point(i+1120),phase=(game.time*(8+hash(i+1220)*8)+hash(i+1320)*46)%38;
