@@ -2024,97 +2024,69 @@ function updateSukunaFireZones(dt){
 }
 function drawSukunaFireZones(){
  for(const zone of fireZones){
-  const x=sx(zone.x),y=sy(zone.y),r=zone.radius,fade=clamp(zone.life/.9,0,1);
+  const x=sx(zone.x),y=sy(zone.y),r=zone.radius,fade=clamp(zone.life/.8,0,1);
   const hash=n=>{const v=Math.sin(n*127.1+zone.seed*311.7)*43758.5453;return v-Math.floor(v)};
-  const sample=i=>{const a=hash(i*4+1)*Math.PI*2,rad=Math.sqrt(.035+hash(i*4+2)*.88)*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad*.78}};
+  const point=i=>{const a=hash(i*3+1)*Math.PI*2,rad=Math.sqrt(hash(i*3+2))*.91*r;return {x:Math.cos(a)*rad,y:Math.sin(a)*rad*.78}};
+  const wind=3.5+2.2*Math.sin(game.time*2.15+zone.seed),gust=Math.sin(game.time*5.2+zone.seed)*1.8;
+  const patchCount=isMobileDevice?14:23;
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
-
-  // The burn scar has a torn, uneven edge rather than a perfect circular boundary.
-  const edge=[];
-  for(let i=0;i<72;i++){
-   const a=i/72*Math.PI*2,jitter=.89+hash(i+41)*.105+Math.sin(i*1.73+zone.seed)*.018;
-   edge.push({x:Math.cos(a)*r*jitter,y:Math.sin(a)*r*jitter*.79});
-  }
-  ctx.beginPath();
-  for(let i=0;i<edge.length;i++){
-   const a=edge[i],b=edge[(i+1)%edge.length],midX=(a.x+b.x)*.5,midY=(a.y+b.y)*.5;
-   if(i===0)ctx.moveTo(midX,midY);
-   ctx.quadraticCurveTo(a.x,a.y,midX,midY);
-  }
-  ctx.closePath();
-  const scorch=ctx.createRadialGradient(-r*.08,-r*.04,r*.04,0,0,r*1.05);
-  scorch.addColorStop(0,'rgba(14,13,12,.88)');
-  scorch.addColorStop(.55,'rgba(19,17,14,.82)');
-  scorch.addColorStop(.82,'rgba(31,26,20,.68)');
-  scorch.addColorStop(1,'rgba(40,32,24,.04)');
-  ctx.fillStyle=scorch;ctx.fill();
-
-  // Uneven ash deposits and dark patches of cooked soil break up the flat silhouette.
-  const ashCount=isMobileDevice?22:42;
-  for(let i=0;i<ashCount;i++){
-   const p=sample(i+90),w=7+hash(i+180)*27,h=3+hash(i+240)*10;
-   ctx.save();ctx.translate(p.x,p.y);ctx.rotate((hash(i+300)-.5)*2.4);
-   ctx.fillStyle=i%4===0?'rgba(147,139,125,.17)':i%3===0?'rgba(91,87,78,.23)':'rgba(5,5,5,.2)';
-   ctx.beginPath();ctx.ellipse(0,0,w,h,0,0,Math.PI*2);ctx.fill();ctx.restore();
-  }
-
-  // Small fragments of burnt twigs and debris lie across the soil.
-  const debrisCount=isMobileDevice?12:25;
-  for(let i=0;i<debrisCount;i++){
-   const p=sample(i+390),len=7+hash(i+490)*23,a=hash(i+590)*Math.PI*2;
-   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);
-   ctx.strokeStyle=i%3===0?'rgba(100,79,58,.75)':'rgba(5,5,5,.9)';ctx.lineWidth=1.4+hash(i+690)*2.2;ctx.lineCap='round';
-   ctx.beginPath();ctx.moveTo(-len*.5,0);ctx.lineTo(len*.5,0);ctx.stroke();
-   if(i%3===0){ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(len*.08,0);ctx.lineTo(len*.36,-4-hash(i+720)*5);ctx.stroke()}
+  // Low, broken ribbons of flame scattered across the AOE: no terrain disc or ring.
+  for(let i=0;i<patchCount;i++){
+   const p=point(i+20),length=36+hash(i+120)*68,angle=(hash(i+220)-.5)*.52+Math.sin(game.time*1.7+i)*.045;
+   const licks=isMobileDevice?4+Math.floor(hash(i+320)*3):5+Math.floor(hash(i+320)*5);
+   const flicker=.78+.22*Math.sin(game.time*12+i*2.31+zone.seed);
+   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(angle);
+   // Warm ground glow is a small light layer beneath each strip.
+   ctx.globalCompositeOperation='lighter';ctx.globalAlpha=fade*.28*flicker;
+   const glow=ctx.createRadialGradient(0,0,2,0,0,length*.72);
+   glow.addColorStop(0,'rgba(255,105,24,.26)');glow.addColorStop(.42,'rgba(255,73,15,.12)');glow.addColorStop(1,'rgba(255,59,8,0)');
+   ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(0,0,length*.72,9+hash(i+420)*7,0,0,Math.PI*2);ctx.fill();
+   // A broken glowing base line joins individual licks into a ground-fire strip.
+   const base=ctx.createLinearGradient(-length*.5,0,length*.5,0);
+   base.addColorStop(0,'rgba(255,86,19,0)');base.addColorStop(.2,'rgba(255,102,24,.38)');base.addColorStop(.55,'rgba(255,177,56,.62)');base.addColorStop(.85,'rgba(255,91,18,.34)');base.addColorStop(1,'rgba(255,65,12,0)');
+   ctx.globalAlpha=fade*.48*flicker;ctx.strokeStyle=base;ctx.lineWidth=2+hash(i+520)*2;ctx.lineCap='round';ctx.shadowColor='#ff641d';ctx.shadowBlur=9;
+   ctx.beginPath();ctx.moveTo(-length*.5,1);ctx.quadraticCurveTo(-length*.12,-1+gust*.25,length*.5,1+gust*.18);ctx.stroke();
+   for(let j=0;j<licks;j++){
+    const along=(j/(licks-1)-.5)*length+(hash(i*13+j+620)-.5)*8;
+    const h=7+hash(i*17+j+720)*17,width=3+hash(i*19+j+820)*4.2;
+    const sway=wind*(.6+hash(i*23+j+920)*.7)+gust+Math.sin(game.time*17+i*1.8+j*2.7)*2.4;
+    const rise=.78+.22*Math.sin(game.time*16+i*2.4+j*3.1+zone.seed);
+    const tipX=sway+h*.18,tipY=-h*rise;
+    ctx.save();ctx.translate(along,0);ctx.globalAlpha=fade*(.72+.22*rise);
+    const flame=ctx.createLinearGradient(0,1,tipX,tipY);
+    flame.addColorStop(0,'#ffe08a');flame.addColorStop(.18,'#ffb13d');flame.addColorStop(.52,'#ff7024');flame.addColorStop(.84,'#e34218');flame.addColorStop(1,'rgba(197,43,15,.62)');
+    ctx.fillStyle=flame;ctx.shadowColor='#ff5b1d';ctx.shadowBlur=5+width;
+    ctx.beginPath();ctx.moveTo(-width,1);
+    ctx.bezierCurveTo(-width*1.15,-h*.18,tipX-width*.9,-h*.34,tipX,tipY);
+    ctx.bezierCurveTo(tipX+width*.78,-h*.56,tipX+width*1.2,-h*.2,width,1);
+    ctx.closePath();ctx.fill();
+    // Pale hot core at the foot, never a glowing outline around the whole flame.
+    ctx.globalAlpha=fade*.78*rise;ctx.fillStyle='rgba(255,231,153,.92)';
+    ctx.beginPath();ctx.moveTo(-width*.34,0);ctx.quadraticCurveTo(-width*.22,-h*.2,tipX*.42,-h*.43);ctx.quadraticCurveTo(width*.35,-h*.14,width*.34,0);ctx.closePath();ctx.fill();
+    ctx.restore();
+   }
    ctx.restore();
   }
-
-  // A few broken ember cracks, not radial spokes or a decorative ring.
-  for(let i=0;i<8;i++){
-   const p=sample(i+760),a=hash(i+860)*Math.PI*2,len=13+hash(i+960)*36;
-   ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);
-   ctx.lineCap='round';ctx.strokeStyle='rgba(3,3,3,.82)';ctx.lineWidth=3.2;
-   ctx.beginPath();ctx.moveTo(-len*.5,0);ctx.quadraticCurveTo(-len*.08,-3,len*.5,1);ctx.stroke();
-   if(i%2===0){ctx.strokeStyle='rgba(190,54,18,.34)';ctx.lineWidth=1.1;ctx.beginPath();ctx.moveTo(-len*.22,.5);ctx.quadraticCurveTo(0,-1,len*.27,.5);ctx.stroke()}
-   ctx.restore();
-  }
-
-  // Scattered glowing coals sit inside the ash, with only a few bright points.
-  const emberCount=isMobileDevice?18:34;
+  // Ember particles stretch along their motion and drift sideways with the gust.
+  const emberCount=isMobileDevice?34:68;
+  ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineCap='round';
   for(let i=0;i<emberCount;i++){
-   const p=sample(i+1020),pulse=.55+.45*Math.sin(game.time*7+i*2.37+zone.seed);
-   ctx.globalAlpha=fade*(.42+.5*pulse);
-   ctx.fillStyle=i%5===0?'#ffbd5b':i%3===0?'#e64b1c':'#8f2815';
-   ctx.beginPath();ctx.ellipse(p.x,p.y,1+hash(i+1120)*2.1,0.8+hash(i+1220)*1.1,hash(i+1320),0,Math.PI*2);ctx.fill();
+   const p=point(i+1120),phase=(game.time*(10+hash(i+1220)*7)+hash(i+1320)*42)%32;
+   const drift=phase*(.22+hash(i+1420)*.12)+wind*.65,ex=p.x+drift,ey=p.y-phase*.64;
+   ctx.globalAlpha=fade*(.28+.58*Math.sin((phase/32)*Math.PI));
+   ctx.strokeStyle=i%4===0?'#ffe08b':i%3===0?'#ffb13d':'#ff6a20';ctx.shadowColor='#ff7822';ctx.shadowBlur=4;
+   ctx.lineWidth=.8+hash(i+1520)*1.25;
+   ctx.beginPath();ctx.moveTo(ex-1.5,ey+2.4);ctx.lineTo(ex+1.5+wind*.22,ey-2.5);ctx.stroke();
   }
-
-  // Low, isolated tongues of fire burn around remaining pieces of fuel.
-  const flameCount=isMobileDevice?6:11;
-  for(let i=0;i<flameCount;i++){
-   const p=sample(i+1420),height=8+hash(i+1520)*15,width=3.2+hash(i+1620)*3.5;
-   const flicker=.78+.22*Math.sin(game.time*15+i*2.1+zone.seed);
-   ctx.save();ctx.translate(p.x,p.y+2);ctx.scale(1,.82);ctx.globalAlpha=fade*flicker;
-   const outer=ctx.createLinearGradient(0,2,0,-height);
-   outer.addColorStop(0,'#9b2c17');outer.addColorStop(.38,'#e75220');outer.addColorStop(.78,'#ff9b35');outer.addColorStop(1,'rgba(255,194,91,.84)');
-   ctx.fillStyle=outer;ctx.beginPath();ctx.moveTo(-width,1);
-   ctx.quadraticCurveTo(-width*1.15,-height*.34,-width*.16,-height);
-   ctx.quadraticCurveTo(width*.18,-height*.58,width*.35,-height*.32);
-   ctx.quadraticCurveTo(width*1.28,-height*.12,width,1);ctx.closePath();ctx.fill();
-   ctx.fillStyle='rgba(255,213,117,.92)';ctx.beginPath();ctx.moveTo(-width*.28,0);
-   ctx.quadraticCurveTo(-width*.32,-height*.27,0,-height*.64);
-   ctx.quadraticCurveTo(width*.42,-height*.22,width*.25,0);ctx.closePath();ctx.fill();
-   ctx.restore();
-  }
-
-  // Faint smoke curls lift from a handful of hot spots; keep it close to the ground.
-  const smokeCount=isMobileDevice?3:6;
+  ctx.restore();
+  // A few thin smoke wisps trail above hot strips.
+  const smokeCount=isMobileDevice?3:7;
   for(let i=0;i<smokeCount;i++){
-   const p=sample(i+1720),phase=(game.time*13+hash(i+1820)*34)%34,drift=Math.sin(game.time*2.3+i*1.8)*5;
-   ctx.save();ctx.globalAlpha=fade*(.10+.035*Math.sin(game.time*3+i));
-   ctx.strokeStyle='rgba(164,158,145,.72)';ctx.lineWidth=2.2+hash(i+1920)*2.3;ctx.lineCap='round';
-   ctx.beginPath();ctx.moveTo(p.x,p.y-phase*.28);
-   ctx.bezierCurveTo(p.x-5+drift,p.y-7-phase*.55,p.x+7+drift,p.y-13-phase*.72,p.x+drift,p.y-19-phase);
-   ctx.stroke();ctx.restore();
+   const p=point(i+1620),phase=(game.time*6.2+hash(i+1720)*20)%24,drift=wind*phase*.22+Math.sin(game.time*2+i)*4;
+   ctx.save();ctx.globalAlpha=fade*.095*(1-phase/30);
+   const smoke=ctx.createRadialGradient(p.x+drift,p.y-phase,1,p.x+drift,p.y-phase,7+phase*.24);
+   smoke.addColorStop(0,'rgba(154,145,133,.28)');smoke.addColorStop(1,'rgba(154,145,133,0)');
+   ctx.fillStyle=smoke;ctx.beginPath();ctx.arc(p.x+drift,p.y-phase,7+phase*.24,0,Math.PI*2);ctx.fill();ctx.restore();
   }
   ctx.restore();
  }
