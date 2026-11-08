@@ -3552,11 +3552,20 @@ function drawDomainHandsignCutin(f,p,accent){
  drawAccessoryOverlays(f,avatarX,avatarY,headScale);
  drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress);
  ctx.textBaseline='middle';ctx.fillStyle='#172025';ctx.textAlign='center';
- const titleSize=clamp(W*.024,22,31);
+ const titleSize=clamp(W*.024*1.25,27.5,38.75);
  ctx.font='1000 '+titleSize+'px system-ui';
  // Each title is centered directly on a long border, half outside and half inside.
+ // White outlines keep the lettering distinct across both the pale panel and dark backdrop.
+ ctx.lineJoin='round';ctx.lineWidth=3;ctx.strokeStyle='#ffffff';
+ ctx.shadowColor='#172025';ctx.shadowBlur=3;ctx.shadowOffsetY=1;
+ ctx.strokeText('DOMAIN',-W*.34,top);
+ ctx.shadowBlur=0;ctx.shadowOffsetY=0;
  ctx.fillText('DOMAIN',-W*.34,top);
- ctx.font='1000 '+clamp(titleSize*.9,20,28)+'px system-ui';
+ ctx.font='1000 '+clamp(titleSize*.9,25,35)+'px system-ui';
+ ctx.lineJoin='round';ctx.lineWidth=3;ctx.strokeStyle='#ffffff';
+ ctx.shadowColor='#172025';ctx.shadowBlur=3;ctx.shadowOffsetY=1;
+ ctx.strokeText('EXPANSION',W*.34,top+panelH);
+ ctx.shadowBlur=0;ctx.shadowOffsetY=0;
  ctx.fillText('EXPANSION',W*.34,top+panelH);
  ctx.restore();
  ctx.restore();
