@@ -4329,22 +4329,12 @@ function drawYujiCrushEffects(){
 function drawSukunaHeadCarryEffects(){
  for(const f of [player,enemy]){
   if(!f)continue;
-  const seq=f.vesselAwakenSequence;
-  if(seq&&seq.phase==='carry'&&seq.target&&!seq.target.dead){
-   const a=seq.angle||f.face,dx=Math.cos(a),dy=Math.sin(a),px=-dy,py=dx,t=seq.target;
-   const hx=sx(f.x-dx*48+px*7),hy=sy(f.y-dy*48+py*7)-23;
-   const tx=sx(t.x),ty=sy(t.y)-23;
-   ctx.save();ctx.lineCap='round';ctx.strokeStyle='#40101c';ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(tx,ty);ctx.stroke();
-   ctx.strokeStyle='#ff6077';ctx.lineWidth=4;ctx.shadowColor='#ff405e';ctx.shadowBlur=9;ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(tx,ty);ctx.stroke();
-   ctx.fillStyle='#ffe8eb';ctx.beginPath();ctx.arc(hx,hy,5.2,0,Math.PI*2);ctx.fill();ctx.restore();
-  }
   const fx=f.sukunaHeadCarrySlamFx;if(!fx)continue;
   const left=fx.expiresAt-game.time;if(left<=0){f.sukunaHeadCarrySlamFx=null;continue}
   const p=clamp(1-left/.72,0,1),fade=clamp(left/.72,0,1),radius=24+p*195,x=sx(fx.x),y=sy(fx.y);
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade*.75;ctx.fillStyle='rgba(244,55,83,.18)';ctx.beginPath();ctx.ellipse(0,5,radius*.82,radius*.34,0,0,Math.PI*2);ctx.fill();
   ctx.globalAlpha=fade;ctx.shadowColor='#ff405e';ctx.shadowBlur=26;ctx.strokeStyle='#ff6077';ctx.lineWidth=7*(1-p)+1.5;ctx.beginPath();ctx.ellipse(0,4,radius,radius*.36,0,0,Math.PI*2);ctx.stroke();
   ctx.shadowBlur=0;ctx.strokeStyle='#ffe8ed';ctx.lineWidth=2.4*(1-p)+.5;ctx.beginPath();ctx.ellipse(0,4,radius*.68,radius*.23,0,0,Math.PI*2);ctx.stroke();
-  ctx.strokeStyle='#f24762';ctx.lineWidth=3;for(let i=0;i<10;i++){const a=i*Math.PI/5,inner=14+p*8,outer=radius*(.72+.12*(i%2));ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner*.36);ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer*.36);ctx.stroke()}
   ctx.restore();
  }
 }
