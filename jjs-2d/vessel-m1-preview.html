@@ -4103,7 +4103,7 @@ function drawYujiDomainSmokeBackground(){
 }
 function drawYujiBlackWaterRipples(w,h,t,edge){
   // Seven fine, widely spaced ovals expand from a tiny source at the red/black intersection.
-  const cx=w*.5,cy=edge(cx),ovalRatio=.48;
+  const cx=w*.5,cy=edge(cx),ovalRatio=.30;
   const maxRadius=Math.max(Math.hypot(cx,(h-cy)/ovalRatio),Math.hypot(w-cx,(h-cy)/ovalRatio))*1.035;
   const expansionSpeed=Math.max(130,h*.20),life=maxRadius/expansionSpeed;
   const ringCount=7,stagger=life/ringCount,startRadius=Math.max(1.5,h*.0012);
