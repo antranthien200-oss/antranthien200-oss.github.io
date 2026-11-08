@@ -3515,7 +3515,7 @@ function drawDomainHandsignCutin(f,p,accent){
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
- const panelW=compact?W*1.00:wide?W*1.08:W*1.00;
+ const panelW=compact?W*2.00:wide?W*2.16:W*2.00;
  const panelH=compact?H*.34:wide?H*.16:H*.25;
  const panelScaleX=Math.max(.004,(.78+.22*enterEase)*(1-fold));
  const panelScaleY=.92+.08*enterEase;
@@ -3531,8 +3531,11 @@ function drawDomainHandsignCutin(f,p,accent){
  bg.addColorStop(0,'#fbfbf5');bg.addColorStop(.55,'#f0f2ed');bg.addColorStop(1,'#dce1df');
  ctx.fillStyle=bg;ctx.shadowBlur=24;ctx.shadowColor='#02050a';ctx.fillRect(left,top,panelW,panelH);ctx.shadowBlur=0;
  ctx.strokeStyle='#171d20';ctx.lineWidth=3;ctx.strokeRect(left,top,panelW,panelH);
- ctx.strokeStyle=accent;ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(left+3,top+7);ctx.lineTo(left+panelW-3,top+7);ctx.stroke();
- ctx.strokeStyle='#aab3b5';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(left+3,top+panelH-7);ctx.lineTo(left+panelW-3,top+panelH-7);ctx.stroke();
+ // Two dark parallel rails sit just inside the banner's long edges.
+ ctx.strokeStyle='#101418';ctx.lineWidth=2.5;ctx.beginPath();
+ ctx.moveTo(left+3,top+14);ctx.lineTo(left+panelW-3,top+14);
+ ctx.moveTo(left+3,top+panelH-14);ctx.lineTo(left+panelW-3,top+panelH-14);
+ ctx.stroke();
  // Keep the figure and the two English labels visible while the panel folds away.
  ctx.globalAlpha=clamp(1-fold*1.18,0,1);
  const headR=clamp(Math.min(panelW,panelH)*.13,22,55);
