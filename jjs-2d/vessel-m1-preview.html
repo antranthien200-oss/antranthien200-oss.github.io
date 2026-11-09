@@ -4884,22 +4884,23 @@ function getVesselSmokeAuraFrames(){
    const dx=px+.5-center,dy=py+.5-center,radial=Math.hypot(dx,dy);
    if(radial<8)continue;
    const angle=Math.atan2(dy,dx);
-   // Layered, moving turbulence bends and breaks up the smoke band instead of drawing a ring outline.
-   const warp=Math.sin(angle*3+phase)*.18+Math.sin(angle*7-phase*1.35)*.13+
-    Math.cos(angle*13+phase*1.8+radial*.06)*.11+Math.sin(dx*.16+dy*.12-phase)*.08;
-   const centerline=41+warp*4.1,offset=radial-centerline;
-   const band=Math.exp(-(offset*offset)/(2*4.8*4.8));
-   const texture=.52+.22*Math.sin(angle*5-phase*1.2+radial*.04)+
-    .16*Math.cos(angle*11+phase*1.7-radial*.08)+.10*Math.sin(dx*.23-dy*.19+phase*2);
-   const wisps=clamp(texture,0,1);
-   const density=band*(.12+.58*wisps);
+   // Close, uneven smoke hugs the fighter's silhouette; turbulence keeps it from reading as a drawn ring.
+   const warp=Math.sin(angle*3+phase)*.72+Math.sin(angle*6-phase*1.35)*.58+
+    Math.cos(angle*11+phase*1.8+radial*.10)*.34+Math.sin(dx*.11+dy*.16-phase)*.42;
+   const centerline=27.8+warp*1.55,offset=radial-centerline;
+   const band=Math.exp(-(offset*offset)/(2*4.25*4.25));
+   const turbulence=.50+.21*Math.sin(angle*5-phase*1.2+radial*.08)+
+    .17*Math.cos(angle*10+phase*1.55-radial*.10)+.12*Math.sin(dx*.21-dy*.18+phase*1.8);
+   const wisps=clamp(turbulence,0,1);
+   const density=band*(.22+.78*wisps);
    if(density<.012)continue;
-   const redMix=clamp(.53+.25*Math.sin(angle*4+phase)+.2*Math.cos(angle*9-phase+radial*.12),.12,.94);
+   // Alternate near-black smoke and deep crimson through the moving turbulence.
+   const redWeight=clamp((wisps-.34)*2.2+.16*Math.sin(angle*3-phase+radial*.08),0,1);
    const index=(py*size+px)*4;
-   image.data[index]=Math.round(7+redMix*174);
-   image.data[index+1]=Math.round(3+redMix*19);
-   image.data[index+2]=Math.round(5+redMix*39);
-   image.data[index+3]=Math.round(255*density*.76);
+   image.data[index]=Math.round(5+redWeight*104);
+   image.data[index+1]=Math.round(2+redWeight*4);
+   image.data[index+2]=Math.round(4+redWeight*11);
+   image.data[index+3]=Math.round(255*density*.92);
   }
   surfaceCtx.putImageData(image,0,0);
   vesselSmokeAuraFrames.push(surface);
@@ -4910,10 +4911,10 @@ function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending)return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3-23,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
  const frames=getVesselSmokeAuraFrames(),framePosition=(visualTime*6)%frames.length,frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
- // Cross-faded smoky texture: only soft red and black haze, with no drawn contours or separate particles.
+ // Dense, dark red-and-black smoke sits almost flush against the round fighter silhouette.
  ctx.save();ctx.imageSmoothingEnabled=true;
- ctx.globalAlpha=.78*(1-mix);ctx.drawImage(frames[frameA],x-30,y-30,60,60);
- ctx.globalAlpha=.78*mix;ctx.drawImage(frames[frameB],x-30,y-30,60,60);
+ ctx.globalAlpha=.9*(1-mix);ctx.drawImage(frames[frameA],x-33,y-33,66,66);
+ ctx.globalAlpha=.9*mix;ctx.drawImage(frames[frameB],x-33,y-33,66,66);
  ctx.restore();
 }
 
