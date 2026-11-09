@@ -1075,7 +1075,7 @@ function playAwakeningCutscene(f){
  el._speaker=f;el._phase=f.char==='vessel'?'dialogue':'single';
  if(f.char==='vessel'){
   // Hold Sukuna's actual awakening move until both original popup stages have finished.
-  f.motion=null;
+  f.motion=null;f.attackAnim=0;f.attackType='';
   el.classList.add('vessel-dialogue');
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
@@ -1956,7 +1956,7 @@ if(f.attackCd>0)return;
   if(f.char==='yuta'&&f.awakened){f.yutaCopyIndex=((f.yutaCopyIndex||0)+1)%YUTA_COPY_OPTIONS.length;updateHud(true);return}
   if(f.char==='ten'&&f.awakened){f.tenBase=!f.tenBase;setMotion(f,'megumiSwitch',.45,f.face,t);showToast(f.tenBase?'TEN SHADOWS · BASE TECHNIQUES':'INSANITY · AWAKENED SHIKIGAMI',900);updateHud();return}
   if(f.meter<100||f.awakened)return;
-  f.awakened=true;if(f.char==='vessel')f.sukunaAwakeningVisualTime=game.time;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:f.char==='yuta'?25:15));
+  f.awakened=true;if(f.char==='vessel'){f.sukunaAwakeningVisualTime=game.time;f.sukunaAwakeningVisualPending=true;}f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:f.char==='yuta'?25:15));
   f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':f.char==='yuta'?'trueLove':f.char==='trashman'?'trashstorm':'brother';
   f.tenBase=false;f.awakeFuel=100;f.awakeFuelDrainRate=100/(f.char==='restless'?121.25:60);f.jackpot=false;if(f.char==='yuta'){f.rikaSummoned=true;f.rikaMode=false;f.yutaCopyIndex=0;}f.gambleVisuals=0;f.gambleAttempts=0;
   f.domainStunGuaranteed=f.char==='restless'&&dist(f,f===player?enemy:player)<600;
@@ -1967,7 +1967,7 @@ if(f.attackCd>0)return;
   f.domainWindup=isHakariDomain?1.25:0;f.domainWindupStart=isHakariDomain?1.25:0;
   f.domainRadius=isHakariDomain?Math.hypot(WORLD.w,WORLD.h):0;f.domainVisualRadius=isHakariDomain?860:0;f.domainCenterX=isHakariDomain?f.x:null;f.domainCenterY=isHakariDomain?f.y:null;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainState=isHakariDomain?'forming':'';f.domainTick=0;
   f.domainFlashTimer=0;f.domainOpenedAt=0;
-  setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken',trashman:'trashManAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
+  if(f.char==='vessel'){f.motion=null;f.attackAnim=0;f.attackType='';}else setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken',trashman:'trashManAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
   burst(f.x,f.y,c.accent,56,8);game.shake=13;
   if(isHakariDomain){f.invuln=Math.max(f.invuln,1.3);damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));showToast(c.awakening+' · HANDSIGN',1300)}
   else{playAwakeningCutscene(f);showToast(c.awakening,1600)}
@@ -2717,6 +2717,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }else if(speaker&&speaker.char==='vessel'&&cutscene._phase==='king-popup'){
    // Only after the KING OF CURSES popup clears, play Sukuna's awakening animation.
    cutscene.classList.remove('active');cutscene._phase='awakening-motion';
+   speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=13;
   }else{
    cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null;cutscene._phase=null;
@@ -3436,7 +3437,7 @@ function drawHeadHands(f){
  const awakenSurge=name==='sukunaAwaken'?smoothstep01(clamp((progress-.48)/.30,0,1)):0;
  const awakenHeadDrop=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*10-awakenSurge*2:0;
  const awakenHeadTilt=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*.16-awakenSurge*.035:0;
- const sukunaMarkReveal=f.char==='vessel'&&f.awakened?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
+ const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
  const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0,yutaCombo=name.startsWith('yutaM1_')?(Number(name.slice(7))||1):0;
@@ -4838,7 +4839,7 @@ function getVesselAwakeningSmokeSprite(){
  return canvas;
 }
 function drawVesselAwakeningSmoke(f){
- if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
+ if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending)return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3;
  const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
  const pulse=1+.01*Math.sin(visualTime*2.05);
