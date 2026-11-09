@@ -4821,15 +4821,49 @@ function drawYujiSkillCancelBurst(){
  for(const f of [player,enemy]){
   const fx=f&&f.yujiCancelBurstFx;if(!fx)continue;
   const progress=clamp(1-fx.life/fx.max,0,1),fade=clamp(fx.life/fx.max,0,1);
-  const radius=(5+progress*7)*1.75,inner=radius*.46,x=sx(fx.x),y=sy(fx.y);
-  ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
+  const x=sx(fx.x),y=sy(fx.y),starRadius=(5+progress*7)*1.75;
+  ctx.save();ctx.translate(x,y);
+  // A quick crimson energy bloom sits behind the existing white four-point star.
+  const bloom=ctx.createRadialGradient(0,0,1,0,0,25+progress*8);
+  bloom.addColorStop(0,'rgba(255,35,68,'+(fade*.34)+')');
+  bloom.addColorStop(.42,'rgba(170,12,39,'+(fade*.19)+')');
+  bloom.addColorStop(1,'rgba(90,0,18,0)');
+  ctx.fillStyle=bloom;ctx.beginPath();ctx.arc(0,0,34+progress*8,0,Math.PI*2);ctx.fill();
+
+  // Two thin shock rings expand outward and disappear with the burst.
+  ctx.globalAlpha=fade*.82;ctx.strokeStyle='#d51d3c';ctx.lineWidth=2.15;
+  ctx.beginPath();ctx.arc(0,0,5+progress*25,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=fade*.42;ctx.strokeStyle='#ff667d';ctx.lineWidth=1.15;
+  ctx.beginPath();ctx.arc(0,0,9+progress*19,0,Math.PI*2);ctx.stroke();
+
+  // Short red and white energy splinters shoot away from the center.
+  for(let i=0;i<8;i++){
+   const a=i*Math.PI/4+progress*.22,co=Math.cos(a),si=Math.sin(a);
+   const start=starRadius+2+progress*3,len=(4+(i%3)*2)*(1-progress*.22);
+   ctx.globalAlpha=fade*(i%2?.82:.58);
+   ctx.strokeStyle=i%2?'#ff405e':'#fff0f3';ctx.lineWidth=i%2?1.8:1.25;
+   ctx.beginPath();ctx.moveTo(co*start,si*start);ctx.lineTo(co*(start+len),si*(start+len));ctx.stroke();
+   ctx.fillStyle=i%2?'#b90d31':'#ffffff';
+   ctx.fillRect(co*(start+len)-.8,si*(start+len)-.8,1.6,1.6);
+  }
+
+  // Keep the enlarged white four-point star as the brightest focal point.
+  ctx.globalAlpha=fade;
   ctx.beginPath();
   for(let i=0;i<8;i++){
-   const a=-Math.PI/2+i*Math.PI/4,r=i%2===0?radius:inner,px=Math.cos(a)*r,py=Math.sin(a)*r;
+   const a=-Math.PI/2+i*Math.PI/4,r=i%2===0?starRadius:starRadius*.46,px=Math.cos(a)*r,py=Math.sin(a)*r;
    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
   }
-  ctx.closePath();ctx.fillStyle='rgba(255,255,255,.12)';ctx.strokeStyle='#fff';ctx.lineWidth=1.7*1.75;ctx.fill();ctx.stroke();
+  ctx.closePath();ctx.fillStyle='rgba(255,255,255,.16)';ctx.strokeStyle='#fff';ctx.lineWidth=1.7*1.75;ctx.fill();ctx.stroke();
   ctx.beginPath();ctx.arc(0,0,2*1.75,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+
+  // A few tiny glints orbit the star for a crisp cursed-energy finish.
+  for(let i=0;i<4;i++){
+   const a=game.time*8+i*Math.PI/2+progress*.7,r=starRadius+5+progress*5;
+   ctx.globalAlpha=fade*(.45+.35*Math.sin(game.time*24+i));
+   ctx.fillStyle=i%2?'#ff284d':'#fff';
+   ctx.fillRect(Math.cos(a)*r-1,Math.sin(a)*r-1,2,2);
+  }
   ctx.restore();
  }
 }
