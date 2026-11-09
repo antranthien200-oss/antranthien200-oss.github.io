@@ -651,7 +651,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 /* Keep the manual orientation toggle responsive to mobile browser viewport changes. */
 @media(hover:none) and (pointer:coarse){#screenRotateBtn{touch-action:manipulation}}
 
-/* Vessel awakening: close manga-panel recreation, with the requested left-side placement. */
+/* Vessel awakening: compact, straight-edged manga text panel on the left. */
 #awakeningCutscene.vessel-dialogue{position:fixed;inset:0;display:none;align-items:initial;justify-content:initial;overflow:hidden;pointer-events:none;background:transparent;animation:none!important;z-index:1000}
 #awakeningCutscene.vessel-dialogue.active{display:block;animation:none!important}
 #awakeningCutscene.vessel-dialogue:before,#awakeningCutscene.vessel-dialogue:after{display:none!important;content:none!important}
@@ -660,24 +660,18 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 #awakeningCutscene.vessel-dialogue .awaken-content{display:none!important}
 #awakeningCutscene .vessel-awakening-dialogue{
  display:none;position:absolute;left:0;top:0;box-sizing:border-box;
- width:clamp(76px,21vw,104px);min-height:clamp(112px,31.5vw,148px);
- padding:10px 5px;align-items:center;justify-content:center;
- background:#f5f5f3;color:#080808;border:2.5px solid #111;
- box-shadow:2px 2px 0 rgba(0,0,0,.46);
- font:italic 1000 clamp(13px,3.7vw,17px)/1.13 "Arial Black","Comic Sans MS",Impact,sans-serif;
+ width:clamp(68px,18vw,86px);min-height:clamp(92px,26vw,112px);
+ padding:8px 5px;align-items:center;justify-content:center;
+ background:#f5f5f3;color:#080808;border:2.5px solid #111;border-radius:0;
+ box-shadow:2px 2px 0 rgba(0,0,0,.42);
+ font:italic 1000 clamp(12px,3.1vw,14px)/1.12 "Arial Black","Comic Sans MS",Impact,sans-serif;
  letter-spacing:-.055em;text-align:center;text-transform:uppercase;
- text-shadow:none;white-space:pre-line;transform:rotate(-1deg);
+ text-shadow:none;white-space:pre-line;transform:none;
 }
-#awakeningCutscene.vessel-dialogue.active .vessel-awakening-dialogue{display:flex;animation:vesselDialogueIn .18s cubic-bezier(.18,.82,.24,1) both}
-#awakeningCutscene .vessel-awakening-dialogue:before{
- content:"";position:absolute;right:-17px;top:64%;width:0;height:0;
- border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:18px solid #111;
-}
-#awakeningCutscene .vessel-awakening-dialogue:after{
- content:"";position:absolute;right:-11px;top:calc(64% + 3px);width:0;height:0;
- border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:14px solid #f5f5f3;
-}
-@keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(7px) scale(.92) rotate(-1deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(-1deg)}}
+#awakeningCutscene.vessel-dialogue.active .vessel-awakening-dialogue{display:flex;animation:vesselDialogueIn .16s cubic-bezier(.18,.82,.24,1) both}
+#awakeningCutscene .vessel-awakening-dialogue:before,
+#awakeningCutscene .vessel-awakening-dialogue:after{display:none!important;content:none!important}
+@keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(5px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
 
 </style>
 </head>
@@ -3293,12 +3287,11 @@ function drawAccessoryAura(f,x,y,scale=1){
 function drawSukunaSmileFace(alpha=1){
  if(alpha<=.01)return;
  ctx.save();ctx.globalAlpha=alpha;
- // Keep the literal :) mark, but make the glyph strokes substantially heavier.
+ // Restore the original plain text smiley without the added thick outline.
  ctx.rotate(Math.PI/2);ctx.scale(.42,1);
  ctx.textAlign='center';ctx.textBaseline='middle';
- ctx.font='900 22px "Arial Black",monospace';
- ctx.fillStyle='#160910';ctx.lineJoin='round';ctx.lineWidth=2.6;ctx.strokeStyle=ctx.fillStyle;
- ctx.strokeText(':)',0,0);ctx.fillText(':)',0,0);
+ ctx.font='bold 22px monospace';
+ ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
  ctx.restore();
 }
 function drawAccessoryOverlays(f,x,y,scale=1){
@@ -4774,67 +4767,37 @@ function drawYujiSkillImpactEffects(){
 let vesselAwakeningSmokeSprite=null;
 function getVesselAwakeningSmokeSprite(){
  if(vesselAwakeningSmokeSprite)return vesselAwakeningSmokeSprite;
- const canvas=document.createElement('canvas');canvas.width=420;canvas.height=460;
+ const canvas=document.createElement('canvas');canvas.width=260;canvas.height=300;
  const s=canvas.getContext('2d');
- const puff=(x,y,rx,ry,color,alpha=1,rotation=0)=>{
+ const puff=(x,y,rx,ry,color,rotation=0)=>{
   const radius=Math.max(rx,ry),g=s.createRadialGradient(x-rx*.12,y-ry*.12,1,x,y,radius);
   g.addColorStop(0,color);
-  g.addColorStop(.42,'rgba(72,4,25,'+(.58*alpha)+')');
-  g.addColorStop(.78,'rgba(24,3,14,'+(.35*alpha)+')');
-  g.addColorStop(1,'rgba(7,2,8,0)');
+  g.addColorStop(.48,'rgba(66,4,24,.43)');
+  g.addColorStop(.82,'rgba(24,3,13,.22)');
+  g.addColorStop(1,'rgba(8,2,8,0)');
   s.fillStyle=g;s.beginPath();s.ellipse(x,y,rx,ry,rotation,0,Math.PI*2);s.fill();
  };
- // The smoke stays tight to the fighter, but spreads around the head, shoulders and legs.
- // Soft clumps and torn edges mimic the smoky red-black reference instead of a smooth halo.
- const edgePuffs=[
-  [42,202,45,66],[60,137,43,58],[100,89,58,49],[158,60,58,45],
-  [218,51,56,46],[280,63,57,48],[338,105,53,58],[378,173,38,65],
-  [370,250,47,62],[325,316,61,55],[265,374,65,44],[199,388,65,43],
-  [132,360,62,50],[76,312,50,60],[35,258,37,58],
-  [91,190,57,72],[145,132,68,62],[218,117,75,66],
-  [294,139,71,66],[341,205,67,73],[291,285,76,66],
-  [211,315,78,66],[130,280,69,68]
+ // Thin red-black smoke clings close to the player's outline.
+ // Soft overlapping puffs only: no stroked trails, drawn contours or hard rings.
+ const puffs=[
+  [38,119,28,43,'rgba(116,5,33,.56)'],[52,81,32,30,'rgba(91,4,27,.56)'],
+  [91,54,37,27,'rgba(108,5,32,.52)'],[132,47,34,26,'rgba(91,4,27,.54)'],
+  [174,57,34,29,'rgba(119,5,34,.55)'],[211,91,31,38,'rgba(86,4,26,.53)'],
+  [218,143,28,39,'rgba(105,5,31,.54)'],[197,201,34,29,'rgba(88,4,26,.54)'],
+  [151,246,39,27,'rgba(106,5,31,.53)'],[104,249,36,26,'rgba(82,4,24,.52)'],
+  [62,218,32,32,'rgba(107,5,31,.54)'],[35,171,25,37,'rgba(85,4,25,.53)'],
+  [76,128,35,42,'rgba(32,3,15,.68)'],[124,105,40,52,'rgba(10,2,8,.78)'],
+  [172,129,38,45,'rgba(27,3,14,.67)'],[166,184,39,39,'rgba(12,2,9,.72)'],
+  [104,198,39,38,'rgba(35,3,16,.62)']
  ];
- for(let i=0;i<edgePuffs.length;i++){
-  const p=edgePuffs[i];
-  const col=i%4===0?'rgba(150,8,40,.68)':i%3===0?'rgba(96,5,29,.70)':'rgba(37,3,16,.78)';
-  puff(p[0],p[1],p[2],p[3],col,.92,(i%5-2)*.14);
+ for(let i=0;i<puffs.length;i++){
+  const p=puffs[i];puff(p[0],p[1],p[2],p[3],p[4],(i%5-2)*.10);
  }
- // Ragged red wisps curl upward on either side like smoke blown past the character.
- const wisp=(draw,color,width,blur)=>{
-  s.save();s.lineCap='round';s.lineJoin='round';s.strokeStyle=color;s.lineWidth=width;
-  s.shadowColor=color;s.shadowBlur=blur;s.beginPath();draw();s.stroke();s.restore();
- };
- wisp(()=>{
-  s.moveTo(58,320);s.bezierCurveTo(18,267,56,231,73,185);
-  s.bezierCurveTo(91,139,58,105,112,65);
- },'rgba(136,5,38,.72)',19,19);
- wisp(()=>{
-  s.moveTo(365,321);s.bezierCurveTo(405,268,364,226,353,179);
-  s.bezierCurveTo(340,137,377,97,329,61);
- },'rgba(128,5,35,.65)',17,18);
- wisp(()=>{
-  s.moveTo(112,374);s.bezierCurveTo(78,333,122,306,117,269);
-  s.bezierCurveTo(112,237,138,212,159,196);
- },'rgba(91,4,28,.58)',15,16);
- wisp(()=>{
-  s.moveTo(298,377);s.bezierCurveTo(339,333,299,300,309,263);
-  s.bezierCurveTo(319,230,292,207,272,190);
- },'rgba(102,4,30,.58)',15,16);
- // Dark red smoke behind the torso; the strongest black remains central and partly transparent.
- const core=s.createRadialGradient(210,226,25,210,226,156);
- core.addColorStop(0,'rgba(3,2,7,.62)');
- core.addColorStop(.42,'rgba(8,2,9,.54)');
- core.addColorStop(.72,'rgba(30,3,15,.35)');
- core.addColorStop(1,'rgba(48,3,20,0)');
- s.fillStyle=core;s.fillRect(20,25,380,410);
- // Fine blurred red pockets add depth without placing individual particles around the live fighter.
- for(let i=0;i<18;i++){
-  const a=i*2.399,rx=126+((i*23)%55),ry=135+((i*17)%54);
-  const px=210+Math.cos(a)*rx,py=226+Math.sin(a)*ry;
-  const r=11+(i*7%16);
-  puff(px,py,r*1.45,r,i%3===0?'rgba(163,13,48,.52)':'rgba(35,3,15,.55)',.68,a*.12);
- }
+ const center=s.createRadialGradient(130,151,18,130,151,102);
+ center.addColorStop(0,'rgba(3,2,7,.38)');
+ center.addColorStop(.58,'rgba(8,2,9,.19)');
+ center.addColorStop(1,'rgba(12,2,9,0)');
+ s.fillStyle=center;s.fillRect(28,25,204,250);
  vesselAwakeningSmokeSprite=canvas;
  return canvas;
 }
@@ -4842,12 +4805,11 @@ function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3;
  const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
- const pulse=1+.018*Math.sin(visualTime*2.05);
- // Local aura only: close to the body, roughly the head-to-legs height.
- const auraW=Math.min(244,Math.max(178,W*.64))*pulse;
- const auraH=Math.min(278,Math.max(194,H*.74))*pulse;
- ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.94;
- ctx.drawImage(getVesselAwakeningSmokeSprite(),x-auraW*.5,y-auraH*.60,auraW,auraH);
+ const pulse=1+.01*Math.sin(visualTime*2.05);
+ // Small, thin aura: it hugs the player instead of filling the surrounding arena.
+ const auraW=126*pulse,auraH=140*pulse;
+ ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.84;
+ ctx.drawImage(getVesselAwakeningSmokeSprite(),x-auraW*.5,y-auraH*.59,auraW,auraH);
  ctx.restore();
 }
 
