@@ -674,6 +674,16 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 #awakeningCutscene .vessel-awakening-dialogue:after{display:none!important;content:none!important}
 @keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(5px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
 
+
+/* Cinematic Vessel awakening: keep the fighter centered while darkening the screen edges. */
+#awakeningCutscene.vessel-awakening-zoom{
+ position:fixed;inset:0;z-index:1000;display:block!important;overflow:hidden;
+ pointer-events:none;animation:none!important;
+ background:radial-gradient(ellipse at center,rgba(0,0,0,0) 34%,rgba(0,0,0,.12) 53%,rgba(0,0,0,.48) 76%,rgba(0,0,0,.88) 110%)!important;
+}
+#awakeningCutscene.vessel-awakening-zoom .awaken-backdrop-lines,
+#awakeningCutscene.vessel-awakening-zoom .awaken-flash,
+#awakeningCutscene.vessel-awakening-zoom .awaken-content{display:none!important}
 </style>
 </head>
 <body>
@@ -1071,16 +1081,16 @@ function playAwakeningCutscene(f){
  $('awakenCutsceneName').textContent=isVessel?'':c.awakening;
  $('awakenCutsceneSubtitle').textContent=isVessel?'':c.awakeName+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
- el.classList.remove('active','vessel-dialogue');
+ el.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');
  el._speaker=f;el._phase=isVessel?'dialogue':'single';
  if(isVessel){
   // Skip the centered title popup entirely; show only the existing manga dialogue.
-  f.motion=null;f.attackAnim=0;f.attackType='';
+  f.motion=null;f.attackAnim=0;f.attackType='';f.sukunaAwakeningCameraTime=0;
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
- if(isVessel)el.classList.add('vessel-dialogue');
+ if(isVessel)el.classList.add('vessel-dialogue','vessel-awakening-zoom');
  game.cutsceneTimer=isVessel?1.55:.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
@@ -2702,6 +2712,9 @@ function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.starte
 
 function update(dt){if(game.cutsceneTimer>0){
  const cutscene=$('awakeningCutscene'),speaker=cutscene&&cutscene._speaker;
+ if(speaker&&speaker.char==='vessel'&&(cutscene._phase==='dialogue'||cutscene._phase==='awakening-motion')){
+  speaker.sukunaAwakeningCameraTime=Math.min(1.55,(speaker.sukunaAwakeningCameraTime||0)+dt);
+ }
  if(speaker&&speaker.char==='vessel'&&speaker.motion&&speaker.motion.name==='sukunaAwaken'){
   const step=Math.min(dt,game.cutsceneTimer);
   speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
@@ -2716,7 +2729,7 @@ function update(dt){if(game.cutsceneTimer>0){
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=13;
   }else{
-   cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null;cutscene._phase=null;
+   cutscene.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');cutscene._speaker=null;cutscene._phase=null;
   }
  }
  return
@@ -4854,6 +4867,8 @@ function positionVesselAwakeningDialogue(){
  const zoom=cameraViewScale(),shakeX=Math.sin(game.time*71)*game.shake,shakeY=Math.cos(game.time*59)*game.shake*.62;
  let px=W*.5+(f.x-camera.x)/zoom+shakeX;
  let py=H*.5+(f.y-72-camera.y)/zoom+shakeY;
+ const cinematicProgress=clamp((f.sukunaAwakeningCameraTime||0)/1.55,0,1),cinematicEase=cinematicProgress*cinematicProgress*(3-2*cinematicProgress),cinematicZoom=1+.45*cinematicEase;
+ px=W*.5+(px-W*.5)*cinematicZoom;py=H*.5+(py-H*.5)*cinematicZoom;
  let viewW=W,viewH=H;
  if(isManualScreenRotated()){const gx=px;px=innerWidth-py;py=gx;viewW=innerWidth;viewH=innerHeight}
  const boxW=box.offsetWidth||Math.min(78,viewW*.22);
@@ -4867,6 +4882,12 @@ function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
+ const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
+ if(zoomFighter&&!zoomFighter.dead){
+  const progress=clamp((zoomFighter.sukunaAwakeningCameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease;
+  const viewScale=cameraViewScale(),focusX=W*.5+(zoomFighter.x-camera.x)/viewScale,focusY=H*.5+(zoomFighter.y-camera.y)/viewScale;
+  ctx.translate(W*.5,H*.5);ctx.scale(cinematicZoom,cinematicZoom);ctx.translate(-focusX,-focusY);
+ }
  drawDomainBackdrops();
  if(!isFullScreenDomainActive()){drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
