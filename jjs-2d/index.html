@@ -1072,8 +1072,10 @@ function playAwakeningCutscene(f){
  $('awakenCutsceneSubtitle').textContent=(f.char==='vessel'?'KING OF CURSES':c.awakeName)+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
  el.classList.remove('active','vessel-dialogue');
- el._speaker=f;
+ el._speaker=f;el._phase=f.char==='vessel'?'dialogue':'single';
  if(f.char==='vessel'){
+  // Hold Sukuna's actual awakening move until both original popup stages have finished.
+  f.motion=null;
   el.classList.add('vessel-dialogue');
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
@@ -2682,7 +2684,19 @@ function update(dt){if(game.cutsceneTimer>0){
  }
  game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);
  game.shake=Math.max(0,game.shake-dt*22);
- if(game.cutsceneTimer===0){cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null}
+ if(game.cutsceneTimer===0){
+  if(speaker&&speaker.char==='vessel'&&cutscene._phase==='dialogue'){
+   // Restore the original centered KING OF CURSES popup after the small manga dialogue.
+   cutscene.classList.remove('active','vessel-dialogue');void cutscene.offsetWidth;cutscene.classList.add('active');
+   cutscene._phase='king-popup';game.cutsceneTimer=1.55;game.shake=10;
+  }else if(speaker&&speaker.char==='vessel'&&cutscene._phase==='king-popup'){
+   // Only after the KING OF CURSES popup clears, play Sukuna's awakening animation.
+   cutscene.classList.remove('active');cutscene._phase='awakening-motion';
+   setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=13;
+  }else{
+   cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null;cutscene._phase=null;
+  }
+ }
  return
 }if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
