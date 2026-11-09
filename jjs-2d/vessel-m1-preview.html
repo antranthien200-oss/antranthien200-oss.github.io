@@ -1999,7 +1999,7 @@ if(f.attackCd>0)return;
   f.domainRadius=isHakariDomain?Math.hypot(WORLD.w,WORLD.h):0;f.domainVisualRadius=isHakariDomain?860:0;f.domainCenterX=isHakariDomain?f.x:null;f.domainCenterY=isHakariDomain?f.y:null;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainState=isHakariDomain?'forming':'';f.domainTick=0;
   f.domainFlashTimer=0;f.domainOpenedAt=0;
   if(f.char==='vessel'){f.motion=null;f.attackAnim=0;f.attackType='';}else setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken',trashman:'trashManAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
-  burst(f.x,f.y,c.accent,56,8);game.shake=13;
+  if(f.char!=='vessel')burst(f.x,f.y,c.accent,56,8);game.shake=13;
   if(isHakariDomain){f.invuln=Math.max(f.invuln,1.3);damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));showToast(c.awakening+' · HANDSIGN',1300)}
   else{playAwakeningCutscene(f);showToast(c.awakening,1600)}
   if(f.char!=='vessel')popText(f.x,f.y-65,c.awakeName,'#ffde89',25);updateHud();return;
