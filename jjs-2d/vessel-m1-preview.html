@@ -651,17 +651,33 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 /* Keep the manual orientation toggle responsive to mobile browser viewport changes. */
 @media(hover:none) and (pointer:coarse){#screenRotateBtn{touch-action:manipulation}}
 
-/* Vessel awakening: a text-only manga speech panel beside the fighter. */
-#awakeningCutscene.vessel-dialogue{position:fixed;inset:0;display:none;align-items:initial;justify-content:initial;overflow:hidden;pointer-events:none;background:transparent;animation:none!important}
+/* Vessel awakening: close manga-panel recreation, with the requested left-side placement. */
+#awakeningCutscene.vessel-dialogue{position:fixed;inset:0;display:none;align-items:initial;justify-content:initial;overflow:hidden;pointer-events:none;background:transparent;animation:none!important;z-index:1000}
 #awakeningCutscene.vessel-dialogue.active{display:block;animation:none!important}
 #awakeningCutscene.vessel-dialogue:before,#awakeningCutscene.vessel-dialogue:after{display:none!important;content:none!important}
 #awakeningCutscene.vessel-dialogue .awaken-backdrop-lines,
 #awakeningCutscene.vessel-dialogue .awaken-flash,
 #awakeningCutscene.vessel-dialogue .awaken-content{display:none!important}
-#awakeningCutscene .vessel-awakening-dialogue{display:none;position:absolute;left:0;top:0;width:min(150px,24vw);padding:8px 10px;background:#fff;color:#111;border:2.5px solid #090909;box-shadow:3px 4px 0 rgba(0,0,0,.72);font:900 clamp(13px,1.35vw,15px)/1.22 "Comic Sans MS","Segoe Print",cursive;letter-spacing:-.02em;text-align:center;text-shadow:none;white-space:normal}
-#awakeningCutscene.vessel-dialogue.active .vessel-awakening-dialogue{display:block;animation:vesselDialogueIn .18s cubic-bezier(.18,.82,.24,1) both}
-#awakeningCutscene .vessel-awakening-dialogue:after{content:"";position:absolute;left:auto;right:20px;bottom:-10px;width:14px;height:14px;background:#fff;border-right:3px solid #090909;border-bottom:3px solid #090909;transform:rotate(-45deg)}
-@keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(7px) scale(.92)}100%{opacity:1;transform:translateY(0) scale(1)}}
+#awakeningCutscene .vessel-awakening-dialogue{
+ display:none;position:absolute;left:0;top:0;box-sizing:border-box;
+ width:clamp(76px,21vw,104px);min-height:clamp(112px,31.5vw,148px);
+ padding:10px 5px;align-items:center;justify-content:center;
+ background:#f5f5f3;color:#080808;border:2.5px solid #111;
+ box-shadow:2px 2px 0 rgba(0,0,0,.46);
+ font:italic 1000 clamp(13px,3.7vw,17px)/1.13 "Arial Black","Comic Sans MS",Impact,sans-serif;
+ letter-spacing:-.055em;text-align:center;text-transform:uppercase;
+ text-shadow:none;white-space:pre-line;transform:rotate(-1deg);
+}
+#awakeningCutscene.vessel-dialogue.active .vessel-awakening-dialogue{display:flex;animation:vesselDialogueIn .18s cubic-bezier(.18,.82,.24,1) both}
+#awakeningCutscene .vessel-awakening-dialogue:before{
+ content:"";position:absolute;right:-17px;top:64%;width:0;height:0;
+ border-top:12px solid transparent;border-bottom:12px solid transparent;border-left:18px solid #111;
+}
+#awakeningCutscene .vessel-awakening-dialogue:after{
+ content:"";position:absolute;right:-11px;top:calc(64% + 3px);width:0;height:0;
+ border-top:9px solid transparent;border-bottom:9px solid transparent;border-left:14px solid #f5f5f3;
+}
+@keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(7px) scale(.92) rotate(-1deg)}100%{opacity:1;transform:translateY(0) scale(1) rotate(-1deg)}}
 
 </style>
 </head>
@@ -1064,7 +1080,7 @@ function playAwakeningCutscene(f){
  el._speaker=f;
  if(f.char==='vessel'){
   el.classList.add('vessel-dialogue');
-  $('vesselAwakeningDialogue').textContent="You're such an annoying brat...";
+  $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
@@ -3298,12 +3314,12 @@ function drawAccessoryAura(f,x,y,scale=1){
 function drawSukunaSmileFace(alpha=1){
  if(alpha<=.01)return;
  ctx.save();ctx.globalAlpha=alpha;
- // Keep the face as literal text, enlarged 3x, with no outline.
- // Compress its text width before rotating so the eyes and mouth sit closer together.
+ // Keep the literal :) mark, but make the glyph strokes substantially heavier.
  ctx.rotate(Math.PI/2);ctx.scale(.42,1);
  ctx.textAlign='center';ctx.textBaseline='middle';
- ctx.font='bold 22px monospace';
- ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
+ ctx.font='900 22px "Arial Black",monospace';
+ ctx.fillStyle='#160910';ctx.lineJoin='round';ctx.lineWidth=2.6;ctx.strokeStyle=ctx.fillStyle;
+ ctx.strokeText(':)',0,0);ctx.fillText(':)',0,0);
  ctx.restore();
 }
 function drawAccessoryOverlays(f,x,y,scale=1){
@@ -4779,48 +4795,67 @@ function drawYujiSkillImpactEffects(){
 let vesselAwakeningSmokeSprite=null;
 function getVesselAwakeningSmokeSprite(){
  if(vesselAwakeningSmokeSprite)return vesselAwakeningSmokeSprite;
- const canvas=document.createElement('canvas');canvas.width=420;canvas.height=330;
+ const canvas=document.createElement('canvas');canvas.width=420;canvas.height=460;
  const s=canvas.getContext('2d');
- const puff=(x,y,rx,ry,red,alpha,rotation=0)=>{
-  const radius=Math.max(rx,ry),g=s.createRadialGradient(x-rx*.12,y-ry*.12,2,x,y,radius);
-  g.addColorStop(0,red);
-  g.addColorStop(.42,'rgba(35,3,13,'+(alpha*.78)+')');
-  g.addColorStop(.76,'rgba(15,4,11,'+(alpha*.42)+')');
-  g.addColorStop(1,'rgba(8,3,9,0)');
-  s.globalAlpha=1;s.fillStyle=g;s.beginPath();s.ellipse(x,y,rx,ry,rotation,0,Math.PI*2);s.fill();
+ const puff=(x,y,rx,ry,color,alpha=1,rotation=0)=>{
+  const radius=Math.max(rx,ry),g=s.createRadialGradient(x-rx*.12,y-ry*.12,1,x,y,radius);
+  g.addColorStop(0,color);
+  g.addColorStop(.42,'rgba(72,4,25,'+(.58*alpha)+')');
+  g.addColorStop(.78,'rgba(24,3,14,'+(.35*alpha)+')');
+  g.addColorStop(1,'rgba(7,2,8,0)');
+  s.fillStyle=g;s.beginPath();s.ellipse(x,y,rx,ry,rotation,0,Math.PI*2);s.fill();
  };
- // Deep, soft red-black core with no hard circular boundary.
- puff(210,164,154,105,'rgba(92,5,27,.58)',.78,-.08);
- puff(190,153,105,88,'rgba(21,4,12,.72)',.82,.18);
- puff(247,177,118,79,'rgba(83,5,25,.50)',.7,-.22);
- // Broken, uneven smoke lobes around the silhouette create a natural turbulent edge.
- const lobes=[
-  [49,132,48,45],[70,91,43,36],[112,66,47,39],[158,58,42,34],
-  [208,49,48,37],[263,59,48,39],[313,83,45,38],[365,122,43,45],
-  [375,178,42,43],[334,229,47,38],[285,264,43,34],[225,278,51,35],
-  [165,271,48,36],[107,246,48,43],[59,207,45,42],[91,167,55,44],
-  [145,119,52,47],[211,112,61,48],[276,130,57,44],[319,174,54,46],
-  [270,216,59,48],[201,219,62,49],[137,207,55,47]
+ // The smoke stays tight to the fighter, but spreads around the head, shoulders and legs.
+ // Soft clumps and torn edges mimic the smoky red-black reference instead of a smooth halo.
+ const edgePuffs=[
+  [42,202,45,66],[60,137,43,58],[100,89,58,49],[158,60,58,45],
+  [218,51,56,46],[280,63,57,48],[338,105,53,58],[378,173,38,65],
+  [370,250,47,62],[325,316,61,55],[265,374,65,44],[199,388,65,43],
+  [132,360,62,50],[76,312,50,60],[35,258,37,58],
+  [91,190,57,72],[145,132,68,62],[218,117,75,66],
+  [294,139,71,66],[341,205,67,73],[291,285,76,66],
+  [211,315,78,66],[130,280,69,68]
  ];
- for(let i=0;i<lobes.length;i++){
-  const p=lobes[i],red=i%4===0?'rgba(130,8,35,.56)':i%3===0?'rgba(66,5,22,.62)':'rgba(20,4,12,.68)';
-  puff(p[0],p[1],p[2],p[3],red,.7,(i%5-2)*.16);
+ for(let i=0;i<edgePuffs.length;i++){
+  const p=edgePuffs[i];
+  const col=i%4===0?'rgba(150,8,40,.68)':i%3===0?'rgba(96,5,29,.70)':'rgba(37,3,16,.78)';
+  puff(p[0],p[1],p[2],p[3],col,.92,(i%5-2)*.14);
  }
- // A few translucent outer wisps, built as soft puffs rather than sharp lines.
- const wisps=[
-  [20,150,35,23],[42,68,30,23],[104,28,36,23],[183,21,34,20],
-  [257,25,36,22],[338,55,33,23],[402,142,27,34],[392,215,31,24],
-  [310,298,37,20],[220,310,36,18],[121,294,37,22],[28,240,30,25]
- ];
- for(let i=0;i<wisps.length;i++){
-  const p=wisps[i];puff(p[0],p[1],p[2],p[3],i%2?'rgba(107,7,30,.48)':'rgba(44,4,18,.52)',.54,i*.13);
+ // Ragged red wisps curl upward on either side like smoke blown past the character.
+ const wisp=(draw,color,width,blur)=>{
+  s.save();s.lineCap='round';s.lineJoin='round';s.strokeStyle=color;s.lineWidth=width;
+  s.shadowColor=color;s.shadowBlur=blur;s.beginPath();draw();s.stroke();s.restore();
+ };
+ wisp(()=>{
+  s.moveTo(58,320);s.bezierCurveTo(18,267,56,231,73,185);
+  s.bezierCurveTo(91,139,58,105,112,65);
+ },'rgba(136,5,38,.72)',19,19);
+ wisp(()=>{
+  s.moveTo(365,321);s.bezierCurveTo(405,268,364,226,353,179);
+  s.bezierCurveTo(340,137,377,97,329,61);
+ },'rgba(128,5,35,.65)',17,18);
+ wisp(()=>{
+  s.moveTo(112,374);s.bezierCurveTo(78,333,122,306,117,269);
+  s.bezierCurveTo(112,237,138,212,159,196);
+ },'rgba(91,4,28,.58)',15,16);
+ wisp(()=>{
+  s.moveTo(298,377);s.bezierCurveTo(339,333,299,300,309,263);
+  s.bezierCurveTo(319,230,292,207,272,190);
+ },'rgba(102,4,30,.58)',15,16);
+ // Dark red smoke behind the torso; the strongest black remains central and partly transparent.
+ const core=s.createRadialGradient(210,226,25,210,226,156);
+ core.addColorStop(0,'rgba(3,2,7,.62)');
+ core.addColorStop(.42,'rgba(8,2,9,.54)');
+ core.addColorStop(.72,'rgba(30,3,15,.35)');
+ core.addColorStop(1,'rgba(48,3,20,0)');
+ s.fillStyle=core;s.fillRect(20,25,380,410);
+ // Fine blurred red pockets add depth without placing individual particles around the live fighter.
+ for(let i=0;i<18;i++){
+  const a=i*2.399,rx=126+((i*23)%55),ry=135+((i*17)%54);
+  const px=210+Math.cos(a)*rx,py=226+Math.sin(a)*ry;
+  const r=11+(i*7%16);
+  puff(px,py,r*1.45,r,i%3===0?'rgba(163,13,48,.52)':'rgba(35,3,15,.55)',.68,a*.12);
  }
- // Keep the middle darkest so the fighter remains the clear focal point.
- const core=s.createRadialGradient(210,164,18,210,164,126);
- core.addColorStop(0,'rgba(5,3,8,.42)');
- core.addColorStop(.58,'rgba(12,3,9,.25)');
- core.addColorStop(1,'rgba(10,2,8,0)');
- s.globalAlpha=1;s.fillStyle=core;s.fillRect(45,20,330,290);
  vesselAwakeningSmokeSprite=canvas;
  return canvas;
 }
@@ -4828,12 +4863,15 @@ function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3;
  const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
- const pulse=1+.018*Math.sin(visualTime*2.1);
- const auraW=264*pulse,auraH=226*pulse;
- ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.92;
- ctx.drawImage(getVesselAwakeningSmokeSprite(),x-auraW*.5,y-auraH*.64,auraW,auraH);
+ const pulse=1+.018*Math.sin(visualTime*2.05);
+ // Local aura only: close to the body, roughly the head-to-legs height.
+ const auraW=Math.min(244,Math.max(178,W*.64))*pulse;
+ const auraH=Math.min(278,Math.max(194,H*.74))*pulse;
+ ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.94;
+ ctx.drawImage(getVesselAwakeningSmokeSprite(),x-auraW*.5,y-auraH*.60,auraW,auraH);
  ctx.restore();
 }
+
 function positionVesselAwakeningDialogue(){
  const overlay=$('awakeningCutscene');
  if(!overlay||!overlay.classList.contains('active')||!overlay.classList.contains('vessel-dialogue'))return;
@@ -4844,11 +4882,13 @@ function positionVesselAwakeningDialogue(){
  let py=H*.5+(f.y-72-camera.y)/zoom+shakeY;
  let viewW=W,viewH=H;
  if(isManualScreenRotated()){const gx=px;px=innerWidth-py;py=gx;viewW=innerWidth;viewH=innerHeight}
- const boxW=box.offsetWidth||Math.min(150,viewW*.24);
- const left=clamp(px-boxW-20,8,Math.max(8,viewW-boxW-8));
- const top=clamp(py-12,8,Math.max(8,viewH-68));
+ const boxW=box.offsetWidth||Math.min(78,viewW*.22);
+ const boxH=box.offsetHeight||Math.min(120,viewH*.34);
+ const left=clamp(px-boxW-28,8,Math.max(8,viewW-boxW-8));
+ const top=clamp(py-8,8,Math.max(8,viewH-boxH-8));
  box.style.left=left+'px';box.style.top=top+'px';
 }
+
 function draw(){
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
