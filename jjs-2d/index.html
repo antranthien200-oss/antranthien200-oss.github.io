@@ -3752,7 +3752,7 @@ function drawHeadHands(f){
  ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
  if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=10;ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
  if(f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
- if(f.awakened){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':(f.char==='vessel'?'#f0445a':c.accent);ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ if(f.awakened&&f.char!=='vessel'){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':c.accent;ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
  if(combo&&!(f.char==='vessel'&&f.awakened)){
@@ -4851,52 +4851,15 @@ function drawYujiSkillImpactEffects(){
  }
 }
 
-let vesselAwakeningSmokeSprite=null;
-function getVesselAwakeningSmokeSprite(){
- if(vesselAwakeningSmokeSprite)return vesselAwakeningSmokeSprite;
- const canvas=document.createElement('canvas');canvas.width=260;canvas.height=300;
- const s=canvas.getContext('2d');
- const puff=(x,y,rx,ry,color,rotation=0)=>{
-  const radius=Math.max(rx,ry),g=s.createRadialGradient(x-rx*.12,y-ry*.12,1,x,y,radius);
-  g.addColorStop(0,color);
-  g.addColorStop(.48,'rgba(66,4,24,.43)');
-  g.addColorStop(.82,'rgba(24,3,13,.22)');
-  g.addColorStop(1,'rgba(8,2,8,0)');
-  s.fillStyle=g;s.beginPath();s.ellipse(x,y,rx,ry,rotation,0,Math.PI*2);s.fill();
- };
- // Thin red-black smoke clings close to the player's outline.
- // Soft overlapping puffs only: no stroked trails, drawn contours or hard rings.
- const puffs=[
-  [38,119,28,43,'rgba(116,5,33,.56)'],[52,81,32,30,'rgba(91,4,27,.56)'],
-  [91,54,37,27,'rgba(108,5,32,.52)'],[132,47,34,26,'rgba(91,4,27,.54)'],
-  [174,57,34,29,'rgba(119,5,34,.55)'],[211,91,31,38,'rgba(86,4,26,.53)'],
-  [218,143,28,39,'rgba(105,5,31,.54)'],[197,201,34,29,'rgba(88,4,26,.54)'],
-  [151,246,39,27,'rgba(106,5,31,.53)'],[104,249,36,26,'rgba(82,4,24,.52)'],
-  [62,218,32,32,'rgba(107,5,31,.54)'],[35,171,25,37,'rgba(85,4,25,.53)'],
-  [76,128,35,42,'rgba(32,3,15,.68)'],[124,105,40,52,'rgba(10,2,8,.78)'],
-  [172,129,38,45,'rgba(27,3,14,.67)'],[166,184,39,39,'rgba(12,2,9,.72)'],
-  [104,198,39,38,'rgba(35,3,16,.62)']
- ];
- for(let i=0;i<puffs.length;i++){
-  const p=puffs[i];puff(p[0],p[1],p[2],p[3],p[4],(i%5-2)*.10);
- }
- const center=s.createRadialGradient(130,151,18,130,151,102);
- center.addColorStop(0,'rgba(3,2,7,.38)');
- center.addColorStop(.58,'rgba(8,2,9,.19)');
- center.addColorStop(1,'rgba(12,2,9,0)');
- s.fillStyle=center;s.fillRect(28,25,204,250);
- vesselAwakeningSmokeSprite=canvas;
- return canvas;
-}
 function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending)return;
- const x=sx(f.x),y=sy(f.y)-f.jump*3;
+ const x=sx(f.x),y=sy(f.y)-f.jump*3-23;
  const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
- const pulse=1+.01*Math.sin(visualTime*2.05);
- // Small, thin aura: it hugs the player instead of filling the surrounding arena.
- const auraW=96*pulse,auraH=112*pulse;
- ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.84;
- ctx.drawImage(getVesselAwakeningSmokeSprite(),x-auraW*.5,y-auraH*.59,auraW,auraH);
+ ctx.save();
+ // One clean, thin red ring hugs the round head/body. No smoke puffs or floating particles.
+ ctx.globalAlpha=.38+.035*Math.sin(visualTime*2.05);
+ ctx.strokeStyle='#f0445a';ctx.lineWidth=2;
+ ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.stroke();
  ctx.restore();
 }
 
