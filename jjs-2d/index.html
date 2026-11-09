@@ -1067,21 +1067,21 @@ function registerPlayerHit(target,source,amount){
 }
 function updatePlayerHitStreak(dt){if(game.playerHitTimer<=0)return;game.playerHitTimer=Math.max(0,game.playerHitTimer-dt);if(game.playerHitTimer===0){game.playerHitStreak=0;const panel=$('comboDisplay');if(panel)panel.classList.remove('active','pop','hot')}}
 function playAwakeningCutscene(f){
- const c=CHARS[f.char],el=$('awakeningCutscene');
- $('awakenCutsceneName').textContent=c.awakening;
- $('awakenCutsceneSubtitle').textContent=(f.char==='vessel'?'KING OF CURSES':c.awakeName)+' · AWAKENED';
+ const c=CHARS[f.char],el=$('awakeningCutscene'),isVessel=f.char==='vessel';
+ $('awakenCutsceneName').textContent=isVessel?'':c.awakening;
+ $('awakenCutsceneSubtitle').textContent=isVessel?'':c.awakeName+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
  el.classList.remove('active','vessel-dialogue');
- el._speaker=f;el._phase=f.char==='vessel'?'king-popup':'single';
- if(f.char==='vessel'){
-  // Show the original centered KING OF CURSES popup first.
-  // The manga dialogue and transformation are deliberately held until it finishes.
+ el._speaker=f;el._phase=isVessel?'dialogue':'single';
+ if(isVessel){
+  // Skip the centered title popup entirely; show only the existing manga dialogue.
   f.motion=null;f.attackAnim=0;f.attackType='';
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
- game.cutsceneTimer=.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
+ if(isVessel)el.classList.add('vessel-dialogue');
+ game.cutsceneTimer=isVessel?1.55:.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
 function damageBuildingAlongRay(f,angle,maxRange=1000){
@@ -1955,7 +1955,7 @@ if(f.attackCd>0)return;
   burst(f.x,f.y,c.accent,56,8);game.shake=13;
   if(isHakariDomain){f.invuln=Math.max(f.invuln,1.3);damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));showToast(c.awakening+' · HANDSIGN',1300)}
   else{playAwakeningCutscene(f);showToast(c.awakening,1600)}
-  popText(f.x,f.y-65,c.awakeName,'#ffde89',25);updateHud();return;
+  if(f.char!=='vessel')popText(f.x,f.y-65,c.awakeName,'#ffde89',25);updateHud();return;
  }
  if(kind==='special'){
   if(f.char==='ten'&&f.tenNueCast&&f.tenNueWindow>0){const p=spawnTenNue(f,true);if(p){f.skillCd[1]=22;f.specialCd=10;setMotion(f,'megumiNueRide',1.05,Math.atan2(p.aimY-p.y,p.aimX-p.x),targetOf(f));showToast('NUE · RIDE THE SHIKIGAMI',750)}return}
@@ -2685,13 +2685,8 @@ function update(dt){if(game.cutsceneTimer>0){
  game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);
  game.shake=Math.max(0,game.shake-dt*22);
  if(game.cutsceneTimer===0){
-  if(speaker&&speaker.char==='vessel'&&cutscene._phase==='king-popup'){
-   // The centered KING OF CURSES title is finished: show the manga dialogue second.
-   cutscene.classList.remove('active');cutscene.classList.add('vessel-dialogue');
-   void cutscene.offsetWidth;cutscene.classList.add('active');
-   cutscene._phase='dialogue';game.cutsceneTimer=1.55;game.shake=10;
-  }else if(speaker&&speaker.char==='vessel'&&cutscene._phase==='dialogue'){
-   // Only after the manga dialogue also clears, begin Sukuna's awakening animation.
+  if(speaker&&speaker.char==='vessel'&&cutscene._phase==='dialogue'){
+   // After the manga dialogue clears, begin Sukuna's awakening animation.
    cutscene.classList.remove('active','vessel-dialogue');cutscene._phase='awakening-motion';
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=13;
