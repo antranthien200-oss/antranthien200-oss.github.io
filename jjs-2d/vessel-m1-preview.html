@@ -3792,6 +3792,26 @@ function drawHeadHands(f){
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);
+ if(f.stun>.04){
+  const stunStrength=clamp(f.stun/.22,.48,1),stunPulse=.94+.06*Math.sin(game.time*18);
+  ctx.save();ctx.globalAlpha*=stunStrength*stunPulse;
+  // Cool blue forehead wash, shaped to sit inside the round head like the 😨 expression.
+  const forehead=ctx.createLinearGradient(0,-15,0,-2);
+  forehead.addColorStop(0,'#b9edff');forehead.addColorStop(.38,'#64c5f4');forehead.addColorStop(1,'#347fc5');
+  ctx.fillStyle=forehead;ctx.beginPath();
+  ctx.moveTo(-7.5,-10);ctx.quadraticCurveTo(-6.8,-14.2,0,-14.4);
+  ctx.quadraticCurveTo(7.2,-14.1,8.4,-9.2);ctx.lineTo(7.8,-5.2);
+  ctx.quadraticCurveTo(0,-2.5,-8,-5.3);ctx.closePath();ctx.fill();
+  // One dark-blue stripe runs from the forehead down the center of the face.
+  ctx.fillStyle='#082f69';ctx.beginPath();
+  ctx.moveTo(-1.65,-14);ctx.lineTo(1.65,-14);ctx.lineTo(2.05,-3.5);
+  ctx.lineTo(1.45,5.2);ctx.lineTo(0,7.2);ctx.lineTo(-1.45,5.2);
+  ctx.lineTo(-2.05,-3.5);ctx.closePath();ctx.fill();
+  // Narrow icy highlight gives the blue forehead a wet, shocked look.
+  ctx.fillStyle='rgba(226,250,255,.82)';
+  ctx.fillRect(-5.5,-11.1,2.2,2.1);ctx.fillRect(-3.3,-9.4,1.3,2.2);
+  ctx.restore();
+ }
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
@@ -3806,7 +3826,7 @@ function drawHeadHands(f){
   ctx.restore();
  }
  if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
- if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
+ 
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
  if(f.transfigureMeter>0){const mw=46,bw=mw*(f.transfigureMeter/100);ctx.save();ctx.fillStyle='#061014cc';ctx.fillRect(x-mw/2,headY-47,mw,7);ctx.fillStyle='#88dfcc';ctx.fillRect(x-mw/2,headY-47,bw,7);ctx.strokeStyle='#d8fff4';ctx.strokeRect(x-mw/2,headY-47,mw,7);ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9fff4';ctx.fillText('SOUL',x,headY-51);ctx.restore();}
  if(!f.isTrainingDummy){
