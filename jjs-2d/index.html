@@ -124,7 +124,7 @@
 #awakeningCutscene:after{animation:awakenSlash .9s .2s ease-out both;transform:rotate(18deg) scaleX(.15);border-color:#fff}
 .awaken-backdrop-lines{position:absolute;inset:-50%;background:repeating-linear-gradient(108deg,transparent 0 42px,color-mix(in srgb,var(--awaken-color,#79dfff) 17%,transparent) 43px 45px,transparent 46px 82px);transform:translateX(-8%) rotate(-8deg);animation:awakenLines 1.55s ease-out both;}
 .awaken-flash{position:absolute;inset:0;background:#fff;opacity:0;animation:awakenFlash .42s ease-out both}
-.awaken-content{position:relative;width:min(900px,92vw);padding:30px 18px;text-align:center;transform:skewX(-7deg) scale(.8);animation:awakenText .475s .08s cubic-bezier(.12,.8,.2,1) both;text-shadow:0 4px 0 #05070e,0 0 32px var(--awaken-color,#79dfff)}
+.awaken-content{position:relative;width:min(900px,92vw);padding:30px 18px;text-align:center;transform:skewX(-7deg) scale(.8);animation:awakenText .2375s .04s cubic-bezier(.12,.8,.2,1) both;text-shadow:0 4px 0 #05070e,0 0 32px var(--awaken-color,#79dfff)}
 .awaken-kicker{font-size:clamp(9px,1.5vw,13px);font-weight:1000;letter-spacing:.55em;color:#fff;margin-bottom:15px}
 #awakenCutsceneName{font-size:clamp(32px,8vw,84px);line-height:.98;font-weight:1000;letter-spacing:.035em;color:#fff;text-transform:uppercase}
 #awakenCutsceneSubtitle{margin-top:14px;font-size:clamp(10px,1.8vw,15px);font-weight:900;letter-spacing:.32em;color:var(--awaken-color,#79dfff);text-transform:uppercase}
@@ -1081,7 +1081,7 @@ function playAwakeningCutscene(f){
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
- game.cutsceneTimer=.775;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
+ game.cutsceneTimer=.3875;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
 function damageBuildingAlongRay(f,angle,maxRange=1000){
