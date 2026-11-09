@@ -1092,7 +1092,11 @@ function playAwakeningCutscene(f){
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
- if(isVessel)el.classList.add('vessel-dialogue','vessel-awakening-zoom');
+ if(isVessel){
+  el.classList.add('vessel-dialogue','vessel-awakening-zoom');
+  // Apply the vignette inline so it cannot be overridden by the dialogue panel's transparent background.
+  el.style.background='radial-gradient(ellipse 62% 62% at center,rgba(0,0,0,0) 22%,rgba(0,0,0,.22) 52%,rgba(0,0,0,.62) 82%,rgba(0,0,0,.92) 120%)';
+ }
  game.cutsceneTimer=isVessel?1.55:.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=isVessel?0:15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
@@ -2731,7 +2735,7 @@ function update(dt){if(game.cutsceneTimer>0){
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else{
-   cutscene.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');cutscene._speaker=null;cutscene._phase=null;
+   cutscene.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
   }
  }
  return
@@ -4870,7 +4874,8 @@ function positionVesselAwakeningDialogue(){
  let px=W*.5+(f.x-camera.x)/zoom+shakeX;
  let py=H*.5+(f.y-72-camera.y)/zoom+shakeY;
  const cinematicProgress=clamp((f.sukunaAwakeningCameraTime||0)/1.55,0,1),cinematicEase=cinematicProgress*cinematicProgress*(3-2*cinematicProgress),cinematicZoom=1+.45*cinematicEase;
- px=W*.5+(px-W*.5)*cinematicZoom;py=H*.5+(py-H*.5)*cinematicZoom;
+ const focusX=W*.5+(f.x-camera.x)/zoom,focusY=H*.5+(f.y-camera.y)/zoom;
+ px=focusX+(px-focusX)*cinematicZoom;py=focusY+(py-focusY)*cinematicZoom;
  let viewW=W,viewH=H;
  if(isManualScreenRotated()){const gx=px;px=innerWidth-py;py=gx;viewW=innerWidth;viewH=innerHeight}
  const boxW=box.offsetWidth||Math.min(78,viewW*.22);
@@ -4881,15 +4886,19 @@ function positionVesselAwakeningDialogue(){
 }
 
 function draw(){
+ const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
+ if(zoomFighter&&!zoomFighter.dead){
+  const progress=clamp((zoomFighter.sukunaAwakeningCameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease,viewScale=cameraViewScale();
+  const focusX=W*.5+(zoomFighter.x-camera.x)/viewScale,focusY=H*.5+(zoomFighter.y-camera.y)/viewScale;
+  // Scale the canvas element around the fighter's actual screen position for a reliable cinematic close-up.
+  canvas.style.transformOrigin=focusX+'px '+focusY+'px';
+  canvas.style.transform='scale('+cinematicZoom+')';
+ }else{
+  canvas.style.transform='';
+ }
  ctx.clearRect(0,0,W,H);ctx.save();
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
- const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
- if(zoomFighter&&!zoomFighter.dead){
-  const progress=clamp((zoomFighter.sukunaAwakeningCameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease;
-  const viewScale=cameraViewScale(),focusX=W*.5+(zoomFighter.x-camera.x)/viewScale,focusY=H*.5+(zoomFighter.y-camera.y)/viewScale;
-  ctx.translate(W*.5,H*.5);ctx.scale(cinematicZoom,cinematicZoom);ctx.translate(-focusX,-focusY);
- }
  drawDomainBackdrops();
  if(!isFullScreenDomainActive()){drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
