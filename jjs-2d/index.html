@@ -4800,15 +4800,15 @@ function drawYujiSkillCancelBurst(){
  for(const f of [player,enemy]){
   const fx=f&&f.yujiCancelBurstFx;if(!fx)continue;
   const progress=clamp(1-fx.life/fx.max,0,1),fade=clamp(fx.life/fx.max,0,1);
-  const radius=5+progress*7,inner=radius*.46,x=sx(fx.x),y=sy(fx.y);
+  const radius=(5+progress*7)*1.75,inner=radius*.46,x=sx(fx.x),y=sy(fx.y);
   ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
   ctx.beginPath();
   for(let i=0;i<8;i++){
    const a=-Math.PI/2+i*Math.PI/4,r=i%2===0?radius:inner,px=Math.cos(a)*r,py=Math.sin(a)*r;
    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
   }
-  ctx.closePath();ctx.fillStyle='rgba(255,255,255,.12)';ctx.strokeStyle='#fff';ctx.lineWidth=1.7;ctx.fill();ctx.stroke();
-  ctx.beginPath();ctx.arc(0,0,2,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  ctx.closePath();ctx.fillStyle='rgba(255,255,255,.12)';ctx.strokeStyle='#fff';ctx.lineWidth=1.7*1.75;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(0,0,2*1.75,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
   ctx.restore();
  }
 }
