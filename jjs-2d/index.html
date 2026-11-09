@@ -658,7 +658,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 #awakeningCutscene.vessel-dialogue .awaken-backdrop-lines,
 #awakeningCutscene.vessel-dialogue .awaken-flash,
 #awakeningCutscene.vessel-dialogue .awaken-content{display:none!important}
-#awakeningCutscene .vessel-awakening-dialogue{display:none;position:absolute;left:0;top:0;width:min(230px,58vw);padding:11px 13px;background:#fff;color:#111;border:3px solid #090909;box-shadow:4px 5px 0 rgba(0,0,0,.72);font:800 clamp(13px,1.45vw,17px)/1.25 Georgia,"Times New Roman",serif;letter-spacing:-.015em;text-align:center;text-shadow:none;white-space:normal}
+#awakeningCutscene .vessel-awakening-dialogue{display:none;position:absolute;left:0;top:0;width:min(196px,54vw);padding:8px 10px;background:#fff;color:#111;border:2.5px solid #090909;box-shadow:3px 4px 0 rgba(0,0,0,.72);font:900 clamp(13px,1.35vw,15px)/1.22 "Comic Sans MS","Segoe Print",cursive;letter-spacing:-.02em;text-align:center;text-shadow:none;white-space:normal}
 #awakeningCutscene.vessel-dialogue.active .vessel-awakening-dialogue{display:block;animation:vesselDialogueIn .18s cubic-bezier(.18,.82,.24,1) both}
 #awakeningCutscene .vessel-awakening-dialogue:after{content:"";position:absolute;left:20px;bottom:-10px;width:14px;height:14px;background:#fff;border-right:3px solid #090909;border-bottom:3px solid #090909;transform:rotate(45deg)}
 @keyframes vesselDialogueIn{0%{opacity:0;transform:translateY(7px) scale(.92)}100%{opacity:1;transform:translateY(0) scale(1)}}
@@ -1199,17 +1199,17 @@ function activateDomain(f){
 }
 
 function spawnShrineDomainSlashes(x,y,faceAngle){
- // Each Shrine tick leaves a small fan of M1-shaped curved cuts.
- // The cuts alternate between the standard black/white and inverted white/black palettes.
- const count=isMobileDevice?2:3,sideAngle=faceAngle+Math.PI/2;
+ // Irregular M1-shaped Dismantle cuts keep the Shrine barrage from looking like a repeated fan.
+ const count=isMobileDevice?2:3,phase=Math.floor(game.time*10);
  for(let i=0;i<count;i++){
-  const offset=i-(count-1)*.5,angle=faceAngle+offset*.48+rnd(-.12,.12);
+  const angle=i===0?faceAngle+rnd(-.42,.42):rnd(-Math.PI,Math.PI);
+  const offsetAngle=rnd(0,Math.PI*2),offset=rnd(9,39),size=rnd(82,126),thickness=rnd(4.8,7.6);
   particles.push({
-   x:x+Math.cos(sideAngle)*offset*9+rnd(-3,3),
-   y:y-23+Math.sin(sideAngle)*offset*9+rnd(-5,5),
-   vx:Math.cos(angle)*rnd(1.1,2.1),vy:Math.sin(angle)*rnd(1.1,2.1),
-   life:.24,max:.24,size:i===1?112:96+((i+1)%2)*12,
-   thickness:i===1?6.8:5.1,shape:'domainSlash',rot:angle,reverse:i%2===1
+   x:x+Math.cos(offsetAngle)*offset,
+   y:y-23+Math.sin(offsetAngle)*offset,
+   vx:Math.cos(angle)*rnd(.45,1.25),vy:Math.sin(angle)*rnd(.45,1.25),
+   life:rnd(.19,.255),max:.255,size,thickness,
+   shape:'domainSlash',rot:angle,reverse:(phase+i)%2===1
   });
  }
 }
@@ -1928,7 +1928,7 @@ if(f.attackCd>0)return;
   if(f.char==='yuta'&&f.awakened){f.yutaCopyIndex=((f.yutaCopyIndex||0)+1)%YUTA_COPY_OPTIONS.length;updateHud(true);return}
   if(f.char==='ten'&&f.awakened){f.tenBase=!f.tenBase;setMotion(f,'megumiSwitch',.45,f.face,t);showToast(f.tenBase?'TEN SHADOWS · BASE TECHNIQUES':'INSANITY · AWAKENED SHIKIGAMI',900);updateHud();return}
   if(f.meter<100||f.awakened)return;
-  f.awakened=true;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:f.char==='yuta'?25:15));
+  f.awakened=true;if(f.char==='vessel')f.sukunaAwakeningVisualTime=game.time;f.meter=0;f.hp=Math.min(f.maxHp,f.hp+(f.char==='vessel'?45:f.char==='honored'?25:f.char==='yuta'?25:15));
   f.awakeMode=f.char==='restless'?'gamble':f.char==='vessel'?'king':f.char==='honored'?'sixeyes':f.char==='ten'?'insanity':f.char==='perfection'?'essence':f.char==='todo'?'memories':f.char==='yuta'?'trueLove':f.char==='trashman'?'trashstorm':'brother';
   f.tenBase=false;f.awakeFuel=100;f.awakeFuelDrainRate=100/(f.char==='restless'?121.25:60);f.jackpot=false;if(f.char==='yuta'){f.rikaSummoned=true;f.rikaMode=false;f.yutaCopyIndex=0;}f.gambleVisuals=0;f.gambleAttempts=0;
   f.domainStunGuaranteed=f.char==='restless'&&dist(f,f===player?enemy:player)<600;
@@ -2456,7 +2456,7 @@ function updateTenEffects(f,dt){
   }
  } if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);updateHud();if(f.hp<=0){f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
-function updateFighter(f,dt){if(f.dead)return;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+function updateFighter(f,dt){if(f.dead)return;if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}const crushDash=f.yujiCrushDash,crushDashActive=!!(crushDash&&f.stun<=.02&&f.rooted<=0);
   if(crushDash&&!crushDashActive)f.yujiCrushDash=null;
   if(crushDashActive){f.vx=Math.cos(crushDash.angle)*crushDash.speed;f.vy=Math.sin(crushDash.angle)*crushDash.speed;f.jump=0;f.jumpV=0}
@@ -2662,7 +2662,19 @@ function updateMobileCooldowns(){
 }
 function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;$('pHealth').style.width=(player.hp/player.maxHp*100)+'%';$('eHealth').style.width=(enemy.hp/enemy.maxHp*100)+'%';$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100);$('ultFill').style.width=awakeningPct+'%';$('ultFill').classList.toggle('draining',player.awakened);$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();}
 
-function update(dt){if(game.cutsceneTimer>0){game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(game.cutsceneTimer===0)(()=>{const cutscene=$('awakeningCutscene');cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null})();return}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+function update(dt){if(game.cutsceneTimer>0){
+ const cutscene=$('awakeningCutscene'),speaker=cutscene&&cutscene._speaker;
+ if(speaker&&speaker.char==='vessel'&&speaker.motion&&speaker.motion.name==='sukunaAwaken'){
+  const step=Math.min(dt,game.cutsceneTimer);
+  speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
+  speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
+  if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
+ }
+ game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);
+ game.shake=Math.max(0,game.shake-dt*22);
+ if(game.cutsceneTimer===0){cutscene.classList.remove('active','vessel-dialogue');cutscene._speaker=null}
+ return
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -2957,6 +2969,27 @@ function drawPixelSkillVfx(f,m,p,c){
 
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
+ if(m==='sukunaAwaken'){
+  const slump=1-smoothstep01(clamp(p/.42,0,1));
+  const takeover=Math.sin(Math.PI*clamp((p-.43)/.52,0,1));
+  ctx.save();ctx.translate(0,7);ctx.lineCap='round';ctx.lineJoin='round';
+  // A tight red-black pressure ring swells as Yuji collapses, then bursts outward.
+  const radius=18+smoothstep01(clamp((p-.42)/.38,0,1))*38;
+  ctx.globalAlpha=(.18+.42*slump+.38*takeover)*vfxFade;
+  ctx.strokeStyle='#a81739';ctx.shadowColor='#e3254a';ctx.shadowBlur=14;ctx.lineWidth=3.2;
+  ctx.beginPath();ctx.ellipse(0,0,radius,radius*.48,-.08,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=(.16+.34*takeover)*vfxFade;ctx.strokeStyle='#09060b';ctx.shadowColor='#050307';ctx.shadowBlur=8;ctx.lineWidth=5;
+  for(let i=0;i<7;i++){
+   const a=i*Math.PI*2/7+.18,inner=19+takeover*9,outer=inner+12+takeover*16;
+   ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner*.56);
+   ctx.quadraticCurveTo(Math.cos(a+.12)*((inner+outer)*.5),Math.sin(a+.12)*((inner+outer)*.5)*.56,Math.cos(a)*outer,Math.sin(a)*outer*.56);ctx.stroke();
+  }
+  if(p>.48&&p<.88){
+   ctx.globalAlpha=takeover*.42*vfxFade;ctx.strokeStyle='#f04a63';ctx.shadowColor='#ef2448';ctx.shadowBlur=12;ctx.lineWidth=2;
+   ctx.beginPath();ctx.arc(0,0,27+takeover*23,-.9,2.1);ctx.stroke();
+  }
+  ctx.restore();return;
+ }
  if(m==='sukunaHeadCarryWindup'||m==='sukunaHeadCarryRun'||m==='sukunaHeadCarryThrow'||m==='sukunaHeadCarryLeap'||m==='sukunaHeadCarrySlam'||m==='sukunaHeadCarryRecovery'){
   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
   const pulse=.55+.45*Math.sin(game.time*25),run=m==='sukunaHeadCarryRun';
@@ -3242,6 +3275,29 @@ function drawAccessoryAura(f,x,y,scale=1){
  else{ctx.shadowBlur=10;ctx.shadowColor=color;for(let i=0;i<3;i++){const a=game.time*(id==='shadow-smoke'?-.7:1.1)+i*2.1;ctx.beginPath();ctx.ellipse(0,0,21+i*4,17+i*3,a,0,Math.PI*1.72);ctx.stroke()}if(id==='shadow-smoke'){ctx.globalAlpha=.22;for(let i=0;i<5;i++){const a=game.time+i*1.25;ctx.beginPath();ctx.arc(Math.cos(a)*23,Math.sin(a)*18,5+i%2*3,0,Math.PI*2);ctx.fill()}}}
  ctx.restore();
 }
+function drawSukunaFaceMarks(alpha=1){
+ if(alpha<=.01)return;
+ ctx.save();ctx.globalAlpha=alpha;ctx.lineCap='round';ctx.lineJoin='round';
+ // Smooth, dark curse markings appear directly on the awakened Vessel's face.
+ ctx.strokeStyle='#160910';ctx.lineWidth=3.1;
+ ctx.beginPath();
+ ctx.moveTo(-7.8,-11.2);ctx.quadraticCurveTo(-3.7,-8.2,-.7,-10.4);
+ ctx.moveTo(2.1,-10.2);ctx.quadraticCurveTo(6.2,-12.7,8.8,-8.8);
+ ctx.moveTo(-11.4,-4.2);ctx.quadraticCurveTo(-7.8,-2.5,-9.5,3.3);
+ ctx.moveTo(11.4,-4.2);ctx.quadraticCurveTo(7.8,-2.5,9.5,3.3);
+ ctx.moveTo(-6.8,6.6);ctx.quadraticCurveTo(-2.5,9.2,1.2,7.6);
+ ctx.moveTo(4.2,7.5);ctx.quadraticCurveTo(7.2,6.7,8.1,4.6);
+ ctx.moveTo(-.2,-14);ctx.lineTo(.8,-10.4);
+ ctx.stroke();
+ ctx.strokeStyle='rgba(168,29,57,.88)';ctx.lineWidth=1.05;
+ ctx.beginPath();
+ ctx.moveTo(-7.5,-11.1);ctx.quadraticCurveTo(-3.7,-8.7,-.9,-10.2);
+ ctx.moveTo(2.2,-10.1);ctx.quadraticCurveTo(6,-12,8.5,-8.9);
+ ctx.moveTo(-11.2,-4);ctx.quadraticCurveTo(-8.4,-2.2,-9.3,2.8);
+ ctx.moveTo(11.2,-4);ctx.quadraticCurveTo(8.4,-2.2,9.3,2.8);
+ ctx.stroke();
+ ctx.restore();
+}
 function drawAccessoryOverlays(f,x,y,scale=1){
  const a=getFighterAccessories(f);if(!Object.values(a).some(v=>v&&v!=='none'))return;
  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
@@ -3344,6 +3400,11 @@ function drawHeadHands(f){
  const dx=target.x-f.x,dy=target.y-(f.y-23),distance=Math.hypot(dx,dy)||1;
  const nx=dx/distance,ny=dy/distance,px=-ny,py=nx,angle=Math.atan2(ny,nx);
  const reach=lockShrineM1&&Number.isFinite(m.shrineReach)?m.shrineReach:clamp(distance*.56,23,76),idle=Math.sin(game.time*4.2+(isPlayer?0:1.5))*1.4,headY=y-23;
+ const awakenCollapse=name==='sukunaAwaken'?smoothstep01(clamp(progress/.34,0,1)):0;
+ const awakenSurge=name==='sukunaAwaken'?smoothstep01(clamp((progress-.48)/.30,0,1)):0;
+ const awakenHeadDrop=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*10-awakenSurge*2:0;
+ const awakenHeadTilt=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*.16-awakenSurge*.035:0;
+ const sukunaMarkReveal=f.char==='vessel'&&f.awakened?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
  const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0,yutaCombo=name.startsWith('yutaM1_')?(Number(name.slice(7))||1):0;
@@ -3351,6 +3412,18 @@ function drawHeadHands(f){
   const brace=0.5+0.5*Math.sin(game.time*7);handA=P(13+brace*4,22,-10-brace*3);handB=P(13+brace*4,-22,-10-brace*3);handAScale=1.16;handBScale=1.16;
  }else if(name==='dashGesture'){
   const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
+ }else if(name==='sukunaAwaken'){
+  // Yuji's hands sink as he loses control, then snap outward as Sukuna takes over.
+  const slump=smoothstep01(clamp(progress/.34,0,1));
+  const takeover=smoothstep01(clamp((progress-.48)/.30,0,1));
+  const settle=smoothstep01(clamp((progress-.80)/.20,0,1));
+  const spread=lerp(22,44,takeover)*(1-settle)+30*settle;
+  const drop=slump*29-takeover*48+settle*7;
+  const reachOut=lerp(7,19,takeover);
+  handA=P(reachOut+4,spread,drop-4);
+  handB=P(reachOut-5,-spread,drop+3);
+  handAScale=1.02+.18*takeover;handBScale=1.02+.24*takeover;
+  handAAngle=angle+.12-.32*takeover;handBAngle=angle-.12+.32*takeover;
  }else if(yutaCombo){
   if(yutaCombo===4&&!f.awakened){
    const wind=clamp(progress/.31,0,1),strike=clamp((progress-.31)/.24,0,1),recoil=clamp((progress-.62)/.38,0,1);
@@ -3631,7 +3704,7 @@ function drawHeadHands(f){
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
- drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);ctx.restore();drawAccessoryOverlays(f,x,headY);
+ drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);if(sukunaMarkReveal>0)drawSukunaFaceMarks(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
  if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
  if(f.transfigureMeter>0){const mw=46,bw=mw*(f.transfigureMeter/100);ctx.save();ctx.fillStyle='#061014cc';ctx.fillRect(x-mw/2,headY-47,mw,7);ctx.fillStyle='#88dfcc';ctx.fillRect(x-mw/2,headY-47,bw,7);ctx.strokeStyle='#d8fff4';ctx.strokeRect(x-mw/2,headY-47,mw,7);ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9fff4';ctx.fillText('SOUL',x,headY-51);ctx.restore();}
@@ -4650,33 +4723,37 @@ function drawYujiSkillImpactEffects(){
 
 function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
- const x=sx(f.x),y=sy(f.y)-f.jump*3,visualTime=game.time+(game.cutsceneTimer>0?1.55-game.cutsceneTimer:0),mobile=isMobileDevice;
- const count=mobile?6:9;
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time,mobile=isMobileDevice;
+ const count=mobile?7:11;
  ctx.save();ctx.globalCompositeOperation='source-over';ctx.lineCap='round';ctx.lineJoin='round';
- // Dark translucent plumes curl upward from both sides of the body, with a deep-red rim.
+ // A denser black core with a dark-crimson rim makes the aura read as smoke, not thin ribbons.
+ const baseFog=ctx.createRadialGradient(x,y+8,3,x,y+8,mobile?58:72);
+ baseFog.addColorStop(0,'rgba(5,3,8,.58)');baseFog.addColorStop(.42,'rgba(75,7,25,.38)');baseFog.addColorStop(1,'rgba(93,8,29,0)');
+ ctx.globalAlpha=.82;ctx.fillStyle=baseFog;ctx.beginPath();ctx.ellipse(x,y+9,mobile?57:70,25,0,0,Math.PI*2);ctx.fill();
  for(let i=0;i<count;i++){
-  const side=i%2?1:-1,lane=Math.floor(i/2),phase=visualTime*(1.05+(i%3)*.13)+i*1.83;
-  const startX=x+side*(17+lane*5)+Math.sin(phase*.72)*5;
-  const startY=y+7+Math.cos(phase*1.1)*3;
-  const rise=35+(i%4)*11,drift=Math.sin(phase*1.22)*15+side*(4+lane*2);
+  const side=i%2?1:-1,lane=Math.floor(i/2),phase=visualTime*(.92+(i%3)*.15)+i*1.83;
+  const startX=x+side*(19+lane*5.5)+Math.sin(phase*.72)*7;
+  const startY=y+10+Math.cos(phase*1.1)*4;
+  const rise=53+(i%4)*13,drift=Math.sin(phase*1.22)*19+side*(5+lane*2.5);
   const endX=startX+drift,endY=startY-rise;
-  const c1x=startX+Math.sin(phase)*13+side*8,c1y=startY-rise*.24;
-  const c2x=endX+Math.cos(phase*1.3)*15-side*10,c2y=startY-rise*.72;
-  const width=5.5+(i%3)*2.1;
+  const c1x=startX+Math.sin(phase)*16+side*10,c1y=startY-rise*.24;
+  const c2x=endX+Math.cos(phase*1.3)*18-side*12,c2y=startY-rise*.72;
+  const width=7.2+(i%3)*2.5;
   const path=()=>{ctx.beginPath();ctx.moveTo(startX,startY);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,endX,endY)};
-  ctx.globalAlpha=.3+(i%3)*.055;ctx.shadowColor='#b41435';ctx.shadowBlur=11+(i%3)*3;
-  ctx.strokeStyle='#8f102b';ctx.lineWidth=width+6;path();ctx.stroke();
-  ctx.globalAlpha=.48+(i%2)*.08;ctx.shadowColor='#020207';ctx.shadowBlur=7;
-  ctx.strokeStyle='#09070d';ctx.lineWidth=width;path();ctx.stroke();
-  ctx.globalAlpha=.32;ctx.shadowBlur=2;ctx.strokeStyle='#e12a4a';ctx.lineWidth=1.15;path();ctx.stroke();
+  ctx.globalAlpha=.36+(i%3)*.045;ctx.shadowColor='#b41435';ctx.shadowBlur=15+(i%3)*3;
+  ctx.strokeStyle='#8f102b';ctx.lineWidth=width+8;path();ctx.stroke();
+  ctx.globalAlpha=.72+(i%2)*.06;ctx.shadowColor='#020207';ctx.shadowBlur=9;
+  ctx.strokeStyle='#09060d';ctx.lineWidth=width+2;path();ctx.stroke();
+  ctx.globalAlpha=.4;ctx.shadowBlur=3;ctx.strokeStyle='#dc2446';ctx.lineWidth=1.4;path();ctx.stroke();
  }
- // A few soft smoke pockets keep the aura cloud-like rather than looking like sharp trails.
- for(let i=0;i<4;i++){
-  const phase=visualTime*1.25+i*1.7,px=x+Math.sin(phase)*30+(i%2?16:-16),py=y-7-((visualTime*17+i*23)%44);
-  const rx=11+(i%3)*4,ry=8+(i%2)*4;
-  const fog=ctx.createRadialGradient(px,py,1,px,py,rx*1.8);
-  fog.addColorStop(0,'rgba(9,5,12,.62)');fog.addColorStop(.48,'rgba(104,9,33,.34)');fog.addColorStop(1,'rgba(104,9,33,0)');
-  ctx.globalAlpha=.72;ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(px,py,rx*1.8,ry*1.8,Math.sin(phase)*.35,0,Math.PI*2);ctx.fill();
+ // Larger soft pockets blend the plumes into a single rolling cloud.
+ const pockets=mobile?3:5;
+ for(let i=0;i<pockets;i++){
+  const phase=visualTime*.9+i*1.7,px=x+Math.sin(phase)*34+(i%2?18:-18),py=y-9-((visualTime*21+i*25)%58);
+  const rx=15+(i%3)*5,ry=11+(i%2)*5;
+  const fog=ctx.createRadialGradient(px,py,1,px,py,rx*2.05);
+  fog.addColorStop(0,'rgba(8,4,12,.72)');fog.addColorStop(.46,'rgba(112,10,36,.43)');fog.addColorStop(1,'rgba(104,9,33,0)');
+  ctx.globalAlpha=.78;ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(px,py,rx*2.05,ry*2.05,Math.sin(phase)*.35,0,Math.PI*2);ctx.fill();
  }
  ctx.restore();
 }
@@ -4690,8 +4767,8 @@ function positionVesselAwakeningDialogue(){
  let py=H*.5+(f.y-72-camera.y)/zoom+shakeY;
  let viewW=W,viewH=H;
  if(isManualScreenRotated()){const gx=px;px=innerWidth-py;py=gx;viewW=innerWidth;viewH=innerHeight}
- const boxW=Math.min(230,viewW*.58),left=clamp(px<viewW*.62?px+19:px-boxW-19,8,Math.max(8,viewW-boxW-8));
- const top=clamp(py-10,8,Math.max(8,viewH-76));
+ const boxW=Math.min(196,viewW*.54),left=clamp(px<viewW*.62?px+18:px-boxW-18,8,Math.max(8,viewW-boxW-8));
+ const top=clamp(py-9,8,Math.max(8,viewH-68));
  box.style.left=left+'px';box.style.top=top+'px';
 }
 
