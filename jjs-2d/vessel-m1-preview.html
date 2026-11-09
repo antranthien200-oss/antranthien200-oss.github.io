@@ -829,18 +829,46 @@ function cityHash(a,b,c=0){const v=Math.sin(a*127.1+b*311.7+c*74.7)*43758.5453;r
 function cityRectIntersects(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
 function makeCityBuildings(){
  const all=[],xb=[0,...CITY_ROAD_XS,WORLD.w],yb=[0,...CITY_ROAD_YS,WORLD.h];let id=0;
+ const districtSets=[
+  ['house','house','house','shop','cafe','clinic','school'],
+  ['apartment','apartment','office','hotel','cafe','shop','arcade'],
+  ['shop','cafe','market','arcade','shop','hotel','apartment'],
+  ['warehouse','garage','station','office','market','shop'],
+  ['house','house','school','gym','clinic','cafe','apartment'],
+  ['hotel','apartment','office','temple','cafe','shop','arcade']
+ ];
  for(let row=0;row<yb.length-1;row++)for(let col=0;col<xb.length-1;col++){
-  const left=xb[col]+(col===0?62:165),right=xb[col+1]-(col===xb.length-2?62:165),top=yb[row]+(row===0?62:158),bottom=yb[row+1]-(row===yb.length-2?62:158),cellW=right-left,cellH=bottom-top;
+  const left=xb[col]+(col===0?62:170),right=xb[col+1]-(col===xb.length-2?62:170),top=yb[row]+(row===0?62:170),bottom=yb[row+1]-(row===yb.length-2?62:170),cellW=right-left,cellH=bottom-top;
   if(cellW<430||cellH<340)continue;
-  const count=cellW<1450?1:((col*7+row*3)%6===0?1:((col+row)%5===0?3:2)),cols=count===3?2:count;
+  const roll=cityHash(col,row,91);
+  if(roll<.09)continue;
+  const district=(Math.floor(col/3)+Math.floor(row/2)*2)%districtSets.length;
+  const count=roll>.82?1:roll>.47?2:3;
+  const cols=count===1?1:2,rows=Math.ceil(count/cols);
   for(let k=0;k<count;k++){
-   const seed=col*19+row*31+k*13,w=Math.min(480,285+(seed%5)*38),h=Math.min(370,205+((seed*3)%4)*38),ci=k%cols,ri=Math.floor(k/cols);
-   const px=left+70+ci*(Math.max(0,cellW-w-140)/Math.max(1,cols-1)),py=top+65+ri*Math.min(390,Math.max(0,cellH-h-130));
-   const b={x:px,y:py,w,h,c:CITY_COLORS[seed%CITY_COLORS.length],style:CITY_STYLES[(seed*3+col+row)%CITY_STYLES.length],shape:['rect','cut','oct','gable','L','U','round','temple'][seed%8]};
-   b.name=CITY_STYLE_NAMES[b.style][seed%CITY_STYLE_NAMES[b.style].length];
+   const seed=col*193+row*317+k*71+district*29;
+   const w=Math.min(585,340+Math.floor(cityHash(seed,col,row)*205));
+   const h=Math.min(430,245+Math.floor(cityHash(row,seed,col)*155));
+   const ci=k%cols,ri=Math.floor(k/cols);
+   const px=left+92+ci*Math.max(0,(cellW-w-184)/Math.max(1,cols-1));
+   const py=top+82+ri*Math.max(0,(cellH-h-164)/Math.max(1,rows-1));
+   const paletteIndex=Math.floor(cityHash(seed,4,2)*CITY_COLORS.length);
+   const paletteShift=[0,3,6,9,12][Math.floor(cityHash(col,row,12)*5)];
+   const b={
+    x:px,y:py,w,h,
+    c:CITY_COLORS[(paletteIndex+paletteShift)%CITY_COLORS.length],
+    style:districtSets[district][Math.floor(cityHash(seed,13,17)*districtSets[district].length)],
+    shape:['rect','cut','oct','gable','L','U','round','temple'][Math.floor(cityHash(seed,8,8)*8)],
+    roofType:Math.floor(cityHash(seed,23,31)*5),
+    floors:1+Math.floor(cityHash(seed,7,9)*4),
+    facing:Math.floor(cityHash(seed,41,43)*4),
+    id:id++,district
+   };
+   b.name=CITY_STYLE_NAMES[b.style][Math.floor(cityHash(seed,5,11)*CITY_STYLE_NAMES[b.style].length)];
    if(CITY_PARKS.some(p=>cityRectIntersects(b,p)))continue;
-   if(b.x<2300&&b.x+b.w>1380&&b.y<1500&&b.y+b.h>900)continue;
-   b.id=id++;b.skillHits=0;b.damageStage=0;b.collapsed=false;all.push(b);
+   // Keep the spawn and the white training dummy's courtyard completely clear.
+   if(b.x<2330&&b.x+b.w>1370&&b.y<1510&&b.y+b.h>885)continue;
+   b.skillHits=0;b.damageStage=0;b.collapsed=false;all.push(b);
   }
  }
  return all;
