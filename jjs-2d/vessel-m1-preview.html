@@ -1093,7 +1093,7 @@ function playAwakeningCutscene(f){
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
  if(isVessel)el.classList.add('vessel-dialogue','vessel-awakening-zoom');
- game.cutsceneTimer=isVessel?1.55:.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=15;
+ game.cutsceneTimer=isVessel?1.55:.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=isVessel?0:15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
 function damageBuildingAlongRay(f,angle,maxRange=1000){
@@ -2723,13 +2723,13 @@ function update(dt){if(game.cutsceneTimer>0){
   speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
  }
- game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);game.shake=Math.max(0,game.shake-dt*22);
+ game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);if(speaker&&speaker.char==='vessel')game.shake=0;else game.shake=Math.max(0,game.shake-dt*22);
  if(game.cutsceneTimer===0){
   if(speaker&&speaker.char==='vessel'&&cutscene._phase==='dialogue'){
    // After the manga dialogue clears, begin Sukuna's awakening animation.
    cutscene.classList.remove('active','vessel-dialogue');cutscene._phase='awakening-motion';
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
-   setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=13;
+   setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else{
    cutscene.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');cutscene._speaker=null;cutscene._phase=null;
   }
