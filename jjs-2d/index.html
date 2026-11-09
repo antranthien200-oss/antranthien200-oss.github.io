@@ -852,17 +852,17 @@ const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0})}
 const CITY_PARKS=[
 {x:90,y:545,w:1020,h:170,type:'garden',name:'NORTH GARDEN'},{x:4050,y:545,w:1050,h:170,type:'garden',name:'EAST GARDEN'},
-{x:100,y:1450,w:1030,h:285,type:'play',name:'WEST PLAYGROUND'},{x:4080,y:1450,w:1020,h:285,type:'court',name:'EAST COURTS'},
+{x:100,y:1555,w:1030,h:205,type:'play',name:'WEST PLAYGROUND'},{x:4080,y:1555,w:1020,h:205,type:'court',name:'EAST COURTS'},
 {x:90,y:2680,w:1030,h:235,type:'garden',name:'SOUTH GARDEN'},{x:4080,y:2680,w:1030,h:235,type:'plaza',name:'SOUTH PLAZA'}
 ];
 const CITY_CARS=[
-{x:540,y:770,angle:0,color:'#c96f60'},{x:1050,y:770,angle:0,color:'#6f9eae'},{x:4300,y:770,angle:0,color:'#d4b36e'},{x:4920,y:770,angle:0,color:'#81aa87'},
+{x:540,y:770,angle:0,color:'#c96f60'},{x:1050,y:770,angle:0,color:'#6f9eae'},{x:3880,y:770,angle:0,color:'#d4b36e'},
 {x:560,y:2160,angle:0,color:'#d88f79'},{x:1060,y:2160,angle:0,color:'#7c97be'},{x:4260,y:2160,angle:0,color:'#b88fc2'},{x:4910,y:2160,angle:0,color:'#c9a06d'},
 {x:2250,y:1175,angle:0,color:'#7ea8af'},{x:2570,y:1600,angle:0,color:'#c47c70'},{x:1850,y:1570,angle:Math.PI/2,color:'#7c9f86'},{x:3250,y:1570,angle:Math.PI/2,color:'#d0ab70'}
 ];
 const CITY_STALLS=[
-{x:1130,y:640,name:'TAKOYAKI',c:'#db9c5e'},{x:4620,y:640,name:'BUBBLE TEA',c:'#d58eab'},{x:1130,y:2150,name:'RAMEN',c:'#d97969'},
-{x:4620,y:2150,name:'SNACK BAR',c:'#8bb9a1'},{x:1680,y:2655,name:'CREPES',c:'#d4a5c8'},{x:3540,y:2655,name:'COFFEE',c:'#8bb9d4'}
+{x:1180,y:700,name:'TAKOYAKI',c:'#db9c5e'},{x:3890,y:700,name:'BUBBLE TEA',c:'#d58eab'},{x:1180,y:2220,name:'RAMEN',c:'#d97969'},
+{x:4670,y:2220,name:'SNACK BAR',c:'#8bb9a1'},{x:1680,y:2655,name:'CREPES',c:'#d4a5c8'},{x:3540,y:2655,name:'COFFEE',c:'#8bb9d4'}
 ];
 const CITY_STARTS={busStops:[[430,780],[4810,2200]],vending:[[1190,2210],[3990,820],[3150,2620]]};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
@@ -2831,19 +2831,44 @@ function drawExpansionVending(x,y){
  ctx.save();ctx.fillStyle='rgba(9,14,18,.3)';ctx.fillRect(x-16,y-17,37,49);ctx.fillStyle='#293a43';ctx.fillRect(x-18,y-20,36,48);ctx.fillStyle='#b6c7c3';ctx.fillRect(x-14,y-16,28,34);ctx.fillStyle='#5a99a1';ctx.fillRect(x-11,y-13,22,22);for(let k=0;k<3;k++){ctx.fillStyle=['#d98573','#e5c274','#86ad8e'][k];ctx.fillRect(x-8+k*7,y-10,5,6)}ctx.fillStyle='#26363c';ctx.fillRect(x-10,y+12,20,3);ctx.fillStyle='#e4e1ce';ctx.fillRect(x-6,y+18,12,5);ctx.restore();
 }
 function drawExtendedMapDetails(){
+ // Northern commuter railway: ballast, sleepers, paired rails and signal lights.
  ctx.fillStyle='#74786e';ctx.fillRect(0,CITY_RAIL_Y-49,WORLD.w,98);ctx.fillStyle='#555e5d';ctx.fillRect(0,CITY_RAIL_Y-31,WORLD.w,62);
  for(let x=0;x<WORLD.w;x+=38){ctx.fillStyle='#4d514e';ctx.fillRect(x,CITY_RAIL_Y-35,8,70);ctx.fillStyle='#b29673';ctx.fillRect(x+1,CITY_RAIL_Y-32,5,64)}
- ctx.fillStyle='#bcc2b6';ctx.fillRect(0,CITY_RAIL_Y-25,WORLD.w,6);ctx.fillRect(0,CITY_RAIL_Y+19,WORLD.w,6);ctx.fillStyle='#28363e';ctx.fillRect(0,CITY_RAIL_Y-24,WORLD.w,2);ctx.fillRect(0,CITY_RAIL_Y+20,WORLD.w,2);ctx.fillStyle='#e0d4b7';ctx.fillRect(0,CITY_RAIL_Y-19,WORLD.w,2);ctx.fillRect(0,CITY_RAIL_Y+25,WORLD.w,2);
- ctx.fillStyle='#8d9991';ctx.fillRect(3440,525,1050,46);ctx.fillStyle='#d9d2bb';ctx.fillRect(3440,525,1050,5);for(let k=0;k<18;k++){ctx.fillStyle=k%2?'#b6b9a7':'#d4ccb2';ctx.fillRect(3450+k*57,535,48,25)}
- ctx.fillStyle='#526f78';ctx.fillRect(3650,458,575,62);ctx.fillStyle='#e7dfc5';ctx.font='900 17px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CURSED CITY STATION',3938,488);ctx.fillStyle='#263c47';ctx.fillRect(3680,470,22,38);ctx.fillRect(4170,470,22,38);
+ ctx.fillStyle='#bcc2b6';ctx.fillRect(0,CITY_RAIL_Y-25,WORLD.w,6);ctx.fillRect(0,CITY_RAIL_Y+19,WORLD.w,6);
+ ctx.fillStyle='#28363e';ctx.fillRect(0,CITY_RAIL_Y-24,WORLD.w,2);ctx.fillRect(0,CITY_RAIL_Y+20,WORLD.w,2);
+ ctx.fillStyle='#e0d4b7';ctx.fillRect(0,CITY_RAIL_Y-19,WORLD.w,2);ctx.fillRect(0,CITY_RAIL_Y+25,WORLD.w,2);
+ // Station sign above the line and a separate low platform below it.
+ ctx.fillStyle='#526f78';ctx.fillRect(3000,350,575,62);ctx.fillStyle='#e7dfc5';ctx.font='900 17px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CURSED CITY STATION',3288,380);
+ ctx.fillStyle='#263c47';ctx.fillRect(3030,362,22,38);ctx.fillRect(3520,362,22,38);
+ ctx.fillStyle='#8d9991';ctx.fillRect(2900,525,1050,46);ctx.fillStyle='#d9d2bb';ctx.fillRect(2900,525,1050,5);
+ for(let k=0;k<18;k++){ctx.fillStyle=k%2?'#b6b9a7':'#d4ccb2';ctx.fillRect(2910+k*57,535,48,25)}
  for(const x of [900,2500,3330,4700]){ctx.fillStyle='#303b42';ctx.fillRect(x,CITY_RAIL_Y-96,9,49);ctx.fillStyle='#c66c60';ctx.fillRect(x+1,CITY_RAIL_Y-92,7,8);ctx.fillStyle='#83bd8b';ctx.fillRect(x+1,CITY_RAIL_Y-75,7,8)}
+ // Pocket parks in the new blocks, kept clear of the original map's central avenue.
  for(const p of CITY_PARKS)drawExpansionPark(p);
- ctx.fillStyle='rgba(11,18,20,.27)';ctx.fillRect(4080,1135,1035,255);ctx.fillStyle='#687980';ctx.fillRect(4070,1125,1035,255);ctx.fillStyle='#879497';ctx.fillRect(4085,1140,1005,225);ctx.fillStyle='#4a5960';ctx.fillRect(4100,1223,975,58);
- ctx.strokeStyle='#e6dcbf';ctx.lineWidth=3;for(let k=0;k<12;k++){const x=4108+k*80;ctx.strokeRect(x,1150,64,68);ctx.strokeRect(x,1285,64,68);ctx.fillStyle='#d1cbb4';ctx.fillRect(x+6,1210,52,5);ctx.fillRect(x+6,1285,52,5)}
- ctx.fillStyle='#2d4147';ctx.fillRect(4100,1100,260,23);ctx.fillStyle='#f1e4c8';ctx.font='900 11px system-ui';ctx.textAlign='center';ctx.fillText('PUBLIC CAR PARK',4230,1116);
+ // Marked parking court in the northeast extension, aligned to the street and buildings.
+ ctx.fillStyle='rgba(11,18,20,.27)';ctx.fillRect(4080,745,1035,120);ctx.fillStyle='#687980';ctx.fillRect(4070,740,1035,120);
+ ctx.fillStyle='#879497';ctx.fillRect(4085,750,1005,100);
+ ctx.fillStyle='#4a5960';ctx.fillRect(4095,798,985,14);
+ ctx.strokeStyle='#e6dcbf';ctx.lineWidth=2;
+ for(let k=0;k<12;k++){const x=4102+k*81;ctx.strokeRect(x,754,64,40);ctx.strokeRect(x,814,64,36)}
+ ctx.fillStyle='#2d4147';ctx.fillRect(4110,720,260,18);ctx.fillStyle='#f1e4c8';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('PUBLIC CAR PARK',4240,729);
  for(const c of CITY_CARS)drawExpansionCar(c);
- const lotCars=[{x:4140,y:1182,color:'#cb826f'},{x:4220,y:1182,color:'#d4b77a'},{x:4380,y:1182,color:'#789eb5'},{x:4540,y:1182,color:'#89aa89'},{x:4780,y:1182,color:'#c79ac0'},{x:4940,y:1182,color:'#d3a06c'},{x:4180,y:1320,color:'#8aaab0'},{x:4340,y:1320,color:'#d68c78'},{x:4500,y:1320,color:'#b9c58e'},{x:4740,y:1320,color:'#c98a70'},{x:4900,y:1320,color:'#91a6c4'}];for(const c of lotCars)drawExpansionCar(c);
- for(const s of CITY_STALLS)drawExpansionStall(s);for(const [x,y] of CITY_STARTS.busStops)drawExpansionBusStop(x,y);for(const [x,y] of CITY_STARTS.vending)drawExpansionVending(x,y);
+ const lotCars=[
+  {x:4135,y:775,color:'#cb826f'},{x:4216,y:775,color:'#d4b77a'},{x:4297,y:775,color:'#789eb5'},
+  {x:4378,y:775,color:'#89aa89'},{x:4459,y:775,color:'#c79ac0'},{x:4540,y:775,color:'#d3a06c'},
+  {x:4621,y:775,color:'#8aaab0'},{x:4702,y:775,color:'#d68c78'},{x:4783,y:775,color:'#b9c58e'},
+  {x:4864,y:775,color:'#c98a70'},{x:4945,y:775,color:'#91a6c4'}
+ ];
+ for(const c of lotCars)drawExpansionCar(c);
+ for(const s of CITY_STALLS)drawExpansionStall(s);
+ for(const [x,y] of CITY_STARTS.busStops)drawExpansionBusStop(x,y);
+ for(const [x,y] of CITY_STARTS.vending)drawExpansionVending(x,y);
+ // Extra shade trees and seating around the new neighbourhoods.
+ const treePts=[[185,575],[360,575],[560,575],[760,575],[960,575],[4140,575],[4350,575],[4560,575],[4780,575],[4980,575],[170,1580],[360,1580],[560,1580],[780,1580],[990,1580],[4140,1580],[4350,1580],[4560,1580],[4780,1580],[4980,1580],[180,2720],[410,2720],[650,2720],[870,2720],[4180,2720],[4420,2720],[4660,2720],[4900,2720]];
+ for(let i=0;i<treePts.length;i++){const [x,y]=treePts[i];ctx.fillStyle='rgba(11,20,22,.28)';ctx.fillRect(x-17,y+8,36,18);ctx.fillStyle='#5c4938';ctx.fillRect(x-5,y-6,10,28);ctx.fillStyle=['#4a7d50','#5b8b58','#6a915b'][i%3];ctx.fillRect(x-22,y-30,44,35);ctx.fillRect(x-28,y-17,56,22);ctx.fillStyle='#91b878';ctx.fillRect(x-13,y-38,26,17);ctx.fillStyle='#b5d18d';ctx.fillRect(x-7,y-42,13,8);ctx.fillStyle='#ded8bf';ctx.fillRect(x-24,y+7,48,4)}
+ const benchPts=[[250,700],[850,700],[250,1815],[850,1815],[4230,1815],[4850,1815],[250,2870],[850,2870],[4230,2870],[4850,2870]];
+ for(const [x,y] of benchPts){ctx.fillStyle='rgba(16,25,28,.25)';ctx.fillRect(x-22,y+4,48,14);ctx.fillStyle='#313f43';ctx.fillRect(x-23,y-5,46,10);ctx.fillStyle='#b28a60';ctx.fillRect(x-21,y-4,42,4);ctx.fillStyle='#344148';ctx.fillRect(x-16,y+4,4,9);ctx.fillRect(x+12,y+4,4,9)}
+ // Bus stop and vending spots make the outer blocks feel used rather than empty.
 }
 function drawPassingTrain(){
  const phase=(game.time+11)%47;if(phase>15)return;const lead=-760+(phase/15)*(WORLD.w+1520),railY=sy(CITY_RAIL_Y);if(railY<-90||railY>H+90)return;
