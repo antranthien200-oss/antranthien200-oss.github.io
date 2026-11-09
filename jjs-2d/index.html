@@ -3275,27 +3275,13 @@ function drawAccessoryAura(f,x,y,scale=1){
  else{ctx.shadowBlur=10;ctx.shadowColor=color;for(let i=0;i<3;i++){const a=game.time*(id==='shadow-smoke'?-.7:1.1)+i*2.1;ctx.beginPath();ctx.ellipse(0,0,21+i*4,17+i*3,a,0,Math.PI*1.72);ctx.stroke()}if(id==='shadow-smoke'){ctx.globalAlpha=.22;for(let i=0;i<5;i++){const a=game.time+i*1.25;ctx.beginPath();ctx.arc(Math.cos(a)*23,Math.sin(a)*18,5+i%2*3,0,Math.PI*2);ctx.fill()}}}
  ctx.restore();
 }
-function drawSukunaFaceMarks(alpha=1){
+function drawSukunaSmileFace(alpha=1){
  if(alpha<=.01)return;
- ctx.save();ctx.globalAlpha=alpha;ctx.lineCap='round';ctx.lineJoin='round';
- // Smooth, dark curse markings appear directly on the awakened Vessel's face.
- ctx.strokeStyle='#160910';ctx.lineWidth=3.1;
- ctx.beginPath();
- ctx.moveTo(-7.8,-11.2);ctx.quadraticCurveTo(-3.7,-8.2,-.7,-10.4);
- ctx.moveTo(2.1,-10.2);ctx.quadraticCurveTo(6.2,-12.7,8.8,-8.8);
- ctx.moveTo(-11.4,-4.2);ctx.quadraticCurveTo(-7.8,-2.5,-9.5,3.3);
- ctx.moveTo(11.4,-4.2);ctx.quadraticCurveTo(7.8,-2.5,9.5,3.3);
- ctx.moveTo(-6.8,6.6);ctx.quadraticCurveTo(-2.5,9.2,1.2,7.6);
- ctx.moveTo(4.2,7.5);ctx.quadraticCurveTo(7.2,6.7,8.1,4.6);
- ctx.moveTo(-.2,-14);ctx.lineTo(.8,-10.4);
- ctx.stroke();
- ctx.strokeStyle='rgba(168,29,57,.88)';ctx.lineWidth=1.05;
- ctx.beginPath();
- ctx.moveTo(-7.5,-11.1);ctx.quadraticCurveTo(-3.7,-8.7,-.9,-10.2);
- ctx.moveTo(2.2,-10.1);ctx.quadraticCurveTo(6,-12,8.5,-8.9);
- ctx.moveTo(-11.2,-4);ctx.quadraticCurveTo(-8.4,-2.2,-9.3,2.8);
- ctx.moveTo(11.2,-4);ctx.quadraticCurveTo(8.4,-2.2,9.3,2.8);
- ctx.stroke();
+ ctx.save();ctx.globalAlpha=alpha;ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font='bold 15px monospace';ctx.lineJoin='round';
+ // The awakened face is deliberately a literal text smiley, not drawn curse-mark strokes.
+ ctx.strokeStyle='rgba(255,224,230,.9)';ctx.lineWidth=1.6;ctx.strokeText(':)',0,1);
+ ctx.fillStyle='#160910';ctx.fillText(':)',0,1);
  ctx.restore();
 }
 function drawAccessoryOverlays(f,x,y,scale=1){
@@ -3704,7 +3690,7 @@ function drawHeadHands(f){
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
- drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);if(sukunaMarkReveal>0)drawSukunaFaceMarks(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
+ drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
  if(f.stun>.04){ctx.save();ctx.translate(x,headY-40);ctx.globalAlpha=.45+.4*Math.sin(game.time*35);ctx.strokeStyle='#ffe5a5';ctx.lineWidth=2;for(let i=0;i<3;i++){const a=game.time*7+i*Math.PI*2/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*13,Math.sin(a)*5-4);ctx.lineTo(Math.cos(a)*20,Math.sin(a)*12-12);ctx.stroke()}ctx.restore();}
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
  if(f.transfigureMeter>0){const mw=46,bw=mw*(f.transfigureMeter/100);ctx.save();ctx.fillStyle='#061014cc';ctx.fillRect(x-mw/2,headY-47,mw,7);ctx.fillStyle='#88dfcc';ctx.fillRect(x-mw/2,headY-47,bw,7);ctx.strokeStyle='#d8fff4';ctx.strokeRect(x-mw/2,headY-47,mw,7);ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9fff4';ctx.fillText('SOUL',x,headY-51);ctx.restore();}
@@ -3917,7 +3903,7 @@ function getDomainPopupArtwork(f,stripHeight){
    artCtx.fillStyle='#090d16';artCtx.fillRect(0,0,artW,artH);
    const cx=artW*.5,cy=artH*.5,r=Math.max(artH*.92,artW*.29);
    if(type==='void')drawVoidDomainInterior(cx,cy,r);
-   else if(type==='shrine'){drawShrineDomainInterior(cx,cy,r);drawSukunaPagoda(artW,artH);}
+   else if(type==='shrine'){drawShrineDomainInterior(cx,cy,r);drawSukunaPagoda(artW,artH,2.05,1.30);}
    else if(type==='soul')drawSoulDomainInterior(cx,cy,r);
    else if(type==='hakari')drawHakariDomainInterior(cx,cy,r,f);
    else if(type==='yuta')drawYutaDomainInterior(cx,cy,r,f);
@@ -4090,6 +4076,7 @@ function drawDomainArenaContent(f){
   }
   drawYujiDomainSmokeBackground();
   drawYujiBlackWaterRipples(W,H,game.time);
+  drawShrineDomainSlashField(W,H,game.time);
   drawSukunaPagoda(W,H);
   ctx.restore();return;
  }
@@ -4206,8 +4193,8 @@ function getYujiSmokeBackgroundCache(w,h){
 }
 
 const sukunaPagodaCache=new Map();
-function drawSukunaPagodaArchitecture(w,h){
- const scale=Math.min(w*.65/680,h*.345/430),width=680*scale,height=430*scale,sx=scale,sy=scale,left=(w-width)*.5,ringCenterY=yujiDomainSmokeEdge(w*.5,h,0),top=ringCenterY-height*(428/430);
+function drawSukunaPagodaArchitecture(w,h,sizeX=1,sizeY=1){
+ const baseScale=Math.min(w*.65/680,h*.345/430),sx=baseScale*sizeX,sy=baseScale*sizeY,width=680*sx,height=430*sy,left=(w-width)*.5,ringCenterY=yujiDomainSmokeEdge(w*.5,h,0),top=ringCenterY-height*(428/430);
  ctx.save();ctx.translate(left,top);ctx.scale(sx,sy);
  ctx.globalAlpha=.48;ctx.fillStyle='#020205';ctx.beginPath();ctx.ellipse(340,414,338,27,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
  const poly=(pts,fill,stroke='#130c12',line=5)=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke()}};
@@ -4222,7 +4209,7 @@ function drawSukunaPagodaArchitecture(w,h){
  // The central entrance uses a simple smiley emblem in place of the original mouth.
  beam(267,216,146,144,'#1a0d15','#150a12',7);beam(280,229,120,120,'#08080f','#a04b43',3);beam(291,240,98,100,'#120a12','#54202a',2);
  beam(255,208,16,158,'#9b4b34','#2a1016',4);beam(409,208,16,158,'#9b4b34','#2a1016',4);beam(263,208,154,13,'#c17a4e','#30131a',4);beam(263,356,154,10,'#8d402f','#281017',3);
- ctx.save();ctx.translate(340,292);ctx.font='bold 46px monospace';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f4d9ae';ctx.shadowColor='#e8a66d';ctx.shadowBlur=8;ctx.fillText(':)',0,0);ctx.restore();
+ ctx.save();ctx.translate(340,292);ctx.scale(.78,1);ctx.font='bold 58px Arial,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f4d9ae';ctx.shadowColor='#e8a66d';ctx.shadowBlur=8;ctx.fillText(':)',0,0);ctx.restore();
  for(const x of [151,226,454,529]){beam(x-12,188,24,186,'#32131b','#130b12',5);beam(x-7,196,7,169,'#b26042',null);beam(x-17,183,34,13,'#b56b45','#251018',3);beam(x-18,363,36,13,'#6c2929','#170d13',3);beam(x-22,366,44,8,'#a55a3c','#281018',2)}
  beam(135,178,410,19,'#8e4031','#1a0c13',5);beam(149,198,382,10,'#d18a58','#2b1218',3);beam(129,341,422,17,'#9b4e38','#1c0d14',4);
  for(let i=0;i<7;i++){const x=174+i*55;poly([[x,184],[x+12,165],[x+25,184],[x+38,165],[x+50,184]],'#73302c','#1b1017',3);beam(x+8,184,36,8,'#bd7750','#29121a',2)}
@@ -4246,12 +4233,12 @@ function drawSukunaPagodaArchitecture(w,h){
  for(const item of [[48,387,.78],[76,376,.9],[105,390,.76],[128,378,.65],[552,390,.76],[577,376,.9],[606,387,.78],[632,378,.65]])skull(item[0],item[1],item[2]);
  ctx.restore();
 }
-function drawSukunaPagoda(w,h){
- const key=w+'x'+h;let canvas=sukunaPagodaCache.get(key);
+function drawSukunaPagoda(w,h,sizeX=1,sizeY=1){
+ const key=w+'x'+h+'x'+sizeX+'x'+sizeY;let canvas=sukunaPagodaCache.get(key);
  if(!canvas){
   canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
   const screenCtx=ctx,offscreenCtx=canvas.getContext('2d');ctx=offscreenCtx;
-  try{ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;drawSukunaPagodaArchitecture(w,h)}
+  try{ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;drawSukunaPagodaArchitecture(w,h,sizeX,sizeY)}
   finally{ctx=screenCtx}
   sukunaPagodaCache.set(key,canvas);
  }
@@ -4297,6 +4284,38 @@ function drawYujiBlackWaterRipples(w,h,t){
 
 function drawShrineDomainInterior(cx,cy,r){
  drawYujiDomainSmokeBackground();
+}
+function drawShrineDomainSlashField(w,h,time){
+ const count=isMobileDevice?18:30;
+ const random=(seed)=>{const value=Math.sin(seed*127.1+78.233)*43758.5453123;return value-Math.floor(value)};
+ ctx.save();ctx.lineJoin='round';ctx.lineCap='round';
+ for(let i=0;i<count;i++){
+  const flow=time*1.45+i*.367,cycle=Math.floor(flow),phase=flow-cycle;
+  if(phase>.76)continue;
+  const seed=(i+1)+cycle*47;
+  let x=w*(.035+.93*random(seed+1)),y=h*(.045+.91*random(seed+2));
+  // Keep the pagoda silhouette unobstructed; the surrounding arena remains filled with cuts.
+  const edge=yujiDomainSmokeEdge(w*.5,h,0);
+  if(Math.abs(x-w*.5)<w*.22&&y>edge-h*.36&&y<edge+h*.03){
+   x=random(seed+3)<.5?w*(.08+.07*random(seed+4)):w*(.85+.07*random(seed+4));
+  }
+  const angle=random(seed+5)*Math.PI*2,length=34+random(seed+6)*66,thickness=2.1+random(seed+7)*2.8;
+  const appear=Math.min(1,phase/.09),fade=phase>.57?( .76-phase)/.19:1;
+  const alpha=Math.max(0,appear*fade)*(.72+random(seed+8)*.25);
+  const drift=phase*10;
+  ctx.save();ctx.translate(x+Math.cos(angle)*drift,y+Math.sin(angle)*drift);ctx.rotate(angle);
+  ctx.globalAlpha=alpha;
+  const reverse=random(seed+9)>.52;
+  ctx.fillStyle=reverse?'#f4f5f7':'#030405';
+  ctx.strokeStyle=reverse?'#08090d':'#f6f7fa';
+  ctx.lineWidth=reverse?2.1:2.25;ctx.shadowColor=reverse?'rgba(0,0,0,.5)':'rgba(255,255,255,.55)';ctx.shadowBlur=2.6;
+  ctx.beginPath();ctx.moveTo(-length*.5,0);
+  ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
+  ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
+  ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.restore();
+ }
+ ctx.restore();
 }
 function drawSoulDomainInterior(cx,cy,r){
  ctx.save();
@@ -4723,38 +4742,35 @@ function drawYujiSkillImpactEffects(){
 
 function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
- const x=sx(f.x),y=sy(f.y)-f.jump*3,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time,mobile=isMobileDevice;
- const count=mobile?7:11;
- ctx.save();ctx.globalCompositeOperation='source-over';ctx.lineCap='round';ctx.lineJoin='round';
- // A denser black core with a dark-crimson rim makes the aura read as smoke, not thin ribbons.
- const baseFog=ctx.createRadialGradient(x,y+8,3,x,y+8,mobile?58:72);
- baseFog.addColorStop(0,'rgba(5,3,8,.58)');baseFog.addColorStop(.42,'rgba(75,7,25,.38)');baseFog.addColorStop(1,'rgba(93,8,29,0)');
- ctx.globalAlpha=.82;ctx.fillStyle=baseFog;ctx.beginPath();ctx.ellipse(x,y+9,mobile?57:70,25,0,0,Math.PI*2);ctx.fill();
- for(let i=0;i<count;i++){
-  const side=i%2?1:-1,lane=Math.floor(i/2),phase=visualTime*(.92+(i%3)*.15)+i*1.83;
-  const startX=x+side*(19+lane*5.5)+Math.sin(phase*.72)*7;
-  const startY=y+10+Math.cos(phase*1.1)*4;
-  const rise=53+(i%4)*13,drift=Math.sin(phase*1.22)*19+side*(5+lane*2.5);
-  const endX=startX+drift,endY=startY-rise;
-  const c1x=startX+Math.sin(phase)*16+side*10,c1y=startY-rise*.24;
-  const c2x=endX+Math.cos(phase*1.3)*18-side*12,c2y=startY-rise*.72;
-  const width=7.2+(i%3)*2.5;
-  const path=()=>{ctx.beginPath();ctx.moveTo(startX,startY);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,endX,endY)};
-  ctx.globalAlpha=.36+(i%3)*.045;ctx.shadowColor='#b41435';ctx.shadowBlur=15+(i%3)*3;
-  ctx.strokeStyle='#8f102b';ctx.lineWidth=width+8;path();ctx.stroke();
-  ctx.globalAlpha=.72+(i%2)*.06;ctx.shadowColor='#020207';ctx.shadowBlur=9;
-  ctx.strokeStyle='#09060d';ctx.lineWidth=width+2;path();ctx.stroke();
-  ctx.globalAlpha=.4;ctx.shadowBlur=3;ctx.strokeStyle='#dc2446';ctx.lineWidth=1.4;path();ctx.stroke();
- }
- // Larger soft pockets blend the plumes into a single rolling cloud.
- const pockets=mobile?3:5;
- for(let i=0;i<pockets;i++){
-  const phase=visualTime*.9+i*1.7,px=x+Math.sin(phase)*34+(i%2?18:-18),py=y-9-((visualTime*21+i*25)%58);
-  const rx=15+(i%3)*5,ry=11+(i%2)*5;
-  const fog=ctx.createRadialGradient(px,py,1,px,py,rx*2.05);
-  fog.addColorStop(0,'rgba(8,4,12,.72)');fog.addColorStop(.46,'rgba(112,10,36,.43)');fog.addColorStop(1,'rgba(104,9,33,0)');
-  ctx.globalAlpha=.78;ctx.fillStyle=fog;ctx.beginPath();ctx.ellipse(px,py,rx*2.05,ry*2.05,Math.sin(phase)*.35,0,Math.PI*2);ctx.fill();
- }
+ const x=sx(f.x),y=sy(f.y)-f.jump*3;
+ const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
+ const wobble=Math.sin(visualTime*1.65)*4,breath=.96+.04*Math.sin(visualTime*2.2);
+ ctx.save();ctx.globalCompositeOperation='source-over';ctx.lineJoin='round';
+ // One continuous cloud silhouette wraps around the fighter; no separate wavy ribbons.
+ const cloudPath=()=>{
+  ctx.beginPath();
+  ctx.moveTo(x-54,y+28);
+  ctx.bezierCurveTo(x-73,y+19,x-69,y-5-wobble,x-53,y-17);
+  ctx.bezierCurveTo(x-61,y-43,x-34,y-58-wobble,x-17,y-45);
+  ctx.bezierCurveTo(x-8,y-72-wobble,x+22,y-70,x+29,y-46);
+  ctx.bezierCurveTo(x+53,y-55,x+72,y-28+wobble,x+54,y-9);
+  ctx.bezierCurveTo(x+74,y+12,x+61,y+34,x+39,y+34);
+  ctx.bezierCurveTo(x+20,y+53,x-8,y+46,x-19,y+35);
+  ctx.bezierCurveTo(x-39,y+46,x-58,y+42,x-54,y+28);
+  ctx.closePath();
+ };
+ const haze=ctx.createRadialGradient(x,y-9,8,x,y-5,91);
+ haze.addColorStop(0,'rgba(3,2,7,.98)');
+ haze.addColorStop(.34,'rgba(8,4,12,.96)');
+ haze.addColorStop(.62,'rgba(43,5,19,.88)');
+ haze.addColorStop(.84,'rgba(104,8,31,.62)');
+ haze.addColorStop(1,'rgba(117,10,35,0)');
+ ctx.globalAlpha=.96;ctx.shadowColor='#9d1235';ctx.shadowBlur=23;
+ ctx.fillStyle=haze;ctx.save();ctx.translate(x,y);ctx.scale(breath,1);ctx.translate(-x,-y);cloudPath();ctx.fill();ctx.restore();
+ // A soft black core deepens the same cloud without adding any line-shaped particles.
+ const core=ctx.createRadialGradient(x,y+2,5,x,y+1,62);
+ core.addColorStop(0,'rgba(2,2,5,.94)');core.addColorStop(.56,'rgba(7,4,10,.76)');core.addColorStop(1,'rgba(8,4,12,0)');
+ ctx.globalAlpha=.83;ctx.shadowBlur=8;ctx.fillStyle=core;cloudPath();ctx.fill();
  ctx.restore();
 }
 function positionVesselAwakeningDialogue(){
