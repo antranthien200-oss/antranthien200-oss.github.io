@@ -827,7 +827,7 @@ const CHARS={
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
   moves:[['CURSED STRIKES','A sliding flurry of punches ending in a kick'],['CRUSHING BLOW','Grab, slam twice, then launch; shockwave on miss'],['DIVERGENT FIST','A wind-up punch with a timed mid-swing input for Black Flash'],['MANJI BLOCK','Block an incoming hit, then punch the attacker back']],
   awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Explosive dash, one-hand head carry, brutal throw, aerial chase, and ground slam'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
-  special:'COMBAT INSTINCTS',specialDesc:'Instantly cancel your active skill and gain 10% awakening meter.',awakeSpecial:'CLEAVE COUNTER',awakeSpecialDesc:'Counter a nearby melee hit, grab the attacker, unleash a rapid slash flurry, then throw them away.',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
+  special:'COMBAT INSTINCTS',specialDesc:'Instantly cancel your active skill and gain 10% awakening meter. 15s cooldown.',awakeSpecial:'CLEAVE COUNTER',awakeSpecialDesc:'Counter a nearby melee hit, grab the attacker, unleash a rapid slash flurry, then throw them away.',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
  restless:{name:'RESTLESS GAMBLER',desc:'Kinji Hakari. Use shutter doors, steel balls, and heavy cursed-energy attacks. Awakening: Idle Death Gamble; hit Jackpot for the immortal rushdown form.',color:'#35cf78',hair:'#8cffb1',coat:'#155a36',accent:'#51e98d',skin:'#e0b49b',hp:100,
   moves:[['RESERVE BALLS','A fast steel-ball projectile; ricochets off walls'],['SHUTTER DOORS','Trap and briefly stun an enemy with doors'],['ROUGH ENERGY','A charged unblockable punch; aerial stomp variant'],['FEVER BREAKER','Kick the target, then dropkick them through shutter doors']],
   awakeMoves:[['LUCKY VOLLEY','A mobile punch barrage ending in an unblockable swipe'],['LUCKY RUSHDOWN','Long forward run into a leg grab and throw'],['OVERWHELMING LUCK','A rushing multi-hit combo with an airborne juggle'],['ENERGY SURGE','A short dash punch followed by an aerial kick']],
@@ -2029,7 +2029,7 @@ if(f.attackCd>0)return;
    f.blackFlashWindow=0;f.blackFlashChain=0;f.counterWindow=0;f.counterKind='';
    f.manjiCounterSerial=(f.manjiCounterSerial||0)+1;
    f.motion=null;f.attackAnim=0;f.attackType='';f.vx=0;f.vy=0;
-   f.meter=clamp(f.meter+10,0,100);f.specialCd=2;
+   f.meter=clamp(f.meter+10,0,100);f.specialCd=15;
    f.yujiCancelBurstFx={x:f.x,y:f.y-23,life:.24,max:.24};
    burst(f.x,f.y-23,'#ffffff',6,2.1);
    showToast('SKILL CANCEL · AWAKEN +10',650);return;
@@ -4872,15 +4872,48 @@ function drawYujiSkillImpactEffects(){
  }
 }
 
+let vesselSmokeAuraFrames=null;
+function getVesselSmokeAuraFrames(){
+ if(vesselSmokeAuraFrames)return vesselSmokeAuraFrames;
+ const size=112,center=size/2,frameCount=16;
+ vesselSmokeAuraFrames=[];
+ for(let frame=0;frame<frameCount;frame++){
+  const surface=document.createElement('canvas');surface.width=size;surface.height=size;
+  const surfaceCtx=surface.getContext('2d'),image=surfaceCtx.createImageData(size,size),phase=frame/frameCount*Math.PI*2;
+  for(let py=0;py<size;py++)for(let px=0;px<size;px++){
+   const dx=px+.5-center,dy=py+.5-center,radial=Math.hypot(dx,dy);
+   if(radial<8||radial>53)continue;
+   const angle=Math.atan2(dy,dx);
+   // Layered, moving turbulence bends and breaks up the smoke band instead of drawing a ring outline.
+   const warp=Math.sin(angle*3+phase)*.18+Math.sin(angle*7-phase*1.35)*.13+
+    Math.cos(angle*13+phase*1.8+radial*.06)*.11+Math.sin(dx*.16+dy*.12-phase)*.08;
+   const centerline=43+warp*5.2,offset=radial-centerline;
+   const band=Math.exp(-(offset*offset)/(2*6.2*6.2));
+   const texture=.52+.22*Math.sin(angle*5-phase*1.2+radial*.04)+
+    .16*Math.cos(angle*11+phase*1.7-radial*.08)+.10*Math.sin(dx*.23-dy*.19+phase*2);
+   const wisps=clamp(texture,0,1);
+   const density=band*(.12+.58*wisps);
+   if(density<.012)continue;
+   const redMix=clamp(.53+.25*Math.sin(angle*4+phase)+.2*Math.cos(angle*9-phase+radial*.12),.12,.94);
+   const index=(py*size+px)*4;
+   image.data[index]=Math.round(7+redMix*174);
+   image.data[index+1]=Math.round(3+redMix*19);
+   image.data[index+2]=Math.round(5+redMix*39);
+   image.data[index+3]=Math.round(255*density*.76);
+  }
+  surfaceCtx.putImageData(image,0,0);
+  vesselSmokeAuraFrames.push(surface);
+ }
+ return vesselSmokeAuraFrames;
+}
 function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending)return;
- const x=sx(f.x),y=sy(f.y)-f.jump*3-23;
- const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
- ctx.save();
- // One clean, thin red ring hugs the round head/body. No smoke puffs or floating particles.
- ctx.globalAlpha=.38+.035*Math.sin(visualTime*2.05);
- ctx.strokeStyle='#f0445a';ctx.lineWidth=2;
- ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.stroke();
+ const x=sx(f.x),y=sy(f.y)-f.jump*3-23,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
+ const frames=getVesselSmokeAuraFrames(),framePosition=(visualTime*6)%frames.length,frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
+ // Cross-faded smoky texture: only soft red and black haze, with no drawn contours or separate particles.
+ ctx.save();ctx.imageSmoothingEnabled=true;
+ ctx.globalAlpha=.78*(1-mix);ctx.drawImage(frames[frameA],x-28,y-28,56,56);
+ ctx.globalAlpha=.78*mix;ctx.drawImage(frames[frameB],x-28,y-28,56,56);
  ctx.restore();
 }
 
