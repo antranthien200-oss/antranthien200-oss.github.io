@@ -3296,11 +3296,13 @@ function drawAccessoryAura(f,x,y,scale=1){
 }
 function drawSukunaSmileFace(alpha=1){
  if(alpha<=.01)return;
- ctx.save();ctx.globalAlpha=alpha;ctx.textAlign='center';ctx.textBaseline='middle';
- ctx.font='bold 15px monospace';ctx.lineJoin='round';
- // The awakened face is deliberately a literal text smiley, not drawn curse-mark strokes.
- ctx.strokeStyle='rgba(255,224,230,.9)';ctx.lineWidth=1.6;ctx.strokeText(':)',0,1);
- ctx.fillStyle='#160910';ctx.fillText(':)',0,1);
+ ctx.save();ctx.globalAlpha=alpha;
+ // Keep the face as literal text, enlarged 3x, with no outline.
+ // Compress its text width before rotating so the eyes and mouth sit closer together.
+ ctx.rotate(Math.PI/2);ctx.scale(.62,1);
+ ctx.textAlign='center';ctx.textBaseline='middle';
+ ctx.font='bold 45px monospace';
+ ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
  ctx.restore();
 }
 function drawAccessoryOverlays(f,x,y,scale=1){
@@ -4763,33 +4765,52 @@ function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened)return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3;
  const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
- const wobble=Math.sin(visualTime*1.65)*4,breath=.96+.04*Math.sin(visualTime*2.2);
+ const pulse=.96+.04*Math.sin(visualTime*2.05),wobble=Math.sin(visualTime*1.35)*3.2;
  ctx.save();ctx.globalCompositeOperation='source-over';ctx.lineJoin='round';
- // One continuous cloud silhouette wraps around the fighter; no separate wavy ribbons.
+ // Rush-like smoke is one dense, rounded cloud with a ragged, splattered edge.
+ // Overlapping edge lobes merge into the same silhouette; no separate wavy trails.
+ for(let i=0;i<12;i++){
+  const angle=i*Math.PI*2/12+Math.sin(visualTime*.32+i)*.035;
+  const orbit=51+(i%3)*5,px=x+Math.cos(angle)*orbit*pulse,py=y+Math.sin(angle)*orbit*.72+wobble*.25;
+  const rx=25+(i%4)*4,ry=20+(i%3)*4;
+  ctx.globalAlpha=.56+(i%3)*.07;
+  ctx.fillStyle=i%4===0?'#6d0a23':'#16060e';
+  ctx.shadowColor=i%3===0?'#bd173d':'#080208';ctx.shadowBlur=17+(i%3)*3;
+  ctx.beginPath();ctx.ellipse(px,py,rx,ry,angle*.16,0,Math.PI*2);ctx.fill();
+ }
  const cloudPath=()=>{
   ctx.beginPath();
-  ctx.moveTo(x-54,y+28);
-  ctx.bezierCurveTo(x-73,y+19,x-69,y-5-wobble,x-53,y-17);
-  ctx.bezierCurveTo(x-61,y-43,x-34,y-58-wobble,x-17,y-45);
-  ctx.bezierCurveTo(x-8,y-72-wobble,x+22,y-70,x+29,y-46);
-  ctx.bezierCurveTo(x+53,y-55,x+72,y-28+wobble,x+54,y-9);
-  ctx.bezierCurveTo(x+74,y+12,x+61,y+34,x+39,y+34);
-  ctx.bezierCurveTo(x+20,y+53,x-8,y+46,x-19,y+35);
-  ctx.bezierCurveTo(x-39,y+46,x-58,y+42,x-54,y+28);
+  ctx.moveTo(x-49,y+34);
+  ctx.bezierCurveTo(x-78,y+29,x-83,y-1-wobble,x-62,y-21);
+  ctx.bezierCurveTo(x-78,y-49,x-49,y-76,x-25,y-57);
+  ctx.bezierCurveTo(x-14,y-88-wobble,x+18,y-88,x+28,y-59);
+  ctx.bezierCurveTo(x+57,y-77,x+84,y-48,x+62,y-19);
+  ctx.bezierCurveTo(x+91,y-1,x+79,y+35,x+49,y+34);
+  ctx.bezierCurveTo(x+34,y+66,x+4,y+70,x-17,y+48);
+  ctx.bezierCurveTo(x-39,y+65,x-66,y+56,x-49,y+34);
   ctx.closePath();
  };
- const haze=ctx.createRadialGradient(x,y-9,8,x,y-5,91);
- haze.addColorStop(0,'rgba(3,2,7,.98)');
- haze.addColorStop(.34,'rgba(8,4,12,.96)');
- haze.addColorStop(.62,'rgba(43,5,19,.88)');
- haze.addColorStop(.84,'rgba(104,8,31,.62)');
- haze.addColorStop(1,'rgba(117,10,35,0)');
- ctx.globalAlpha=.96;ctx.shadowColor='#9d1235';ctx.shadowBlur=23;
- ctx.fillStyle=haze;ctx.save();ctx.translate(x,y);ctx.scale(breath,1);ctx.translate(-x,-y);cloudPath();ctx.fill();ctx.restore();
- // A soft black core deepens the same cloud without adding any line-shaped particles.
- const core=ctx.createRadialGradient(x,y+2,5,x,y+1,62);
- core.addColorStop(0,'rgba(2,2,5,.94)');core.addColorStop(.56,'rgba(7,4,10,.76)');core.addColorStop(1,'rgba(8,4,12,0)');
- ctx.globalAlpha=.83;ctx.shadowBlur=8;ctx.fillStyle=core;cloudPath();ctx.fill();
+ // Crimson rim and soft black body form one continuous smoke mass.
+ ctx.globalAlpha=.97;ctx.shadowColor='#a20d32';ctx.shadowBlur=27;
+ ctx.fillStyle='#4b071b';cloudPath();ctx.fill();
+ ctx.shadowBlur=4;
+ const body=ctx.createRadialGradient(x-5,y-9,5,x,y,91);
+ body.addColorStop(0,'rgba(2,2,5,.99)');
+ body.addColorStop(.42,'rgba(5,3,8,.98)');
+ body.addColorStop(.68,'rgba(15,4,11,.95)');
+ body.addColorStop(.88,'rgba(67,6,23,.91)');
+ body.addColorStop(1,'rgba(104,8,29,.72)');
+ ctx.fillStyle=body;cloudPath();ctx.fill();
+ // A few blended smoke pockets create Rush's rough particle-like surface texture.
+ ctx.save();cloudPath();ctx.clip();
+ for(let i=0;i<9;i++){
+  const angle=i*2.399+visualTime*.16,orbit=17+(i%4)*12;
+  const px=x+Math.cos(angle)*orbit,py=y+Math.sin(angle)*orbit*.72;
+  const r=17+(i%3)*6;
+  const shade=i%3===0?'rgba(112,8,32,.24)':'rgba(0,0,0,.27)';
+  ctx.globalAlpha=.8;ctx.fillStyle=shade;ctx.beginPath();ctx.ellipse(px,py,r,r*.72,angle*.2,0,Math.PI*2);ctx.fill();
+ }
+ ctx.restore();
  ctx.restore();
 }
 function positionVesselAwakeningDialogue(){
