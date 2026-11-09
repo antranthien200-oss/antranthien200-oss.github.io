@@ -827,7 +827,7 @@ const CHARS={
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
   moves:[['CURSED STRIKES','A sliding flurry of punches ending in a kick'],['CRUSHING BLOW','Grab, slam twice, then launch; shockwave on miss'],['DIVERGENT FIST','A wind-up punch with a timed mid-swing input for Black Flash'],['MANJI BLOCK','Block an incoming hit, then punch the attacker back']],
   awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Explosive dash, one-hand head carry, brutal throw, aerial chase, and ground slam'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
-  special:'COMBAT INSTINCTS',specialDesc:'Feint-cancel a move windup; punch a nearby throwable to launch it.',awakeSpecial:'CLEAVE',awakeSpecialDesc:'A forward grab followed by repeated slashes; deals 40% of current HP (minimum 10).',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
+  special:'COMBAT INSTINCTS',specialDesc:'Feint-cancel a move windup; punch a nearby throwable to launch it.',awakeSpecial:'CLEAVE COUNTER',awakeSpecialDesc:'Counter a nearby melee hit, grab the attacker, unleash a rapid slash flurry, then throw them away.',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
  restless:{name:'RESTLESS GAMBLER',desc:'Kinji Hakari. Use shutter doors, steel balls, and heavy cursed-energy attacks. Awakening: Idle Death Gamble; hit Jackpot for the immortal rushdown form.',color:'#35cf78',hair:'#8cffb1',coat:'#155a36',accent:'#51e98d',skin:'#e0b49b',hp:100,
   moves:[['RESERVE BALLS','A fast steel-ball projectile; ricochets off walls'],['SHUTTER DOORS','Trap and briefly stun an enemy with doors'],['ROUGH ENERGY','A charged unblockable punch; aerial stomp variant'],['FEVER BREAKER','Kick the target, then dropkick them through shutter doors']],
   awakeMoves:[['LUCKY VOLLEY','A mobile punch barrage ending in an unblockable swipe'],['LUCKY RUSHDOWN','Long forward run into a leg grab and throw'],['OVERWHELMING LUCK','A rushing multi-hit combo with an airborne juggle'],['ENERGY SURGE','A short dash punch followed by an aerial kick']],
@@ -1353,6 +1353,21 @@ function damage(target,amount,source,opts={}){
   }
   if(kind==='todoDream'||kind==='todoBrothers'){
    const a=Math.atan2(source.y-target.y,source.x-target.x),strong=kind==='todoBrothers';setMotion(target,strong?'todoBrothersCounter':'todoDreamCounter',strong?.85:.7,a,source);damage(source,strong?28:13,target,{stun:strong?1:.8,kx:Math.cos(a)*(strong?17:12),ky:Math.sin(a)*(strong?17:12),big:true,unblockable:true,color:'#e3c579'});burst(target.x,target.y,strong?'#f5d990':'#e3c579',30,7);return;
+  }
+  if(kind==='sukunaCleaveCounter'){
+   const incomingType=opts.damageType||'melee',counterDistance=dist(target,source);
+   if(!['bullet','projectile','domain'].includes(incomingType)&&counterDistance<=220&&!source.capturedBy){
+    const a=Math.atan2(source.y-target.y,source.x-target.x),gap=Math.max(0,counterDistance-68),step=Math.min(gap,110);
+    target.face=a;target.stun=0;target.block=false;target.invuln=Math.max(target.invuln,1.15);target.vx=0;target.vy=0;
+    source.block=false;source.counterWindow=0;source.counterKind='';source.invuln=0;source.stun=0;source.vx=0;source.vy=0;
+    target.x+=Math.cos(a)*step;target.y+=Math.sin(a)*step;collideWorld(target);
+    if(beginGrab(target,source,'sukunaFlurry',1.0,a,'#f14b60',8)){
+     burst(target.x,target.y-20,'#ff536b',20,4.8);burst(source.x,source.y-18,'#fff0f2',9,3.2);
+     game.hitStop=Math.max(game.hitStop,.045);game.shake=Math.max(game.shake,3.2);
+     popText(source.x,source.y-58,'CLEAVED','#ff8194',14);showToast('CLEAVE · COUNTER',650);
+     return;
+    }
+   }
   }
   if(kind==='manji'){
    const a=Math.atan2(source.y-target.y,source.x-target.x),serial=(target.manjiCounterSerial||0)+1;target.manjiCounterSerial=serial;
@@ -1990,7 +2005,13 @@ if(f.attackCd>0)return;
   }
   // Yuji: Combat Instincts cancels a wind-up; nearby props can be punched forward.
   if(f.char==='vessel'&&!f.awakened){const prop=destructibles.find(o=>o.alive&&dist(f,{x:o.x+o.w/2,y:o.y+o.h/2})<115);if(f.attackAnim>.05){f.attackAnim=0;f.attackType='';setMotion(f,'yujiFeint',.28,f.face,t);f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',650);return}if(prop){if(f.meter<3)return;setMotion(f,'yujiThrow',.48,f.face,t);f.meter-=3;prop.alive=false;addDebris(prop.x+prop.w/2,prop.y+prop.h/2,prop.color,10);let a=f.face;projectiles.push({x:f.x+Math.cos(a)*25,y:f.y+Math.sin(a)*25,vx:Math.cos(a)*12,vy:Math.sin(a)*12,r:18,life:1.4,owner:f,kind:'throwable',damage:15,color:'#c5c9d0'});f.specialCd=2;return}setMotion(f,'yujiFeint',.28,f.face,t);f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',550);return}
-  if(f.char==='vessel'&&f.awakened){const a=aimedAngle(f);f.specialCd=12;if(targetInAim(f,t,205,.88,a)&&beginGrab(f,t,'sukunaCleave',.72,a,'#f14b60',0)){f.attackAnim=.85;showToast('CLEAVE · GRAB',500)}else showToast('CLEAVE · TOO FAR',500);return}
+  if(f.char==='vessel'&&f.awakened){
+   if(f.specialCd>0)return;
+   const a=aimedAngle(f);f.face=a;f.specialCd=15;f.counterWindow=.65;f.counterKind='sukunaCleaveCounter';f.block=false;
+   f.attackAnim=.58;setMotion(f,'sukunaFlurryWindup',.58,a,t);
+   burst(f.x+Math.cos(a)*26,f.y+Math.sin(a)*26-18,'#ff536b',12,3.4);
+   popText(f.x,f.y-55,'CLEAVE COUNTER','#ff8194',13);showToast('CLEAVE · COUNTER READY',650);return;
+  }
   if(f.char==='ten'){
    if(f.tenShadowStoredCan&&f.carryingTrashCan){showToast('SHADOW STORAGE · ONE ITEM AT A TIME',700);return}
    if(f.carryingTrashCan){f.tenShadowStoredCan=f.carryingTrashCan;f.carryingTrashCan=null;f.tenShadowStoredCan.carried='shadow'}
