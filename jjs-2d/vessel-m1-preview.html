@@ -660,7 +660,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 #awakeningCutscene.vessel-dialogue .awaken-content{display:none!important}
 #awakeningCutscene .vessel-awakening-dialogue{
  display:none;position:absolute;left:0;top:0;box-sizing:border-box;
- width:clamp(68px,18vw,86px);min-height:clamp(92px,26vw,112px);
+ width:clamp(62px,15vw,76px);min-height:clamp(126px,37vw,154px);
  padding:8px 5px;align-items:center;justify-content:center;
  background:#f5f5f3;color:#080808;border:2.5px solid #111;border-radius:0;
  box-shadow:2px 2px 0 rgba(0,0,0,.42);
@@ -4828,7 +4828,7 @@ function drawVesselAwakeningSmoke(f){
  const visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
  const pulse=1+.01*Math.sin(visualTime*2.05);
  // Small, thin aura: it hugs the player instead of filling the surrounding arena.
- const auraW=126*pulse,auraH=140*pulse;
+ const auraW=96*pulse,auraH=112*pulse;
  ctx.save();ctx.globalCompositeOperation='source-over';ctx.globalAlpha=.84;
  ctx.drawImage(getVesselAwakeningSmokeSprite(),x-auraW*.5,y-auraH*.59,auraW,auraH);
  ctx.restore();
