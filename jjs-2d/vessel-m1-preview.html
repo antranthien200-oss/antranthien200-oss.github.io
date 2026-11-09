@@ -1203,7 +1203,7 @@ function spawnShrineDomainSlashes(x,y,faceAngle){
  const count=isMobileDevice?2:3,phase=Math.floor(game.time*10);
  for(let i=0;i<count;i++){
   const angle=i===0?faceAngle+rnd(-.42,.42):rnd(-Math.PI,Math.PI);
-  const offsetAngle=rnd(0,Math.PI*2),offset=rnd(9,39),size=rnd(82,126)*50,thickness=rnd(4.8,7.6);
+  const offsetAngle=rnd(0,Math.PI*2),offset=rnd(9,39),size=rnd(82,126)*15,thickness=rnd(4.8,7.6);
   particles.push({
    x:x+Math.cos(offsetAngle)*offset,y:y-23+Math.sin(offsetAngle)*offset,
    vx:Math.cos(angle)*rnd(.45,1.25),vy:Math.sin(angle)*rnd(.45,1.25),
@@ -4320,7 +4320,7 @@ function drawShrineDomainSlashField(w,h,time){
   if(Math.abs(x-w*.5)<w*.22&&y>edge-h*.36&&y<edge+h*.03){
    x=random(seed+3)<.5?w*(.08+.07*random(seed+4)):w*(.85+.07*random(seed+4));
   }
-  const angle=random(seed+5)*Math.PI*2,length=(34+random(seed+6)*66)*50,thickness=2.1+random(seed+7)*2.8;
+  const angle=random(seed+5)*Math.PI*2,length=(34+random(seed+6)*66)*15,thickness=2.1+random(seed+7)*2.8;
   const appear=Math.min(1,phase/.09),fade=phase>.57?( .76-phase)/.19:1;
   const alpha=Math.max(0,appear*fade)*(.72+random(seed+8)*.25);
   const drift=phase*10;
