@@ -1199,8 +1199,7 @@ function activateDomain(f){
 }
 
 function spawnShrineDomainSlashes(x,y,faceAngle){
- // Irregular M1-shaped Dismantle cuts keep the Shrine barrage from looking like a repeated fan.
- const count=isMobileDevice?2:3,phase=Math.floor(game.time*10);
+ const count=2,phase=Math.floor(game.time*16);
  for(let i=0;i<count;i++){
   const angle=i===0?faceAngle+rnd(-.42,.42):rnd(-Math.PI,Math.PI);
   const offsetAngle=rnd(0,Math.PI*2),offset=rnd(9,39),size=rnd(82,126)*25,thickness=rnd(4.8,7.6);
@@ -1208,7 +1207,7 @@ function spawnShrineDomainSlashes(x,y,faceAngle){
    x:x+Math.cos(offsetAngle)*offset,
    y:y-23+Math.sin(offsetAngle)*offset,
    vx:Math.cos(angle)*rnd(.45,1.25),vy:Math.sin(angle)*rnd(.45,1.25),
-   life:rnd(.19,.255),max:.255,size,thickness,
+   life:rnd(.14,.18),max:.18,size,thickness,
    shape:'domainSlash',rot:angle,reverse:(phase+i)%2===1
   });
  }
@@ -1228,7 +1227,7 @@ function updateDomainState(f,dt){
   if(!chimeraSuppress){
   if(f.domainType==='shrine'){
    f.domainTick-=dt;
-   if(f.domainTick<=0){f.domainTick=.165;if(inside){const a=Math.atan2(t.y-f.y,t.x-f.x);damage(t,2,f,{stun:.04,color:'#f34a60',damageType:'domain',blockedDamage:.5,ignoreInvuln:true});spawnShrineDomainSlashes(t.x,t.y,a);burst(t.x+rnd(-28,28),t.y+rnd(-28,28),'#fb5267',2,3)}}
+   if(f.domainTick<=0){f.domainTick=.11;if(inside){const a=Math.atan2(t.y-f.y,t.x-f.x);damage(t,2,f,{stun:.04,color:'#f34a60',damageType:'domain',blockedDamage:.5,ignoreInvuln:true});spawnShrineDomainSlashes(t.x,t.y,a);burst(t.x+rnd(-28,28),t.y+rnd(-28,28),'#fb5267',2,3)}}
   }else if(f.domainType==='void'){
    f.domainTick-=dt;
    if(f.domainTick<=0){f.domainTick=.35;if(inside){t.stun=Math.max(t.stun,.42);t.invuln=0;burst(t.x+rnd(-18,18),t.y+rnd(-18,18),'#b9caff',2,2)}}
@@ -4277,7 +4276,7 @@ function drawYujiBlackWaterRipples(w,h,t){
    if(radius>maxRadius)continue;
    const progress=radius/maxRadius;
    ctx.globalAlpha=Math.pow(1-progress,1.05)*.94;
-   ctx.shadowBlur=.65*(1-progress*.48);
+   ctx.shadowBlur=0;
    ctx.lineWidth=Math.max(1.1,h*.0022)*(1-progress*.18);
    ctx.beginPath();ctx.ellipse(cx,cy,radius,radius*ratio,0,0,Math.PI*2);ctx.stroke();
   }
@@ -4288,34 +4287,47 @@ function drawShrineDomainInterior(cx,cy,r){
  drawYujiDomainSmokeBackground();
 }
 function drawShrineDomainSlashField(w,h,time){
- const count=isMobileDevice?10:16;
+ const count=isMobileDevice?8:14;
  const random=(seed)=>{const value=Math.sin(seed*127.1+78.233)*43758.5453123;return value-Math.floor(value)};
- ctx.save();ctx.lineJoin='round';ctx.lineCap='round';
+ const batches=[[],[],[],[],[],[]],edge=yujiDomainSmokeEdge(w*.5,h,0);
  for(let i=0;i<count;i++){
-  const flow=time*1.45+i*.367,cycle=Math.floor(flow),phase=flow-cycle;
-  if(phase>.76)continue;
+  const flow=time*3.25+i*.367,cycle=Math.floor(flow),phase=flow-cycle;
+  if(phase>.90)continue;
   const seed=(i+1)+cycle*47;
   let x=w*(.035+.93*random(seed+1)),y=h*(.045+.91*random(seed+2));
-  // Keep the pagoda silhouette unobstructed; the surrounding arena remains filled with cuts.
-  const edge=yujiDomainSmokeEdge(w*.5,h,0);
   if(Math.abs(x-w*.5)<w*.22&&y>edge-h*.36&&y<edge+h*.03){
    x=random(seed+3)<.5?w*(.08+.07*random(seed+4)):w*(.85+.07*random(seed+4));
   }
   const angle=random(seed+5)*Math.PI*2,length=(34+random(seed+6)*66)*25,thickness=2.1+random(seed+7)*2.8;
-  const appear=Math.min(1,phase/.09),fade=phase>.57?( .76-phase)/.19:1;
+  const appear=Math.min(1,phase/.055),fade=phase>.68?(.90-phase)/.22:1;
   const alpha=Math.max(0,appear*fade)*(.72+random(seed+8)*.25);
-  const drift=phase*10;
-  ctx.save();ctx.translate(x+Math.cos(angle)*drift,y+Math.sin(angle)*drift);ctx.rotate(angle);
-  ctx.globalAlpha=alpha;
-  const reverse=random(seed+9)>.52;
+  const drift=phase*18,cx=x+Math.cos(angle)*drift,cy=y+Math.sin(angle)*drift;
+  const reverse=random(seed+9)>.52,bin=Math.min(2,Math.floor(alpha*3));
+  const path=batches[(reverse?3:0)+bin],co=Math.cos(angle),si=Math.sin(angle);
+  const x0=cx-length*.5*co,y0=cy-length*.5*si;
+  const x1=cx-length*.31*co+thickness*4.2*si,y1=cy-length*.31*si-thickness*4.2*co;
+  const x2=cx+length*.31*co+thickness*4.2*si,y2=cy+length*.31*si-thickness*4.2*co;
+  const x3=cx+length*.5*co,y3=cy+length*.5*si;
+  const x4=cx+length*.28*co+thickness*1.65*si,y4=cy+length*.28*si-thickness*1.65*co;
+  const x5=cx-length*.28*co+thickness*1.65*si,y5=cy-length*.28*si-thickness*1.65*co;
+  path.push([x0,y0,x1,y1,x2,y2,x3,y3,x4,y4,x5,y5]);
+ }
+ ctx.save();ctx.lineJoin='round';ctx.lineCap='round';ctx.shadowBlur=0;
+ for(let b=0;b<batches.length;b++){
+  const paths=batches[b];if(!paths.length)continue;
+  const reverse=b>=3,bin=b%3;
+  ctx.globalAlpha=bin===0?.30:bin===1?.58:.86;
   ctx.fillStyle=reverse?'#f4f5f7':'#030405';
   ctx.strokeStyle=reverse?'#08090d':'#f6f7fa';
-  ctx.lineWidth=reverse?2.1:2.25;ctx.shadowColor=reverse?'rgba(0,0,0,.5)':'rgba(255,255,255,.55)';ctx.shadowBlur=.7;
-  ctx.beginPath();ctx.moveTo(-length*.5,0);
-  ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
-  ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
-  ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.restore();
+  ctx.lineWidth=reverse?2.1:2.25;
+  ctx.beginPath();
+  for(const p of paths){
+   ctx.moveTo(p[0],p[1]);
+   ctx.bezierCurveTo(p[2],p[3],p[4],p[5],p[6],p[7]);
+   ctx.bezierCurveTo(p[8],p[9],p[10],p[11],p[0],p[1]);
+   ctx.closePath();
+  }
+  ctx.fill();ctx.stroke();
  }
  ctx.restore();
 }
@@ -4592,7 +4604,7 @@ function drawEffects(){
  ctx.save();
  for(const p of particles){
   const px=sx(p.x),py=sy(p.y),pad=(p.shape==='flame'?p.size*2:p.size)+6;
-  if(!effectsViewportContains(px,py,pad))continue;
+  if(p.shape!=='domainSlash'&&!effectsViewportContains(px,py,pad))continue;
   ctx.globalAlpha=clamp(p.life/p.max,0,1);ctx.fillStyle=p.color;
   if(p.shape==='flame'){
    ctx.save();ctx.translate(px,py);ctx.rotate(p.rot||0);const size=p.size;
@@ -4600,19 +4612,20 @@ function drawEffects(){
    ctx.fillStyle='#ffd26b';ctx.beginPath();ctx.moveTo(0,-size*.43);ctx.quadraticCurveTo(size*.28,-size*.02,0,size*.34);ctx.quadraticCurveTo(-size*.28,-size*.02,0,-size*.43);ctx.fill();
    ctx.restore();
   }else if(p.shape==='domainSlash'){
-   const life=clamp(p.life/p.max,0,1),progress=1-life,length=p.size||100,thickness=p.thickness||5;
-   ctx.save();ctx.translate(px,py);ctx.rotate((p.rot||0)+Math.PI/2);ctx.scale(.88+progress*.12,.88+progress*.12);
+   const life=clamp(p.life/p.max,0,1),progress=1-life,length=(p.size||100)*(.88+progress*.12),thickness=p.thickness||5;
+   const angle=(p.rot||0)+Math.PI/2,half=length*.5;
+   const reachX=Math.abs(Math.cos(angle))*half+Math.abs(Math.sin(angle))*thickness*5;
+   const reachY=Math.abs(Math.sin(angle))*half+Math.abs(Math.cos(angle))*thickness*5;
+   if(px+reachX<effectsViewportLeft||px-reachX>effectsViewportRight||py+reachY<effectsViewportTop||py-reachY>effectsViewportBottom)continue;
+   ctx.save();ctx.translate(px,py);ctx.rotate(angle);ctx.scale(.88+progress*.12,.88+progress*.12);
    ctx.globalAlpha=life*.96;ctx.lineJoin='round';ctx.lineCap='round';
    ctx.beginPath();ctx.moveTo(-length*.5,0);
    ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
    ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
    ctx.closePath();
    ctx.fillStyle=p.reverse?'#ffffff':'#030405';ctx.strokeStyle=p.reverse?'#030405':'#ffffff';
-   ctx.lineWidth=p.reverse?2.2:2.4;ctx.shadowColor=p.reverse?'rgba(0,0,0,.58)':'rgba(255,255,255,.82)';ctx.shadowBlur=p.reverse?0.6:1.1;
+   ctx.lineWidth=p.reverse?2.2:2.4;ctx.shadowBlur=0;
    ctx.fill();ctx.stroke();
-   // A restrained inner edge glint keeps the slash crisp as it fades.
-   ctx.globalAlpha=life*.55;ctx.strokeStyle=p.reverse?'rgba(0,0,0,.6)':'rgba(255,255,255,.7)';ctx.lineWidth=1;
-   ctx.beginPath();ctx.moveTo(-length*.16,-thickness*1.55);ctx.quadraticCurveTo(0,-thickness*2.1,length*.16,-thickness*1.55);ctx.stroke();
    ctx.restore();
   }else if(p.shape==='square')ctx.fillRect(px,py,p.size,p.size);
   else{ctx.beginPath();ctx.arc(px,py,p.size/2,0,Math.PI*2);ctx.fill()}
@@ -4756,7 +4769,7 @@ function drawVesselAwakeningSmoke(f){
   const rx=25+(i%4)*4,ry=20+(i%3)*4;
   ctx.globalAlpha=.56+(i%3)*.07;
   ctx.fillStyle=i%4===0?'#6d0a23':'#16060e';
-  ctx.shadowColor=i%3===0?'#bd173d':'#080208';ctx.shadowBlur=17+(i%3)*3;
+  ctx.shadowBlur=0;
   ctx.beginPath();ctx.ellipse(px,py,rx,ry,angle*.16,0,Math.PI*2);ctx.fill();
  }
  const cloudPath=()=>{
@@ -4772,9 +4785,9 @@ function drawVesselAwakeningSmoke(f){
   ctx.closePath();
  };
  // Crimson rim and soft black body form one continuous smoke mass.
- ctx.globalAlpha=.97;ctx.shadowColor='#a20d32';ctx.shadowBlur=27;
+ ctx.globalAlpha=.97;ctx.shadowColor='#a20d32';ctx.shadowBlur=7;
  ctx.fillStyle='#4b071b';cloudPath();ctx.fill();
- ctx.shadowBlur=4;
+ ctx.shadowBlur=0;
  const body=ctx.createRadialGradient(x-5,y-9,5,x,y,91);
  body.addColorStop(0,'rgba(2,2,5,.99)');
  body.addColorStop(.42,'rgba(5,3,8,.98)');
