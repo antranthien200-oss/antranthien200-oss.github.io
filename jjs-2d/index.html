@@ -4861,13 +4861,13 @@ function getVesselSmokeAuraFrames(){
   const surfaceCtx=surface.getContext('2d'),image=surfaceCtx.createImageData(size,size),phase=frame/frameCount*Math.PI*2;
   for(let py=0;py<size;py++)for(let px=0;px<size;px++){
    const dx=px+.5-center,dy=py+.5-center,radial=Math.hypot(dx,dy);
-   if(radial<8||radial>53)continue;
+   if(radial<8)continue;
    const angle=Math.atan2(dy,dx);
    // Layered, moving turbulence bends and breaks up the smoke band instead of drawing a ring outline.
    const warp=Math.sin(angle*3+phase)*.18+Math.sin(angle*7-phase*1.35)*.13+
     Math.cos(angle*13+phase*1.8+radial*.06)*.11+Math.sin(dx*.16+dy*.12-phase)*.08;
-   const centerline=43+warp*5.2,offset=radial-centerline;
-   const band=Math.exp(-(offset*offset)/(2*6.2*6.2));
+   const centerline=41+warp*4.1,offset=radial-centerline;
+   const band=Math.exp(-(offset*offset)/(2*4.8*4.8));
    const texture=.52+.22*Math.sin(angle*5-phase*1.2+radial*.04)+
     .16*Math.cos(angle*11+phase*1.7-radial*.08)+.10*Math.sin(dx*.23-dy*.19+phase*2);
    const wisps=clamp(texture,0,1);
@@ -4891,7 +4891,7 @@ function drawVesselAwakeningSmoke(f){
  const frames=getVesselSmokeAuraFrames(),framePosition=(visualTime*6)%frames.length,frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
  // Cross-faded smoky texture: only soft red and black haze, with no drawn contours or separate particles.
  ctx.save();ctx.imageSmoothingEnabled=true;
- ctx.globalAlpha=.78*(1-mix);ctx.drawImage(frames[frameA],x-28,y-28,56,56);
+ ctx.globalAlpha=.78*(1-mix);ctx.drawImage(frames[frameA],x-30,y-30,60,60);
  ctx.globalAlpha=.78*mix;ctx.drawImage(frames[frameB],x-28,y-28,56,56);
  ctx.restore();
 }
