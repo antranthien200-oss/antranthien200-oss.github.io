@@ -827,7 +827,7 @@ const CHARS={
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
   moves:[['CURSED STRIKES','A sliding flurry of punches ending in a kick'],['CRUSHING BLOW','Grab, slam twice, then launch; shockwave on miss'],['DIVERGENT FIST','A wind-up punch with a timed mid-swing input for Black Flash'],['MANJI BLOCK','Block an incoming hit, then punch the attacker back']],
   awakeMoves:[['DISMANTLE','Wind up, thrust forward, grab a target, then unleash varied slashes that stun and launch them'],['OPEN','Summon fire and launch a flame arrow'],['RUSH','Explosive dash, one-hand head carry, brutal throw, aerial chase, and ground slam'],['MALEVOLENT SHRINE','Domain expansion with repeated sure-hit slashes']],
-  special:'COMBAT INSTINCTS',specialDesc:'Feint-cancel a move windup; punch a nearby throwable to launch it.',awakeSpecial:'CLEAVE COUNTER',awakeSpecialDesc:'Counter a nearby melee hit, grab the attacker, unleash a rapid slash flurry, then throw them away.',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
+  special:'COMBAT INSTINCTS',specialDesc:'Instantly cancel your active skill and gain 10% awakening meter.',awakeSpecial:'CLEAVE COUNTER',awakeSpecialDesc:'Counter a nearby melee hit, grab the attacker, unleash a rapid slash flurry, then throw them away.',awakening:'KING OF CURSES',awakeName:'KING OF CURSES'},
  restless:{name:'RESTLESS GAMBLER',desc:'Kinji Hakari. Use shutter doors, steel balls, and heavy cursed-energy attacks. Awakening: Idle Death Gamble; hit Jackpot for the immortal rushdown form.',color:'#35cf78',hair:'#8cffb1',coat:'#155a36',accent:'#51e98d',skin:'#e0b49b',hp:100,
   moves:[['RESERVE BALLS','A fast steel-ball projectile; ricochets off walls'],['SHUTTER DOORS','Trap and briefly stun an enemy with doors'],['ROUGH ENERGY','A charged unblockable punch; aerial stomp variant'],['FEVER BREAKER','Kick the target, then dropkick them through shutter doors']],
   awakeMoves:[['LUCKY VOLLEY','A mobile punch barrage ending in an unblockable swipe'],['LUCKY RUSHDOWN','Long forward run into a leg grab and throw'],['OVERWHELMING LUCK','A rushing multi-hit combo with an airborne juggle'],['ENERGY SURGE','A short dash punch followed by an aerial kick']],
@@ -1998,13 +1998,31 @@ if(f.attackCd>0)return;
    if(game.time-(f.rikaLastSpecialAt||0)<.28){f.rikaSummoned=false;f.rikaMode=false;f.specialCd=.3;burst(f.x,f.y,'#e4c9ee',16,4);return}
    f.rikaMode=!f.rikaMode;f.rikaLastSpecialAt=game.time;f.specialCd=.24;return;
   }
+  // Normal Yuji: R instantly cancels the skill currently in progress.
+  if(f.char==='vessel'&&!f.awakened){
+   if(f.specialCd>0)return;
+   const skillMotions=['yujiCursedDrag','yujiCrush','yujiDivergent','yujiManjiBlock','yujiManjiCounter'];
+   const activeSkill=!!(f.motion&&skillMotions.includes(f.motion.name))||
+    !!(f.grabTarget&&f.grabKind==='yujiDrag')||!!f.yujiCrushDash||
+    !!(f.yujiDivergentAttack&&!f.yujiDivergentAttack.resolved)||
+    (f.counterWindow>0&&f.counterKind==='manji');
+   if(!activeSkill)return;
+   if(f.grabTarget&&f.grabKind==='yujiDrag')releaseGrab(f,false);
+   if(f.yujiDivergentAttack){f.yujiDivergentAttack.resolved=true;f.yujiDivergentAttack=null}
+   f.yujiCrushDash=null;f.yujiEnergyStrike=null;f.yujiBlackFlashFx=null;
+   f.blackFlashWindow=0;f.blackFlashChain=0;f.counterWindow=0;f.counterKind='';
+   f.manjiCounterSerial=(f.manjiCounterSerial||0)+1;
+   f.motion=null;f.attackAnim=0;f.attackType='';f.vx=0;f.vy=0;
+   f.meter=clamp(f.meter+10,0,100);f.specialCd=2;
+   f.yujiCancelBurstFx={x:f.x,y:f.y-23,life:.24,max:.24};
+   burst(f.x,f.y-23,'#ffffff',6,2.1);
+   showToast('SKILL CANCEL · AWAKEN +10',650);return;
+  }
   if(f.specialCd>0)return;
   // Gojo: Limitless. It is a targeted reposition, with an aerial kick variant.
   if(f.char==='honored'){
    const aim=aimedAt(f),target=t;if(f.gojoRapidFinishUntil>game.time){const a=Math.atan2(target.y-f.y,target.x-f.x);if(dist(f,target)>230||!beginGrab(f,target,'gojoFaceGrater',.5,a,'#d8f3ff',16)){showToast('FACE GRATER · NO GRAB',500);return}f.gojoRapidFinishUntil=0;f.meter=Math.max(0,f.meter-6);f.specialCd=18;showToast('FACE GRATER',650);return}if(f.meter<6)return;f.meter-=6;if(dist(f,target)<560){const a=Math.atan2(target.y-f.y,target.x-f.x);f.face=a;setMotion(f,'gojoLimitless',.58,a,target);f.x=target.x-Math.cos(a)*45;f.y=target.y-Math.sin(a)*45;collideWorld(f);burst(target.x,target.y,'#d8f3ff',20,4);if(target.jump>.25){damage(target,8,f,{stun:.5,kx:Math.cos(a)*7,ky:Math.sin(a)*7,unblockable:true,color:'#cbeaff'});popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15)}else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13)}else{setMotion(f,'gojoLimitless',.4,Math.atan2(aim.y-f.y,aim.x-f.x),target);f.x=aim.x;f.y=aim.y;collideWorld(f);burst(f.x,f.y,'#d8f3ff',16,4)}f.specialCd=15;return;
   }
-  // Yuji: Combat Instincts cancels a wind-up; nearby props can be punched forward.
-  if(f.char==='vessel'&&!f.awakened){const prop=destructibles.find(o=>o.alive&&dist(f,{x:o.x+o.w/2,y:o.y+o.h/2})<115);if(f.attackAnim>.05){f.attackAnim=0;f.attackType='';setMotion(f,'yujiFeint',.28,f.face,t);f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',650);return}if(prop){if(f.meter<3)return;setMotion(f,'yujiThrow',.48,f.face,t);f.meter-=3;prop.alive=false;addDebris(prop.x+prop.w/2,prop.y+prop.h/2,prop.color,10);let a=f.face;projectiles.push({x:f.x+Math.cos(a)*25,y:f.y+Math.sin(a)*25,vx:Math.cos(a)*12,vy:Math.sin(a)*12,r:18,life:1.4,owner:f,kind:'throwable',damage:15,color:'#c5c9d0'});f.specialCd=2;return}setMotion(f,'yujiFeint',.28,f.face,t);f.specialCd=2;showToast('COMBAT INSTINCTS · FEINT',550);return}
   if(f.char==='vessel'&&f.awakened){
    if(f.specialCd>0)return;
    const a=aimedAngle(f);f.face=a;f.specialCd=15;f.counterWindow=.65;f.counterKind='sukunaCleaveCounter';f.block=false;
@@ -2505,7 +2523,7 @@ function updateTenEffects(f,dt){
   }
  } if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);updateHud();if(f.hp<=0){f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
-function updateFighter(f,dt){if(f.dead)return;if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+function updateFighter(f,dt){if(f.dead)return;if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){f.motion.t+=dt;if(f.motion.t>=f.motion.duration)f.motion=null}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}const crushDash=f.yujiCrushDash,crushDashActive=!!(crushDash&&f.stun<=.02&&f.rooted<=0);
   if(crushDash&&!crushDashActive)f.yujiCrushDash=null;
   if(crushDashActive){f.vx=Math.cos(crushDash.angle)*crushDash.speed;f.vy=Math.sin(crushDash.angle)*crushDash.speed;f.jump=0;f.jumpV=0}
@@ -4764,6 +4782,23 @@ function drawYujiCrushEffects(){
 
 
 
+function drawYujiSkillCancelBurst(){
+ for(const f of [player,enemy]){
+  const fx=f&&f.yujiCancelBurstFx;if(!fx)continue;
+  const progress=clamp(1-fx.life/fx.max,0,1),fade=clamp(fx.life/fx.max,0,1);
+  const radius=5+progress*7,inner=radius*.46,x=sx(fx.x),y=sy(fx.y);
+  ctx.save();ctx.translate(x,y);ctx.globalAlpha=fade;
+  ctx.beginPath();
+  for(let i=0;i<8;i++){
+   const a=-Math.PI/2+i*Math.PI/4,r=i%2===0?radius:inner,px=Math.cos(a)*r,py=Math.sin(a)*r;
+   if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  }
+  ctx.closePath();ctx.fillStyle='rgba(255,255,255,.12)';ctx.strokeStyle='#fff';ctx.lineWidth=1.7;ctx.fill();ctx.stroke();
+  ctx.beginPath();ctx.arc(0,0,2,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+  ctx.restore();
+ }
+}
+
 function drawSukunaHeadCarryEffects(){
  for(const f of [player,enemy]){
   if(!f)continue;
@@ -4904,7 +4939,7 @@ function draw(){
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
- if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
+ if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
  positionVesselAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
