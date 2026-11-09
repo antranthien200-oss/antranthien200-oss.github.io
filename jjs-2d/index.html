@@ -4260,7 +4260,7 @@ function drawYujiBlackWaterRipples(w,h,t){
   // True ellipses avoid the incomplete point-loop that was deforming the old rings.
   const ratio=.42,cx=w*.5,cy=yujiDomainSmokeEdge(cx,h,0);
   const maxRadius=Math.max(Math.hypot(cx,(h-cy)/ratio),Math.hypot(w-cx,(h-cy)/ratio))*1.035;
-  const speed=Math.max(130,h*.20),life=maxRadius/speed,ringCount=7;
+  const speed=Math.max(130,h*.20),life=maxRadius/speed,ringCount=5;
   const spacing=life/ringCount,startRadius=Math.max(1.5,h*.0012);
   const cache=getYujiSmokeBackgroundCache(w,h);
   ctx.save();
