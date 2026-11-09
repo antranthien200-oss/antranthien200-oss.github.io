@@ -4913,7 +4913,7 @@ function drawVesselAwakeningSmoke(f){
  // Cross-faded smoky texture: only soft red and black haze, with no drawn contours or separate particles.
  ctx.save();ctx.imageSmoothingEnabled=true;
  ctx.globalAlpha=.78*(1-mix);ctx.drawImage(frames[frameA],x-30,y-30,60,60);
- ctx.globalAlpha=.78*mix;ctx.drawImage(frames[frameB],x-28,y-28,56,56);
+ ctx.globalAlpha=.78*mix;ctx.drawImage(frames[frameB],x-30,y-30,60,60);
  ctx.restore();
 }
 
