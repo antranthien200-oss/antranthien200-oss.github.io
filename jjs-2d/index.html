@@ -3199,7 +3199,20 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    // Keep the actual moving trail; remove the decorative wavy multi-line effect.
   }else if(m==='sukunaHeadCarryThrow'){
    // Keep the thrower's hand animation and release particles; no decorative curse-like arc.
-  }else if(m==='sukunaHeadCarryLeap'){
+ // Level crossing where the north-south avenue meets the railway.
+ ctx.fillStyle='#252e37';ctx.fillRect(2250,CITY_RAIL_Y-49,300,98);
+ ctx.fillStyle='#d8d5c8';
+ for(let k=0;k<8;k++){const xx=2260+k*34;ctx.fillRect(xx,CITY_RAIL_Y-45,18,8);ctx.fillRect(xx,CITY_RAIL_Y+37,18,8)}
+ ctx.fillStyle='#d5b75f';ctx.fillRect(2260,CITY_RAIL_Y-53,280,4);ctx.fillRect(2260,CITY_RAIL_Y+49,280,4);
+ for(const [x,y] of [[2234,CITY_RAIL_Y-55],[2560,CITY_RAIL_Y+26]]){
+  ctx.fillStyle='#39474c';ctx.fillRect(x,y,9,48);ctx.fillStyle='#d7b56d';ctx.fillRect(x-5,y-7,19,11);ctx.fillStyle='#c85f59';ctx.fillRect(x-2,y-5,5,6);ctx.fillStyle='#efdfae';ctx.fillRect(x+5,y-5,5,6);
+ }
+ // Striped crossing arms and small warning lamps.
+ for(const y of [CITY_RAIL_Y-42,CITY_RAIL_Y+34]){
+  ctx.fillStyle='#d9d5c5';ctx.fillRect(2280,y,240,7);
+  for(let k=0;k<10;k++){ctx.fillStyle=k%2?'#c85f59':'#f1e4c7';ctx.fillRect(2280+k*24,y,12,7)}
+ }
+ }else if(m==='sukunaHeadCarryLeap'){
    // The opponent's flight is shown by the character motion and the actual player trailStrokes only.
   }else if(m==='sukunaHeadCarrySlam'){
    ctx.globalAlpha=vfxFade*(.45+.4*pulse);ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-9,-42);ctx.lineTo(24,5);ctx.lineTo(53,23);ctx.moveTo(40,-38);ctx.lineTo(14,4);ctx.stroke();
