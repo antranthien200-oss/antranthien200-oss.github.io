@@ -1072,11 +1072,11 @@ function playAwakeningCutscene(f){
  $('awakenCutsceneSubtitle').textContent=(f.char==='vessel'?'KING OF CURSES':c.awakeName)+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
  el.classList.remove('active','vessel-dialogue');
- el._speaker=f;el._phase=f.char==='vessel'?'dialogue':'single';
+ el._speaker=f;el._phase=f.char==='vessel'?'king-popup':'single';
  if(f.char==='vessel'){
-  // Hold Sukuna's actual awakening move until both original popup stages have finished.
+  // Show the original centered KING OF CURSES popup first.
+  // The manga dialogue and transformation are deliberately held until it finishes.
   f.motion=null;f.attackAnim=0;f.attackType='';
-  el.classList.add('vessel-dialogue');
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
  el.style.left='0px';el.style.top='0px';
@@ -2685,13 +2685,14 @@ function update(dt){if(game.cutsceneTimer>0){
  game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);
  game.shake=Math.max(0,game.shake-dt*22);
  if(game.cutsceneTimer===0){
-  if(speaker&&speaker.char==='vessel'&&cutscene._phase==='dialogue'){
-   // Restore the original centered KING OF CURSES popup after the small manga dialogue.
-   cutscene.classList.remove('active','vessel-dialogue');void cutscene.offsetWidth;cutscene.classList.add('active');
-   cutscene._phase='king-popup';game.cutsceneTimer=1.55;game.shake=10;
-  }else if(speaker&&speaker.char==='vessel'&&cutscene._phase==='king-popup'){
-   // Only after the KING OF CURSES popup clears, play Sukuna's awakening animation.
-   cutscene.classList.remove('active');cutscene._phase='awakening-motion';
+  if(speaker&&speaker.char==='vessel'&&cutscene._phase==='king-popup'){
+   // The centered KING OF CURSES title is finished: show the manga dialogue second.
+   cutscene.classList.remove('active');cutscene.classList.add('vessel-dialogue');
+   void cutscene.offsetWidth;cutscene.classList.add('active');
+   cutscene._phase='dialogue';game.cutsceneTimer=1.55;game.shake=10;
+  }else if(speaker&&speaker.char==='vessel'&&cutscene._phase==='dialogue'){
+   // Only after the manga dialogue also clears, begin Sukuna's awakening animation.
+   cutscene.classList.remove('active','vessel-dialogue');cutscene._phase='awakening-motion';
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=13;
   }else{
