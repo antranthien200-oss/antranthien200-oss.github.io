@@ -4017,7 +4017,7 @@ function getDomainPopupArtwork(f,stripHeight){
    artCtx.fillStyle='#090d16';artCtx.fillRect(0,0,artW,artH);
    const cx=artW*.5,cy=artH*.5,r=Math.max(artH*.92,artW*.29);
    if(type==='void')drawVoidDomainInterior(cx,cy,r);
-   else if(type==='shrine'){drawShrineDomainInterior(cx,cy,r);drawSukunaPagoda(artW,artH,3.075,1.95);}
+   else if(type==='shrine'){drawShrineDomainInterior(cx,cy,r);drawSukunaPagoda(artW,artH,3.075,1.95,true);}
    else if(type==='soul')drawSoulDomainInterior(cx,cy,r);
    else if(type==='hakari')drawHakariDomainInterior(cx,cy,r,f);
    else if(type==='yuta')drawYutaDomainInterior(cx,cy,r,f);
@@ -4307,8 +4307,8 @@ function getYujiSmokeBackgroundCache(w,h){
 }
 
 const sukunaPagodaCache=new Map();
-function drawSukunaPagodaArchitecture(w,h,sizeX=1,sizeY=1){
- const baseScale=Math.min(w*.65/680,h*.345/430),sx=baseScale*sizeX,sy=baseScale*sizeY,width=680*sx,height=430*sy,left=(w-width)*.5,ringCenterY=yujiDomainSmokeEdge(w*.5,h,0),referenceHeight=430*baseScale*1.30,top=Math.max(0,ringCenterY-(height-referenceHeight)*.5-height*(428/430));
+function drawSukunaPagodaArchitecture(w,h,sizeX=1,sizeY=1,popupLayout=false){
+ const baseScale=Math.min(w*.65/680,h*.345/430),sx=baseScale*sizeX,sy=baseScale*sizeY,width=680*sx,height=430*sy,left=(w-width)*.5,ringCenterY=yujiDomainSmokeEdge(w*.5,h,0),referenceHeight=430*baseScale*1.30,defaultTop=ringCenterY-height*(428/430),popupTop=Math.max(0,ringCenterY-(height-referenceHeight)*.5-height*(428/430)),top=popupLayout?popupTop:defaultTop;
  ctx.save();ctx.translate(left,top);ctx.scale(sx,sy);
  ctx.globalAlpha=.48;ctx.fillStyle='#020205';ctx.beginPath();ctx.ellipse(340,414,338,27,0,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
  const poly=(pts,fill,stroke='#130c12',line=5)=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=line;ctx.stroke()}};
@@ -4347,12 +4347,12 @@ function drawSukunaPagodaArchitecture(w,h,sizeX=1,sizeY=1){
  for(const item of [[48,387,.78],[76,376,.9],[105,390,.76],[128,378,.65],[552,390,.76],[577,376,.9],[606,387,.78],[632,378,.65]])skull(item[0],item[1],item[2]);
  ctx.restore();
 }
-function drawSukunaPagoda(w,h,sizeX=1,sizeY=1){
- const key=w+'x'+h+'x'+sizeX+'x'+sizeY;let canvas=sukunaPagodaCache.get(key);
+function drawSukunaPagoda(w,h,sizeX=1,sizeY=1,popupLayout=false){
+ const key=w+'x'+h+'x'+sizeX+'x'+sizeY+'x'+(popupLayout?1:0);let canvas=sukunaPagodaCache.get(key);
  if(!canvas){
   canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
   const screenCtx=ctx,offscreenCtx=canvas.getContext('2d');ctx=offscreenCtx;
-  try{ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;drawSukunaPagodaArchitecture(w,h,sizeX,sizeY)}
+  try{ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';ctx.shadowBlur=0;drawSukunaPagodaArchitecture(w,h,sizeX,sizeY,popupLayout)}
   finally{ctx=screenCtx}
   sukunaPagodaCache.set(key,canvas);
  }
