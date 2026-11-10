@@ -949,7 +949,7 @@ const destructibles=[
  {x:3010,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
  {x:3085,y:1595,w:58,h:58,hp:3,color:'#b8a27c'}
 ].map((o,i)=>({...o,id:i,alive:true}));
-const parkedCars=Array.from({length:11},(_,i)=>({id:i,x:1601+i*108,y:1635,homeX:1601+i*108,homeY:1635,angle:0,vx:0,vy:0,speed:0,maxSpeed:680,maxReverse:210,color:['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'][i%6],highlight:['#d99c8d','#a8c3d0','#dfc891','#a7c7a9','#c0acd0','#e1e5e4'][i%6],occupied:false,destroyed:false,skidTimer:0,skidMarks:[]}));
+const parkedCars=Array.from({length:11},(_,i)=>({id:i,x:1601+i*108,y:1635,homeX:1601+i*108,homeY:1635,angle:0,vx:0,vy:0,speed:0,maxSpeed:680,maxReverse:210,color:['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'][i%6],highlight:['#d99c8d','#a8c3d0','#dfc891','#a7c7a9','#c0acd0','#e1e5e4'][i%6],occupied:false,destroyed:false,skidTimer:0,hitEnemyCooldown:0,hitDummyCooldown:0,skidMarks:[]}));
 const particles=[],projectiles=[],debris=[],texts=[],doorTraps=[],trailStrokes=[],fireZones=[];
 const nativeProjectilePush=projectiles.push.bind(projectiles);
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)})));
@@ -1983,6 +1983,7 @@ function updateTrashManEffects(f,dt){
 }
 function useAttack(f,kind){
  if(f===player&&PREVIEW_ADMIN_MODE){f.attackCd=0;if(Array.isArray(f.skillCd))f.skillCd.fill(0);f.specialCd=0;f.dashCd=0;f.gojoDomain02Cd=0;}
+ if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||f.vehicle||game.cutsceneTimer>0)return;
  if(f.vesselAwakenSequence)return;
  if(f.sukunaFireCast>0)return;
@@ -2899,13 +2900,13 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);
  ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);
  ctx.stroke();ctx.setLineDash([]);
- // Four matching zebra crossings, using the same plain painted bars as the original pair.
+ // Four zebra crossings rotated 90 degrees so the painted bars run in the requested direction.
  ctx.fillStyle='#e8e5d5';
  for(let i=0;i<8;i++){
-  ctx.fillRect(roadX-124+i*15,roadY+24,9,roadH-48);
-  ctx.fillRect(roadX+roadW+17+i*15,roadY+24,9,roadH-48);
-  ctx.fillRect(roadX+34,roadY-122+i*12,roadW-68,8);
-  ctx.fillRect(roadX+34,roadY+roadH+22+i*12,roadW-68,8);
+  ctx.fillRect(roadX-124,roadY+24+i*24,110,9);
+  ctx.fillRect(roadX+roadW+17,roadY+24+i*24,110,9);
+  ctx.fillRect(roadX+34+i*24,roadY-122,9,100);
+  ctx.fillRect(roadX+34+i*24,roadY+roadH+22,9,100);
  }
  // Original lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
@@ -2965,14 +2966,12 @@ function drawMap(){if(isFullScreenDomainActive())return;
  for(const [lx,ly] of [[1080,590],[1420,590],[1080,940],[1420,940]]){ctx.fillStyle='#27333b';ctx.fillRect(lx-3,ly-4,6,31);ctx.fillStyle='#e1edcf';ctx.fillRect(lx-8,ly-12,16,8);ctx.fillStyle='#f2d99a24';ctx.beginPath();ctx.arc(lx,ly-8,25,0,Math.PI*2);ctx.fill()}
  // Manholes and drains only on asphalt.
  for(const [mx,my] of [[700,765],[1250,280],[1900,765],[1250,1220],[2600,765]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
- // Original narrow traffic-light casing, extended with one matching circular lamp.
+ // Original traffic-light design, with a red lamp added above the original yellow and green lamps.
  for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){
-  ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,43);
-  ctx.strokeStyle='#19232b';ctx.lineWidth=1;ctx.strokeRect(sx0,sy0,12,43);
-  for(const [color,cy] of [['#ef4650',sy0+7],['#e6ca75',sy0+21],['#7ee0a9',sy0+35]]){
-   ctx.fillStyle='#111a20';ctx.beginPath();ctx.arc(sx0+6,cy,4.2,0,Math.PI*2);ctx.fill();
-   ctx.fillStyle=color;ctx.beginPath();ctx.arc(sx0+6,cy,3,0,Math.PI*2);ctx.fill();
-  }
+  ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);
+  ctx.fillStyle='#ef4650';ctx.fillRect(sx0+3,sy0+2,6,6);
+  ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+12,6,6);
+  ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+22,6,6);
  }
 
  // Neighbourhood park retained from the newer map addition.
@@ -3143,6 +3142,8 @@ function collideVehicleWorld(car,oldX,oldY){
 }
 function updateDrivenVehicle(f,dt){
  const car=f.vehicle;if(!car||car.destroyed){f.vehicle=null;return}
+ car.hitEnemyCooldown=Math.max(0,(car.hitEnemyCooldown||0)-dt);
+ car.hitDummyCooldown=Math.max(0,(car.hitDummyCooldown||0)-dt);
  const steer=(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
  const forward=movementKeys.has('w')||movementKeys.has('arrowup');
  const reverse=movementKeys.has('s')||movementKeys.has('arrowdown');
@@ -3159,6 +3160,19 @@ function updateDrivenVehicle(f,dt){
  car.vx=lerp(car.vx,headingX*car.speed,clamp(grip*dt,0,1));
  car.vy=lerp(car.vy,headingY*car.speed,clamp(grip*dt,0,1));
  const oldX=car.x,oldY=car.y;car.x+=car.vx*dt;car.y+=car.vy*dt;collideVehicleWorld(car,oldX,oldY);
+ if(Math.abs(car.speed)>95){
+  const speedRatio=clamp((Math.abs(car.speed)-95)/(car.maxSpeed-95),0,1);
+  for(const target of [enemy,trainingDummy]){
+   if(!target||target.dead||target.team===f.team)continue;
+   const cooldownKey=target.isTrainingDummy?'hitDummyCooldown':'hitEnemyCooldown';
+   if(car[cooldownKey]>0||Math.hypot(car.x-target.x,car.y-target.y)>52)continue;
+   const hitDamage=Math.round(10+22*speedRatio),push=5+speedRatio*7;
+   damage(target,hitDamage,f,{stun:.5+speedRatio*.45,kx:headingX*push,ky:headingY*push,color:'#e8c27c',big:speedRatio>.72,ignoreInvuln:true,unblockable:true,damageType:'vehicle'});
+   car[cooldownKey]=.68;
+   burst(car.x,car.y,'#e8c27c',12,4);
+   popText(target.x,target.y-56,'CAR HIT','#ffe0a0',13);
+  }
+ }
  if(drifting&&Math.abs(car.speed)>150){
   car.skidTimer-=dt;if(car.skidTimer<=0){
    car.skidTimer=.045;
@@ -3185,7 +3199,7 @@ function toggleCityVehicle(f){
  showToast('DRIVE · WASD TO STEER · HOLD W TO ACCELERATE · SPACE TO DRIFT · E TO EXIT',1600);return true;
 }
 function resetCityVehicles(){
- for(const car of parkedCars){car.x=car.homeX;car.y=car.homeY;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.occupied=false;car.destroyed=false;car.skidTimer=0;car.skidMarks.length=0}
+ for(const car of parkedCars){car.x=car.homeX;car.y=car.homeY;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.occupied=false;car.destroyed=false;car.skidTimer=0;car.hitEnemyCooldown=0;car.hitDummyCooldown=0;car.skidMarks.length=0}
 }
 
 function drawLimb(x,y,len,w,angle,color,edge){
