@@ -800,7 +800,8 @@ function resize(){const rotated=isManualScreenRotated(),root=document.documentEl
 function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:innerWidth-x}:{x,y}}
 function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
 addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();
-const WORLD={w:3300,h:1700};
+const WORLD={w:3300,h:2000};
+const CITY_TRAIN_TRACK_Y=1810,CITY_MAIN_ROAD_X=1100,CITY_MAIN_ROAD_W=300;
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -1725,6 +1726,75 @@ function drawTrashCan(x,y,scale=1,angle=0,flash=0){
 function drawThrowableProps(){
  for(const prop of trashCans){if(prop.carried)continue;drawTrashCan(prop.x,prop.y,1,0,prop.flash||0);if(prop.flash>0)prop.flash=Math.max(0,prop.flash-.016);if(player&&!player.dead&&dist(player,prop)<112){ctx.save();ctx.fillStyle='#f2f7ff';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('E  PICK UP',sx(prop.x),sy(prop.y)-27);ctx.restore()}}
  if(player&&player.carryingTrashCan){const f=player,a=f.face;drawTrashCan(f.x+Math.cos(a)*28,f.y+Math.sin(a)*28,.94,a,0)}
+}
+function drawCityTrainCar(centerX,trackY,isLocomotive=false,variant=0){
+ const x=sx(centerX),y=sy(trackY),length=180,half=length/2;
+ ctx.save();ctx.translate(x,y);
+ ctx.fillStyle='#111a20';ctx.fillRect(-half-3,-37,length+6,74);
+ ctx.fillStyle=isLocomotive?'#c98743':(variant?'#8eaab5':'#aebbc0');
+ ctx.fillRect(-half,-34,length,68);
+ ctx.strokeStyle='#26343c';ctx.lineWidth=3;ctx.strokeRect(-half,-34,length,68);
+ ctx.fillStyle=isLocomotive?'#d9a45c':'#637f8c';
+ ctx.fillRect(-half+13,-23,length-26,46);
+ ctx.fillStyle=isLocomotive?'#9a5d32':'#425a66';
+ ctx.fillRect(-half+24,-17,length-48,34);
+ ctx.fillStyle='#d0d8d7';ctx.fillRect(-half+35,-3,length-70,6);
+ for(let wx=-half+24;wx<half-16;wx+=34){
+  ctx.fillStyle='#172b39';ctx.fillRect(wx,-31,23,10);ctx.fillRect(wx,21,23,10);
+  ctx.fillStyle='#87b8c7';ctx.fillRect(wx+3,-29,17,3);ctx.fillRect(wx+3,23,17,3);
+ }
+ for(const bx of [-half+35,half-35]){
+  ctx.fillStyle='#151d23';ctx.fillRect(bx-13,-34,26,13);ctx.fillRect(bx-13,21,26,13);
+  ctx.fillStyle='#7f8b90';ctx.fillRect(bx-8,-32,16,8);ctx.fillRect(bx-8,24,16,8);
+ }
+ if(isLocomotive){
+  ctx.fillStyle='#c98743';ctx.beginPath();ctx.moveTo(half-2,-31);ctx.lineTo(half+19,-21);ctx.lineTo(half+25,0);ctx.lineTo(half+19,21);ctx.lineTo(half-2,31);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#26343c';ctx.lineWidth=3;ctx.stroke();
+  ctx.fillStyle='#172b39';ctx.fillRect(half-28,-23,16,46);
+  ctx.fillStyle='#fff1bd';ctx.fillRect(half+12,-16,7,8);ctx.fillRect(half+12,8,7,8);
+  ctx.fillStyle='#a73438';ctx.fillRect(-half+10,-28,15,56);
+ }else{
+  ctx.fillStyle='#e4e9e6';ctx.fillRect(-half+7,-28,8,56);
+  ctx.fillStyle='#394b55';ctx.fillRect(half-15,-28,8,56);
+ }
+ ctx.restore();
+}
+function drawCityTrain(){
+ const sinceStart=game.time-18;
+ let cycle=-1;
+ if(sinceStart>=0)cycle=sinceStart%62;
+ const warning=cycle>=0&&cycle<14.5;
+ const trainElapsed=cycle-2.2;
+ const trainMoving=trainElapsed>=0&&trainElapsed<12;
+ if(trainMoving){
+  const engineX=-80+trainElapsed*340;
+  drawCityTrainCar(engineX-380,CITY_TRAIN_TRACK_Y,false,1);
+  drawCityTrainCar(engineX-190,CITY_TRAIN_TRACK_Y,false,0);
+  drawCityTrainCar(engineX,CITY_TRAIN_TRACK_Y,true,0);
+ }
+ const blink=warning&&Math.floor(game.time*7)%2===0;
+ const gateY=[CITY_TRAIN_TRACK_Y-94,CITY_TRAIN_TRACK_Y+94];
+ for(const y of gateY){
+  for(const px of [CITY_MAIN_ROAD_X-22,CITY_MAIN_ROAD_X+CITY_MAIN_ROAD_W+6]){
+   const x=sx(px),py=sy(y);
+   ctx.save();ctx.translate(x,py);
+   ctx.fillStyle='#202a31';ctx.fillRect(-8,-14,16,28);
+   ctx.fillStyle='#687980';ctx.fillRect(-4,-18,8,36);
+   ctx.fillStyle=blink?'#ff3948':'#8e3339';ctx.fillRect(-7,-13,14,10);
+   ctx.fillStyle=warning?'#e7c36d':'#527c62';ctx.fillRect(-6,3,12,8);
+   ctx.restore();
+  }
+  if(warning){
+   const x=sx(CITY_MAIN_ROAD_X-14),py=sy(y);
+   ctx.save();ctx.translate(x,py);
+   ctx.fillStyle='#262d32';ctx.fillRect(-2,-6,CITY_MAIN_ROAD_W+28,12);
+   for(let stripe=0;stripe<12;stripe++){
+    ctx.fillStyle=stripe%2===0?'#d8d9d2':'#c23b43';
+    ctx.fillRect(stripe*(CITY_MAIN_ROAD_W+28)/12,-5,(CITY_MAIN_ROAD_W+28)/12-2,10);
+   }
+   ctx.restore();
+  }
+ }
 }
 function drawTrainingDummy(){
  if(!trainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
@@ -2899,6 +2969,33 @@ function drawMap(){if(isFullScreenDomainActive())return;
  for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+4,6,6);ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+17,6,6)}
  // Small wooden cargo crates, not oversized boxes scattered through the streets.
  for(const o of destructibles){if(!o.alive)continue;ctx.fillStyle='#151e25aa';ctx.fillRect(o.x+5,o.y+7,o.w,o.h);ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.fillStyle='#e3d1ae';ctx.fillRect(o.x+4,o.y+4,o.w-8,5);ctx.strokeStyle='#554b3e';ctx.lineWidth=2;ctx.strokeRect(o.x,o.y,o.w,o.h);ctx.strokeStyle='#80684b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o.x+7,o.y+9);ctx.lineTo(o.x+o.w-7,o.y+o.h-9);ctx.moveTo(o.x+o.w-7,o.y+9);ctx.lineTo(o.x+7,o.y+o.h-9);ctx.stroke();if(o.hp<3){ctx.strokeStyle='#282c2c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o.x+o.w*.5,o.y+4);ctx.lineTo(o.x+o.w*.34,o.y+o.h*.5);ctx.lineTo(o.x+o.w*.65,o.y+o.h-5);ctx.stroke()}}
+ // Railway corridor on the south edge, beyond every building and the training courtyard.
+ // The north-south avenue crosses the line at a marked level crossing.
+ const railTop=CITY_TRAIN_TRACK_Y-64;
+ ctx.fillStyle='#303a40';ctx.fillRect(0,railTop,WORLD.w,128);
+ ctx.fillStyle='#414a4e';ctx.fillRect(0,railTop+8,WORLD.w,112);
+ for(let tx=12;tx<WORLD.w;tx+=38){
+  ctx.fillStyle='#292f32';ctx.fillRect(tx,CITY_TRAIN_TRACK_Y-51,11,102);
+  ctx.fillStyle='#59635f';ctx.fillRect(tx+2,CITY_TRAIN_TRACK_Y-48,7,96);
+ }
+ for(const offset of [-31,31]){
+  const railY=CITY_TRAIN_TRACK_Y+offset;
+  ctx.fillStyle='#151d22';ctx.fillRect(0,railY-6,WORLD.w,12);
+  ctx.fillStyle='#aebbc0';ctx.fillRect(0,railY-3,WORLD.w,6);
+  ctx.fillStyle='#68777c';ctx.fillRect(0,railY-1,WORLD.w,2);
+ }
+ // Road stop lines and permanent crossing markers.
+ ctx.fillStyle='#e9e6d9';
+ ctx.fillRect(roadX+12,CITY_TRAIN_TRACK_Y-104,roadW-24,5);
+ ctx.fillRect(roadX+12,CITY_TRAIN_TRACK_Y+99,roadW-24,5);
+ for(const [postX,postY] of [[roadX-22,CITY_TRAIN_TRACK_Y-94],[roadX+roadW+6,CITY_TRAIN_TRACK_Y-94],[roadX-22,CITY_TRAIN_TRACK_Y+70],[roadX+roadW+6,CITY_TRAIN_TRACK_Y+70]]){
+  ctx.fillStyle='#253039';ctx.fillRect(postX,postY,16,28);
+  ctx.fillStyle='#e7e3d3';ctx.fillRect(postX+3,postY+3,10,3);
+  ctx.fillStyle='#c7353e';ctx.fillRect(postX+3,postY+9,10,8);
+  ctx.fillStyle='#d4b56f';ctx.fillRect(postX+3,postY+19,10,5);
+ }
+ ctx.fillStyle='#f0e4bc';ctx.font='900 11px system-ui';ctx.textAlign='center';
+ ctx.fillText('RAIL CROSSING',roadX+roadW/2,CITY_TRAIN_TRACK_Y-111);
  // District frame and clear location sign.
  ctx.strokeStyle='#a6c7c4';ctx.lineWidth=5;ctx.strokeRect(18,18,WORLD.w-36,WORLD.h-36);ctx.fillStyle='#17232c';ctx.fillRect(38,38,290,33);ctx.fillStyle='#c3e0db';ctx.font='900 13px system-ui';ctx.textAlign='left';ctx.fillText('TOKYO · CURSED CITY DISTRICT 07',50,60);
  ctx.restore();
@@ -5048,7 +5145,7 @@ function draw(){
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawDomainBackdrops();
- if(!isFullScreenDomainActive()){drawMap();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
+ if(!isFullScreenDomainActive()){drawMap();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
