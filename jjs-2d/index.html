@@ -926,19 +926,19 @@ const scheduledTasks=[];
 function schedule(fn,delayMs){scheduledTasks.push({at:game.time+Math.max(0,delayMs)/1000,fn});}
 function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(scheduledTasks[i].at<=game.time){const task=scheduledTasks.splice(i,1)[0];try{task.fn()}catch(err){console.error('Delayed game action failed:',err)}}}}
 const staticBuildings=[
- {x:80,y:70,w:365,h:215,c:'#c5a49c',name:'SHOP'},
- {x:600,y:70,w:365,h:215,c:'#d7c39e',name:'CAFE'},
- {x:80,y:380,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
- {x:600,y:380,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
- {x:1520,y:70,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
- {x:2240,y:70,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
- {x:1520,y:380,w:410,h:190,c:'#c0bda9',name:'STATION'},
- {x:2240,y:380,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
- {x:80,y:1000,w:365,h:210,c:'#c6b896',name:'MARKET'},
- {x:600,y:1000,w:365,h:210,c:'#c5a9a9',name:'STORE'},
- {x:80,y:1320,w:365,h:190,c:'#b6c7c3',name:'GARAGE'},
- {x:600,y:1320,w:365,h:190,c:'#c8b7a2',name:'CLINIC'},
- {x:2740,y:1000,w:330,h:390,c:'#b9c6b6',name:'GYM'}
+ {x:95,y:65,w:365,h:215,c:'#c5a49c',name:'SHOP'},
+ {x:590,y:80,w:365,h:215,c:'#d7c39e',name:'CAFE'},
+ {x:115,y:340,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
+ {x:620,y:340,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
+ {x:1535,y:70,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
+ {x:2220,y:60,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
+ {x:1555,y:340,w:410,h:190,c:'#c0bda9',name:'STATION'},
+ {x:2250,y:330,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
+ {x:95,y:1020,w:365,h:210,c:'#c6b896',name:'MARKET'},
+ {x:610,y:1030,w:365,h:210,c:'#c5a9a9',name:'STORE'},
+ {x:130,y:1365,w:365,h:190,c:'#b6c7c3',name:'GARAGE'},
+ {x:625,y:1375,w:365,h:190,c:'#c8b7a2',name:'CLINIC'},
+ {x:2740,y:1035,w:330,h:390,c:'#b9c6b6',name:'GYM'}
 ];
 staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});
 const destructibles=[
@@ -951,14 +951,14 @@ const destructibles=[
 const particles=[],projectiles=[],debris=[],texts=[],doorTraps=[],trailStrokes=[],fireZones=[];
 const nativeProjectilePush=projectiles.push.bind(projectiles);
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)})));
-const trashCanSpawns=[{x:1000,y:560},{x:1500,y:600},{x:1800,y:1370},{x:1000,y:920},{x:2320,y:815}];
+const trashCanSpawns=[{x:270,y:593},{x:750,y:593},{x:1920,y:593},{x:2400,y:949},{x:1051,y:255}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaKatanas:[],yutaHeldKatana:null,yutaKatanaSpawnTimer:0,yutaLadder:null,yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,sukunaFireCast:0,sukunaFireSerial:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
-function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1800,1150);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay)comboDisplay.classList.remove('active','pop','hot');game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});mapCacheDirty=true;resetTrashCans();camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
+function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1860,1190);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay)comboDisplay.classList.remove('active','pop','hot');game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});mapCacheDirty=true;resetTrashCans();camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
 function startGame(){resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
 
@@ -1695,13 +1695,13 @@ function settleThrownCan(p){if(!p||p.kind!=='trashCan'||!p.propRef||p.propRef.ca
 function updateTrashCanRespawns(dt){for(const prop of trashCans){if(prop.carried!=='cooldown')continue;prop.respawnTimer=Math.max(0,(prop.respawnTimer||0)-dt);if(prop.respawnTimer<=0){prop.carried=false;prop.x=prop.homeX;prop.y=prop.homeY;prop.flash=.8;burst(prop.x,prop.y,'#c5d0d9',12,2.5);}}}
 function updateTrainingDummy(dt){
  if(!trainingDummy)return;
- if(trainingDummy.dead){trainingDummy.respawn-=dt;if(trainingDummy.respawn<=0){trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.x=1800;trainingDummy.y=1150;burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14)}return}
+ if(trainingDummy.dead){trainingDummy.respawn-=dt;if(trainingDummy.respawn<=0){trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.x=1860;trainingDummy.y=1190;burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14)}return}
  // The dummy is an inert NPC: it never attacks, blocks, counters, or starts a skill.
  trainingDummy.aiDisabled=true;trainingDummy.block=false;trainingDummy.counterWindow=0;trainingDummy.counterKind='';
  trainingDummy.attackAnim=0;trainingDummy.attackType='';trainingDummy.motion=null;trainingDummy.domainWindup=0;trainingDummy.domainTimer=0;trainingDummy.grabTarget=null;trainingDummy.counterWindow=0;trainingDummy.skillCd=[999,999,999,999];trainingDummy.specialCd=999;
  trainingDummy.stun=Math.max(0,trainingDummy.stun-dt);trainingDummy.invuln=Math.max(0,trainingDummy.invuln-dt);trainingDummy.flash=Math.max(0,trainingDummy.flash-dt);updateTenEffects(trainingDummy,dt);
  trainingDummy.vx*=Math.pow(.72,dt*60);trainingDummy.vy*=Math.pow(.72,dt*60);
- trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1740,1860);trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1100,1210);
+ trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1800,1920);trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1130,1250);
 }
 function drawTrashCan(x,y,scale=1,angle=0,flash=0){
  ctx.save();ctx.translate(sx(x),sy(y));ctx.rotate(angle);ctx.scale(scale,scale);
@@ -2772,7 +2772,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#26313a';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
  // Base city surface and orderly concrete pavers.
  ctx.fillStyle='#3d4850';ctx.fillRect(0,0,WORLD.w,WORLD.h);
- for(let y=0;y<WORLD.h;y+=64){for(let x=0;x<WORLD.w;x+=64){ctx.fillStyle=((x/64+y/64)%2===0)?'#46525a':'#414c54';ctx.fillRect(x,y,62,62);ctx.strokeStyle='#526069';ctx.lineWidth=1;ctx.strokeRect(x,y,62,62)}}
+ ctx.fillStyle='#414b50';ctx.fillRect(0,0,WORLD.w,WORLD.h);ctx.strokeStyle='#49565a';ctx.lineWidth=1;for(let x=120;x<WORLD.w;x+=180){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,WORLD.h);ctx.stroke()}for(let y=110;y<WORLD.h;y+=150){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(WORLD.w,y);ctx.stroke()}
  // Grass verge and outer curb.
  ctx.fillStyle='#526d58';ctx.fillRect(0,0,WORLD.w,23);ctx.fillRect(0,WORLD.h-23,WORLD.w,23);ctx.fillRect(0,0,23,WORLD.h);ctx.fillRect(WORLD.w-23,0,23,WORLD.h);
  // Two broad avenues meet at a clean, clearly marked intersection.
@@ -2789,27 +2789,35 @@ function drawMap(){if(isFullScreenDomainActive())return;
  // Small lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
  ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,575,1],[1250,955,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
- // Dedicated southeast training courtyard: no roadway or house overlaps.
- ctx.fillStyle='#778a89';ctx.fillRect(1450,950,700,430);
- ctx.fillStyle='#aab6b1';ctx.fillRect(1460,960,680,410);
- for(let y=972;y<1360;y+=44){for(let x=1472;x<2128;x+=44){ctx.fillStyle=((x/44+y/44)%2===0)?'#b3beb8':'#a4b1ac';ctx.fillRect(x,y,41,41);ctx.strokeStyle='#8b9995';ctx.lineWidth=1;ctx.strokeRect(x,y,41,41)}}
- ctx.strokeStyle='#e3e1d5';ctx.lineWidth=6;ctx.strokeRect(1474,974,652,382);ctx.strokeStyle='#658d86';ctx.lineWidth=2;ctx.strokeRect(1487,987,626,356);
- ctx.fillStyle='#638d83';ctx.fillRect(1735,1150,130,3);ctx.fillRect(1798,1088,3,124);
- ctx.strokeStyle='#73a99b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(1800,1150,78,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1800,1150,58,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1800,1150,36,0,Math.PI*2);ctx.stroke();
- ctx.fillStyle='#4f7c75';ctx.font='1000 12px system-ui';ctx.textAlign='center';ctx.fillText('TRAINING COURTYARD',1800,1330);
- // Dedicated paved setbacks around every building; the exposed apron reads as real sidewalk space.
- for(const b of staticBuildings){
-  const pad=40,px=b.x-pad,py=b.y-pad,pw=b.w+pad*2,ph=b.h+pad*2;
-  ctx.fillStyle='#778582';ctx.fillRect(px,py,pw,ph);
-  for(let row=0,ty=py+5;ty<py+ph-5;ty+=30,row++){
-   for(let tx=px+5+(row%2)*15;tx<px+pw-5;tx+=30){
-    ctx.fillStyle=((Math.floor((tx-px)/30)+row)%2===0)?'#9ba9a3':'#899892';
-    ctx.fillRect(tx,ty,26,26);
-   }
-  }
-  ctx.strokeStyle='#d0d8ca';ctx.lineWidth=4;ctx.strokeRect(px+2,py+2,pw-4,ph-4);
-  ctx.strokeStyle='#45545a';ctx.lineWidth=2;ctx.strokeRect(b.x-3,b.y-3,b.w+6,b.h+6);
+ // Continuous plain-concrete sidewalks on both sides of both avenues.
+ // Each strip stops at the crossing road; the four corners meet without painting over asphalt.
+ const sidewalkStrips=[
+  {x:0,y:roadY-77,w:roadX-17,h:60,horizontal:true},
+  {x:roadX+roadW+17,y:roadY-77,w:WORLD.w-roadX-roadW-17,h:60,horizontal:true},
+  {x:0,y:roadY+roadH+17,w:roadX-17,h:60,horizontal:true},
+  {x:roadX+roadW+17,y:roadY+roadH+17,w:WORLD.w-roadX-roadW-17,h:60,horizontal:true},
+  {x:roadX-77,y:0,w:60,h:roadY-17,horizontal:false},
+  {x:roadX+roadW+17,y:0,w:60,h:roadY-17,horizontal:false},
+  {x:roadX-77,y:roadY+roadH+17,w:60,h:WORLD.h-roadY-roadH-17,horizontal:false},
+  {x:roadX+roadW+17,y:roadY+roadH+17,w:60,h:WORLD.h-roadY-roadH-17,horizontal:false}
+ ];
+ for(const s of sidewalkStrips){
+  ctx.fillStyle='#858f8a';ctx.fillRect(s.x,s.y,s.w,s.h);
+  ctx.strokeStyle='#aeb9b0';ctx.lineWidth=2;ctx.strokeRect(s.x+1,s.y+1,s.w-2,s.h-2);
+  ctx.strokeStyle='#727e79';ctx.lineWidth=1;ctx.beginPath();
+  if(s.horizontal){for(let x=s.x+90;x<s.x+s.w;x+=96){ctx.moveTo(x,s.y+5);ctx.lineTo(x,s.y+s.h-5)}}
+  else{for(let y=s.y+90;y<s.y+s.h;y+=96){ctx.moveTo(s.x+5,y);ctx.lineTo(s.x+s.w-5,y)}}
+  ctx.stroke();
  }
+ // Dedicated southeast training courtyard: no roadway or house overlaps.
+ ctx.fillStyle='#778a89';ctx.fillRect(1510,990,700,430);
+ ctx.fillStyle='#aab6b1';ctx.fillRect(1520,1000,680,410);
+ for(let y=1012;y<1400;y+=44){for(let x=1532;x<2188;x+=44){ctx.fillStyle=((x/44+y/44)%2===0)?'#b3beb8':'#a4b1ac';ctx.fillRect(x,y,41,41);ctx.strokeStyle='#8b9995';ctx.lineWidth=1;ctx.strokeRect(x,y,41,41)}}
+ ctx.strokeStyle='#e3e1d5';ctx.lineWidth=6;ctx.strokeRect(1534,1014,652,382);ctx.strokeStyle='#658d86';ctx.lineWidth=2;ctx.strokeRect(1547,1027,626,356);
+ ctx.fillStyle='#638d83';ctx.fillRect(1795,1190,130,3);ctx.fillRect(1858,1128,3,124);
+ ctx.strokeStyle='#73a99b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(1860,1190,78,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1860,1190,58,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1860,1190,36,0,Math.PI*2);ctx.stroke();
+ ctx.fillStyle='#4f7c75';ctx.font='1000 12px system-ui';ctx.textAlign='center';ctx.fillText('TRAINING COURTYARD',1860,1370);
+ // No checkerboard tiles or decorative square pads beneath building footprints; open city ground remains visible.
  // Uniform top-down buildings: clear curb, solid footprint, roof details, front entrance and a nameplate.
  for(const b of staticBuildings){
   const x=b.x,y=b.y,w=b.w,h=b.h;
@@ -2847,15 +2855,21 @@ function drawMap(){if(isFullScreenDomainActive())return;
   if(b.damageStage>=1){ctx.save();ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.lineCap='square';ctx.beginPath();ctx.moveTo(x+w*.21,y+h*.14);ctx.lineTo(x+w*.29,y+h*.27);ctx.lineTo(x+w*.25,y+h*.39);ctx.lineTo(x+w*.39,y+h*.52);ctx.stroke();ctx.strokeStyle='#f3e6c9';ctx.lineWidth=1.6;ctx.stroke();ctx.restore()}
   if(b.damageStage>=2){ctx.save();ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x+w*.75,y+h*.16);ctx.lineTo(x+w*.65,y+h*.3);ctx.lineTo(x+w*.72,y+h*.42);ctx.lineTo(x+w*.58,y+h*.57);ctx.moveTo(x+w*.13,y+h*.64);ctx.lineTo(x+w*.24,y+h*.72);ctx.lineTo(x+w*.2,y+h*.84);ctx.stroke();ctx.strokeStyle='#f0dfc3';ctx.lineWidth=1.4;ctx.stroke();ctx.restore();ctx.fillStyle='#3f4d55';ctx.fillRect(x+w*.48,y+h*.21,24,14)}
  }
- // Evenly spaced street trees in one straight line on the west pavement; leave the cross street clear.
- const trees=[[1010,135],[1010,320],[1010,505],[1010,1000],[1010,1185],[1010,1370]];
+ // Street trees form even rows along both sides of the east-west and north-south sidewalks.
+ // The rows pause at the road junction so canopies do not intrude into the crossing.
+ const trees=[
+  [150,605],[390,605],[630,605],[870,605],[1560,605],[1800,605],[2040,605],[2280,605],[2520,605],[2760,605],[3000,605],
+  [150,949],[390,949],[630,949],[870,949],[1560,949],[1800,949],[2040,949],[2280,949],[2520,949],[2760,949],[3000,949],
+  [1051,150],[1051,360],[1051,1010],[1051,1230],[1051,1450],
+  [1445,150],[1445,360],[1445,1010],[1445,1230],[1445,1450]
+ ];
  for(const [tx,ty] of trees){ctx.fillStyle='#202b31';ctx.fillRect(tx-18,ty-11,36,33);ctx.fillStyle='#557b5a';ctx.fillRect(tx-20,ty-32,40,34);ctx.fillStyle='#82a276';ctx.fillRect(tx-11,ty-42,22,17);ctx.fillStyle='#3e684d';ctx.fillRect(tx-28,ty-20,13,20);ctx.fillRect(tx+16,ty-22,13,20);ctx.fillStyle='#c4d2b7';ctx.fillRect(tx-23,ty+9,46,5);ctx.fillStyle='#5c655f';ctx.fillRect(tx-3,ty+12,6,17)}
  // Benches placed in pedestrian gaps.
- for(const [bx,by] of [[980,430],[980,1100],[2148,600],[2150,1370],[480,920]]){ctx.fillStyle='#232d34';ctx.fillRect(bx-25,by-6,50,10);ctx.fillStyle='#b38a61';ctx.fillRect(bx-23,by-5,46,5);ctx.fillStyle='#344047';ctx.fillRect(bx-19,by+4,4,10);ctx.fillRect(bx+15,by+4,4,10)}
+ for(const [bx,by] of [[500,590],[1900,590],[500,944],[1900,944]]){ctx.fillStyle='#232d34';ctx.fillRect(bx-25,by-6,50,10);ctx.fillStyle='#b38a61';ctx.fillRect(bx-23,by-5,46,5);ctx.fillStyle='#344047';ctx.fillRect(bx-19,by+4,4,10);ctx.fillRect(bx+15,by+4,4,10)}
  // Street lamps along curb corners.
- for(const [lx,ly] of [[1045,585],[1450,585],[1045,925],[1450,925],[2500,620],[50,930]]){ctx.fillStyle='#27333b';ctx.fillRect(lx-3,ly-4,6,31);ctx.fillStyle='#e1edcf';ctx.fillRect(lx-8,ly-12,16,8);ctx.fillStyle='#f2d99a24';ctx.beginPath();ctx.arc(lx,ly-8,25,0,Math.PI*2);ctx.fill()}
+ for(const [lx,ly] of [[1080,590],[1420,590],[1080,940],[1420,940]]){ctx.fillStyle='#27333b';ctx.fillRect(lx-3,ly-4,6,31);ctx.fillStyle='#e1edcf';ctx.fillRect(lx-8,ly-12,16,8);ctx.fillStyle='#f2d99a24';ctx.beginPath();ctx.arc(lx,ly-8,25,0,Math.PI*2);ctx.fill()}
  // Manholes and drains only on asphalt.
- for(const [mx,my] of [[700,765],[1250,315],[1900,765],[1250,1190],[450,765]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
+ for(const [mx,my] of [[700,765],[1250,280],[1900,765],[1250,1220],[2600,765]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
  // Traffic signals at the four curb corners.
  for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+4,6,6);ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+17,6,6)}
  // Small wooden cargo crates, not oversized boxes scattered through the streets.
