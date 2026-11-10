@@ -929,12 +929,12 @@ function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(sche
 const staticBuildings=[
  {x:95,y:50,w:365,h:215,c:'#c5a49c',name:'SHOP'},
  {x:590,y:55,w:365,h:215,c:'#d7c39e',name:'CAFE'},
- {x:115,y:350,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
- {x:620,y:350,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
+ {x:115,y:315,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
+ {x:620,y:315,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
  {x:1535,y:50,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
  {x:2220,y:45,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
- {x:1555,y:350,w:410,h:190,c:'#c0bda9',name:'STATION'},
- {x:2250,y:330,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
+ {x:1555,y:315,w:410,h:190,c:'#c0bda9',name:'STATION'},
+ {x:2250,y:315,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
  {x:95,y:1020,w:365,h:210,c:'#c6b896',name:'MARKET'},
  {x:610,y:1030,w:365,h:210,c:'#c5a9a9',name:'STORE'},
  {x:130,y:1365,w:365,h:190,c:'#b6c7c3',name:'GARAGE'},
@@ -1744,15 +1744,30 @@ function drawCityTrainCar(centerX,trackY,isLocomotive=false,variant=0){
  }
  ctx.restore();
 }
-function drawCityTrain(){
+function cityTrainTiming(){
  const sinceStart=game.time-18;
- let cycle=-1;
- if(sinceStart>=0)cycle=sinceStart%62;
- const warning=cycle>=0&&cycle<14.5;
- const trainElapsed=cycle-2.2;
- const trainMoving=trainElapsed>=0&&trainElapsed<12;
- if(trainMoving){
-  const engineX=-80+trainElapsed*340;
+ if(sinceStart<0)return {warning:false,engineX:null};
+ const cycle=sinceStart%62,elapsed=cycle-2.2;
+ return {warning:cycle>=0&&cycle<9.5,engineX:elapsed>=0&&elapsed<6.3?-80+elapsed*620:null};
+}
+function updateCityTrainImpact(){
+ const state=cityTrainTiming(),engineX=state.engineX;
+ if(engineX===null)return;
+ const carCenters=[engineX-380,engineX-190,engineX];
+ for(const f of [player,enemy]){
+  if(!f||f.dead||Math.abs(f.y-CITY_TRAIN_TRACK_Y)>54)continue;
+  if(!carCenters.some(cx=>Math.abs(f.x-cx)<=110))continue;
+  if(f===player)dropCarriedTrashCan(f);
+  damage(f,f.hp+1,null,{unblockable:true,ignoreInvuln:true,big:true,stun:.7,kx:0,ky:0,damageType:'environment',color:'#f04b55'});
+  f.vx=0;f.vy=0;
+  popText(f.x,f.y-63,'STRUCK BY TRAIN','#ff6670',18);
+  showToast(f===player?'HIT BY TRAIN':'OPPONENT HIT BY TRAIN',900);
+  game.shake=Math.max(game.shake,10);game.hitStop=Math.max(game.hitStop,.045);
+ }
+}
+function drawCityTrain(){
+ const {warning,engineX}=cityTrainTiming();
+ if(engineX!==null){
   drawCityTrainCar(engineX-380,CITY_TRAIN_TRACK_Y,false,1);
   drawCityTrainCar(engineX-190,CITY_TRAIN_TRACK_Y,false,0);
   drawCityTrainCar(engineX,CITY_TRAIN_TRACK_Y,true,0);
@@ -1781,6 +1796,7 @@ function drawCityTrain(){
   }
  }
 }
+
 function drawTrainingDummy(){
  if(!trainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
  const d=trainingDummy,x=sx(d.x),y=sy(d.y);
@@ -2823,7 +2839,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -2850,15 +2866,39 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#252e37';ctx.fillRect(0,roadY,WORLD.w,roadH);ctx.fillRect(roadX,0,roadW,WORLD.h);
  ctx.fillStyle='#687680';ctx.fillRect(0,roadY-17,WORLD.w,17);ctx.fillRect(0,roadY+roadH,WORLD.w,17);ctx.fillRect(roadX-17,0,17,WORLD.h);ctx.fillRect(roadX+roadW,0,17,WORLD.h);
  ctx.fillStyle='#95a0a6';ctx.fillRect(0,roadY-4,WORLD.w,4);ctx.fillRect(0,roadY+roadH,WORLD.w,4);ctx.fillRect(roadX-4,0,4,WORLD.h);ctx.fillRect(roadX+roadW,0,4,WORLD.h);
- // Dashed center lines.
- ctx.strokeStyle='#e8dca7';ctx.lineWidth=4;ctx.setLineDash([42,34]);ctx.beginPath();ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);ctx.stroke();ctx.setLineDash([]);
- // Two clearly separated zebra crossings; never stack stripes over the junction itself.
- ctx.fillStyle='#e8e5d5';
- for(let i=0;i<8;i++)ctx.fillRect(roadX-124+i*15,roadY+24,9,roadH-48);
- for(let i=0;i<8;i++)ctx.fillRect(roadX+34,roadY+roadH+22+i*12,roadW-68,8);
- // Small lane arrows and stop lines.
- ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
- ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,575,1],[1250,955,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
+  // Clean lane markings stop at the intersection instead of running through the junction.
+  ctx.strokeStyle='#e8dca7';ctx.lineWidth=4;ctx.setLineDash([42,34]);ctx.beginPath();
+  ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(roadX-22,roadY+roadH/2);
+  ctx.moveTo(roadX+roadW+22,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);
+  ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,roadY-22);
+  ctx.moveTo(roadX+roadW/2,roadY+roadH+22);ctx.lineTo(roadX+roadW/2,WORLD.h);
+  ctx.stroke();ctx.setLineDash([]);
+
+  // Four zebra crossings: each stripe follows the direction of the road it sits on.
+  ctx.fillStyle='#eeeadd';
+  for(let i=0;i<8;i++){
+   const laneOffset=24+i*29;
+   // West and east arms of the east-west road: horizontal stripes.
+   ctx.fillRect(roadX-135,roadY+laneOffset,112,9);
+   ctx.fillRect(roadX+roadW+23,roadY+laneOffset,112,9);
+   // North and south arms of the north-south road: vertical stripes.
+   const crossX=roadX+24+i*36;
+   ctx.fillRect(crossX,roadY-135,9,112);
+   ctx.fillRect(crossX,roadY+roadH+23,9,112);
+  }
+
+  // Stop bars and directional arrows are kept inside their own lanes.
+  ctx.fillStyle='#d4d8d0';
+  ctx.fillRect(roadX-19,roadY+18,4,roadH-36);
+  ctx.fillRect(roadX+roadW+15,roadY+18,4,roadH-36);
+  ctx.fillRect(roadX+18,roadY-19,roadW-36,4);
+  ctx.fillRect(roadX+18,roadY+roadH+15,roadW-36,4);
+  const drawLaneArrow=(x,y,angle)=>{
+   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle='#d2d7cf';
+   ctx.beginPath();ctx.moveTo(19,0);ctx.lineTo(4,-8);ctx.lineTo(4,-3);ctx.lineTo(-15,-3);ctx.lineTo(-15,3);ctx.lineTo(4,3);ctx.lineTo(4,8);ctx.closePath();ctx.fill();ctx.restore();
+  };
+  drawLaneArrow(690,roadY+80,0);drawLaneArrow(1920,roadY+170,Math.PI);
+  drawLaneArrow(roadX+82,400,Math.PI/2);drawLaneArrow(roadX+218,1170,-Math.PI/2);
  // Continuous plain-concrete sidewalks on both sides of both avenues.
  // Each strip stops at the crossing road; the four corners meet without painting over asphalt.
  const sidewalkStrips=[
@@ -2888,23 +2928,42 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.strokeStyle='#73a99b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(1860,1190,78,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1860,1190,58,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1860,1190,36,0,Math.PI*2);ctx.stroke();
  ctx.fillStyle='#4f7c75';ctx.font='1000 12px system-ui';ctx.textAlign='center';ctx.fillText('TRAINING COURTYARD',1860,1370);
  // Building shells are live-rendered after the cached ground, so their damage updates without rebuilding the map cache.
- // Street trees form even rows along both sides of the east-west and north-south sidewalks.
- // The rows pause at the road junction so canopies do not intrude into the crossing.
- const trees=[
-  [150,605],[390,605],[630,605],[870,605],[1560,605],[1800,605],[2040,605],[2280,605],[2520,605],[2760,605],[3000,605],
-  [150,949],[390,949],[630,949],[870,949],[1560,949],[1800,949],[2040,949],[2280,949],[2520,949],[2760,949],[3000,949],
-  [1051,150],[1051,360],[1051,1010],[1051,1230],[1051,1450],
-  [1445,150],[1445,360],[1445,1010],[1445,1230],[1445,1450]
- ];
- for(const [tx,ty] of trees){ctx.fillStyle='#202b31';ctx.fillRect(tx-18,ty-11,36,33);ctx.fillStyle='#557b5a';ctx.fillRect(tx-20,ty-32,40,34);ctx.fillStyle='#82a276';ctx.fillRect(tx-11,ty-42,22,17);ctx.fillStyle='#3e684d';ctx.fillRect(tx-28,ty-20,13,20);ctx.fillRect(tx+16,ty-22,13,20);ctx.fillStyle='#c4d2b7';ctx.fillRect(tx-23,ty+9,46,5);ctx.fillStyle='#5c655f';ctx.fillRect(tx-3,ty+12,6,17)}
+  // Rounded top-down trees keep the same positions, with layered foliage and no stray blocks.
+  const trees=[
+   [150,605],[390,605],[630,605],[870,605],[1560,605],[1800,605],[2040,605],[2280,605],[2520,605],[2760,605],[3000,605],
+   [150,949],[390,949],[630,949],[870,949],[1560,949],[1800,949],[2040,949],[2280,949],[2520,949],[2760,949],[3000,949],
+   [1051,150],[1051,360],[1051,1010],[1051,1230],[1051,1450],
+   [1445,150],[1445,360],[1445,1010],[1445,1230],[1445,1450]
+  ];
+  for(const [tx,ty] of trees){
+   ctx.save();ctx.translate(tx,ty);
+   ctx.fillStyle='#202c2d';ctx.beginPath();ctx.ellipse(1,9,24,14,0,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#294d38';ctx.beginPath();ctx.ellipse(0,0,22,20,0,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#3d6b46';ctx.beginPath();ctx.ellipse(-3,-3,18,16,-.12,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#5d8954';ctx.beginPath();ctx.ellipse(-4,-6,12,10,-.2,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#85a96b';ctx.beginPath();ctx.ellipse(-7,-8,6,5,-.2,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#315c3d';ctx.beginPath();ctx.ellipse(8,5,7,6,.3,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#a0ba79';ctx.beginPath();ctx.ellipse(5,-11,3,2,0,0,Math.PI*2);ctx.fill();
+   ctx.restore();
+  }
  // Benches placed in pedestrian gaps.
  for(const [bx,by] of [[500,590],[1900,590],[500,944],[1900,944]]){ctx.fillStyle='#232d34';ctx.fillRect(bx-25,by-6,50,10);ctx.fillStyle='#b38a61';ctx.fillRect(bx-23,by-5,46,5);ctx.fillStyle='#344047';ctx.fillRect(bx-19,by+4,4,10);ctx.fillRect(bx+15,by+4,4,10)}
  // Street lamps along curb corners.
  for(const [lx,ly] of [[1080,590],[1420,590],[1080,940],[1420,940]]){ctx.fillStyle='#27333b';ctx.fillRect(lx-3,ly-4,6,31);ctx.fillStyle='#e1edcf';ctx.fillRect(lx-8,ly-12,16,8);ctx.fillStyle='#f2d99a24';ctx.beginPath();ctx.arc(lx,ly-8,25,0,Math.PI*2);ctx.fill()}
  // Manholes and drains only on asphalt.
- for(const [mx,my] of [[700,765],[1250,280],[1900,765],[1250,1220],[2600,765]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
- // Traffic signals at the four curb corners.
- for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+4,6,6);ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+17,6,6)}
+ for(const [mx,my] of [[650,700],[1920,820],[2650,700],[1180,360],[1320,1130]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
+  // Four complete traffic signals, each with red, amber and green lenses.
+  for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){
+   ctx.fillStyle='#27343b';ctx.fillRect(sx0-2,sy0-4,18,46);
+   ctx.strokeStyle='#111b20';ctx.lineWidth=2;ctx.strokeRect(sx0-2,sy0-4,18,46);
+   const lamps=[['#ef4650',sy0+5],['#e9bd50',sy0+19],['#52c77a',sy0+33]];
+   for(const [color,ly] of lamps){
+    ctx.fillStyle='#11191e';ctx.beginPath();ctx.arc(sx0+7,ly,5.2,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle=color;ctx.beginPath();ctx.arc(sx0+7,ly,3.8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='#ffffff55';ctx.beginPath();ctx.arc(sx0+5.8,ly-1.3,1.15,0,Math.PI*2);ctx.fill();
+   }
+   ctx.fillStyle='#303b41';ctx.fillRect(sx0+4,sy0+42,6,15);
+  }
 
  // Neighbourhood park retained from the newer map addition.
  ctx.fillStyle='#536f54';ctx.fillRect(2250,990,450,430);ctx.fillStyle='#6d8663';ctx.fillRect(2262,1002,426,406);
@@ -2927,7 +2986,9 @@ function drawMap(){if(isFullScreenDomainActive())return;
  for(let i=0;i<11;i++){
   const bx=1548+i*108,cx=bx+53,cy=1635,colors=['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'];
   ctx.strokeStyle='#d7d8c9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,1565);ctx.lineTo(bx,1707);ctx.stroke();
-  ctx.save();ctx.translate(cx,cy);ctx.fillStyle='#172129';ctx.fillRect(-19,-36,38,72);ctx.fillStyle=colors[i%colors.length];ctx.fillRect(-16,-33,32,66);
+  ctx.save();ctx.translate(cx,cy);
+   for(const wx of [-16,16])for(const wy of [-22,22]){ctx.fillStyle='#0e151a';ctx.beginPath();ctx.ellipse(wx,wy,5,8,0,0,Math.PI*2);ctx.fill();ctx.fillStyle='#59676d';ctx.beginPath();ctx.ellipse(wx,wy,2.2,4,0,0,Math.PI*2);ctx.fill()}
+   ctx.fillStyle='#172129';ctx.fillRect(-19,-36,38,72);ctx.fillStyle=colors[i%colors.length];ctx.fillRect(-16,-33,32,66);
   ctx.strokeStyle='#293b43';ctx.lineWidth=2;ctx.strokeRect(-16,-33,32,66);ctx.fillStyle='#233b48';ctx.fillRect(-12,-18,24,36);
   ctx.fillStyle='#9ab7c0';ctx.fillRect(-10,-15,20,4);ctx.fillRect(-10,11,20,4);ctx.restore();
  }
