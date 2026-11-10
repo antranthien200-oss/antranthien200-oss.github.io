@@ -926,13 +926,13 @@ const scheduledTasks=[];
 function schedule(fn,delayMs){scheduledTasks.push({at:game.time+Math.max(0,delayMs)/1000,fn});}
 function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(scheduledTasks[i].at<=game.time){const task=scheduledTasks.splice(i,1)[0];try{task.fn()}catch(err){console.error('Delayed game action failed:',err)}}}}
 const staticBuildings=[
- {x:95,y:65,w:365,h:215,c:'#c5a49c',name:'SHOP'},
- {x:590,y:80,w:365,h:215,c:'#d7c39e',name:'CAFE'},
- {x:115,y:340,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
- {x:620,y:340,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
- {x:1535,y:70,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
- {x:2220,y:60,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
- {x:1555,y:340,w:410,h:190,c:'#c0bda9',name:'STATION'},
+ {x:95,y:50,w:365,h:215,c:'#c5a49c',name:'SHOP'},
+ {x:590,y:55,w:365,h:215,c:'#d7c39e',name:'CAFE'},
+ {x:115,y:350,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
+ {x:620,y:350,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
+ {x:1535,y:50,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
+ {x:2220,y:45,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
+ {x:1555,y:350,w:410,h:190,c:'#c0bda9',name:'STATION'},
  {x:2250,y:330,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
  {x:95,y:1020,w:365,h:210,c:'#c6b896',name:'MARKET'},
  {x:610,y:1030,w:365,h:210,c:'#c5a9a9',name:'STORE'},
