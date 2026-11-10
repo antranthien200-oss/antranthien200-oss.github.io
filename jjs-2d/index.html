@@ -927,32 +927,31 @@ const scheduledTasks=[];
 function schedule(fn,delayMs){scheduledTasks.push({at:game.time+Math.max(0,delayMs)/1000,fn});}
 function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(scheduledTasks[i].at<=game.time){const task=scheduledTasks.splice(i,1)[0];try{task.fn()}catch(err){console.error('Delayed game action failed:',err)}}}}
 const staticBuildings=[
- {x:95,y:50,w:365,h:215,c:'#c5a49c',name:'SHOP'},
- {x:590,y:55,w:365,h:215,c:'#d7c39e',name:'CAFE'},
- {x:115,y:350,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
- {x:620,y:350,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
- {x:1535,y:50,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
- {x:2220,y:45,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
- {x:1555,y:350,w:410,h:190,c:'#c0bda9',name:'STATION'},
- {x:2250,y:330,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
- {x:95,y:1020,w:365,h:210,c:'#c6b896',name:'MARKET'},
- {x:610,y:1030,w:365,h:210,c:'#c5a9a9',name:'STORE'},
- {x:130,y:1365,w:365,h:190,c:'#b6c7c3',name:'GARAGE'},
- {x:625,y:1375,w:365,h:190,c:'#c8b7a2',name:'CLINIC'},
- {x:2740,y:1035,w:330,h:390,c:'#b9c6b6',name:'GYM'}
+ {x:100,y:70,w:340,h:180,c:'#c5a49c',name:'SHOP',front:'south'},
+ {x:555,y:75,w:385,h:175,c:'#d7c39e',name:'CAFE',front:'south'},
+ {x:135,y:390,w:330,h:145,c:'#b5c3c7',name:'APARTMENTS',front:'north'},
+ {x:600,y:390,w:355,h:145,c:'#c6b5cc',name:'BOOKSTORE',front:'north'},
+ {x:1545,y:70,w:390,h:180,c:'#a9c2c3',name:'OFFICE',front:'south'},
+ {x:2205,y:65,w:460,h:180,c:'#c8b5ab',name:'HOTEL',front:'south'},
+ {x:1580,y:390,w:365,h:145,c:'#c0bda9',name:'STATION',front:'north'},
+ {x:2230,y:390,w:445,h:145,c:'#b8c7ba',name:'DEPOT',front:'north'},
+ {x:100,y:1000,w:350,h:175,c:'#c6b896',name:'MARKET',front:'south'},
+ {x:575,y:1000,w:385,h:175,c:'#c5a9a9',name:'STORE',front:'south'},
+ {x:130,y:1390,w:330,h:160,c:'#b6c7c3',name:'GARAGE',front:'north'},
+ {x:590,y:1385,w:365,h:165,c:'#c8b7a2',name:'CLINIC',front:'north'},
+ {x:2740,y:1035,w:330,h:370,c:'#b9c6b6',name:'GYM',front:'west'}
 ];
 staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});
 const destructibles=[
- {x:965,y:410,w:58,h:58,hp:3,color:'#a58b68'},
- {x:965,y:1110,w:58,h:58,hp:3,color:'#a58b68'},
- {x:1490,y:595,w:58,h:58,hp:3,color:'#b8a27c'},
- {x:2145,y:1160,w:58,h:58,hp:3,color:'#a58b68'},
- {x:980,y:1350,w:58,h:58,hp:3,color:'#b8a27c'}
-].map((o,i)=>({...o,id:i,alive:true}));
+ {x:2785,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
+ {x:2860,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
+ {x:2935,y:1595,w:58,h:58,hp:3,color:'#b8a27c'},
+ {x:3010,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
+ {x:3085,y:1595,w:58,h:58,hp:3,color:'#b8a27c'}].map((o,i)=>({...o,id:i,alive:true}));
 const particles=[],projectiles=[],debris=[],texts=[],doorTraps=[],trailStrokes=[],fireZones=[];
 const nativeProjectilePush=projectiles.push.bind(projectiles);
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)})));
-const trashCanSpawns=[{x:270,y:593},{x:750,y:593},{x:1920,y:593},{x:2400,y:949},{x:1051,y:255}];
+const trashCanSpawns=[{x:270,y:590},{x:750,y:590},{x:1900,y:590},{x:2570,y:945},{x:1045,y:210}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaKatanas:[],yutaHeldKatana:null,yutaKatanaSpawnTimer:0,yutaLadder:null,yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,sukunaFireCast:0,sukunaFireSerial:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
@@ -1117,7 +1116,7 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
   if(hi>=Math.max(lo,18)&&lo<nearest){nearest=lo;hit=b}
  }
  if(!hit)return false;
- hit.skillHits=(hit.skillHits||0)+1;hit.damageStage=Math.min(3,hit.skillHits);hit.lastSkillHit=game.time;mapCacheDirty=true;
+ hit.skillHits=(hit.skillHits||0)+1;hit.damageStage=Math.min(3,hit.skillHits);hit.lastSkillHit=game.time;
  const cx=hit.x+hit.w/2,cy=hit.y+hit.h/2;
  if(hit.damageStage>=3){
   hit.collapsed=true;
@@ -2769,7 +2768,7 @@ function updateProjectiles(dt){
 }
 
 function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){const d=doorTraps[i];d.life-=dt;if(d.life<=0){doorTraps.splice(i,1);continue}const f=d.owner;if(!d.hit&&f&&f.jump<=0&&dist(f,d)<48&&keys.has(' ')){f.jump=1.65;f.jumpV=8.5;d.life=0;burst(d.x,d.y,'#e5c5ff',16,4);popText(d.x,d.y-38,'BOUNCE!','#e9d5ff',14)}}}
-function updateDestructibles(dt){for(const o of destructibles){if(!o.alive)continue;for(const f of [player,enemy]){if(f.dead||dist({x:o.x+o.w/2,y:o.y+o.h/2},f)>45)continue;if(f.attackAnim>0&&f.attackType==='punch'){const oldHp=o.hp;o.hp-=.045*dt*60;if(oldHp>=3&&o.hp<3)mapCacheDirty=true;if(o.hp<=0){o.alive=false;mapCacheDirty=true;addDebris(o.x+o.w/2,o.y+o.h/2,o.color,22);burst(o.x+o.w/2,o.y+o.h/2,'#f9e6c7',15,4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100)}}}}}
+function updateDestructibles(dt){for(const o of destructibles){if(!o.alive)continue;for(const f of [player,enemy]){if(f.dead||dist({x:o.x+o.w/2,y:o.y+o.h/2},f)>45)continue;if(f.attackAnim>0&&f.attackType==='punch'){const oldHp=o.hp;o.hp-=.045*dt*60;/* crate damage is live-only */if(o.hp<=0){o.alive=false;addDebris(o.x+o.w/2,o.y+o.h/2,o.color,22);burst(o.x+o.w/2,o.y+o.h/2,'#f9e6c7',15,4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100)}}}}}
 function updateMobileCooldowns(){
  if(!player)return;
  const nearbyReadyCan=trashCans.some(p=>!p.carried&&dist(player,p)<105);
@@ -2823,7 +2822,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,1110,930);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -2852,32 +2851,57 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#95a0a6';ctx.fillRect(0,roadY-4,WORLD.w,4);ctx.fillRect(0,roadY+roadH,WORLD.w,4);ctx.fillRect(roadX-4,0,4,WORLD.h);ctx.fillRect(roadX+roadW,0,4,WORLD.h);
  // Dashed center lines.
  ctx.strokeStyle='#e8dca7';ctx.lineWidth=4;ctx.setLineDash([42,34]);ctx.beginPath();ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);ctx.stroke();ctx.setLineDash([]);
- // Two clearly separated zebra crossings; never stack stripes over the junction itself.
+ // Connected local streets create proper access between the residential blocks.
+ const localRoads=[
+  {x:0,y:285,w:WORLD.w,h:60},
+  {x:0,y:1240,w:1100,h:55},
+  {x:1400,y:1460,w:WORLD.w-1400,h:55}
+ ];
+ for(const r of localRoads){
+  ctx.fillStyle='#252e37';ctx.fillRect(r.x,r.y,r.w,r.h);
+  ctx.fillStyle='#687680';ctx.fillRect(r.x,r.y-5,r.w,5);ctx.fillRect(r.x,r.y+r.h,r.w,5);
+  ctx.strokeStyle='#b6b18d';ctx.lineWidth=2;ctx.setLineDash([28,24]);ctx.beginPath();ctx.moveTo(r.x+12,r.y+r.h/2);ctx.lineTo(r.x+r.w-12,r.y+r.h/2);ctx.stroke();ctx.setLineDash([]);
+ }
+ // Zebra crossings cover all four approaches to the main intersection.
  ctx.fillStyle='#e8e5d5';
- for(let i=0;i<8;i++)ctx.fillRect(roadX-124+i*15,roadY+24,9,roadH-48);
- for(let i=0;i<8;i++)ctx.fillRect(roadX+34,roadY+roadH+22+i*12,roadW-68,8);
+ for(let i=0;i<8;i++){
+  ctx.fillRect(roadX-124+i*15,roadY+24,9,roadH-48);
+  ctx.fillRect(roadX+roadW+5+i*15,roadY+24,9,roadH-48);
+  ctx.fillRect(roadX+34,roadY-58+i*9,roadW-68,6);
+  ctx.fillRect(roadX+34,roadY+roadH+8+i*9,roadW-68,6);
+ }
+ for(const y of [285,1240])for(let i=0;i<7;i++)ctx.fillRect(roadX+34,y+3+i*8,roadW-68,5);
  // Small lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
  ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,575,1],[1250,955,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
- // Continuous plain-concrete sidewalks on both sides of both avenues.
- // Each strip stops at the crossing road; the four corners meet without painting over asphalt.
+ // Wide, continuous pavements line both main avenues and each local street.
  const sidewalkStrips=[
-  {x:0,y:roadY-77,w:roadX-17,h:60,horizontal:true},
-  {x:roadX+roadW+17,y:roadY-77,w:WORLD.w-roadX-roadW-17,h:60,horizontal:true},
-  {x:0,y:roadY+roadH+17,w:roadX-17,h:60,horizontal:true},
-  {x:roadX+roadW+17,y:roadY+roadH+17,w:WORLD.w-roadX-roadW-17,h:60,horizontal:true},
-  {x:roadX-77,y:0,w:60,h:roadY-17,horizontal:false},
-  {x:roadX+roadW+17,y:0,w:60,h:roadY-17,horizontal:false},
-  {x:roadX-77,y:roadY+roadH+17,w:60,h:WORLD.h-roadY-roadH-17,horizontal:false},
-  {x:roadX+roadW+17,y:roadY+roadH+17,w:60,h:WORLD.h-roadY-roadH-17,horizontal:false}
+  {x:0,y:547,w:1083,h:76,horizontal:true},{x:1417,y:547,w:WORLD.w-1417,h:76,horizontal:true},
+  {x:0,y:907,w:1083,h:76,horizontal:true},{x:1417,y:907,w:WORLD.w-1417,h:76,horizontal:true},
+  {x:1007,y:0,w:76,h:260,horizontal:false},{x:1007,y:345,w:76,h:295,horizontal:false},
+  {x:1007,y:890,w:76,h:318,horizontal:false},{x:1007,y:1295,w:76,h:705,horizontal:false},
+  {x:1417,y:0,w:76,h:260,horizontal:false},{x:1417,y:345,w:76,h:295,horizontal:false},
+  {x:1417,y:890,w:76,h:570,horizontal:false},{x:1417,y:1515,w:76,h:485,horizontal:false},
+  {x:0,y:260,w:1100,h:20,horizontal:true},{x:1400,y:260,w:1900,h:20,horizontal:true},
+  {x:0,y:350,w:1100,h:25,horizontal:true},{x:1400,y:350,w:1900,h:25,horizontal:true},
+  {x:0,y:1208,w:1100,h:25,horizontal:true},{x:0,y:1300,w:1100,h:55,horizontal:true},
+  {x:1400,y:1432,w:1900,h:22,horizontal:true},{x:1400,y:1515,w:1900,h:25,horizontal:true}
  ];
- for(const s of sidewalkStrips){
-  ctx.fillStyle='#858f8a';ctx.fillRect(s.x,s.y,s.w,s.h);
-  ctx.strokeStyle='#aeb9b0';ctx.lineWidth=2;ctx.strokeRect(s.x+1,s.y+1,s.w-2,s.h-2);
+ for(const p of sidewalkStrips){
+  ctx.fillStyle='#858f8a';ctx.fillRect(p.x,p.y,p.w,p.h);
+  ctx.strokeStyle='#aeb9b0';ctx.lineWidth=2;ctx.strokeRect(p.x+1,p.y+1,p.w-2,p.h-2);
   ctx.strokeStyle='#727e79';ctx.lineWidth=1;ctx.beginPath();
-  if(s.horizontal){for(let x=s.x+90;x<s.x+s.w;x+=96){ctx.moveTo(x,s.y+5);ctx.lineTo(x,s.y+s.h-5)}}
-  else{for(let y=s.y+90;y<s.y+s.h;y+=96){ctx.moveTo(s.x+5,y);ctx.lineTo(s.x+s.w-5,y)}}
+  if(p.horizontal){for(let x=p.x+90;x<p.x+p.w;x+=96){ctx.moveTo(x,p.y+4);ctx.lineTo(x,p.y+p.h-4)}}
+  else{for(let y=p.y+90;y<p.y+p.h;y+=96){ctx.moveTo(p.x+4,y);ctx.lineTo(p.x+p.w-4,y)}}
   ctx.stroke();
+ }
+ // Short entrance paths connect all front doors to a public pavement or park walkway.
+ for(const b of staticBuildings){
+  let px=b.x+b.w/2,py=0,pw=44,ph=0;
+  if(b.front==='south'){const edge=b.y+b.h,target=b.y<300?260:1208;if(target>edge){py=edge;ph=target-edge}}
+  else if(b.front==='north'){const edge=b.y,target=b.y<640?375:1355;if(edge>target){py=target;ph=edge-target}}
+  else if(b.front==='west'){px=2720;py=b.y+b.h*.5-22;pw=40;ph=44}
+  if(ph>0||pw>44){ctx.fillStyle='#858f8a';ctx.fillRect(px-pw/2,py,pw,ph);ctx.strokeStyle='#aeb9b0';ctx.lineWidth=1;ctx.strokeRect(px-pw/2+1,py+1,Math.max(1,pw-2),Math.max(1,ph-2))}
  }
  // Dedicated southeast training courtyard: no roadway or house overlaps.
  ctx.fillStyle='#778a89';ctx.fillRect(1510,990,700,430);
@@ -2887,63 +2911,67 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#638d83';ctx.fillRect(1795,1190,130,3);ctx.fillRect(1858,1128,3,124);
  ctx.strokeStyle='#73a99b';ctx.lineWidth=2;ctx.beginPath();ctx.arc(1860,1190,78,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1860,1190,58,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.arc(1860,1190,36,0,Math.PI*2);ctx.stroke();
  ctx.fillStyle='#4f7c75';ctx.font='1000 12px system-ui';ctx.textAlign='center';ctx.fillText('TRAINING COURTYARD',1860,1370);
- // No checkerboard tiles or decorative square pads beneath building footprints; open city ground remains visible.
- // Uniform top-down buildings: clear curb, solid footprint, roof details, front entrance and a nameplate.
- for(const b of staticBuildings){
-  const x=b.x,y=b.y,w=b.w,h=b.h;
-  if(b.collapsed){
-   // A flat, compact rubble footprint: the destroyed building no longer blocks the arena.
-   ctx.fillStyle='#10182099';ctx.fillRect(x+10,y+20,w-20,h-40);
-   ctx.fillStyle='#303b43';ctx.fillRect(x+20,y+h*.48,w*.36,h*.2);ctx.fillRect(x+w*.48,y+h*.36,w*.42,h*.26);
-   ctx.fillStyle='#65727a';ctx.fillRect(x+w*.12,y+h*.27,w*.25,12);ctx.fillRect(x+w*.58,y+h*.28,w*.23,10);ctx.fillRect(x+w*.34,y+h*.61,w*.3,11);
-   ctx.fillStyle='#899397';for(let i=0;i<18;i++){const rx=x+((i*53)%Math.max(1,w-34))+12,ry=y+h*.22+((i*31)%Math.max(1,h*.56));ctx.fillRect(rx,ry,9+(i%4)*5,6+(i%3)*4)}
-   ctx.fillStyle='#10171d';ctx.fillRect(x+w/2-55,y+h*.79,110,17);ctx.fillStyle='#e3d5b7';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText('COLLAPSED · '+b.name,x+w/2,y+h*.79+12);
-   continue;
-  }
-  // Foundation and soft cast shadow.
-  ctx.fillStyle='#10182075';ctx.fillRect(x+12,y+17,w,h);
-  ctx.fillStyle='#26343b';ctx.fillRect(x-6,y-6,w+12,h+12);
-  ctx.fillStyle='#d8d8cd';ctx.fillRect(x-2,y-2,w+4,h+4);
-  // Roof slab and parapet border.
-  ctx.fillStyle=b.c;ctx.fillRect(x,y,w,h);
-  ctx.strokeStyle='#38464d';ctx.lineWidth=5;ctx.strokeRect(x+3,y+3,w-6,h-6);
-  ctx.strokeStyle='#edf0e4';ctx.lineWidth=3;ctx.strokeRect(x+9,y+9,w-18,h-18);
-  // Roof zoning: a central rooftop panel, two vents and slim roof seams.
-  ctx.fillStyle='#6f8286';ctx.fillRect(x+22,y+27,w-44,h*.43);
-  ctx.fillStyle='#819599';ctx.fillRect(x+28,y+33,w-56,5);
-  ctx.strokeStyle='#53666b';ctx.lineWidth=2;ctx.strokeRect(x+22,y+27,w-44,h*.43);
-  ctx.fillStyle='#303e46';ctx.fillRect(x+34,y+47,Math.min(45,w*.14),20);ctx.fillRect(x+w-79,y+47,45,20);
-  ctx.fillStyle='#a9c0bd';ctx.fillRect(x+38,y+50,Math.min(37,w*.12),4);ctx.fillRect(x+w-75,y+50,37,4);
-  ctx.fillStyle='#d6d6c9';ctx.fillRect(x+24,y+h*.61,w-48,4);
-  // South-facing front facade / windows and a centered door.
-  const fy=y+h-57;ctx.fillStyle='#293840';ctx.fillRect(x+9,fy,w-18,47);
-  const winW=Math.min(56,(w-105)/4);for(let i=0;i<4;i++){const wx=x+25+i*(winW+13);ctx.fillStyle='#152a35';ctx.fillRect(wx,fy+7,winW,23);ctx.fillStyle='#91b4bb';ctx.fillRect(wx+3,fy+10,winW-6,3);ctx.fillStyle='#526f7a';ctx.fillRect(wx+winW*.48,fy+7,3,23)}
-  ctx.fillStyle='#18252c';ctx.fillRect(x+w/2-15,fy+5,30,42);ctx.fillStyle='#b7c8c2';ctx.fillRect(x+w/2-11,fy+8,22,3);ctx.fillStyle='#d0b37c';ctx.fillRect(x+w/2+7,fy+26,3,3);
-  // Building label on a consistent front plaque.
-  ctx.fillStyle='#17232b';ctx.fillRect(x+w/2-45,y+h-8,90,17);ctx.strokeStyle='#d2e0d9';ctx.lineWidth=1;ctx.strokeRect(x+w/2-45,y+h-8,90,17);ctx.fillStyle='#f3f5eb';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText(b.name,x+w/2,y+h+4);
-  // Roof cracks: one jagged line after one skill, several fractures after two.
-  if(b.damageStage>=1){ctx.save();ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.lineCap='square';ctx.beginPath();ctx.moveTo(x+w*.21,y+h*.14);ctx.lineTo(x+w*.29,y+h*.27);ctx.lineTo(x+w*.25,y+h*.39);ctx.lineTo(x+w*.39,y+h*.52);ctx.stroke();ctx.strokeStyle='#f3e6c9';ctx.lineWidth=1.6;ctx.stroke();ctx.restore()}
-  if(b.damageStage>=2){ctx.save();ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x+w*.75,y+h*.16);ctx.lineTo(x+w*.65,y+h*.3);ctx.lineTo(x+w*.72,y+h*.42);ctx.lineTo(x+w*.58,y+h*.57);ctx.moveTo(x+w*.13,y+h*.64);ctx.lineTo(x+w*.24,y+h*.72);ctx.lineTo(x+w*.2,y+h*.84);ctx.stroke();ctx.strokeStyle='#f0dfc3';ctx.lineWidth=1.4;ctx.stroke();ctx.restore();ctx.fillStyle='#3f4d55';ctx.fillRect(x+w*.48,y+h*.21,24,14)}
+ // Neighbourhood park with a loop path, shade trees and benches.
+ ctx.fillStyle='#536f54';ctx.fillRect(2250,990,450,430);ctx.fillStyle='#6d8663';ctx.fillRect(2262,1002,426,406);
+ ctx.strokeStyle='#b6c4a6';ctx.lineWidth=3;ctx.strokeRect(2262,1002,426,406);
+ ctx.fillStyle='#c0b7a0';ctx.fillRect(2445,1005,46,392);ctx.fillRect(2265,1182,420,42);ctx.fillStyle='#d4ccb4';ctx.fillRect(2270,1190,410,26);
+ for(const [tx,ty] of [[2310,1050],[2638,1050],[2310,1360],[2638,1360],[2385,1260],[2560,1125]]){
+  ctx.fillStyle='#344738';ctx.beginPath();ctx.ellipse(tx,ty+4,24,20,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#527b54';ctx.beginPath();ctx.ellipse(tx,ty,22,19,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#82a777';ctx.beginPath();ctx.ellipse(tx-5,ty-5,10,8,0,0,Math.PI*2);ctx.fill();
  }
- // Street trees form even rows along both sides of the east-west and north-south sidewalks.
- // The rows pause at the road junction so canopies do not intrude into the crossing.
- const trees=[
-  [150,605],[390,605],[630,605],[870,605],[1560,605],[1800,605],[2040,605],[2280,605],[2520,605],[2760,605],[3000,605],
-  [150,949],[390,949],[630,949],[870,949],[1560,949],[1800,949],[2040,949],[2280,949],[2520,949],[2760,949],[3000,949],
-  [1051,150],[1051,360],[1051,1010],[1051,1230],[1051,1450],
-  [1445,150],[1445,360],[1445,1010],[1445,1230],[1445,1450]
- ];
- for(const [tx,ty] of trees){ctx.fillStyle='#202b31';ctx.fillRect(tx-18,ty-11,36,33);ctx.fillStyle='#557b5a';ctx.fillRect(tx-20,ty-32,40,34);ctx.fillStyle='#82a276';ctx.fillRect(tx-11,ty-42,22,17);ctx.fillStyle='#3e684d';ctx.fillRect(tx-28,ty-20,13,20);ctx.fillRect(tx+16,ty-22,13,20);ctx.fillStyle='#c4d2b7';ctx.fillRect(tx-23,ty+9,46,5);ctx.fillStyle='#5c655f';ctx.fillRect(tx-3,ty+12,6,17)}
+ for(const [bx,by] of [[2375,1150],[2555,1310]]){
+  ctx.fillStyle='#344047';ctx.fillRect(bx-24,by-5,48,9);ctx.fillStyle='#b48d62';ctx.fillRect(bx-21,by-4,42,4);
+  ctx.fillStyle='#344047';ctx.fillRect(bx-17,by+4,4,9);ctx.fillRect(bx+13,by+4,4,9);
+ }
+ ctx.fillStyle='#e0ebd2';ctx.font='900 11px system-ui';ctx.textAlign='center';ctx.fillText('NEIGHBOURHOOD PARK',2475,1380);
+
+ // Buildings render in their own layer, separate from the static checkerboard canvas.
+ // Roadside trees form straight, evenly spaced lines along every pavement section.
+ const trees=[];
+ const addRow=(y,a,b,step,r)=>{for(let x=a;x<=b;x+=step)trees.push([x,y,r])};
+ const addCol=(x,a,b,step,r)=>{for(let y=a;y<=b;y+=step)trees.push([x,y,r])};
+ for(const y of [585,945]){addRow(y,150,900,250,17);addRow(y,1600,3200,250,17)}
+ for(const y of [270,362]){addRow(y,140,900,240,10);addRow(y,1510,3200,240,10)}
+ addRow(1220,145,875,240,11);addRow(1330,145,875,240,13);
+ for(const x of [1045,1455]){
+  addCol(x,125,240,115,15);addCol(x,390,560,170,17);
+  addCol(x,1015,1190,175,17);addCol(x,1380,1640,180,15);
+ }
+ for(const [tx,ty,r] of trees){
+  ctx.fillStyle='#26352e';ctx.beginPath();ctx.ellipse(tx,ty+3,r+3,r*.9,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#446d49';ctx.beginPath();ctx.ellipse(tx,ty,r,r*.86,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#72966a';ctx.beginPath();ctx.ellipse(tx-r*.22,ty-r*.18,r*.48,r*.4,-.25,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#9ab688';ctx.beginPath();ctx.ellipse(tx-r*.22,ty-r*.18,r*.22,r*.18,-.25,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#3a5e40';ctx.beginPath();ctx.arc(tx+r*.42,ty+r*.28,r*.22,0,Math.PI*2);ctx.fill();
+ }
  // Benches placed in pedestrian gaps.
  for(const [bx,by] of [[500,590],[1900,590],[500,944],[1900,944]]){ctx.fillStyle='#232d34';ctx.fillRect(bx-25,by-6,50,10);ctx.fillStyle='#b38a61';ctx.fillRect(bx-23,by-5,46,5);ctx.fillStyle='#344047';ctx.fillRect(bx-19,by+4,4,10);ctx.fillRect(bx+15,by+4,4,10)}
- // Street lamps along curb corners.
- for(const [lx,ly] of [[1080,590],[1420,590],[1080,940],[1420,940]]){ctx.fillStyle='#27333b';ctx.fillRect(lx-3,ly-4,6,31);ctx.fillStyle='#e1edcf';ctx.fillRect(lx-8,ly-12,16,8);ctx.fillStyle='#f2d99a24';ctx.beginPath();ctx.arc(lx,ly-8,25,0,Math.PI*2);ctx.fill()}
- // Manholes and drains only on asphalt.
- for(const [mx,my] of [[700,765],[1250,280],[1900,765],[1250,1220],[2600,765]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
- // Traffic signals at the four curb corners.
- for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+4,6,6);ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+17,6,6)}
- // Small wooden cargo crates, not oversized boxes scattered through the streets.
- for(const o of destructibles){if(!o.alive)continue;ctx.fillStyle='#151e25aa';ctx.fillRect(o.x+5,o.y+7,o.w,o.h);ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.fillStyle='#e3d1ae';ctx.fillRect(o.x+4,o.y+4,o.w-8,5);ctx.strokeStyle='#554b3e';ctx.lineWidth=2;ctx.strokeRect(o.x,o.y,o.w,o.h);ctx.strokeStyle='#80684b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o.x+7,o.y+9);ctx.lineTo(o.x+o.w-7,o.y+o.h-9);ctx.moveTo(o.x+o.w-7,o.y+9);ctx.lineTo(o.x+7,o.y+o.h-9);ctx.stroke();if(o.hp<3){ctx.strokeStyle='#282c2c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o.x+o.w*.5,o.y+4);ctx.lineTo(o.x+o.w*.34,o.y+o.h*.5);ctx.lineTo(o.x+o.w*.65,o.y+o.h-5);ctx.stroke()}}
+ // Street lamps are spaced mid-block, away from traffic signals and tree trunks.
+ for(const [lx,ly] of [[970,585],[1690,585],[970,945],[1690,945]]){
+  ctx.fillStyle='#27333b';ctx.fillRect(lx-3,ly-2,6,27);ctx.fillStyle='#e1edcf';ctx.fillRect(lx-8,ly-10,16,8);
+ }
+ // Manholes remain on asphalt; signals mark the four main crosswalk corners.
+ for(const [mx,my] of [[420,765],[820,765],[1900,765],[2700,765],[1250,180],[1250,520],[1250,1100],[1250,1540]]){
+  ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,16,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,12,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-8;k<=8;k+=5){ctx.beginPath();ctx.moveTo(mx-8,my+k);ctx.lineTo(mx+8,my+k);ctx.stroke()}
+ }
+ for(const [sx0,sy0] of [[1075,620],[1412,620],[1075,895],[1412,895]]){
+  ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+4,6,6);ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+17,6,6);
+ }
+ // Destructible crates are rendered separately in the freight dock below.
+ // Marked parking lot with cars correctly parked perpendicular to the access road.
+ ctx.fillStyle='#303b42';ctx.fillRect(1530,1548,1220,175);ctx.fillStyle='#5a6667';ctx.fillRect(1540,1558,1200,155);
+ ctx.strokeStyle='#d1d5c9';ctx.lineWidth=3;ctx.strokeRect(1540,1558,1200,155);
+ for(let i=0;i<11;i++){
+  const bx=1548+i*108,cx=bx+53,cy=1635,colors=['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'];
+  ctx.strokeStyle='#d7d8c9';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx,1565);ctx.lineTo(bx,1707);ctx.stroke();
+  ctx.save();ctx.translate(cx,cy);ctx.fillStyle='#172129';ctx.fillRect(-19,-36,38,72);ctx.fillStyle=colors[i%colors.length];ctx.fillRect(-16,-33,32,66);
+  ctx.strokeStyle='#293b43';ctx.lineWidth=2;ctx.strokeRect(-16,-33,32,66);ctx.fillStyle='#233b48';ctx.fillRect(-12,-18,24,36);
+  ctx.fillStyle='#9ab7c0';ctx.fillRect(-10,-15,20,4);ctx.fillRect(-10,11,20,4);ctx.restore();
+ }
+ ctx.fillStyle='#3b484b';ctx.fillRect(2770,1548,420,175);ctx.strokeStyle='#d6d5c8';ctx.lineWidth=3;ctx.strokeRect(2778,1556,404,159);
+ for(let i=0;i<5;i++){const bx=2784+i*78;ctx.strokeStyle='#d0d5ca';ctx.lineWidth=1;ctx.setLineDash([4,4]);ctx.strokeRect(bx,1580,66,90);ctx.setLineDash([])}
  // Railway corridor on the south edge, beyond every building and the training courtyard.
  // The north-south avenue crosses the line at a marked level crossing.
  const railTop=CITY_TRAIN_TRACK_Y-64;
@@ -2983,7 +3011,50 @@ function drawMap(){if(isFullScreenDomainActive())return;
  const sourceW=Math.min(viewW,WORLD.w-sourceX),sourceH=Math.min(viewH,WORLD.h-sourceY);
  const destX=sourceX-camera.x+W/2,destY=sourceY-camera.y+H/2;
  ctx.drawImage(mapCanvas,sourceX,sourceY,sourceW,sourceH,destX,destY,sourceW,sourceH);
-}function drawLimb(x,y,len,w,angle,color,edge){
+}
+function drawBuildingInterior(x,y,w,h,index){
+ ctx.fillStyle='#c5b79d';ctx.fillRect(x+7,y+7,w-14,h-14);ctx.fillStyle='#b1a187';
+ for(let yy=y+17;yy<y+h-17;yy+=21)ctx.fillRect(x+11,yy,w-22,1);
+ ctx.fillStyle='#e0d5bf';ctx.fillRect(x+w*.48,y+h*.12,w*.035,h*.76);ctx.fillRect(x+w*.16,y+h*.49,w*.3,h*.035);ctx.fillRect(x+w*.54,y+h*.67,w*.28,h*.035);
+ const rooms=[[.16,.18,.18,.14],[.66,.18,.17,.13],[.18,.69,.2,.13],[.67,.75,.16,.1]];
+ for(let i=0;i<rooms.length;i++){const q=rooms[(i+index)%rooms.length];ctx.fillStyle=i%2?'#806955':'#5f7772';ctx.fillRect(x+w*q[0],y+h*q[1],w*q[2],h*q[3]);ctx.fillStyle='#d6c7aa';ctx.fillRect(x+w*q[0]+4,y+h*q[1]+4,Math.max(3,w*q[2]-8),3)}
+}
+function drawDynamicCityObjects(){
+ if(isFullScreenDomainActive())return;
+ ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
+ for(let i=0;i<staticBuildings.length;i++){
+  const b=staticBuildings[i],x=b.x,y=b.y,w=b.w,h=b.h,style=i%4;
+  if(b.collapsed){
+   drawBuildingInterior(x,y,w,h,i);ctx.fillStyle='#303b42';ctx.fillRect(x+3,y+3,w-6,7);ctx.fillRect(x+3,y+h-10,w-6,7);ctx.fillRect(x+3,y+3,7,h-6);ctx.fillRect(x+w-10,y+3,7,h-6);
+   ctx.fillStyle='#78848a';for(let k=0;k<24;k++){const rx=x+12+((k*47+i*13)%(Math.max(1,w-38))),ry=y+13+((k*31+i*17)%(Math.max(1,h-32)));ctx.save();ctx.translate(rx,ry);ctx.rotate((k%5)*.31);ctx.fillRect(-5,-3,10+(k%3)*4,5+(k%2)*3);ctx.restore()}
+   ctx.fillStyle='#17232b';ctx.fillRect(x+w/2-58,y+h-24,116,16);ctx.fillStyle='#f1e4c8';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText('COLLAPSED · '+b.name,x+w/2,y+h-12);continue;
+  }
+  ctx.fillStyle='#10182070';ctx.fillRect(x+9,y+12,w,h);ctx.fillStyle='#26343b';ctx.fillRect(x-4,y-4,w+8,h+8);ctx.fillStyle='#d8d8cd';ctx.fillRect(x-1,y-1,w+2,h+2);
+  ctx.fillStyle=b.c;ctx.fillRect(x,y,w,h);ctx.strokeStyle='#38464d';ctx.lineWidth=5;ctx.strokeRect(x+3,y+3,w-6,h-6);ctx.strokeStyle='#edf0e4';ctx.lineWidth=2;ctx.strokeRect(x+9,y+9,w-18,h-18);
+  if(style===0){ctx.fillStyle='#6f8286';ctx.fillRect(x+22,y+24,w-44,h*.42);ctx.strokeStyle='#53666b';ctx.lineWidth=2;ctx.strokeRect(x+22,y+24,w-44,h*.42);ctx.fillStyle='#303e46';ctx.fillRect(x+34,y+43,Math.min(45,w*.14),20);ctx.fillRect(x+w-79,y+43,45,20)}
+  else if(style===1){ctx.fillStyle='#6c8870';ctx.fillRect(x+20,y+22,w-40,h*.48);for(let q=0;q<4;q++){ctx.fillStyle=q%2?'#9ab282':'#7c9c6f';ctx.fillRect(x+32+q*(w-74)/4,y+31,15,h*.34)}ctx.fillStyle='#4a5d60';ctx.fillRect(x+w*.42,y+h*.18,w*.16,h*.18)}
+  else if(style===2){ctx.fillStyle='#829397';ctx.fillRect(x+22,y+25,w-44,h*.4);for(let q=0;q<3;q++){const vx=x+36+q*(w-95)/3;ctx.fillStyle='#35464d';ctx.fillRect(vx,y+38,38,25);ctx.fillStyle='#bac8c2';ctx.fillRect(vx+5,y+42,28,4)}}
+  else{ctx.fillStyle='#667c80';ctx.fillRect(x+20,y+22,w-40,h*.47);for(let q=0;q<5;q++){const wx=x+30+q*(w-68)/5;ctx.fillStyle='#172d36';ctx.fillRect(wx,y+32,30,25);ctx.fillStyle='#9fc4c5';ctx.fillRect(wx+3,y+35,24,4)}ctx.fillStyle='#d6d6c9';ctx.fillRect(x+24,y+h*.65,w-48,4)}
+  const front=b.front||'south';
+  if(front==='south'||front==='north'){
+   const fy=front==='south'?y+h-39:y+5;ctx.fillStyle='#293840';ctx.fillRect(x+9,fy,w-18,33);const winW=Math.min(48,(w-100)/4);
+   for(let q=0;q<4;q++){const wx=x+22+q*(winW+12);ctx.fillStyle='#152a35';ctx.fillRect(wx,fy+6,winW,19);ctx.fillStyle='#91b4bb';ctx.fillRect(wx+3,fy+9,winW-6,3)}
+   ctx.fillStyle='#18252c';ctx.fillRect(x+w/2-14,fy+2,28,31);ctx.fillStyle='#d0b37c';ctx.fillRect(x+w/2+7,fy+18,3,3);
+  }else{ctx.fillStyle='#293840';ctx.fillRect(x+5,y+10,34,h-20);for(let q=0;q<4;q++){ctx.fillStyle='#91b4bb';ctx.fillRect(x+11,y+24+q*(h-65)/4,21,18)}ctx.fillStyle='#18252c';ctx.fillRect(x+3,y+h/2-20,38,40)}
+  ctx.fillStyle='#17232b';ctx.fillRect(x+w/2-45,y+h-8,90,17);ctx.strokeStyle='#d2e0d9';ctx.lineWidth=1;ctx.strokeRect(x+w/2-45,y+h-8,90,17);ctx.fillStyle='#f3f5eb';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText(b.name,x+w/2,y+h+4);
+  if(b.damageStage>=2){
+   ctx.save();ctx.beginPath();ctx.moveTo(x+w*.27,y+h*.18);ctx.lineTo(x+w*.39,y+h*.14);ctx.lineTo(x+w*.46,y+h*.23);ctx.lineTo(x+w*.61,y+h*.17);ctx.lineTo(x+w*.73,y+h*.27);ctx.lineTo(x+w*.69,y+h*.43);ctx.lineTo(x+w*.77,y+h*.56);ctx.lineTo(x+w*.63,y+h*.72);ctx.lineTo(x+w*.48,y+h*.68);ctx.lineTo(x+w*.36,y+h*.78);ctx.lineTo(x+w*.24,y+h*.61);ctx.lineTo(x+w*.3,y+h*.43);ctx.closePath();ctx.clip();drawBuildingInterior(x,y,w,h,i);ctx.restore();
+   ctx.strokeStyle='#20282e';ctx.lineWidth=7;ctx.lineJoin='bevel';ctx.beginPath();ctx.moveTo(x+w*.27,y+h*.18);ctx.lineTo(x+w*.39,y+h*.14);ctx.lineTo(x+w*.46,y+h*.23);ctx.lineTo(x+w*.61,y+h*.17);ctx.lineTo(x+w*.73,y+h*.27);ctx.lineTo(x+w*.69,y+h*.43);ctx.lineTo(x+w*.77,y+h*.56);ctx.lineTo(x+w*.63,y+h*.72);ctx.lineTo(x+w*.48,y+h*.68);ctx.lineTo(x+w*.36,y+h*.78);ctx.lineTo(x+w*.24,y+h*.61);ctx.lineTo(x+w*.3,y+h*.43);ctx.closePath();ctx.stroke();
+  }
+  if(b.damageStage>=1){ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.lineCap='square';ctx.beginPath();ctx.moveTo(x+w*.18,y+h*.13);ctx.lineTo(x+w*.28,y+h*.28);ctx.lineTo(x+w*.24,y+h*.4);ctx.lineTo(x+w*.38,y+h*.52);ctx.moveTo(x+w*.78,y+h*.19);ctx.lineTo(x+w*.69,y+h*.32);ctx.lineTo(x+w*.74,y+h*.44);ctx.stroke();ctx.strokeStyle='#f3e6c9';ctx.lineWidth=1.4;ctx.stroke()}
+ }
+ for(const o of destructibles){
+  if(!o.alive)continue;ctx.fillStyle='#151e25aa';ctx.fillRect(o.x+5,o.y+7,o.w,o.h);ctx.fillStyle=o.color;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.fillStyle='#e3d1ae';ctx.fillRect(o.x+4,o.y+4,o.w-8,5);ctx.strokeStyle='#554b3e';ctx.lineWidth=2;ctx.strokeRect(o.x,o.y,o.w,o.h);ctx.strokeStyle='#80684b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o.x+7,o.y+9);ctx.lineTo(o.x+o.w-7,o.y+o.h-9);ctx.moveTo(o.x+o.w-7,o.y+9);ctx.lineTo(o.x+7,o.y+o.h-9);ctx.stroke();
+  if(o.hp<3){ctx.strokeStyle='#282c2c';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(o.x+o.w*.5,o.y+4);ctx.lineTo(o.x+o.w*.34,o.y+o.h*.5);ctx.lineTo(o.x+o.w*.65,o.y+o.h-5);ctx.stroke()}
+ }
+ ctx.restore();
+}
+function drawLimb(x,y,len,w,angle,color,edge){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.fillStyle=edge||'#101820';ctx.fillRect(-1,-w/2-1,len+2,w+2);ctx.fillStyle=color;ctx.fillRect(0,-w/2,len,w);ctx.fillStyle='#ffffff22';ctx.fillRect(2,-w/2+1,len-5,2);ctx.fillStyle=color;ctx.fillRect(len-7,-w/2-2,9,w+4);ctx.restore();
 }
 
@@ -5124,7 +5195,7 @@ function draw(){
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawDomainBackdrops();
- if(!isFullScreenDomainActive()){drawMap();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
+ if(!isFullScreenDomainActive()){drawMap();drawDynamicCityObjects();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
