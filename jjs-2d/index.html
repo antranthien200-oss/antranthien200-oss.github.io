@@ -3649,6 +3649,19 @@ function getFighterTheme(f){
  if(f.char==='perfection'&&f.awakened)return {main:'#9239cc',accent:'#e2adff',shadow:'#45156b'};
  return p;
 }
+function getStunTintedTheme(f){
+ const base=getFighterTheme(f);
+ if(!f||f.stun<=.04)return base;
+ const blend=(hex,tint,amount)=>{
+  const source=parseInt(hex.slice(1),16),target=parseInt(tint.slice(1),16);
+  return '#'+[16,8,0].map(shift=>Math.round(((source>>shift)&255)*(1-amount)+((target>>shift)&255)*amount).toString(16).padStart(2,'0')).join('');
+ };
+ return {
+  main:blend(base.main,'#6aaed8',.25),
+  accent:blend(base.accent,'#a8dfff',.22),
+  shadow:blend(base.shadow,'#335d89',.28)
+ };
+}
 function drawPixelatedCircle(x,y,r,palette,cell=2.4){
  // Flat, block-pixel circle with a darker one-pixel rim; no smooth vector edges.
  const n=Math.ceil(r/cell);
@@ -3724,9 +3737,9 @@ function drawFloatingHand(x,y,angle,theme,scale=1){
  drawPixelatedCircle(0,0,7.6,theme,2.0);
  ctx.restore();
 }
-function drawCuteHead(f,c){
- if(f.char==='trashman'){drawTrashManHead();return}
- const theme=getFighterTheme(f);drawPixelatedCircle(0,0,14.8,theme,2.4);
+function drawCuteHead(f,c,themeOverride=null){
+ if(f.char==='trashman'){drawTrashManHead();if(themeOverride){ctx.save();ctx.globalAlpha=.22;ctx.fillStyle='#61b6e8';ctx.fillRect(-12,-10,24,24);ctx.restore()}return}
+ const theme=themeOverride||getFighterTheme(f);drawPixelatedCircle(0,0,14.8,theme,2.4);
 }
 function drawTrashManHead(){
  // The head is the same squat, lidded metal bin silhouette used by the map props.
@@ -3773,8 +3786,25 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
  ctx.restore();
 }
 function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
+function drawStunRain(f,x,y){
+ if(!f||f.stun<=.04)return;
+ const strength=clamp(f.stun/.28,.35,1);
+ ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=0;
+ for(let i=0;i<9;i++){
+  const phase=(game.time*31+i*13)%48;
+  const startY=y-64+phase*.25;
+  const length=17+((i*9)%20);
+  const endY=Math.min(y-16,startY+length);
+  if(endY<=startY)continue;
+  const lineX=Math.round(x+(i-4)*7+Math.sin(game.time*2+i)*1.1)+.5;
+  ctx.strokeStyle=i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)';
+  ctx.lineWidth=i%3===0?1.25:1;
+  ctx.beginPath();ctx.moveTo(lineX,startY);ctx.lineTo(lineX,endY);ctx.stroke();
+ }
+ ctx.restore();
+}
 function drawHeadHands(f){
- const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player';
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
@@ -4087,28 +4117,8 @@ function drawHeadHands(f){
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
- if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,getFighterTheme(f),handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,getFighterTheme(f),handAScale)}
- drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c);
- if(f.stun>.04){
-  const stunStrength=clamp(f.stun/.22,.48,1),stunPulse=.94+.06*Math.sin(game.time*18);
-  ctx.save();ctx.globalAlpha*=stunStrength*stunPulse;
-  // Cool blue forehead wash, shaped to sit inside the round head like the 😨 expression.
-  const forehead=ctx.createLinearGradient(0,-15,0,-2);
-  forehead.addColorStop(0,'#b9edff');forehead.addColorStop(.38,'#64c5f4');forehead.addColorStop(1,'#347fc5');
-  ctx.fillStyle=forehead;ctx.beginPath();
-  ctx.moveTo(-7.5,-10);ctx.quadraticCurveTo(-6.8,-14.2,0,-14.4);
-  ctx.quadraticCurveTo(7.2,-14.1,8.4,-9.2);ctx.lineTo(7.8,-5.2);
-  ctx.quadraticCurveTo(0,-2.5,-8,-5.3);ctx.closePath();ctx.fill();
-  // One dark-blue stripe runs from the forehead down the center of the face.
-  ctx.fillStyle='#082f69';ctx.beginPath();
-  ctx.moveTo(-1.65,-14);ctx.lineTo(1.65,-14);ctx.lineTo(2.05,-3.5);
-  ctx.lineTo(1.45,5.2);ctx.lineTo(0,7.2);ctx.lineTo(-1.45,5.2);
-  ctx.lineTo(-2.05,-3.5);ctx.closePath();ctx.fill();
-  // Narrow icy highlight gives the blue forehead a wet, shocked look.
-  ctx.fillStyle='rgba(226,250,255,.82)';
-  ctx.fillRect(-5.5,-11.1,2.2,2.1);ctx.fillRect(-3.3,-9.4,1.3,2.2);
-  ctx.restore();
- }
+ if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+ drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
@@ -4123,6 +4133,7 @@ function drawHeadHands(f){
   ctx.restore();
  }
  if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
+ drawStunRain(f,x,y);
  
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
  if(f.transfigureMeter>0){const mw=46,bw=mw*(f.transfigureMeter/100);ctx.save();ctx.fillStyle='#061014cc';ctx.fillRect(x-mw/2,headY-47,mw,7);ctx.fillStyle='#88dfcc';ctx.fillRect(x-mw/2,headY-47,bw,7);ctx.strokeStyle='#d8fff4';ctx.strokeRect(x-mw/2,headY-47,mw,7);ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9fff4';ctx.fillText('SOUL',x,headY-51);ctx.restore();}
