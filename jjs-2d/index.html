@@ -2835,7 +2835,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
   if(b.damageStage>=2){ctx.save();ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x+w*.75,y+h*.16);ctx.lineTo(x+w*.65,y+h*.3);ctx.lineTo(x+w*.72,y+h*.42);ctx.lineTo(x+w*.58,y+h*.57);ctx.moveTo(x+w*.13,y+h*.64);ctx.lineTo(x+w*.24,y+h*.72);ctx.lineTo(x+w*.2,y+h*.84);ctx.stroke();ctx.strokeStyle='#f0dfc3';ctx.lineWidth=1.4;ctx.stroke();ctx.restore();ctx.fillStyle='#3f4d55';ctx.fillRect(x+w*.48,y+h*.21,24,14)}
  }
  // Square-leaf trees in the leftover block corners and along sidewalks (never over doorways).
- const trees=[[490,330],[980,115],[980,540],[490,920],[980,1340],[1910,335],[2500,570],[2145,1400],[1430,1390],[45,900]];
+ const trees=[[1510,1040],[1710,1040],[1910,1040],[1610,1260],[1810,1260],[2010,1260]];
  for(const [tx,ty] of trees){ctx.fillStyle='#202b31';ctx.fillRect(tx-18,ty-11,36,33);ctx.fillStyle='#557b5a';ctx.fillRect(tx-20,ty-32,40,34);ctx.fillStyle='#82a276';ctx.fillRect(tx-11,ty-42,22,17);ctx.fillStyle='#3e684d';ctx.fillRect(tx-28,ty-20,13,20);ctx.fillRect(tx+16,ty-22,13,20);ctx.fillStyle='#c4d2b7';ctx.fillRect(tx-23,ty+9,46,5);ctx.fillStyle='#5c655f';ctx.fillRect(tx-3,ty+12,6,17)}
  // Benches placed in pedestrian gaps.
  for(const [bx,by] of [[980,430],[980,1100],[2148,600],[2150,1370],[480,920]]){ctx.fillStyle='#232d34';ctx.fillRect(bx-25,by-6,50,10);ctx.fillStyle='#b38a61';ctx.fillRect(bx-23,by-5,46,5);ctx.fillStyle='#344047';ctx.fillRect(bx-19,by+4,4,10);ctx.fillRect(bx+15,by+4,4,10)}
