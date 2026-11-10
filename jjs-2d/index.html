@@ -800,7 +800,7 @@ function resize(){const rotated=isManualScreenRotated(),root=document.documentEl
 function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:innerWidth-x}:{x,y}}
 function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
 addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();
-const WORLD={w:2600,h:1500};
+const WORLD={w:3000,h:1500};
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const rnd=(a,b)=>a+Math.random()*(b-a);
@@ -927,18 +927,18 @@ function schedule(fn,delayMs){scheduledTasks.push({at:game.time+Math.max(0,delay
 function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(scheduledTasks[i].at<=game.time){const task=scheduledTasks.splice(i,1)[0];try{task.fn()}catch(err){console.error('Delayed game action failed:',err)}}}}
 const staticBuildings=[
  {x:90,y:90,w:365,h:215,c:'#c5a49c',name:'SHOP'},
- {x:575,y:90,w:365,h:215,c:'#d7c39e',name:'CAFE'},
+ {x:600,y:90,w:365,h:215,c:'#d7c39e',name:'CAFE'},
  {x:90,y:370,w:365,h:190,c:'#b5c3c7',name:'APARTMENTS'},
- {x:575,y:370,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
- {x:1465,y:90,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
- {x:1940,y:90,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
- {x:1465,y:370,w:410,h:190,c:'#c0bda9',name:'STATION'},
- {x:1940,y:370,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
+ {x:600,y:370,w:365,h:190,c:'#c6b5cc',name:'BOOKSTORE'},
+ {x:1540,y:90,w:410,h:215,c:'#a9c2c3',name:'OFFICE'},
+ {x:2120,y:90,w:505,h:215,c:'#c8b5ab',name:'HOTEL'},
+ {x:1540,y:370,w:410,h:190,c:'#c0bda9',name:'STATION'},
+ {x:2120,y:370,w:505,h:190,c:'#b8c7ba',name:'DEPOT'},
  {x:90,y:980,w:365,h:210,c:'#c6b896',name:'MARKET'},
- {x:575,y:980,w:365,h:210,c:'#c5a9a9',name:'STORE'},
+ {x:600,y:980,w:365,h:210,c:'#c5a9a9',name:'STORE'},
  {x:90,y:1240,w:365,h:190,c:'#b6c7c3',name:'GARAGE'},
- {x:575,y:1240,w:365,h:190,c:'#c8b7a2',name:'CLINIC'},
- {x:2200,y:980,w:330,h:390,c:'#b9c6b6',name:'GYM'}
+ {x:600,y:1240,w:365,h:190,c:'#c8b7a2',name:'CLINIC'},
+ {x:2500,y:980,w:330,h:390,c:'#b9c6b6',name:'GYM'}
 ];
 staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});
 const destructibles=[
