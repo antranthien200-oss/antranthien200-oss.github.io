@@ -1758,11 +1758,12 @@ function updateCityTrainImpact(){
   if(!f||f.dead||Math.abs(f.y-CITY_TRAIN_TRACK_Y)>54)continue;
   if(!carCenters.some(cx=>Math.abs(f.x-cx)<=110))continue;
   if(f===player)dropCarriedTrashCan(f);
-  damage(f,f.hp+1,null,{unblockable:true,ignoreInvuln:true,big:true,stun:.7,kx:0,ky:0,damageType:'environment',color:'#f04b55'});
-  f.vx=0;f.vy=0;
+  if(f.awakened)endAwakening(f);
+  f.hp=0;f.dead=true;f.respawn=2.5;f.stun=0;f.invuln=0;f.block=false;f.vx=0;f.vy=0;f.motion=null;f.attackAnim=0;f.attackType='';
+  f.domainTimer=0;f.domainWindup=0;f.domainState='';
   popText(f.x,f.y-63,'STRUCK BY TRAIN','#ff6670',18);
   showToast(f===player?'HIT BY TRAIN':'OPPONENT HIT BY TRAIN',900);
-  game.shake=Math.max(game.shake,10);game.hitStop=Math.max(game.hitStop,.045);
+  updateHud(true);game.shake=Math.max(game.shake,10);game.hitStop=Math.max(game.hitStop,.045);
  }
 }
 function drawCityTrain(){
