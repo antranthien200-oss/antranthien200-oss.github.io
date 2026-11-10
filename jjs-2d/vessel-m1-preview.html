@@ -2797,7 +2797,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#26313a';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
  // Base city surface and orderly concrete pavers.
  ctx.fillStyle='#3d4850';ctx.fillRect(0,0,WORLD.w,WORLD.h);
- ctx.fillStyle='#414b50';ctx.fillRect(0,0,WORLD.w,WORLD.h);ctx.strokeStyle='#49565a';ctx.lineWidth=1;for(let x=120;x<WORLD.w;x+=180){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,WORLD.h);ctx.stroke()}for(let y=110;y<WORLD.h;y+=150){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(WORLD.w,y);ctx.stroke()}
+ for(let y=0;y<WORLD.h;y+=64){for(let x=0;x<WORLD.w;x+=64){ctx.fillStyle=((x/64+y/64)%2===0)?'#46525a':'#414c54';ctx.fillRect(x,y,62,62);ctx.strokeStyle='#526069';ctx.lineWidth=1;ctx.strokeRect(x,y,62,62)}}
  // Grass verge and outer curb.
  ctx.fillStyle='#526d58';ctx.fillRect(0,0,WORLD.w,23);ctx.fillRect(0,WORLD.h-23,WORLD.w,23);ctx.fillRect(0,0,23,WORLD.h);ctx.fillRect(WORLD.w-23,0,23,WORLD.h);
  // Two broad avenues meet at a clean, clearly marked intersection.
