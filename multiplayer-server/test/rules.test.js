@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { MAX_PLAYERS, CHARACTER_IDS, createSpawn, normalizePlayerUpdate, sanitizePlayerName } from "../src/rules.js";
+import { MAX_PLAYERS, CHARACTER_IDS, createSpawn, findAvailableSpawn, normalizePlayerUpdate, sanitizePlayerName } from "../src/rules.js";
 
 test("shared city capacity is fixed at 16", () => assert.equal(MAX_PLAYERS, 16));
 test("known character ids are accepted", () => {
@@ -14,6 +14,26 @@ test("all 16 spawn locations stay inside the map", () => {
     assert.ok(p.y >= 45 && p.y <= 1955);
   }
 });
+test("spawn points are separated enough for fighter bodies", () => {
+  const points = Array.from({ length: MAX_PLAYERS }, (_, index) => createSpawn(index));
+  let minimum = Infinity;
+  for (let i = 0; i < points.length; i++) {
+    for (let j = i + 1; j < points.length; j++) {
+      minimum = Math.min(minimum, Math.hypot(
+        points[i].x - points[j].x,
+        points[i].y - points[j].y
+      ));
+    }
+  }
+  assert.ok(minimum >= 72);
+});
+
+test("rejoining chooses an unoccupied spawn slot", () => {
+  const occupied = Array.from({ length: 15 }, (_, index) => createSpawn(index + 1));
+  const spawn = findAvailableSpawn(occupied);
+  assert.ok(!occupied.some(player => Math.hypot(player.x - spawn.x, player.y - spawn.y) < 72));
+});
+
 test("client movement is bounded per update packet", () => {
   const next = normalizePlayerUpdate({ x: 3000, y: 1800 }, { x: 1000, y: 800, face: 0 }, 50);
   assert.ok(Math.hypot(next.x - 1000, next.y - 800) <= 150.001);

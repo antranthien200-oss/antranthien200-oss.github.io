@@ -1,6 +1,6 @@
 import { Room } from "colyseus";
 import { schema, t } from "@colyseus/schema";
-import { CHARACTER_IDS, MAX_PLAYERS, createSpawn, normalizePlayerUpdate, sanitizePlayerName } from "../rules.js";
+import { CHARACTER_IDS, MAX_PLAYERS, findAvailableSpawn, normalizePlayerUpdate, sanitizePlayerName } from "../rules.js";
 
 const PlayerState = schema({
   name: t.string().default("Player"),
@@ -42,11 +42,15 @@ export class CityRoom extends Room {
   }
 
   onJoin(client, options = {}) {
-    const index = this.state.players.size;
-    const spawn = createSpawn(index);
+    const occupiedPlayers = [];
+    this.state.players.forEach(existing => occupiedPlayers.push(existing));
+    const spawn = findAvailableSpawn(occupiedPlayers);
     const character = CHARACTER_IDS.includes(options.character) ? options.character : "vessel";
     const player = new PlayerState();
-    player.name = sanitizePlayerName(options.name, "Player");
+    const requestedName = sanitizePlayerName(options.name, "Player");
+    player.name = requestedName === "Player"
+      ? "Player-" + client.sessionId.slice(0, 4).toUpperCase()
+      : requestedName;
     player.character = character;
     player.x = spawn.x;
     player.y = spawn.y;

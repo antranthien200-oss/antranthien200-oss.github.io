@@ -14,12 +14,34 @@ export function sanitizePlayerName(value, fallback = "Player") {
 }
 
 export function createSpawn(index = 0) {
-  const angle = index * 2.399963229728653;
-  const radius = 95 + Math.floor(index / 8) * 55;
+  const slot = ((Math.floor(index) % MAX_PLAYERS) + MAX_PLAYERS) % MAX_PLAYERS;
+  const angle = -Math.PI / 2 + slot * (Math.PI * 2 / MAX_PLAYERS);
+  const radius = 220;
   return {
     x: clamp(1250 + Math.cos(angle) * radius, 50, WORLD_WIDTH - 50),
     y: clamp(765 + Math.sin(angle) * radius, 50, WORLD_HEIGHT - 50)
   };
+}
+
+export function findAvailableSpawn(players = []) {
+  const occupied = Array.from(players || []);
+  let bestSpawn = createSpawn(0);
+  let bestDistance = -1;
+  for (let index = 0; index < MAX_PLAYERS; index++) {
+    const spawn = createSpawn(index);
+    const nearestDistance = occupied.length
+      ? Math.min(...occupied.map(player => Math.hypot(
+          finite(player.x, spawn.x) - spawn.x,
+          finite(player.y, spawn.y) - spawn.y
+        )))
+      : Infinity;
+    if (nearestDistance > bestDistance) {
+      bestDistance = nearestDistance;
+      bestSpawn = spawn;
+    }
+    if (nearestDistance >= 72) return spawn;
+  }
+  return bestSpawn;
 }
 
 export function normalizePlayerUpdate(input, current, elapsedMs = 50) {

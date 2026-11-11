@@ -7,9 +7,11 @@ This is the Colyseus server for one shared city room.
 - One persistent room named `city`; maximum 16 clients.
 - Public clients can only join/reconnect. They cannot create rooms or use `joinOrCreate`.
 - Player positions, selected characters, facing, block state, basic attack state, awakening flag and animation state are synchronized.
+- Remote players receive distinct generated nameplates when no custom name is supplied.
+- Spawn allocation checks occupied positions to reduce overlaps when players leave and rejoin.
 - The server clamps coordinates and limits movement per update packet.
 
-Combat damage, skill hit validation, cars, train state, destructible buildings and other world-object state are not authoritative/synchronized yet. This is the online networking foundation, not the finished combat multiplayer release.
+Combat damage, skill hit validation, cars, train state, destructible buildings and other world-object state are not authoritative/synchronized yet. Movement is currently client-driven with server-side bounds checks, not full server-authoritative combat. This is the online networking beta, not the finished combat multiplayer release.
 
 ## Deploy on Render
 
