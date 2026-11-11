@@ -1000,9 +1000,10 @@ function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,
 let player,enemy,trainingDummy;
 
 let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
-let onlineSendAccumulator=0,onlineServerUrlSetting='',onlineStatusMessage='SERVER ADDRESS REQUIRED',onlineConnecting=false;
+const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
+let onlineSendAccumulator=0,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='SERVER ADDRESS SAVED · CLICK CONNECT',onlineConnecting=false;
 const onlineRemotePlayers=new Map();
-try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||''}catch(e){}
+try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL}catch(e){}
 function setOnlineStatus(message){
  onlineStatusMessage=String(message||'');
  const status=$('onlineStatusText');if(status)status.textContent=onlineStatusMessage;
