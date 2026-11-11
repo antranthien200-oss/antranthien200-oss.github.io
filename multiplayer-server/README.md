@@ -1,37 +1,26 @@
-# Balls Shenanigan Multiplayer Server
+# Balls Shenanigan multiplayer server
+Colyseus backend for one persistent shared city with a hard cap of 16 seats.
 
-This is the Colyseus server for one shared city room.
+## Online systems in this beta
+- Server-owned HP, meter, stun, invulnerability, awakening, death and respawn.
+- Server validates melee/skill hit range, facing, per-move cadence, block direction and damage.
+- Buildings, small destructible props, car occupancy/driving, train timing and train collisions are shared world state.
+- Domain zones apply server-side periodic damage.
+- 25-second seat hold for temporary connection drops.
 
-## Implemented online slice
+Movement remains client-predicted with server-side bounds checks. Not every bespoke grab/counter, projectile trajectory or cinematic domain effect has been migrated into a fully authoritative simulation; this remains a multiplayer beta.
 
-- One persistent room named `city`; maximum 16 clients.
-- Public clients can only join/reconnect. They cannot create rooms or use `joinOrCreate`.
-- Player positions, selected characters, facing, block state, basic attack state, awakening flag and animation state are synchronized.
-- Remote players receive distinct generated nameplates when no custom name is supplied.
-- Spawn allocation checks occupied positions to reduce overlaps when players leave and rejoin.
-- The server clamps coordinates and limits movement per update packet.
+## Deploy
+The root `render.yaml` configures one Render process in Singapore. After backend changes are pushed, verify Render has deployed the latest commit, then test `/health`.
 
-Combat damage, skill hit validation, cars, train state, destructible buildings and other world-object state are not authoritative/synchronized yet. Movement is currently client-driven with server-side bounds checks, not full server-authoritative combat. This is the online networking beta, not the finished combat multiplayer release.
+Render Free may sleep after inactivity. A paid always-on instance is recommended for a public 16-player session.
 
-## Deploy on Render
-
-1. Open Render and choose **New → Blueprint**.
-2. Select this GitHub repository and apply its root `render.yaml`.
-3. Wait until `balls-shenanigan-online` is live in the Singapore region.
-4. Copy the service's HTTPS URL.
-5. Open the game → **ONLINE** → paste the URL into **SERVER ADDRESS** → **CONNECT TO THE ONE SERVER**.
-
-The Blueprint uses the **Free** plan to avoid opting into paid hosting without your approval. Render Free services spin down after 15 minutes without inbound HTTP/WebSocket activity and may take about a minute to wake. For an always-on public game server, change the service to a paid plan in Render.
-
-## Local test
-
-Requires Node.js 22 or newer.
-
+## Local
+Requires Node 22+.
 ```sh
 cd multiplayer-server
 npm install
 npm test
 npm start
 ```
-
-Then use `http://localhost:2567` in the Online menu.
+Connect to `http://localhost:2567`.

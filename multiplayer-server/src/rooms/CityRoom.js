@@ -1,71 +1,38 @@
 import { Room } from "colyseus";
-import { schema, t } from "@colyseus/schema";
-import { CHARACTER_IDS, MAX_PLAYERS, findAvailableSpawn, normalizePlayerUpdate, sanitizePlayerName } from "../rules.js";
-
-const PlayerState = schema({
-  name: t.string().default("Player"),
-  character: t.string().default("vessel"),
-  x: t.number().default(1250),
-  y: t.number().default(765),
-  face: t.number().default(0),
-  walk: t.number().default(0),
-  jump: t.number().default(0),
-  block: t.boolean().default(false),
-  attackAnim: t.number().default(0),
-  attackType: t.string().default(""),
-  motionName: t.string().default(""),
-  motionProgress: t.number().default(0),
-  awakened: t.boolean().default(false),
-  dead: t.boolean().default(false)
-});
-const CityState = schema({ players: t.map(PlayerState) });
-
-export class CityRoom extends Room {
-  maxClients = MAX_PLAYERS;
-  autoDispose = false;
-  patchRate = 50;
-  maxMessagesPerSecond = 24;
-
-  onCreate() {
-    this.setState(new CityState());
-    this.lastUpdateAt = new Map();
-    this.onMessage("player:update", (client, payload) => {
-      const player = this.state.players.get(client.sessionId);
-      if (!player) return;
-      const now = Date.now();
-      const previous = this.lastUpdateAt.get(client.sessionId) || (now - 50);
-      const normalized = normalizePlayerUpdate(payload, player, now - previous);
-      if (!normalized) return;
-      Object.assign(player, normalized);
-      this.lastUpdateAt.set(client.sessionId, now);
-    });
-  }
-
-  onJoin(client, options = {}) {
-    const occupiedPlayers = [];
-    this.state.players.forEach(existing => occupiedPlayers.push(existing));
-    const spawn = findAvailableSpawn(occupiedPlayers);
-    const character = CHARACTER_IDS.includes(options.character) ? options.character : "vessel";
-    const player = new PlayerState();
-    const requestedName = sanitizePlayerName(options.name, "Player");
-    player.name = requestedName === "Player"
-      ? "Player-" + client.sessionId.slice(0, 4).toUpperCase()
-      : requestedName;
-    player.character = character;
-    player.x = spawn.x;
-    player.y = spawn.y;
-    player.face = 0;
-    this.state.players.set(client.sessionId, player);
-    this.lastUpdateAt.set(client.sessionId, Date.now());
-    this.broadcast("server:player-count", { count: this.state.players.size, capacity: MAX_PLAYERS });
-    console.log("[city] joined", player.name, this.state.players.size + "/" + MAX_PLAYERS);
-  }
-
-  onLeave(client) {
-    const player = this.state.players.get(client.sessionId);
-    this.state.players.delete(client.sessionId);
-    this.lastUpdateAt.delete(client.sessionId);
-    this.broadcast("server:player-count", { count: this.state.players.size, capacity: MAX_PLAYERS });
-    console.log("[city] left", player?.name || client.sessionId, this.state.players.size + "/" + MAX_PLAYERS);
-  }
+import { schema,t } from "@colyseus/schema";
+import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,findAvailableSpawn,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
+const PlayerState=schema({name:t.string.default("Player"),character:t.string.default("vessel"),x:t.number.default(1250),y:t.number.default(765),face:t.number.default(0),walk:t.number.default(0),jump:t.number.default(0),block:t.boolean.default(false),attackAnim:t.number.default(0),attackType:t.string.default(""),motionName:t.string.default(""),motionProgress:t.number.default(0),hp:t.number.default(100),maxHp:t.number.default(100),meter:t.number.default(0),stun:t.number.default(0),invuln:t.number.default(0),dead:t.boolean.default(false),respawnTimer:t.number.default(0),awakened:t.boolean.default(false),connected:t.boolean.default(true),vehicleId:t.string.default(""),domainType:t.string.default(""),domainTimer:t.number.default(0),domainRadius:t.number.default(0),domainX:t.number.default(0),domainY:t.number.default(0)});
+const BuildingState=schema({stage:t.number.default(0),collapsed:t.boolean.default(false)});
+const CarState=schema({x:t.number.default(0),y:t.number.default(0),angle:t.number.default(0),vx:t.number.default(0),vy:t.number.default(0),speed:t.number.default(0),occupiedBy:t.string.default(""),destroyed:t.boolean.default(false)});
+const PropState=schema({hp:t.number.default(3),alive:t.boolean.default(true)});
+const WorldState=schema({buildings:t.map(BuildingState),cars:t.map(CarState),props:t.map(PropState),worldSeconds:t.number.default(0),trainX:t.number.default(-9999),trainWarning:t.boolean.default(false)});
+const CityState=schema({players:t.map(PlayerState),world:WorldState});
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+export class CityRoom extends Room{
+ maxClients=MAX_PLAYERS;autoDispose=false;patchRate=50;maxMessagesPerSecond=60;
+ onCreate(){
+  const initial=new CityState();initial.world=new WorldState();this.setState(initial);
+  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.domainTickAt=0;
+  BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
+  CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
+  PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
+  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
+  this.setSimulationInterval(ms=>this.tick(ms/1000),50);
+ }
+ onJoin(client,options={}){const others=[];this.state.players.forEach(p=>others.push(p));const spawn=findAvailableSpawn(others),character=CHARACTER_IDS.includes(options.character)?options.character:"vessel",hp=CHARACTER_HP[character]||100,p=new PlayerState(),name=sanitizePlayerName(options.name,"Player");p.name=name==="Player"?"Player-"+client.sessionId.slice(0,4).toUpperCase():name;p.character=character;p.x=spawn.x;p.y=spawn.y;p.hp=hp;p.maxHp=hp;this.state.players.set(client.sessionId,p);this.lastUpdateAt.set(client.sessionId,Date.now());this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] joined",p.name,this.state.players.size+"/16")}
+ onDrop(client){const p=this.state.players.get(client.sessionId);if(p)p.connected=false;this.allowReconnection(client,25)}
+ onReconnect(client){const p=this.state.players.get(client.sessionId);if(p)p.connected=true;console.log("[city] reconnected",p?.name||client.sessionId)}
+ onLeave(client){const p=this.state.players.get(client.sessionId);if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===client.sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}this.state.players.delete(client.sessionId);this.lastUpdateAt.delete(client.sessionId);this.lastCarControlAt.delete(client.sessionId);for(const k of this.lastHitAt.keys())if(k.startsWith(client.sessionId+":"))this.lastHitAt.delete(k);this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] left",p?.name||client.sessionId,this.state.players.size+"/16")}
+ updatePlayer(client,payload){const p=this.state.players.get(client.sessionId);if(!p||p.dead)return;const now=Date.now(),prev=this.lastUpdateAt.get(client.sessionId)||now-50,n=normalizePlayerUpdate(payload,p,now-prev);if(!n)return;this.lastUpdateAt.set(client.sessionId,now);p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.attackAnim=n.attackAnim;p.attackType=n.attackType;p.motionName=n.motionName;p.motionProgress=n.motionProgress;if(p.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(!c||c.destroyed||c.occupiedBy!==client.sessionId)p.vehicleId="";else{p.x=c.x;p.y=c.y}}else{p.x=n.x;p.y=n.y}
+  const requested=String(payload.domainType||""),allowed=DOMAIN_BY_CHARACTER[p.character]||[];if(requested&&!p.domainType&&allowed.includes(requested)&&p.awakened){p.domainType=requested;p.domainTimer=clamp(Number(payload.domainTimer)||30,1,120);p.domainRadius=clamp(Number(payload.domainRadius)||700,120,1600);p.domainX=p.x;p.domainY=p.y}else if(!requested&&p.domainType){p.domainType="";p.domainTimer=0;p.domainRadius=0}}
+ awakenPlayer(client){const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;p.awakened=true;p.meter=0;p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:25));if(p.character==="restless"){p.domainType="hakari";p.domainTimer=120;p.domainRadius=1500;p.domainX=p.x;p.domainY=p.y}}
+ combatHit(client,payload={}){const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id);if(!a||!target||a===target||a.dead||target.dead||a.stun>0)return;const move=String(payload.move||"").slice(0,48);if(!/^[a-zA-Z0-9_ -]{1,48}$/.test(move))return;const profile=combatProfile(a.character,move,a.awakened),d=distance(a,target),angle=Math.atan2(target.y-a.y,target.x-a.x),delta=Math.atan2(Math.sin(angle-a.face),Math.cos(angle-a.face));if(d>profile.range||Math.abs(delta)>profile.arc)return;const family=/^(m1_|yutaM1_)/i.test(move)?"m1":move.replace(/[0-9]+/g,"#"),key=client.sessionId+":"+id+":"+family,now=Date.now();if(now-(this.lastHitAt.get(key)||0)<profile.cooldown*1000)return;this.lastHitAt.set(key,now);if(target.invuln>0)return;const incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face)),blocking=target.block&&Math.abs(guard)<=1.18;if(blocking){target.hp=Math.max(1,target.hp-profile.damage*.12);target.meter=clamp(target.meter+profile.damage*.12,0,100);target.invuln=.08;a.meter=clamp(a.meter+1,0,100);return}target.hp=Math.max(0,target.hp-profile.damage);target.stun=Math.max(target.stun,profile.stun);target.invuln=.12;target.x=clamp(target.x+Math.cos(angle)*profile.knockback,45,WORLD_WIDTH-45);target.y=clamp(target.y+Math.sin(angle)*profile.knockback,45,WORLD_HEIGHT-45);target.meter=clamp(target.meter+profile.damage*.28,0,100);a.meter=clamp(a.meter+profile.damage*.5,0,100);if(target.hp<=0)this.killPlayer(target)}
+ awakenPlayer(client){const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;p.awakened=true;p.meter=0;p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:25));if(p.character==="restless"){p.domainType="hakari";p.domainTimer=120;p.domainRadius=1500;p.domainX=p.x;p.domainY=p.y}}
+ killPlayer(p){if(p.dead)return;p.hp=0;p.dead=true;p.respawnTimer=2.5;p.stun=0;p.invuln=0;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0;if(p.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}p.vehicleId=""}}
+ hitBuilding(client,payload={}){const p=this.state.players.get(client.sessionId),id=Number(payload.buildingId);if(!p||p.dead||!Number.isInteger(id)||id<0||id>=BUILDING_LAYOUT.length)return;const b=BUILDING_LAYOUT[id],s=this.state.world.buildings.get(String(id));if(!s||s.collapsed||!rayHitsRect(p,p.face,b,1100))return;s.stage=Math.min(3,s.stage+1);if(s.stage>=3)s.collapsed=true}
+ hitProp(client,payload={}){const p=this.state.players.get(client.sessionId),id=Number(payload.propId),state=this.state.world.props.get(String(id)),source=PROP_SPAWNS.find(x=>x.id===id);if(!p||p.dead||!state||!state.alive||!source||p.attackType!=="punch"||p.attackAnim<=0||distance(p,{x:source.x+source.w/2,y:source.y+source.h/2})>58)return;const key=client.sessionId+":"+id,now=Date.now();if(now-(this.lastPropHitAt.get(key)||0)<240)return;this.lastPropHitAt.set(key,now);state.hp=Math.max(0,state.hp-1);if(state.hp<=0)state.alive=false}
+ enterCar(client,payload={}){const p=this.state.players.get(client.sessionId),id=String(payload.carId??""),c=this.state.world.cars.get(id);if(!p||p.dead||p.vehicleId||!c||c.destroyed||c.occupiedBy||distance(p,c)>110)return;c.occupiedBy=client.sessionId;c.speed=0;c.vx=0;c.vy=0;p.vehicleId=id;p.x=c.x;p.y=c.y;p.block=false;p.attackAnim=0;p.motionName=""}
+ exitCar(client){const p=this.state.players.get(client.sessionId);if(!p||!p.vehicleId)return;const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===client.sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;p.x=clamp(c.x+Math.cos(c.angle)*35,45,WORLD_WIDTH-45);p.y=clamp(c.y+Math.sin(c.angle)*35,45,WORLD_HEIGHT-45)}p.vehicleId=""}
+ driveCar(client,payload={}){const p=this.state.players.get(client.sessionId);if(!p||p.dead||!p.vehicleId)return;const c=this.state.world.cars.get(p.vehicleId);if(!c||c.destroyed||c.occupiedBy!==client.sessionId)return;const now=Date.now(),prev=this.lastCarControlAt.get(client.sessionId)||now-50;if(now-prev<35)return;const dt=clamp((now-prev)/1000,.02,.12);this.lastCarControlAt.set(client.sessionId,now);const steer=clamp(Number(payload.steer)||0,-1,1),throttle=clamp(Number(payload.throttle)||0,-1,1),drift=payload.drift===true&&Math.abs(c.speed)>80&&Math.abs(steer)>.05;if(throttle>0){if(c.speed<0)c.speed=Math.min(0,c.speed+620*dt);else c.speed=Math.min(680,c.speed+340*dt)}else if(throttle<0){if(c.speed>0)c.speed=Math.max(0,c.speed-560*dt);else c.speed=Math.max(-210,c.speed-230*dt)}else c.speed*=Math.exp(-.34*dt);if(Math.abs(steer)>.01&&Math.abs(c.speed)>10)c.angle+=steer*(.75+Math.min(1,Math.abs(c.speed)/320)*1.15)*dt*(c.speed>=0?1:-1);if(drift)c.speed=Math.min(680,c.speed+78*dt);const hx=Math.sin(c.angle),hy=-Math.cos(c.angle),grip=drift?1.25:8.5,blend=clamp(grip*dt,0,1);c.vx+=(hx*c.speed-c.vx)*blend;c.vy+=(hy*c.speed-c.vy)*blend;c.x=clamp(c.x+c.vx*dt,45,WORLD_WIDTH-45);c.y=clamp(c.y+c.vy*dt,45,WORLD_HEIGHT-45);p.x=c.x;p.y=c.y;p.face=Math.atan2(hy,hx);if(Math.abs(c.speed)>110){for(const [id,target] of this.state.players){if(id===client.sessionId||target.dead||target.vehicleId||distance(c,target)>54)continue;const key="car:"+p.vehicleId+":"+id;if(now-(this.lastHitAt.get(key)||0)<650)continue;this.lastHitAt.set(key,now);target.hp=Math.max(0,target.hp-18);target.stun=Math.max(target.stun,.7);target.invuln=.18;target.x=clamp(target.x+hx*12,45,WORLD_WIDTH-45);target.y=clamp(target.y+hy*12,45,WORLD_HEIGHT-45);if(target.hp<=0)this.killPlayer(target)}}}
+ tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.attackAnim=Math.max(0,p.attackAnim-dt);if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRadius=0}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0&&p.attackType==="punch"){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive||distance(p,{x:src.x+src.w/2,y:src.y+src.h/2})>45)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0)prop.alive=false}}}if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}}if(now-this.domainTickAt>=600){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||!o.domainType||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||700,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||distance(o,t)>r||t.invuln>0)continue;const damage=o.domainType==="void"?4:o.domainType==="shrine"?5:3;t.hp=Math.max(0,t.hp-damage);t.stun=Math.max(t.stun,o.domainType==="void"?.7:.18);t.invuln=.25;if(t.hp<=0)this.killPlayer(t)}}}}
 }
