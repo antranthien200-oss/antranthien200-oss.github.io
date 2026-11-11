@@ -1122,7 +1122,7 @@ async function joinOnlineServer(){
  onlineConnecting=true;if(button){button.disabled=true;button.textContent='CONNECTING...'}
  setOnlineStatus('CONNECTING TO THE CITY...');
  try{
-  const {Client}=await import('https://esm.sh/@colyseus/sdk@0.18.1');
+  const {Client}=await import('https://esm.sh/@colyseus/sdk@0.18.10');
   const client=new Client(serverUrl);
   const room=await client.join('city',{character:selected,name:'Player'});
   onlineClient=client;onlineRoom=room;onlineSessionId=room.sessionId;
