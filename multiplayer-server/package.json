@@ -1,0 +1,17 @@
+{
+  "name": "balls-shenanigan-multiplayer",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@colyseus/schema": "5.0.8",
+    "colyseus": "0.18.12"
+  }
+}

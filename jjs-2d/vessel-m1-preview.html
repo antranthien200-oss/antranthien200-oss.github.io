@@ -127,6 +127,17 @@
 .online-status{display:flex;align-items:center;gap:8px;color:#ffd58c;font-size:9px;font-weight:1000;letter-spacing:.15em}
 .online-status-dot{width:8px;height:8px;border-radius:50%;background:#e6a94f;box-shadow:0 0 9px #e6a94f66}
 .online-panel-card p{margin:0;color:#aebbd0;font-size:10px;line-height:1.5}
+.online-server-field{display:grid;gap:6px;color:#a9bdd5;font-size:8px;font-weight:900;letter-spacing:.16em}
+.online-server-field input{width:100%;min-height:38px;padding:9px 11px;border:1px solid #ffffff36;border-radius:4px;outline:none;background:#050b16d9;color:#eff7ff;font:700 11px system-ui;letter-spacing:0}
+.online-server-field input:focus{border-color:#75ddff;box-shadow:0 0 0 2px #75ddff20}
+.online-status-dot{width:8px;height:8px;border-radius:50%;background:#e6a94f;box-shadow:0 0 9px #e6a94f66;flex:none}
+.online-join{width:100%;padding:12px 15px;border:1px solid #69dfff88;border-radius:4px;background:linear-gradient(100deg,#125477,#15344e);color:#eafaff;font-size:9px;font-weight:1000;letter-spacing:.18em;cursor:pointer}
+.online-join:hover{filter:brightness(1.15)}
+.online-join:disabled{opacity:.5;cursor:wait}
+#onlinePlayersHud{position:fixed;z-index:24;top:18px;right:20px;display:none;align-items:center;gap:10px;padding:7px 10px;border:1px solid #79ddff55;border-radius:5px;background:rgba(4,12,23,.88);color:#eafaff;font:900 9px system-ui;letter-spacing:.12em;box-shadow:0 5px 18px #0007}
+#onlineLeaveBtn{border:1px solid #ff829066;border-radius:3px;padding:5px 8px;background:#a82c4c;color:#fff;font:1000 8px system-ui;letter-spacing:.1em;cursor:pointer}
+@media(max-width:640px){#onlinePlayersHud{top:8px;right:8px;padding:6px 8px;font-size:8px}}
+
 .online-join{width:100%;padding:12px 15px;border:1px solid #ffffff28;border-radius:4px;background:#ffffff0b;color:#aab6c8;font-size:9px;font-weight:1000;letter-spacing:.18em;cursor:not-allowed;opacity:.72}
 @media(max-width:640px){.online-panel-card{min-height:0;padding:14px}.online-capacity{padding:10px}}
 @keyframes menuDrift{from{transform:scale(1.025) translate3d(-.3%,0,0)}to{transform:scale(1.07) translate3d(.3%,-.2%,0)}}
@@ -803,6 +814,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
     <div id="menuSubTabs" class="accessory-slot-tabs" hidden></div><div id="menuSubCards" class="menu-sub-cards"></div><div class="menu-sub-footer"><span id="menuSubSelected">SELECTED: THE HONORED ONE</span><button id="menuSubDone" class="menu-done">DONE <span>→</span></button></div>
   </section></div>
 </div>
+<div id="onlinePlayersHud"><span id="onlinePlayersCount">1 / 16 PLAYERS</span><button type="button" id="onlineLeaveBtn">LEAVE</button></div>
 <div id="pause"><div class="pausebox"><h2>PAUSED</h2><p>Catch your breath. The fight is still waiting.</p><button class="primary" id="resumeBtn">RESUME · ESC</button><button class="primary" id="restartBtn" style="background:linear-gradient(100deg,#53677d,#35465b);box-shadow:none">RESTART MATCH</button><button class="primary" id="menuBtn" style="background:linear-gradient(100deg,#303d50,#202a39);box-shadow:none">CHARACTER SELECT</button></div></div>
 <script>
 (() => {
@@ -921,7 +933,7 @@ function renderMenuSub(){
  $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':isOnline?'Join the same city as up to 15 other players.':'Pick a slot, then equip or remove an accessory. Each slot can hold one item.';
  tabWrap.hidden=isCharacter||isOnline;let html='';
  if(isOnline){
-  html='<div class="online-panel-card"><div class="online-panel-heading"><span class="online-panel-icon">◎</span><div><strong>BALLS SHENANIGAN ONLINE</strong><small>ONE SHARED CITY · UP TO 16 PLAYERS</small></div></div><div class="online-capacity"><span>MAXIMUM SERVER CAPACITY</span><b>16 PLAYERS</b></div><div class="online-status"><span class="online-status-dot"></span><span>SERVER NOT CONFIGURED</span></div><p>The online menu is ready, but the multiplayer server still needs to be deployed and connected before anyone can join.</p><button class="online-join" type="button" disabled aria-disabled="true">JOIN SERVER · OFFLINE</button></div>';
+  html="<div class=\"online-panel-card\">\n    <div class=\"online-panel-heading\"><span class=\"online-panel-icon\">◎</span><div><strong>BALLS SHENANIGAN ONLINE</strong><small>ONE SHARED CITY · UP TO 16 PLAYERS</small></div></div>\n    <div class=\"online-capacity\"><span>MAXIMUM SERVER CAPACITY</span><b>16 PLAYERS</b></div>\n    <label class=\"online-server-field\" for=\"onlineServerUrl\">SERVER ADDRESS\n      <input id=\"onlineServerUrl\" type=\"url\" inputmode=\"url\" autocomplete=\"url\" placeholder=\"https://your-server.onrender.com\">\n    </label>\n    <div class=\"online-status\"><span class=\"online-status-dot\"></span><span id=\"onlineStatusText\">SERVER ADDRESS REQUIRED</span></div>\n    <p>All players share the same city. This first online build synchronizes player positions, character choices and animations. Combat damage and destructible-world synchronization are still being integrated.</p>\n    <button class=\"online-join\" id=\"onlineJoinBtn\" type=\"button\">CONNECT TO THE ONE SERVER</button>\n  </div>";
  }else if(isCharacter){
   html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('');
  }else{
@@ -931,8 +943,13 @@ function renderMenuSub(){
   html=choices.map(item=>'<button class="menu-option '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'"><span class="option-icon">'+item.icon+'</span><span class="accessory-chip">'+slot.label+'</span><span class="option-name">'+item.name+'</span><span class="option-desc">'+item.desc+'</span></button>').join('');
  }
  $('menuSubCards').innerHTML=html;
- $('menuSubSelected').textContent=isOnline?'SERVER SETUP REQUIRED · ONE SERVER · 16 MAX':isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
+ $('menuSubSelected').textContent=isOnline?'ONE SHARED SERVER · 16 PLAYER LIMIT':isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
  $('menuSubDone').innerHTML=isOnline?'BACK <span>→</span>':'DONE <span>→</span>';
+ if(isOnline){
+  const field=$('onlineServerUrl');if(field){field.value=onlineServerUrlSetting;field.addEventListener('input',()=>{onlineServerUrlSetting=field.value.trim()})}
+  setOnlineStatus(onlineStatusMessage);
+  $('onlineJoinBtn').addEventListener('click',joinOnlineServer);
+ }
  document.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selected=btn.dataset.character;updateMenuSummary();closeMenuSub()}));
  document.querySelectorAll('[data-accessory-slot]').forEach(btn=>btn.addEventListener('click',()=>{accessorySlot=btn.dataset.accessorySlot;renderMenuSub()}));
  document.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{accessoryLoadouts[selected][accessorySlot]=btn.dataset.accessory;updateMenuSummary();renderMenuSub()}));
@@ -940,6 +957,7 @@ function renderMenuSub(){
 $('switchCharBtn').addEventListener('click',()=>showMenuSub('character'));
 $('switchAccessoriesBtn').addEventListener('click',()=>showMenuSub('accessory'));
 $('onlineBtn').addEventListener('click',()=>showMenuSub('online'));
+$('onlineLeaveBtn').addEventListener('click',leaveOnlineServer);
 $('menuSubClose').addEventListener('click',closeMenuSub);
 $('menuSubDone').addEventListener('click',closeMenuSub);
 updateMenuSummary();
@@ -980,6 +998,162 @@ const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaKatanas:[],yutaHeldKatana:null,yutaKatanaSpawnTimer:0,yutaLadder:null,yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,sukunaFireCast:0,sukunaFireSerial:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
+
+let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
+let onlineSendAccumulator=0,onlineServerUrlSetting='',onlineStatusMessage='SERVER ADDRESS REQUIRED',onlineConnecting=false;
+const onlineRemotePlayers=new Map();
+try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||''}catch(e){}
+function setOnlineStatus(message){
+ onlineStatusMessage=String(message||'');
+ const status=$('onlineStatusText');if(status)status.textContent=onlineStatusMessage;
+}
+function normalizeOnlineServerUrl(value){
+ const url=new URL(String(value||'').trim());
+ if(url.protocol==='wss:')url.protocol='https:';
+ if(url.protocol==='ws:')url.protocol='http:';
+ if(url.protocol!=='https:'&&url.protocol!=='http:')throw new Error('Use an HTTPS server URL.');
+ return url.origin+url.pathname.replace(/\/$/,'');
+}
+function applyOnlineRoomState(state){
+ if(!state||!state.players)return;
+ const entries=[];
+ if(typeof state.players.forEach==='function')state.players.forEach((value,key)=>entries.push([key,value]));
+ else if(typeof state.players==='object')Object.entries(state.players).forEach(entry=>entries.push(entry));
+ const seen=new Set();
+ for(const [sessionId,net] of entries){
+  if(sessionId===onlineSessionId)continue;
+  seen.add(sessionId);
+  const char=Object.prototype.hasOwnProperty.call(CHARS,String(net.character))?String(net.character):'vessel';
+  let remote=onlineRemotePlayers.get(sessionId);
+  if(!remote){
+   remote=makeFighter('enemy',char,Number(net.x)||1250,Number(net.y)||760);
+   remote.team='enemy';remote.onlineSessionId=sessionId;
+   remote.networkX=remote.x;remote.networkY=remote.y;
+   onlineRemotePlayers.set(sessionId,remote);
+  }
+  if(remote.char!==char){remote.char=char;remote.motion=null}
+  remote.onlineName=String(net.name||'Player').slice(0,18);
+  remote.networkX=Number.isFinite(Number(net.x))?Number(net.x):remote.x;
+  remote.networkY=Number.isFinite(Number(net.y))?Number(net.y):remote.y;
+  remote.networkFace=Number.isFinite(Number(net.face))?Number(net.face):remote.face;
+  remote.walk=Number(net.walk)||0;remote.jump=Number(net.jump)||0;
+  remote.block=!!net.block;remote.awakened=!!net.awakened;remote.dead=!!net.dead;
+  remote.attackAnim=Number(net.attackAnim)||0;remote.attackType=String(net.attackType||'');
+  if(net.motionName){
+   remote.motion={name:String(net.motionName),t:Math.max(0,Math.min(1,Number(net.motionProgress)||0)),duration:1,activeDuration:1,angle:remote.networkFace,target:null};
+  }else remote.motion=null;
+ }
+ for(const [sessionId] of onlineRemotePlayers){if(!seen.has(sessionId))onlineRemotePlayers.delete(sessionId)}
+ const label=$('onlinePlayersCount');
+ if(label)label.textContent=entries.length+' / 16 PLAYERS';
+}
+function updateOnlineRemotePlayers(dt){
+ const blend=clamp(dt*15,0,1);
+ for(const remote of onlineRemotePlayers.values()){
+  remote.x=lerp(remote.x,remote.networkX,blend);
+  remote.y=lerp(remote.y,remote.networkY,blend);
+  const angle=Math.atan2(Math.sin(remote.networkFace-remote.face),Math.cos(remote.networkFace-remote.face));
+  remote.face+=angle*blend;
+ }
+}
+function updateOnlineNetwork(dt){
+ if(!onlineMode||!onlineRoom||!player)return;
+ updateOnlineRemotePlayers(dt);
+ onlineSendAccumulator+=dt;
+ if(onlineSendAccumulator<.05)return;
+ onlineSendAccumulator=0;
+ const motion=player.motion;
+ const snapshot={
+  x:player.x,y:player.y,face:player.face,
+  walk:player.walk||0,jump:player.jump||0,
+  block:!!player.block,attackAnim:player.attackAnim||0,
+  attackType:String(player.attackType||'').slice(0,32),
+  motionName:motion?String(motion.name||'').slice(0,48):'',
+  motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,
+  awakened:!!player.awakened,dead:!!player.dead
+ };
+ try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
+}
+function drawOnlineNameplate(remote){
+ if(!remote||remote.dead)return;
+ const x=sx(remote.x),y=sy(remote.y)-55-remote.jump*3,name=String(remote.onlineName||'PLAYER').toUpperCase();
+ ctx.save();ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+ const width=Math.max(42,ctx.measureText(name).width+14);
+ ctx.fillStyle='rgba(4,10,19,.82)';ctx.fillRect(x-width/2,y-9,width,18);
+ ctx.strokeStyle='rgba(117,221,255,.65)';ctx.lineWidth=1;ctx.strokeRect(x-width/2,y-9,width,18);
+ ctx.fillStyle='#e7faff';ctx.fillText(name,x,y+.5);ctx.restore();
+}
+function startOnlineMatch(){
+ resetMatch();
+ onlineMode=true;onlineSendAccumulator=0;onlineRemotePlayers.clear();
+ if(onlineRoom&&onlineRoom.state&&onlineRoom.state.players){
+  let localState=null;
+  if(typeof onlineRoom.state.players.get==='function')localState=onlineRoom.state.players.get(onlineSessionId);
+  if(localState){player.x=Number(localState.x)||player.x;player.y=Number(localState.y)||player.y}
+ }
+ enemy.dead=true;enemy.respawn=1e9;enemy.aiDisabled=true;enemy.passiveNpc=true;
+ game.started=true;game.paused=false;game.over=false;
+ document.body.classList.add('game-active');document.body.classList.remove('game-paused');
+ $('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';
+ const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='flex';
+ if(onlineRoom)applyOnlineRoomState(onlineRoom.state);
+ showToast('ONLINE ALPHA · PLAYER SYNC ACTIVE',1500);
+ updateHud(true);
+}
+function handleOnlineDisconnect(){
+ if(!onlineMode)return;
+ onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
+ game.started=false;game.paused=false;
+ document.body.classList.remove('game-active','game-paused');
+ $('menu').style.display='flex';$('hud').style.display='none';
+ const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='none';
+ setOnlineStatus('CONNECTION LOST · TRY AGAIN');
+ showMenuSub('online');
+}
+async function joinOnlineServer(){
+ if(onlineConnecting)return;
+ const field=$('onlineServerUrl'),button=$('onlineJoinBtn');
+ const raw=field?field.value.trim():onlineServerUrlSetting;
+ if(!raw){setOnlineStatus('PASTE THE SERVER URL FIRST');if(field)field.focus();return}
+ let serverUrl;
+ try{serverUrl=normalizeOnlineServerUrl(raw)}catch(e){setOnlineStatus('INVALID SERVER URL · USE HTTPS');return}
+ onlineServerUrlSetting=serverUrl;
+ try{localStorage.setItem('ballsShenaniganOnlineServer',serverUrl)}catch(e){}
+ onlineConnecting=true;if(button){button.disabled=true;button.textContent='CONNECTING...'}
+ setOnlineStatus('CONNECTING TO THE CITY...');
+ try{
+  const {Client}=await import('https://esm.sh/@colyseus/sdk@0.18.1');
+  const client=new Client(serverUrl);
+  const room=await client.join('city',{character:selected,name:'Player'});
+  onlineClient=client;onlineRoom=room;onlineSessionId=room.sessionId;
+  room.onStateChange(state=>applyOnlineRoomState(state));
+  room.onLeave(()=>handleOnlineDisconnect());
+  startOnlineMatch();
+  const count=room.state&&room.state.players?room.state.players.size:1;
+  const label=$('onlinePlayersCount');if(label)label.textContent=count+' / 16 PLAYERS';
+ }catch(error){
+  onlineRoom=null;onlineClient=null;onlineSessionId=null;
+  const message=String(error&&error.message||error);
+  setOnlineStatus(/full|locked|capacity|available room|seat/i.test(message)?'SERVER FULL · 16/16 PLAYERS':'CONNECTION FAILED · CHECK SERVER URL');
+  console.error('Balls Shenanigan online connection failed:',error);
+ }finally{
+  onlineConnecting=false;
+  const currentButton=$('onlineJoinBtn');
+  if(currentButton){currentButton.disabled=false;currentButton.textContent='CONNECT TO THE ONE SERVER'}
+ }
+}
+function leaveOnlineServer(){
+ const room=onlineRoom;
+ onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
+ if(room){try{room.leave()}catch(e){console.warn('Could not leave online room cleanly',e)}}
+ game.started=false;game.paused=false;
+ document.body.classList.remove('game-active','game-paused');
+ $('menu').style.display='flex';$('hud').style.display='none';
+ const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='none';
+ setOnlineStatus('DISCONNECTED');
+ showMenuSub('online');
+}
+
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
 function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1860,1190);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay)comboDisplay.classList.remove('active','pop','hot');game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});mapCacheDirty=true;resetTrashCans();resetCityVehicles();player.vehicle=null;camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
@@ -2906,12 +3080,12 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
  if(trailStrokes.length>trailLimit)trailStrokes.splice(0,trailStrokes.length-trailLimit);
- if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;enforcePreviewAdminMode();updateHud()}
+ if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;enforcePreviewAdminMode();updateHud();if(onlineMode)updateOnlineNetwork(dt)}
 function sx(x){return x-camera.x+W/2}function sy(y){return y-camera.y+H/2}
 function rect(x,y,w,h,c,stroke){ctx.fillStyle=c;ctx.fillRect(sx(x),sy(y),w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sx(x),sy(y),w,h)}}
 function drawMap(){if(isFullScreenDomainActive())return;
@@ -5393,7 +5567,7 @@ function draw(){
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
- if(player)drawFighter(player);if(enemy)drawFighter(enemy);drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
+ if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighter(remote);for(const remote of onlineRemotePlayers.values())drawOnlineNameplate(remote)}drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
  positionVesselAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
