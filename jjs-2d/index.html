@@ -13,6 +13,7 @@
   .toprow{position:absolute;left:22px;right:22px;top:18px;display:flex;justify-content:space-between;gap:20px}
   .fighter-card{width:min(340px,34vw);padding:12px 14px 11px;background:linear-gradient(135deg,rgba(12,17,26,.92),rgba(24,30,43,.78));border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 22px #0005;position:relative;overflow:hidden}
   .fighter-card.enemy{margin-left:auto;text-align:right}
+  .online-mode .fighter-card.enemy{display:none}
   .fighter-name{font-size:13px;letter-spacing:.18em;font-weight:950;text-transform:uppercase}
   .fighter-sub{font-size:10px;letter-spacing:.16em;color:#aeb8c7;margin-top:2px;text-transform:uppercase}
   .health-track{height:13px;border:1px solid #ffffff33;background:#0a0e16;margin-top:9px;position:relative;overflow:hidden;transform:skewX(-8deg)}
@@ -1094,7 +1095,7 @@ function startOnlineMatch(){
  }
  enemy.dead=true;enemy.respawn=1e9;enemy.aiDisabled=true;enemy.passiveNpc=true;
  game.started=true;game.paused=false;game.over=false;
- document.body.classList.add('game-active');document.body.classList.remove('game-paused');
+ document.body.classList.add('game-active','online-mode');document.body.classList.remove('game-paused');
  $('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';
  const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='flex';
  if(onlineRoom)applyOnlineRoomState(onlineRoom.state);
@@ -1105,7 +1106,7 @@ function handleOnlineDisconnect(){
  if(!onlineMode)return;
  onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
  game.started=false;game.paused=false;
- document.body.classList.remove('game-active','game-paused');
+ document.body.classList.remove('game-active','game-paused','online-mode');
  $('menu').style.display='flex';$('hud').style.display='none';
  const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='none';
  setOnlineStatus('CONNECTION LOST · TRY AGAIN');
@@ -1148,7 +1149,7 @@ function leaveOnlineServer(){
  onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
  if(room){try{room.leave()}catch(e){console.warn('Could not leave online room cleanly',e)}}
  game.started=false;game.paused=false;
- document.body.classList.remove('game-active','game-paused');
+ document.body.classList.remove('game-active','game-paused','online-mode');
  $('menu').style.display='flex';$('hud').style.display='none';
  const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='none';
  setOnlineStatus('DISCONNECTED');
@@ -1266,7 +1267,7 @@ syncMobileControls();
 
 function togglePause(){if(!game.started||game.over)return;game.paused=!game.paused;document.body.classList.toggle('game-paused',game.paused);if(game.paused){stopMobileJoystick();mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none'}
 $('resumeBtn').onclick=togglePause;$('restartBtn').onclick=()=>{resetMatch();game.paused=false;$('pause').style.display='none';showToast('ROUND 1',800)};
-$('menuBtn').onclick=()=>{game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
+$('menuBtn').onclick=()=>{game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused','online-mode');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
 function showToast(){const toast=$('toast');if(toast){toast.textContent='';toast.classList.remove('show')}game.toastTimer=0}function showCombatAnnouncement(message,type='ko'){const el=$('combatNotice');if(!el)return;el.textContent=message;el.classList.remove('ko','death','active');el.classList.add(type);void el.offsetWidth;el.classList.add('active');game.combatNoticeTimer=1.35}
 function registerPlayerHit(target,source,amount){
  if(source!==player||target===player||amount<=0)return;
@@ -5545,7 +5546,7 @@ function draw(){
  drawDomainBackdrops();
  if(!isFullScreenDomainActive()){drawMap();drawDynamicCityObjects();drawCityVehicles();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
- if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);
+ if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawVesselAwakeningSmoke(remote);}
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighter(remote);for(const remote of onlineRemotePlayers.values())drawOnlineNameplate(remote)}drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
