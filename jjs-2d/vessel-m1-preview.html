@@ -3213,7 +3213,7 @@ function toggleCityVehicle(f){
  nearest.occupied=true;nearest.speed=0;nearest.vx=0;nearest.vy=0;nearest.skidMarks.length=0;
  f.vehicle=nearest;f.x=nearest.x;f.y=nearest.y;f.vx=0;f.vy=0;f.block=false;f.motion=null;f.face=-Math.PI/2;
  mouse.pending=false;mouse.buffer=0;
- showToast('DRIVE · WASD TO STEER · HOLD W TO ACCELERATE · SPACE TO DRIFT · E TO EXIT',1600);return true;
+ return true;
 }
 function resetCityVehicles(){
  for(const car of parkedCars){car.x=car.homeX;car.y=car.homeY;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.occupied=false;car.destroyed=false;car.skidTimer=0;car.hitEnemyCooldown=0;car.hitDummyCooldown=0;car.skidMarks.length=0}
