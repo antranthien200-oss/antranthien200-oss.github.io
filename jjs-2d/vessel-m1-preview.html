@@ -112,6 +112,23 @@
 .accessory-slot-tabs{display:flex;flex-wrap:wrap;gap:7px;margin:-3px 0 14px}.accessory-slot-tabs[hidden]{display:none!important}.accessory-tab{border:1px solid #ffffff2c;border-radius:4px;padding:9px 13px;background:#ffffff0a;color:#bdc9dc;font-size:9px;font-weight:950;letter-spacing:.12em;cursor:pointer}.accessory-tab.active{border-color:#ff7187;background:#ff536e20;color:#fff;box-shadow:inset 0 0 0 1px #ff687e55}.accessory-chip{margin:5px 0 10px;padding:5px 8px;border:1px solid #ffffff25;border-radius:3px;color:#a8bad2;font-size:8px;font-weight:900;letter-spacing:.14em}
 .menu-sub-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ffffff20;margin-top:19px;padding-top:14px}.menu-sub-footer>span{color:#abb9ce;font-size:8px;font-weight:900;letter-spacing:.13em}
 .menu-done{border:1px solid #ff7688;border-radius:4px;background:linear-gradient(100deg,#a82c4c,#59233f);color:#fff;padding:10px 20px;font-size:9px;font-weight:1000;letter-spacing:.2em;cursor:pointer}.menu-done span{margin-left:14px;font-size:14px}
+.menu-button.online{border-color:#69d9ff88;background:linear-gradient(105deg,rgba(12,54,78,.96),rgba(17,29,53,.94));box-shadow:0 0 22px #32bce52b,inset 0 0 17px #8be8ff12}
+.menu-button.online .button-icon{color:#8ceaff;text-shadow:0 0 12px #39c9ff}
+.menu-main{overflow-y:auto;scrollbar-width:none}
+.menu-main::-webkit-scrollbar{display:none}
+.online-panel-card{grid-column:1/-1;min-height:220px;padding:clamp(16px,3vw,24px);display:flex;flex-direction:column;gap:14px;border:1px solid #70dfff55;border-radius:7px;background:linear-gradient(145deg,rgba(16,51,72,.42),rgba(9,16,29,.84))}
+.online-panel-heading{display:flex;align-items:center;gap:13px}
+.online-panel-icon{width:44px;height:44px;display:grid;place-items:center;border:1px solid #75ddff55;border-radius:6px;background:#49cfff12;color:#9cecff;font-size:26px}
+.online-panel-heading strong{display:block;color:#f3f8ff;font-size:13px;font-weight:1000;letter-spacing:.13em}
+.online-panel-heading small{display:block;margin-top:5px;color:#9eb4cd;font-size:8px;font-weight:900;letter-spacing:.16em}
+.online-capacity{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 13px;border:1px solid #ffffff1e;border-radius:5px;background:#050b16a8}
+.online-capacity span{color:#9fb2cb;font-size:8px;font-weight:900;letter-spacing:.17em}
+.online-capacity b{color:#c9f4ff;font-size:12px;letter-spacing:.1em}
+.online-status{display:flex;align-items:center;gap:8px;color:#ffd58c;font-size:9px;font-weight:1000;letter-spacing:.15em}
+.online-status-dot{width:8px;height:8px;border-radius:50%;background:#e6a94f;box-shadow:0 0 9px #e6a94f66}
+.online-panel-card p{margin:0;color:#aebbd0;font-size:10px;line-height:1.5}
+.online-join{width:100%;padding:12px 15px;border:1px solid #ffffff28;border-radius:4px;background:#ffffff0b;color:#aab6c8;font-size:9px;font-weight:1000;letter-spacing:.18em;cursor:not-allowed;opacity:.72}
+@media(max-width:640px){.online-panel-card{min-height:0;padding:14px}.online-capacity{padding:10px}}
 @keyframes menuDrift{from{transform:scale(1.025) translate3d(-.3%,0,0)}to{transform:scale(1.07) translate3d(.3%,-.2%,0)}}
 @media(max-width:640px){.accessory-slot-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.accessory-tab{padding:10px 6px}}
 @media(max-width:640px){.menu-brand{font-size:7px;letter-spacing:.12em}.menu-version b{display:none}.menu-main{gap:12px;padding-top:55px;padding-bottom:58px}.menu-title{font-size:clamp(78px,20vw,112px)}.menu-actions,.menu-selected{width:min(300px,82vw)}.menu-button{min-height:49px}.menu-sub-cards{grid-template-columns:1fr}.menu-option{min-height:105px}.menu-option .option-icon{font-size:27px;margin-bottom:4px}.menu-sub-footer{align-items:flex-start;flex-direction:column}.menu-done{width:100%}.menu-bottomline{font-size:7px;gap:6px;letter-spacing:.1em}}
@@ -766,6 +783,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
     <div class="menu-logo"><div class="menu-kicker">THE PIXEL BRAWL</div><div class="menu-title">BALLS</div><div class="menu-subtitle">SHENANIGAN</div><div class="menu-title-rule"><span></span><b>2D FIGHTING GAME</b><span></span></div></div>
     <div class="menu-actions">
       <button class="menu-button play" id="startBtn"><span class="button-icon">▶</span><span>PLAY</span><small>ENTER THE BATTLE</small></button>
+      <button class="menu-button online" id="onlineBtn" type="button"><span class="button-icon">◎</span><span>ONLINE</span><small>ONE SHARED SERVER · MAX 16 PLAYERS</small></button>
       <button class="menu-button" id="switchCharBtn"><span class="button-icon">⇄</span><span>SWITCH CHARACTER</span><small>CHOOSE YOUR FIGHTER</small></button>
       <button class="menu-button" id="switchAccessoriesBtn"><span class="button-icon">✦</span><span>ACCESSORIES</span><small>EQUIP YOUR OWN LOADOUT</small></button>
     </div>
@@ -897,12 +915,14 @@ function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selecte
 function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub()}
 function closeMenuSub(){$('menuSub').hidden=true;menuView=''}
 function renderMenuSub(){
- const isCharacter=menuView==='character',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;
- $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':'CUSTOMIZATION';
- $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':'EQUIP ACCESSORIES';
- $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':'Pick a slot, then equip or remove an accessory. Each slot can hold one item.';
- tabWrap.hidden=isCharacter;let html='';
- if(isCharacter){
+ const isCharacter=menuView==='character',isOnline=menuView==='online',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;
+ $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':isOnline?'ONLINE MULTIPLAYER':'CUSTOMIZATION';
+ $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':isOnline?'ONE SHARED SERVER':'EQUIP ACCESSORIES';
+ $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':isOnline?'Join the same city as up to 15 other players.':'Pick a slot, then equip or remove an accessory. Each slot can hold one item.';
+ tabWrap.hidden=isCharacter||isOnline;let html='';
+ if(isOnline){
+  html='<div class="online-panel-card"><div class="online-panel-heading"><span class="online-panel-icon">◎</span><div><strong>BALLS SHENANIGAN ONLINE</strong><small>ONE SHARED CITY · UP TO 16 PLAYERS</small></div></div><div class="online-capacity"><span>MAXIMUM SERVER CAPACITY</span><b>16 PLAYERS</b></div><div class="online-status"><span class="online-status-dot"></span><span>SERVER NOT CONFIGURED</span></div><p>The online menu is ready, but the multiplayer server still needs to be deployed and connected before anyone can join.</p><button class="online-join" type="button" disabled aria-disabled="true">JOIN SERVER · OFFLINE</button></div>';
+ }else if(isCharacter){
   html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('');
  }else{
   tabWrap.innerHTML=ACCESSORY_SLOTS.map(s=>'<button class="accessory-tab '+(accessorySlot===s.id?'active':'')+'" data-accessory-slot="'+s.id+'">'+s.label+'</button>').join('');
@@ -911,13 +931,15 @@ function renderMenuSub(){
   html=choices.map(item=>'<button class="menu-option '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'"><span class="option-icon">'+item.icon+'</span><span class="accessory-chip">'+slot.label+'</span><span class="option-name">'+item.name+'</span><span class="option-desc">'+item.desc+'</span></button>').join('');
  }
  $('menuSubCards').innerHTML=html;
- $('menuSubSelected').textContent=isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
+ $('menuSubSelected').textContent=isOnline?'SERVER SETUP REQUIRED · ONE SERVER · 16 MAX':isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
+ $('menuSubDone').innerHTML=isOnline?'BACK <span>→</span>':'DONE <span>→</span>';
  document.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selected=btn.dataset.character;updateMenuSummary();closeMenuSub()}));
  document.querySelectorAll('[data-accessory-slot]').forEach(btn=>btn.addEventListener('click',()=>{accessorySlot=btn.dataset.accessorySlot;renderMenuSub()}));
  document.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{accessoryLoadouts[selected][accessorySlot]=btn.dataset.accessory;updateMenuSummary();renderMenuSub()}));
 }
 $('switchCharBtn').addEventListener('click',()=>showMenuSub('character'));
 $('switchAccessoriesBtn').addEventListener('click',()=>showMenuSub('accessory'));
+$('onlineBtn').addEventListener('click',()=>showMenuSub('online'));
 $('menuSubClose').addEventListener('click',closeMenuSub);
 $('menuSubDone').addEventListener('click',closeMenuSub);
 updateMenuSummary();
