@@ -1,7 +1,7 @@
 import { Room } from "colyseus";
 import { schema,t } from "@colyseus/schema";
 import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isMoveAllowed,isProjectileKindAllowed,isProjectileMoveAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
-const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerState");
+const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerState");
 const BuildingState=schema({stage:t.number().default(0),collapsed:t.boolean().default(false)},"BuildingState");
 const CarState=schema({x:t.number().default(0),y:t.number().default(0),angle:t.number().default(0),vx:t.number().default(0),vy:t.number().default(0),speed:t.number().default(0),occupiedBy:t.string().default(""),destroyed:t.boolean().default(false),respawnTimer:t.number().default(0)},"CarState");
 const PropState=schema({hp:t.number().default(3),alive:t.boolean().default(true),respawnTimer:t.number().default(0)},"PropState");
@@ -14,7 +14,7 @@ export class CityRoom extends Room{
  maxClients=MAX_PLAYERS;autoDispose=false;patchRate=33;maxMessagesPerSecond=90;
  onCreate(){
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
-  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.activeMoveUntil=new Map();this.activeMoveSpeed=new Map();this.projectiles=new Map();this.lastProjectileAt=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
+  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.activeMoveUntil=new Map();this.activeMoveSpeed=new Map();this.projectiles=new Map();this.lastProjectileAt=new Map();this.lastProjectileActionAt=new Map();this.fireZones=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
@@ -38,7 +38,8 @@ export class CityRoom extends Room{
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
-  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.activeMoveUntil.delete(sessionId);this.activeMoveSpeed.delete(sessionId);this.lastProjectileAt.delete(sessionId);
+  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.activeMoveUntil.delete(sessionId);this.activeMoveSpeed.delete(sessionId);this.lastProjectileAt.delete(sessionId);this.lastProjectileActionAt.delete(sessionId);
+  for(const [zoneId,zone] of this.fireZones)if(zone.ownerId===sessionId){this.fireZones.delete(zoneId);this.broadcast("combat:fire-zone-end",{sessionId,id:zoneId})}
   for(const [key,projectile] of this.projectiles)if(projectile.ownerId===sessionId){this.projectiles.delete(key);this.broadcast("combat:projectile-end",{sessionId,id:projectile.clientId})}
   for(const [id,clash] of this.domainClashes)if(clash.participants.includes(sessionId))this.finishDomainClash(clash,clash.participants.find(x=>x!==sessionId)||null,"DISCONNECT");
   for(const map of [this.lastHitAt,this.lastBuildingAt,this.lastPropHitAt]){
@@ -55,7 +56,7 @@ export class CityRoom extends Room{
   this.lastUpdateAt.set(id,now);
   const previousMotion=p.motionName;
   p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.attackAnim=n.attackAnim;p.attackType=n.attackType;
-  p.motionName=n.motionName;p.motionProgress=n.motionProgress;
+  p.motionName=n.motionName;p.motionProgress=n.motionProgress;p.motionDuration=n.motionDuration;
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
   if(p.stun>0||p.grabbedBy||p.activeGrabTarget){p.moveX=0;p.moveY=0;return}
@@ -95,7 +96,7 @@ export class CityRoom extends Room{
   if(now-(times.get(kind)||0)<cooldown*1000)return;
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
   if(kind==="awaken"){if(p.awakened||p.meter<100)return;this.awakenPlayer(client)}
-  times.set(kind,now);this.lastActionAt.set(id,times);
+  times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
   if(kind==="dash"||["1","2","3","4"].includes(kind)){
    this.activeMoveUntil.set(id,now+(kind==="dash"?360:1050));
@@ -116,10 +117,23 @@ export class CityRoom extends Room{
  }
  tryStartDomainClash(sessionId,player,now=Date.now()){
   if(!player||!CLASHABLE_DOMAINS.has(player.domainType)||player.domainClashId)return false;
+  const castAt=Number(player.domainCastAt)||now;
+  if(now-castAt>2700)return false;
+  for(const clash of this.domainClashes.values()){
+   if(!clash.participants.some(id=>{
+    const other=this.state.players.get(id);
+    return other&&!other.dead&&CLASHABLE_DOMAINS.has(other.domainType)&&Math.abs(castAt-(Number(other.domainCastAt)||0))<=2700&&distance(player,other)<=Math.max(160,(player.domainRadius||600)+(other.domainRadius||600));
+   }))continue;
+   clash.participants.push(sessionId);clash.scores.set(sessionId,0);player.domainClashId=clash.id;
+   player.domainWindup=0;player.domainTimer=0;
+   this.broadcast("domain:clash:start",{id:clash.id,participants:clash.participants,time:clash.time,serverTime:now});
+   this.broadcast("domain:clash:score",{id:clash.id,participants:clash.participants,scores:Object.fromEntries(clash.scores),time:clash.time,serverTime:now});
+   return true;
+  }
   for(const [otherId,other] of this.state.players){
    if(otherId===sessionId||other.dead||!CLASHABLE_DOMAINS.has(other.domainType)||other.domainClashId)continue;
    const otherCast=Number(other.domainCastAt)||0;
-   if(!otherCast||Math.abs(now-(Number(player.domainCastAt)||now))>2700||Math.abs(now-otherCast)>2700)continue;
+   if(!otherCast||Math.abs(castAt-otherCast)>2700)continue;
    if(distance(player,other)>Math.max(160,(player.domainRadius||600)+(other.domainRadius||600)))continue;
    const id=[sessionId,otherId].sort().join("|");
    const clash={id,participants:[sessionId,otherId],time:15,maxTime:15,scores:new Map([[sessionId,0],[otherId,0]]),lastHitAt:new Map(),lastBroadcast:now};
@@ -162,6 +176,9 @@ export class CityRoom extends Room{
  }
  tickDomainClashes(dt,now){
   for(const clash of this.domainClashes.values()){
+   const alive=clash.participants.filter(id=>{const p=this.state.players.get(id);return p&&!p.dead});
+   if(alive.length===1){this.finishDomainClash(clash,alive[0],"KNOCKOUT");continue}
+   if(alive.length===0){this.finishDomainClash(clash,null,"KNOCKOUT");continue}
    clash.time=Math.max(0,clash.time-dt);
    if(now-clash.lastBroadcast>=250){
     clash.lastBroadcast=now;this.broadcast("domain:clash:score",{id:clash.id,participants:clash.participants,scores:Object.fromEntries(clash.scores),time:clash.time,serverTime:now});
@@ -313,8 +330,10 @@ export class CityRoom extends Room{
   const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id);
   if(!a||!target||a===target||a.dead||target.dead||a.stun>0||a.activeGrabTarget||target.grabbedBy)return;
   const move=String(payload.move||"").slice(0,48);if(!isMoveAllowed(a.character,move))return;
-  const now=Date.now(),actionTimes=this.lastActionAt.get(client.sessionId);
-  if(!actionTimes||![...actionTimes.values()].some(at=>now-at<4500))return;
+  const now=Date.now(),isM1=/^(m1_[1-4]|yutaM1_[1-4]|yutaDomainSwordRun)$/i.test(move);
+  const actionAge=now-(Number(a.lastActionAt)||0);
+  if(isM1){if(a.lastActionKind!=="m1"||actionAge>900)return}
+  else if(!["1","2","3","4","special"].includes(a.lastActionKind)||actionAge>5200)return;
   const profile=combatProfile(a.character,move,a.awakened),requestedType=String(payload.damageType||"melee");
   if(profile.range>=600||["bullet","projectile","explosion"].includes(requestedType))return;
   const d=distance(a,target),angle=Math.atan2(target.y-a.y,target.x-a.x),delta=Math.atan2(Math.sin(angle-a.face),Math.cos(angle-a.face));
