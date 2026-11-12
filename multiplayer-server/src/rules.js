@@ -13,3 +13,30 @@ export function findAvailableSpawn(players=[]){const occupied=Array.from(players
 export function normalizePlayerUpdate(input,current,elapsedMs=50){if(!input||typeof input!=="object"||Array.isArray(input))return null;const ox=finite(current.x,1250),oy=finite(current.y,765);let x=clamp(finite(input.x,ox),45,WORLD_WIDTH-45),y=clamp(finite(input.y,oy),45,WORLD_HEIGHT-45);const elapsed=clamp(finite(elapsedMs,50),16,250),max=clamp(32+elapsed*.95,70,270),dx=x-ox,dy=y-oy,d=Math.hypot(dx,dy);if(d>max){x=ox+dx/d*max;y=oy+dy/d*max}const m=String(input.motionName??""),a=String(input.attackType??"");return{x,y,face:clamp(finite(input.face,finite(current.face,0)),-Math.PI,Math.PI),walk:clamp(finite(input.walk,0),0,2),jump:clamp(finite(input.jump,0),0,150),block:input.block===true,attackAnim:clamp(finite(input.attackAnim,0),0,5),attackType:/^[a-zA-Z0-9_ -]{0,32}$/.test(a)?a:"",motionName:/^[a-zA-Z0-9_]{1,48}$/.test(m)?m:"",motionProgress:clamp(finite(input.motionProgress,0),0,1)}}
 export function combatProfile(character,moveName,awakened=false){const m=String(moveName||"").slice(0,48);if(/black.?flash/i.test(m))return{damage:20,range:230,arc:1.2,stun:.9,knockback:15,cooldown:.22};if(/^(m1_|yutaM1_)/i.test(m)){const fin=/_4$/.test(m);return{damage:fin?9:4.5,range:awakened?205:150,arc:1.35,stun:fin?.58:.22,knockback:fin?10:1.4,cooldown:.12}}if(/gojoPurple|hollow|piercing|bloodPlasma|piercingBlood|JacobLadder/i.test(m))return{damage:18,range:900,arc:.72,stun:.55,knockback:9,cooldown:.28};if(/gojoBlue|gojoRed|bloodRain|trashManFlyingCan|trashManThrow|projectile/i.test(m))return{damage:12,range:700,arc:.9,stun:.38,knockback:7,cooldown:.22};if(/domain|shrine|void|hakari|soul/i.test(m))return{damage:8,range:950,arc:Math.PI,stun:.55,knockback:2,cooldown:.42};if(/grab|crush|slam|rush|counter|flurry|throw|haymaker/i.test(m))return{damage:awakened?16:13,range:360,arc:1.35,stun:.68,knockback:11,cooldown:.24};return{damage:awakened?11:9,range:330,arc:1.15,stun:.42,knockback:7,cooldown:.2}}
 export function rayHitsRect(origin,angle,rect,maxRange=1200){const dx=Math.cos(angle),dy=Math.sin(angle);let lo=0,hi=maxRange;if(Math.abs(dx)<1e-7){if(origin.x<rect.x||origin.x>rect.x+rect.w)return false}else{let a=(rect.x-origin.x)/dx,b=(rect.x+rect.w-origin.x)/dx;if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b)}if(Math.abs(dy)<1e-7){if(origin.y<rect.y||origin.y>rect.y+rect.h)return false}else{let a=(rect.y-origin.y)/dy,b=(rect.y+rect.h-origin.y)/dy;if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b)}return hi>=Math.max(lo,18)&&lo<=maxRange}
+
+export function isMoveAllowed(character, moveName) {
+ const move=String(moveName||"");
+ if(/^(m1_[1-4]|yutaM1_[1-4])$/.test(move))return true;
+ const allowed={
+  honored:/^(gojo|limitless|hollow|infinite|void)/i,
+  vessel:/^(yuji|sukuna|manji|black.?flash)/i,
+  restless:/^hakari/i,
+  ten:/^(megumi|mahoraga|nue|toad|rabbit|dog)/i,
+  perfection:/^mahito/i,
+  todo:/^todo/i,
+  choso:/^choso/i,
+  yuta:/^(yuta|rika)/i,
+  trashman:/^trashMan/i
+ };
+ return !!allowed[character]&&allowed[character].test(move);
+}
+export function domainSettings(character,domainType){
+ if(!(DOMAIN_BY_CHARACTER[character]||[]).includes(domainType))return null;
+ if(domainType==="hakari")return{radius:1500,duration:120};
+ if(domainType==="void"||domainType==="void02")return{radius:760,duration:28};
+ if(domainType==="shrine")return{radius:820,duration:28};
+ if(domainType==="yuta")return{radius:620,duration:45};
+ if(domainType==="soul")return{radius:660,duration:32};
+ if(domainType==="trash")return{radius:430,duration:28};
+ return null;
+}
