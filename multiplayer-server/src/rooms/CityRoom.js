@@ -14,7 +14,7 @@ export class CityRoom extends Room{
  maxClients=MAX_PLAYERS;autoDispose=false;patchRate=33;maxMessagesPerSecond=90;
  onCreate(){
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
-  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.activeMoveUntil=new Map();this.activeMoveSpeed=new Map();this.projectiles=new Map();this.domainClashes=new Map();this.domainTickAt=0;
+  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.activeMoveUntil=new Map();this.activeMoveSpeed=new Map();this.projectiles=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
@@ -184,7 +184,7 @@ export class CityRoom extends Room{
   this.projectiles.set(id,projectile);
   this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move});
  }
- tickProjectiles(dt){
+ tickProjectiles(dt,now=Date.now()){
   for(const [id,projectile] of this.projectiles){
    const owner=this.state.players.get(projectile.ownerId);
    if(!owner||owner.dead){this.projectiles.delete(id);this.broadcast("combat:projectile-end",{sessionId:projectile.ownerId,id:projectile.clientId});continue}
@@ -211,6 +211,11 @@ export class CityRoom extends Room{
    if(projectile.life<=0||projectile.travelled>=projectile.maxDistance||projectile.x<20||projectile.y<20||projectile.x>WORLD_WIDTH-20||projectile.y>WORLD_HEIGHT-20){
     this.projectiles.delete(id);this.broadcast("combat:projectile-end",{sessionId:projectile.ownerId,id:projectile.clientId});
    }
+  }
+  if(now-this.projectileBatchAt>=100){
+   this.projectileBatchAt=now;
+   const live=Array.from(this.projectiles.values(),p=>({sessionId:p.ownerId,id:p.clientId,x:p.x,y:p.y,vx:p.vx,vy:p.vy,life:p.life,serverTime:now}));
+   if(live.length)this.broadcast("combat:projectile-state",{projectiles:live,serverTime:now});
   }
  }
  awakenPlayer(client){const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;p.awakened=true;p.meter=0;p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:25));if(p.character==="restless"){p.domainType="hakari";p.domainWindup=1.25;p.domainDuration=120;p.domainTimer=0;p.domainRadius=1500;p.domainX=p.x;p.domainY=p.y}}
@@ -310,5 +315,5 @@ export class CityRoom extends Room{
    if(target.hp<=0)this.killPlayer(target);
   }
  }
-this.tickProjectiles(dt);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=600){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||!o.domainType||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||700,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r||t.invuln>0)continue;const damage=o.domainType==="void"?4:o.domainType==="shrine"?5:3;t.hp=Math.max(0,t.hp-damage);t.stun=Math.max(t.stun,o.domainType==="void"?.7:.18);t.invuln=.25;if(t.hp<=0)this.killPlayer(t)}}}}
+this.tickProjectiles(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=600){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||!o.domainType||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||700,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r||t.invuln>0)continue;const damage=o.domainType==="void"?4:o.domainType==="shrine"?5:3;t.hp=Math.max(0,t.hp-damage);t.stun=Math.max(t.stun,o.domainType==="void"?.7:.18);t.invuln=.25;if(t.hp<=0)this.killPlayer(t)}}}}
 }
