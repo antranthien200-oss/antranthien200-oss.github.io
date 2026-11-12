@@ -174,28 +174,28 @@ export class CityRoom extends Room{
   }
  }
  spawnProjectile(client,payload={}){
+  const clientId=String(payload?.id||"").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32);
+  const reject=()=>{if(clientId)client.send("combat:projectile-reject",{id:clientId})};
   const ownerId=client.sessionId,owner=this.state.players.get(ownerId);
-  if(!owner||owner.dead||owner.stun>0||owner.vehicleId||!payload||typeof payload!=="object")return;
+  if(!owner||owner.dead||owner.stun>0||owner.vehicleId||!payload||typeof payload!=="object"){reject();return}
   const move=String(payload.move||"").slice(0,48),profile=combatProfile(owner.character,move,owner.awakened);
-  if(!isProjectileMoveAllowed(owner.character,move))return;
+  if(!isProjectileMoveAllowed(owner.character,move)){reject();return}
   const x=Number(payload.x),y=Number(payload.y),vx=Number(payload.vx),vy=Number(payload.vy),speed=Math.hypot(vx,vy);
-  if(![x,y,vx,vy].every(Number.isFinite)||distance(owner,{x,y})>115||speed<2||speed>28)return;
+  if(![x,y,vx,vy].every(Number.isFinite)||distance(owner,{x,y})>115||speed<2||speed>28){reject();return}
   const kind=String(payload.kind||"projectile").slice(0,32);
-  if(!["trashCan","red","fire","blueMax","redmax","hollow","tenNue","bloodBomb"].includes(kind))return;
-  const clientId=String(payload.id||"").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32);
-  if(!clientId)return;
-  const id=ownerId+":"+clientId;if(this.projectiles.has(id))return;
+  if(!["trashCan","red","fire","blueMax","redmax","hollow","tenNue","bloodBomb"].includes(kind)){reject();return}
+  if(!clientId){return}
+  const id=ownerId+":"+clientId;if(this.projectiles.has(id)){reject();return}
   const now=Date.now(),last=this.lastProjectileAt.get(ownerId)||0;
-  if(now-last<Math.max(110,profile.cooldown*1000))return;
+  if(now-last<Math.max(110,profile.cooldown*1000)){reject();return}
   this.lastProjectileAt.set(ownerId,now);
   const aimX=clamp(Number(payload.aimX)||owner.aimX||owner.x,45,WORLD_WIDTH-45),aimY=clamp(Number(payload.aimY)||owner.aimY||owner.y,45,WORLD_HEIGHT-45);
   let targetId=String(payload.targetId||"");
   if(!this.state.players.has(targetId)||targetId===ownerId||this.state.players.get(targetId)?.dead){
-   targetId="";
-   let best=Infinity;
+   targetId="";let best=Infinity;
    for(const [otherId,other] of this.state.players){if(otherId===ownerId||other.dead)continue;const d=Math.hypot(other.x-aimX,other.y-aimY);if(d<best){best=d;targetId=otherId}}
   }
-  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed,r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,4),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:now+200,detonate:false};
+  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed,r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:now+200,detonate:false};
   this.projectiles.set(id,projectile);
   this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move});
  }
