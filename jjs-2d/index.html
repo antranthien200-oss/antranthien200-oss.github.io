@@ -1015,7 +1015,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
 }));
 const trashCanSpawns=[{x:270,y:593},{x:750,y:593},{x:1920,y:593},{x:2400,y:949},{x:1051,y:255}];
 const trashCans=[];
-function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
+function resetTrashCans(){trashCans.length=0;trashCanSpawns.forEach((p,i)=>trashCans.push({id:String(i),x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0}));}
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,meter:0,combo:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaKatanas:[],yutaHeldKatana:null,yutaKatanaSpawnTimer:0,yutaLadder:null,yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,sukunaFireCast:0,sukunaFireSerial:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoRapidFinishUntil:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 
@@ -1081,6 +1081,16 @@ function applyOnlineRoomState(state){
   remote.domainType=String(net.domainType||'');remote.domainTimer=Number(net.domainTimer)||0;remote.domainRadius=Number(net.domainRadius)||0;
   remote.domainCenterX=Number(net.domainX)||remote.networkX;remote.domainCenterY=Number(net.domainY)||remote.networkY;remote.domainWindup=Number(net.domainWindup)||0;remote.domainDuration=Number(net.domainDuration)||0;remote.counterKind=String(net.counterKind||'');remote.counterWindow=Number(net.counterWindow)||0;remote.grabbedBy=String(net.grabbedBy||'');remote.activeGrabTarget=String(net.activeGrabTarget||'');remote.grabKind=String(net.grabKind||'');remote.grabRemaining=Number(net.grabRemaining)||0;remote.grabDuration=Number(net.grabDuration)||0;remote.motionName=String(net.motionName||'');remote.motionProgress=Number(net.motionProgress)||0;remote.motionDuration=clamp(Number(net.motionDuration)||1,.08,12);remote.motionStartedAt=Number(net.motionStartedAt)||0;remote.domainClashId=String(net.domainClashId||'');
   remote.vehicle=net.vehicleId?parkedCars.find(c=>String(c.id)===String(net.vehicleId))||null:null;
+  const heldCanId=String(net.trashCanId||''),previousHeldCanId=String(remote.trashCanId||'');
+  if(heldCanId){
+   const heldProp=trashCans.find(p=>String(p.id)===heldCanId);
+   if(heldProp){if(previousHeldCanId!==heldCanId){remote.trashCanPickupFromX=heldProp.homeX;remote.trashCanPickupFromY=heldProp.homeY}heldProp.carried='remote';remote.carryingTrashCan=heldProp}
+   else remote.carryingTrashCan={id:heldCanId,carried:'remote'};
+  }else{
+   if(previousHeldCanId){const releasedProp=trashCans.find(p=>String(p.id)===previousHeldCanId);if(releasedProp&&releasedProp.carried==='remote'){releasedProp.carried='cooldown';releasedProp.respawnTimer=15}}
+   remote.carryingTrashCan=null;remote.trashCanPickupFromX=null;remote.trashCanPickupFromY=null;
+  }
+  remote.trashCanId=heldCanId;
   remote.attackAnim=Number(net.attackAnim)||0;remote.attackType=String(net.attackType||'');
   if(net.motionName){
    const duration=remote.motionDuration,reported=clamp(Number(net.motionProgress)||0,0,1)*duration,serverAge=remote.motionStartedAt?Math.max(0,(Date.now()-remote.motionStartedAt)/1000):reported;
@@ -1090,7 +1100,7 @@ function applyOnlineRoomState(state){
   if(remote.dead&&!remote.wasDead){popText(remote.x,remote.y-65,'K.O.','#ffcf75',25);remote.wasDead=true}
   if(!remote.dead)remote.wasDead=false;
  }
- for(const [id] of onlineRemotePlayers)if(!seen.has(id))onlineRemotePlayers.delete(id);
+ for(const [id,remote] of onlineRemotePlayers)if(!seen.has(id)){if(remote.trashCanId){const prop=trashCans.find(p=>String(p.id)===String(remote.trashCanId));if(prop&&prop.carried==='remote'){prop.carried=false;prop.respawnTimer=0}}onlineRemotePlayers.delete(id)}
  const bindReplicatedGrab=(owner,target)=>{
   if(!owner)return;
   if(!target){owner.grabTarget=null;owner.grabKind='';owner.grabRemaining=0;owner.grabDuration=0;owner.grabElapsed=0;return}
@@ -1160,7 +1170,7 @@ function updateOnlineNetwork(dt){
  if(mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
  const moveLength=Math.hypot(moveX,moveY)||1;moveX/=moveLength;moveY/=moveLength;
  const aim=aimedAt(player);
- const snapshot={x:player.x,y:player.y,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
+ const snapshot={x:player.x,y:player.y,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,trashCanId:player.carryingTrashCan?String(player.carryingTrashCan.id??''):'',domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
 function drawOnlineRemoteDomains(){
@@ -1248,7 +1258,7 @@ function receiveOnlineProjectile(data){
  if(index>=0){Object.assign(projectiles[index],{x:Number(data.x)||projectiles[index].x,y:Number(data.y)||projectiles[index].y,networkX:Number(data.x)||projectiles[index].x,networkY:Number(data.y)||projectiles[index].y,serverOwnedVisual:true,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant});return}
  if(data.sessionId===onlineSessionId)return;
  const owner=onlineRemotePlayers.get(data.sessionId)||Object.assign(makeFighter('enemy','vessel',Number(data.x)||0,Number(data.y)||0),{onlineSessionId:data.sessionId});
- nativeProjectilePush({x:Number(data.x)||0,y:Number(data.y)||0,networkX:Number(data.x)||0,networkY:Number(data.y)||0,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||18,life:Number(data.life)||1.2,maxDistance:Number(data.maxDistance)||700,travelled:0,owner,targetRef:player,kind:String(data.kind||'projectile'),color:String(data.color||'#b8e8ff'),golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant,networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true});
+ nativeProjectilePush({x:Number(data.x)||0,y:Number(data.y)||0,networkX:Number(data.x)||0,networkY:Number(data.y)||0,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||18,life:Number(data.life)||1.2,maxDistance:Number(data.maxDistance)||700,travelled:0,owner,targetRef:player,kind:String(data.kind||'projectile'),color:String(data.color||'#b8e8ff'),rotation:0,spin:22,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant,networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true});
 }
 function spawnOnlineSukunaFireZone(data){
  if(!data||!data.id||!data.sessionId||fireZones.some(z=>z.onlineId===String(data.id)))return;
@@ -2131,7 +2141,7 @@ function cleanupFighterDeath(f){
 function toggleTrashCan(f){
  if(!f||f.dead||game.domainClash)return;
  if(f.char==='trashman'&&f.domainType==='trash'&&f.domainTimer>0){
-  if(f.trashGoldenCanCarried){const a=aimedAngle(f);setMotion(f,'trashManFlyingCan',.42,a,targetOf(f));projectiles.push({x:f.x+Math.cos(a)*34,y:f.y+Math.sin(a)*34,vx:Math.cos(a)*19.5,vy:Math.sin(a)*19.5,r:30,life:3.8,maxDistance:4200,travelled:0,owner:f,kind:'trashCan',damage:28,color:'#f5c84c',golden:true,domainBound:true,domainCastStartedAt:f.domainCastStartedAt,trashMan:true,domainBounceCount:0});f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=true;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0;burst(f.x,f.y,'#ffe18b',18,5);showToast('GOLDEN BIN · THROWN · RETURNS',850);return}
+  if(f.trashGoldenCanCarried){const a=aimedAngle(f);setMotion(f,'trashManFlyingCan',.42,a,targetOf(f));projectiles.push({x:f.x+Math.cos(a)*34,y:f.y+Math.sin(a)*34,vx:Math.cos(a)*19.5,vy:Math.sin(a)*19.5,r:30,life:3.8,maxDistance:4200,travelled:0,owner:f,kind:'trashCan',damage:28,color:'#f5c84c',rotation:0,spin:22,golden:true,domainBound:true,domainCastStartedAt:f.domainCastStartedAt,trashMan:true,domainBounceCount:0});f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=true;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0;burst(f.x,f.y,'#ffe18b',18,5);showToast('GOLDEN BIN · THROWN · RETURNS',850);return}
   const canX=Number.isFinite(f.trashGoldenCanX)?f.trashGoldenCanX:f.domainCenterX,canY=Number.isFinite(f.trashGoldenCanY)?f.trashGoldenCanY:f.domainCenterY+(f.domainVisualRadius||860)*.18;
   if(!f.trashDomainCanAvailable){showToast('GOLDEN BIN · RETURNING',600);return}if(Math.hypot(f.x-canX,f.y-canY)>150){showToast('GOLDEN BIN · GO TO THE CENTER',650);return}
   f.trashGoldenCanCarried=true;f.trashDomainCanAvailable=false;setMotion(f,'trashManPickupGolden',.32,f.face,targetOf(f));burst(canX,canY,'#ffe18b',14,4);showToast('GOLDEN BIN · READY · PRESS E TO THROW',850);return;
@@ -2139,14 +2149,14 @@ function toggleTrashCan(f){
  if(f.carryingTrashCan){
   const prop=f.carryingTrashCan;f.carryingTrashCan=null;prop.carried='projectile';
   const aim=aimedAt(f),a=Math.atan2(aim.y-f.y,aim.x-f.x),speed=18.5;
-  setMotion(f,'trashCanThrow',.38,a,targetOf(f));
-  projectiles.push({x:f.x+Math.cos(a)*31,y:f.y+Math.sin(a)*31,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:24,life:2.65,maxDistance:820,travelled:0,owner:f,kind:'trashCan',damage:19,color:'#aeb9c4',propRef:prop,rotation:0,height:0,hitOnce:false});prop.throws=(prop.throws||0)+1;
-  showToast('TRASH CAN · THROWN',650);burst(f.x+Math.cos(a)*34,f.y+Math.sin(a)*34,'#c4d0da',9,3);return;
+  setMotion(f,'trashCanThrow',.48,a,targetOf(f));
+  projectiles.push({x:f.x+Math.cos(a)*31,y:f.y+Math.sin(a)*31-14,vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,r:24,life:2.65,maxDistance:820,travelled:0,owner:f,kind:'trashCan',damage:19,color:'#aeb9c4',propRef:prop,rotation:0,spin:22,height:0,hitOnce:false});prop.throws=(prop.throws||0)+1;
+  showToast('TRASH CAN · THROWN',650);burst(f.x+Math.cos(a)*34,f.y+Math.sin(a)*34-14,'#c4d0da',9,3);return;
  }
  let nearest=null,best=105;
  for(const prop of trashCans){if(prop.carried)continue;const d=dist(f,prop);if(d<best){best=d;nearest=prop}}
  if(!nearest){showToast('NO TRASH CAN NEARBY',550);return}
- nearest.carried='player';f.carryingTrashCan=nearest;setMotion(f,'trashCanPickup',.25,f.face,targetOf(f));showToast('TRASH CAN · READY TO THROW',750);burst(nearest.x,nearest.y,'#c5d0d9',7,2.5);
+ nearest.carried='player';f.carryingTrashCan=nearest;f.trashCanPickupFromX=nearest.x;f.trashCanPickupFromY=nearest.y;setMotion(f,'trashCanPickup',.48,f.face,targetOf(f));showToast('TRASH CAN · READY TO THROW',750);burst(nearest.x,nearest.y,'#c5d0d9',7,2.5);
 }
 function settleThrownCan(p){if(!p||p.kind!=='trashCan'||!p.propRef||p.propRef.carried!=='projectile')return;const prop=p.propRef;prop.carried='cooldown';prop.respawnTimer=15;prop.x=prop.homeX;prop.y=prop.homeY;prop.flash=0;prop.lastThrownBy=p.owner||null;}
 function updateTrashCanRespawns(dt){for(const prop of trashCans){if(prop.carried!=='cooldown')continue;prop.respawnTimer=Math.max(0,(prop.respawnTimer||0)-dt);if(prop.respawnTimer<=0){prop.carried=false;prop.x=prop.homeX;prop.y=prop.homeY;prop.flash=.8;burst(prop.x,prop.y,'#c5d0d9',12,2.5);}}}
@@ -2160,15 +2170,15 @@ function updateTrainingDummy(dt){
  trainingDummy.vx*=Math.pow(.72,dt*60);trainingDummy.vy*=Math.pow(.72,dt*60);
  trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1800,1920);trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1130,1250);
 }
-function drawTrashCan(x,y,scale=1,angle=0,flash=0){
- ctx.save();ctx.translate(sx(x),sy(y));ctx.rotate(angle);ctx.scale(scale,scale);
- ctx.fillStyle='#0006';ctx.fillRect(-14,12,30,7);ctx.fillStyle=flash>0?'#f5fdff':'#697581';ctx.fillRect(-12,-11,24,25);ctx.fillStyle='#aeb9c4';ctx.fillRect(-13,-14,26,5);ctx.fillStyle='#48535f';ctx.fillRect(-15,-17,30,4);ctx.fillStyle='#d2dbe2';ctx.fillRect(-8,-7,3,17);ctx.fillRect(2,-7,3,17);ctx.fillStyle='#323b46';ctx.fillRect(-9,14,5,4);ctx.fillRect(7,14,5,4);ctx.strokeStyle='#313b47';ctx.lineWidth=1;ctx.strokeRect(-12,-11,24,25);ctx.restore();
-}
-function drawThrowableProps(){
- for(const prop of trashCans){if(prop.carried)continue;drawTrashCan(prop.x,prop.y,1,0,prop.flash||0);if(prop.flash>0)prop.flash=Math.max(0,prop.flash-.016);if(player&&!player.dead&&dist(player,prop)<112){ctx.save();ctx.fillStyle='#f2f7ff';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('E  PICK UP',sx(prop.x),sy(prop.y)-27);ctx.restore()}}
- if(player&&player.carryingTrashCan){const f=player,a=f.face;drawTrashCan(f.x+Math.cos(a)*28,f.y+Math.sin(a)*28,.94,a,0)}
-}
-function drawCityTrainCar(centerX,trackY,isLocomotive=false,variant=0){
+function drawTrashCanScreen(x,y,scale=1,angle=0,flash=0){
+  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
+  ctx.fillStyle='#0006';ctx.fillRect(-14,12,30,7);ctx.fillStyle=flash>0?'#f5fdff':'#697581';ctx.fillRect(-12,-11,24,25);ctx.fillStyle='#aeb9c4';ctx.fillRect(-13,-14,26,5);ctx.fillStyle='#48535f';ctx.fillRect(-15,-17,30,4);ctx.fillStyle='#d2dbe2';ctx.fillRect(-8,-7,3,17);ctx.fillRect(2,-7,3,17);ctx.fillStyle='#323b46';ctx.fillRect(-9,14,5,4);ctx.fillRect(7,14,5,4);ctx.strokeStyle='#313b47';ctx.lineWidth=1;ctx.strokeRect(-12,-11,24,25);ctx.restore();
+ }
+ function drawTrashCan(x,y,scale=1,angle=0,flash=0){drawTrashCanScreen(sx(x),sy(y),scale,angle,flash)}
+ function drawThrowableProps(){
+  for(const prop of trashCans){if(prop.carried)continue;drawTrashCan(prop.x,prop.y,1,0,prop.flash||0);if(prop.flash>0)prop.flash=Math.max(0,prop.flash-.016);if(player&&!player.dead&&dist(player,prop)<112){ctx.save();ctx.fillStyle='#f2f7ff';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('E  PICK UP',sx(prop.x),sy(prop.y)-27);ctx.restore()}}
+ }
+ function drawCityTrainCar(centerX,trackY,isLocomotive=false,variant=0){
  const x=sx(centerX),y=sy(trackY),length=180,half=length/2;
  ctx.save();ctx.translate(x,y);
  ctx.fillStyle='#111a20';ctx.fillRect(-half-3,-37,length+6,74);
@@ -2383,7 +2393,7 @@ function yutaUseSkill(f,idx,t,angle){
 function trashManLaunchCan(f,angle,damageValue=13,golden=false){
  const speed=golden?20:17.5,color=golden?'#f5c84c':'#aeb9c4';
  setMotion(f,golden?'trashManFlyingCan':'trashManThrow',.42,angle,targetOf(f));
- projectiles.push({x:f.x+Math.cos(angle)*34,y:f.y+Math.sin(angle)*34,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:golden?29:23,life:2.8,maxDistance:golden?930:820,travelled:0,owner:f,kind:'trashCan',damage:damageValue,color,golden,trashMan:true,rotation:0});
+ projectiles.push({x:f.x+Math.cos(angle)*34,y:f.y+Math.sin(angle)*34,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:golden?29:23,life:2.8,maxDistance:golden?930:820,travelled:0,owner:f,kind:'trashCan',damage:damageValue,color,golden,trashMan:true,rotation:0,spin:22});
  burst(f.x+Math.cos(angle)*38,f.y+Math.sin(angle)*38,golden?'#ffe38c':'#c5d0d9',12,4);
 }
 function trashManUseSkill(f,idx,t,angle){
@@ -3149,6 +3159,7 @@ function updateProjectiles(dt){
   const p=projectiles[i],t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
   if(p.serverOwnedVisual){
    if(Number.isFinite(p.networkX)){const blend=clamp(dt*13,0,1);p.x=lerp(p.x,p.networkX,blend);p.y=lerp(p.y,p.networkY,blend)}
+   if(p.kind==='trashCan')p.rotation=(Number(p.rotation)||0)+(Number(p.spin)||22)*dt;
    p.life=Math.min(Number.isFinite(p.networkLife)?p.networkLife:p.life,Math.max(0,p.life-dt));
    if(p.life<=0)projectiles.splice(i,1);
    continue;
@@ -3226,6 +3237,7 @@ function updateProjectiles(dt){
   const ox=p.x,oy=p.y;p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;
   p.travelled=(p.travelled||0)+Math.hypot(p.x-ox,p.y-oy);p.life-=dt;
   p.vx*=projectileDamping;p.vy*=projectileDamping;
+  if(p.kind==='trashCan')p.rotation=(Number(p.rotation)||0)+(Number(p.spin)||22)*dt;
   if(p.domainBound)bounceGoldenBinInsideDomain(p);
   const hit=!t.dead&&Math.hypot(p.x-t.x,p.y-t.y)<p.r+18;
   if(hit){
@@ -4583,6 +4595,21 @@ function drawHeadHands(f){
    }
   }
  }
+ if(name==='trashCanPickup'){
+  const reachIn=smoothstep01(progress/.78);
+  handA=P(lerp(4,31,reachIn),lerp(28,19,reachIn),lerp(13,9,reachIn));
+  handB=P(lerp(4,31,reachIn),lerp(-28,-19,reachIn),lerp(13,9,reachIn));
+  handAScale=1.22;handBScale=1.22;handAAngle=angle+.28;handBAngle=angle-.28;
+ }else if(name==='trashCanThrow'){
+  const load=smoothstep01(progress/.30),release=smoothstep01((progress-.27)/.42),recover=smoothstep01((progress-.72)/.28);
+  const forward=progress<.30?lerp(29,-17,load):progress<.69?lerp(-17,reach+66,release):lerp(reach+66,reach+14,recover);
+  handB=P(forward,-18,-5-Math.sin(progress*Math.PI)*11);
+  handA=P(progress<.30?lerp(29,21,load):lerp(21,reach+22,release),17,9-4*release);
+  handAScale=1.1;handBScale=1.28;handBAngle=angle-.38;handAAngle=angle+.14;
+ }else if(f.carryingTrashCan){
+  handA=P(31,19,9);handB=P(31,-19,9);handAScale=1.22;handBScale=1.22;
+  handAAngle=angle+.28;handBAngle=angle-.28;
+ }
  // Small idle drift, but active attacks own the hand positions for their complete animation.
  if(!name){handA.x+=px*idle;handA.y+=py*idle;handB.x-=px*idle;handB.y-=py*idle}
  ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
@@ -4605,6 +4632,13 @@ function drawHeadHands(f){
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
+ if(name==='trashCanPickup'||f.carryingTrashCan){
+  const hold=P(31,0,9);let canX=hold.x,canY=hold.y;
+  if(name==='trashCanPickup'&&Number.isFinite(f.trashCanPickupFromX)&&Number.isFinite(f.trashCanPickupFromY)){
+   const grab=smoothstep01(progress/.82);canX=lerp(sx(f.trashCanPickupFromX),hold.x,grab);canY=lerp(sy(f.trashCanPickupFromY)-f.jump*3,hold.y,grab)-Math.sin(grab*Math.PI)*7;
+  }
+  drawTrashCanScreen(canX,canY,.9,angle,0);
+ }
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
@@ -5530,7 +5564,7 @@ function drawEffects(){
   if(!effectsViewportContains(sx(d.x),sy(d.y),58))continue;
   ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore();
  }
- drawYutaDomainKatanas();for(const p of projectiles){if(activeDomainView&&!domainViewMatches(p.owner,activeDomainView))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);if(!effectsViewportContains(x,y,Math.max(88,p.r||0)+28))continue;ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='sukunaFireArrow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.shadowColor='#ff6524';ctx.shadowBlur=10;drawSukunaFlameArrowGlyph(0,0,1,1);}else if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='blueMax'){drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],x,y,6,{B:'#174f78',M:'#39b9e8',H:'#e6fcff'});ctx.fillStyle='#fff';ctx.fillRect(x-3,y-27,6,6);ctx.fillRect(x+21,y+9,6,6)}else if(p.kind==='hollow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['...BBBBBBBB...','..BMMMMMMMMB..','.BMMHHHHHHMMB.','BMMHHHHHHHHMMB','BMMMMMMMMMMMMB','.BMMMMMMMMMMB.','..BMMMMMMMMB..','...BBBBBBBB...'],0,0,5,{B:'#413c78',M:'#9488e8',H:'#f5f2ff'})}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#7e1f36';ctx.fillRect(-39,-6,78,12);ctx.fillStyle=p.color||'#f14b60';ctx.fillRect(-34,-3,68,6);ctx.fillStyle='#fff0f2';ctx.fillRect(-24,-6,38,3)}else{const size=Math.max(3,Math.round(p.r*.32));ctx.fillRect(Math.round((x-size*2)/3)*3,Math.round((y-size*2)/3)*3,size*4,size*4);ctx.fillStyle='#fff';ctx.fillRect(Math.round((x-size*.5)/3)*3,Math.round((y-size*.5)/3)*3,size,size)}ctx.restore()}
+ drawYutaDomainKatanas();for(const p of projectiles){if(activeDomainView&&!domainViewMatches(p.owner,activeDomainView))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);if(!effectsViewportContains(x,y,Math.max(88,p.r||0)+28))continue;ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='sukunaFireArrow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.shadowColor='#ff6524';ctx.shadowBlur=10;drawSukunaFlameArrowGlyph(0,0,1,1);}else if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Number.isFinite(p.rotation)?p.rotation:Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='blueMax'){drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],x,y,6,{B:'#174f78',M:'#39b9e8',H:'#e6fcff'});ctx.fillStyle='#fff';ctx.fillRect(x-3,y-27,6,6);ctx.fillRect(x+21,y+9,6,6)}else if(p.kind==='hollow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['...BBBBBBBB...','..BMMMMMMMMB..','.BMMHHHHHHMMB.','BMMHHHHHHHHMMB','BMMMMMMMMMMMMB','.BMMMMMMMMMMB.','..BMMMMMMMMB..','...BBBBBBBB...'],0,0,5,{B:'#413c78',M:'#9488e8',H:'#f5f2ff'})}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#7e1f36';ctx.fillRect(-39,-6,78,12);ctx.fillStyle=p.color||'#f14b60';ctx.fillRect(-34,-3,68,6);ctx.fillStyle='#fff0f2';ctx.fillRect(-24,-6,38,3)}else{const size=Math.max(3,Math.round(p.r*.32));ctx.fillRect(Math.round((x-size*2)/3)*3,Math.round((y-size*2)/3)*3,size*4,size*4);ctx.fillStyle='#fff';ctx.fillRect(Math.round((x-size*.5)/3)*3,Math.round((y-size*.5)/3)*3,size,size)}ctx.restore()}
  ctx.save();
  for(const p of particles){
   const px=sx(p.x),py=sy(p.y),pad=(p.shape==='flame'?p.size*2:p.size)+6;
