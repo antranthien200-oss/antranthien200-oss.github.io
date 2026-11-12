@@ -5309,7 +5309,7 @@ function drawDomainBackdrops(){
 }
 function drawEffects(){
  updateEffectsViewportBounds();
- const activeDomainView=domainFighters().find(domainIsActive);for(const f of [player,enemy]){
+ const activeDomainView=domainFighters().find(domainIsActive);for(const f of domainFighters()){
   const visibleInDomainView=!activeDomainView||domainViewMatches(f,activeDomainView);
   if(f&&!f.dead&&visibleInDomainView&&f.bloodRain)drawBloodRain(f);
   if(f&&!f.dead&&visibleInDomainView&&f.char==='restless'&&(f.awakeMode==='gamble'||f.jackpot)&&f.domainType!=='hakari')drawIdleDeathGamble(f)
