@@ -783,7 +783,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
     <button type="button" class="mobile-btn" data-mobile-action="2" aria-label="Skill 2"><span class="mobile-btn-main">2</span><span class="mobile-cooldown"></span></button>
     <button type="button" class="mobile-btn" data-mobile-action="3" aria-label="Skill 3"><span class="mobile-btn-main">3</span><span class="mobile-cooldown"></span></button>
     <button type="button" class="mobile-btn block" data-mobile-action="block" aria-label="Guard"><span class="mobile-btn-main"><svg viewBox="0 0 64 64" aria-hidden="true"><path d="M32 5 54 14v16c0 14-9 23-22 30C19 53 10 44 10 30V14z"/><path d="M32 13 17 19v11c0 10 5 17 15 23 10-6 15-13 15-23V19z" fill="#17202b"/><path d="M29 22h6v18h-6z" fill="#fff"/><path d="M23 30h18v6H23z" fill="#fff"/></svg></span><span class="mobile-cooldown"></span></button>
-    <button type="button" class="mobile-btn" data-mobile-action="trash" aria-label="Drive, exit, or use trash can"><span class="mobile-btn-main">E</span><span class="mobile-cooldown"></span></button>
+    <button type="button" class="mobile-btn" data-mobile-action="trash" aria-label="Drive, exit, or use trash can"><span class="mobile-btn-main">E</span></button>
   </div>
 </div>
 
@@ -3271,10 +3271,6 @@ function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){const d=door
 function updateDestructibles(dt){if(onlineMode)return;for(const o of destructibles){if(!o.alive)continue;for(const f of [player,enemy]){if(f.dead||dist({x:o.x+o.w/2,y:o.y+o.h/2},f)>45)continue;if(f.attackAnim>0&&f.attackType==='punch'){const oldHp=o.hp;o.hp-=.045*dt*60;/* crate damage is live-rendered */if(o.hp<=0){o.alive=false;addDebris(o.x+o.w/2,o.y+o.h/2,o.color,22);burst(o.x+o.w/2,o.y+o.h/2,'#f9e6c7',15,4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100)}}}}}
 function updateMobileCooldowns(){
  if(!player)return;
- const nearbyReadyCan=trashCans.some(p=>!p.carried&&dist(player,p)<105);
- const nearestCoolingCan=trashCans
-  .filter(p=>p.carried==='cooldown'&&p.lastThrownBy===player)
-  .sort((a,b)=>(a.respawnTimer||0)-(b.respawnTimer||0))[0];
  document.querySelectorAll('#mobileControls [data-mobile-action]').forEach(btn=>{
   const action=btn.dataset.mobileAction;
   let cd=0;
@@ -3282,7 +3278,6 @@ function updateMobileCooldowns(){
   else if(action==='dash')cd=player.dashCd||0;
   else if(['1','2','3','4'].includes(action))cd=player.skillCd[Number(action)-1]||0;
   else if(action==='special')cd=player.specialCd||0;
-  else if(action==='trash'&&!player.carryingTrashCan&&!nearbyReadyCan&&nearestCoolingCan)cd=nearestCoolingCan.respawnTimer||0;
   cd=Math.max(0,cd);
   const cooling=cd>.04;
   btn.classList.toggle('cooling',cooling);
