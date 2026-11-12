@@ -79,14 +79,14 @@ export function isMoveAuthorizedForAction(character,moveName,actionKind){
  if(action==="m1")return /^(m1_[1-4]|yutaM1_[1-4]|yutaDomainSwordRun)$/i.test(move);
  if(action==="special")return isMoveAllowed(character,move)&&!/^(m1_|yutaM1_)/i.test(move);
  const slots={
-  honored:[["gojoBlue","gojoBlueMax"],["gojoRed","gojoRedMax"],["gojoRapid"],["gojoTwofold","gojoVoid"]],
-  vessel:[["yujiCursedDrag"],["yujiCrush","sukunaOpen","sukunaFireArrowCast"],["yujiDivergent","sukunaHeadCarryWindup"],["yujiManjiCounter","sukunaShrine","sukunaFlurryWindup"]],
+  honored:[["gojoBlue","gojoBlueMax"],["gojoRed","gojoRedMax"],["gojoRapid","gojoPurple"],["gojoTwofold","gojoVoid"]],
+  vessel:[["yujiCursedDrag","sukunaFlurryWindup"],["yujiCrush","sukunaOpen","sukunaFireArrowCast"],["yujiDivergent","sukunaHeadCarryWindup"],["yujiManjiCounter","sukunaShrine"]],
   restless:[["hakariBall","hakariVolley"],["hakariDoors","hakariRushdown"],["hakariRough","hakariOverwhelming"],["hakariFever","hakariSurge"]],
   ten:[["megumiRabbit","megumiElephant"],["megumiNue","megumiSerpent"],["megumiToad","megumiSwarm"],["megumiDog","megumiMahoraga"]],
   perfection:[["mahitoStockpile","mahitoTransfigure"],["mahitoSoulFire","mahitoDisfigure"],["mahitoFocus","mahitoSpikes"],["mahitoRepel","mahitoDomain"]],
   todo:[["todoSwiftKick","todoIdol"],["todoBrute","todoClimax"],["todoPebble","todoDreams"],["todoElbow","todoBrothers"]],
   choso:[["chosoPiercing","chosoExorcism"],["chosoScale","chosoWingKing"],["chosoSupernova","chosoBloodRain"],["chosoEdge","chosoPlasma"]],
-  yuta:[["yutaSevering","yutaElbowRush","rikaSmash","rikaDownslam"],["yutaSlash","yutaCopy","rikaLaunch","rikaSlam"],["yutaOutburst","yutaEnergyRipple","rikaThrow","yutaTrueLoveBeam"],["yutaSecondWind","yutaDomain","rikaHaymaker"]],
+  yuta:[["yutaSevering","yutaElbowRush","rikaSmash","rikaDownslam"],["yutaSlash","yutaCopy","rikaLaunch","rikaSlam"],["yutaOutburst","yutaEnergyRipple","rikaThrow","yutaTrueLoveBeam"],["yutaSecondWind","yutaDomain","rikaHaymaker","rikaThrow"]],
   trashman:[["trashManThrow","trashManFlyingCan"],["trashManGarbagePunch","trashManStench"],["trashManBigCan","trashManEruption"],["trashManCanBarrage","trashManDomain"]]
  };
  const index=Number(action)-1;
