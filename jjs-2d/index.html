@@ -1034,7 +1034,7 @@ function applyOnlineRoomState(state){
   player.meter=clamp(Number(local.meter)||0,0,100);player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;
   player.domainType=String(local.domainType||'');player.domainTimer=Number(local.domainTimer)||0;player.domainRadius=Number(local.domainRadius)||0;
-  player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;
+  player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;player.domainWindup=Number(local.domainWindup)||0;player.domainDuration=Number(local.domainDuration)||0;player.counterKind=String(local.counterKind||'');player.counterWindow=Number(local.counterWindow)||0;player.grabbedBy=String(local.grabbedBy||'');player.activeGrabTarget=String(local.activeGrabTarget||'');
   player.vehicle=local.vehicleId?parkedCars.find(c=>String(c.id)===String(local.vehicleId))||null:null;
   if(player.vehicle){player.x=player.vehicle.x;player.y=player.vehicle.y}
   else if(Number.isFinite(Number(local.x))&&Number.isFinite(Number(local.y))){
@@ -1054,12 +1054,12 @@ function applyOnlineRoomState(state){
   if(remote.char!==char){remote.char=char;remote.motion=null}
   const oldHp=Number(remote.hp)||0;
   remote.onlineName=String(net.name||'Player').slice(0,18);
-  remote.networkX=Number(net.x)||remote.x;remote.networkY=Number(net.y)||remote.y;remote.networkFace=Number(net.face)||remote.face;
+  remote.networkX=Number(net.x)||remote.x;remote.networkY=Number(net.y)||remote.y;remote.networkFace=Number.isFinite(Number(net.face))?Number(net.face):remote.face;
   remote.walk=Number(net.walk)||0;remote.jump=Number(net.jump)||0;remote.block=!!net.block;remote.awakened=!!net.awakened;remote.dead=!!net.dead;
   remote.hp=Number(net.hp)||0;remote.maxHp=Number(net.maxHp)||remote.maxHp;remote.meter=Number(net.meter)||0;
   remote.stun=Number(net.stun)||0;remote.invuln=Number(net.invuln)||0;
   remote.domainType=String(net.domainType||'');remote.domainTimer=Number(net.domainTimer)||0;remote.domainRadius=Number(net.domainRadius)||0;
-  remote.domainCenterX=Number(net.domainX)||remote.networkX;remote.domainCenterY=Number(net.domainY)||remote.networkY;
+  remote.domainCenterX=Number(net.domainX)||remote.networkX;remote.domainCenterY=Number(net.domainY)||remote.networkY;remote.domainWindup=Number(net.domainWindup)||0;remote.domainDuration=Number(net.domainDuration)||0;remote.counterKind=String(net.counterKind||'');remote.counterWindow=Number(net.counterWindow)||0;remote.grabbedBy=String(net.grabbedBy||'');remote.activeGrabTarget=String(net.activeGrabTarget||'');remote.grabKind=String(net.grabKind||'');remote.grabRemaining=Number(net.grabRemaining)||0;
   remote.vehicle=net.vehicleId?parkedCars.find(c=>String(c.id)===String(net.vehicleId))||null:null;
   remote.attackAnim=Number(net.attackAnim)||0;remote.attackType=String(net.attackType||'');
   if(net.motionName)remote.motion={name:String(net.motionName),t:clamp(Number(net.motionProgress)||0,0,1),duration:1,activeDuration:1,angle:remote.networkFace,target:null};else remote.motion=null;
@@ -1068,6 +1068,14 @@ function applyOnlineRoomState(state){
   if(!remote.dead)remote.wasDead=false;
  }
  for(const [id] of onlineRemotePlayers)if(!seen.has(id))onlineRemotePlayers.delete(id);
+ if(player){
+  player.capturedBy=player.grabbedBy?onlineRemotePlayers.get(player.grabbedBy)||null:null;
+  if(player.activeGrabTarget){const held=onlineRemotePlayers.get(player.activeGrabTarget);if(held){player.grabTarget=held;held.capturedBy=player}}else player.grabTarget=null;
+ }
+ for(const remote of onlineRemotePlayers.values()){
+  remote.capturedBy=remote.grabbedBy?(remote.grabbedBy===onlineSessionId?player:onlineRemotePlayers.get(remote.grabbedBy)||null):null;
+  if(remote.activeGrabTarget){const held=remote.activeGrabTarget===onlineSessionId?player:onlineRemotePlayers.get(remote.activeGrabTarget);remote.grabTarget=held||null;if(held)held.capturedBy=remote}else remote.grabTarget=null;
+ }
  const label=$('onlinePlayersCount');if(label)label.textContent=entries.length+' / 16 PLAYERS';
 }
 function updateOnlineRemotePlayers(dt){
@@ -1089,7 +1097,7 @@ function updateOnlineNetwork(dt){
   const throttle=mobile?-mobileMove.y:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
   onlineRoom.send('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05});
  }
- const snapshot={x:player.x,y:player.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainRadius:Number(player.domainRadius)||0};
+ const snapshot={x:player.x,y:player.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
 function drawOnlineRemoteDomains(){
@@ -1404,6 +1412,7 @@ function useDomainClashM1(f){
  }else m1Feedback(f,t,angle,false,false);
 }
 function domainIsActive(owner){return !!(owner&&!owner.dead&&owner.domainType&&owner.domainType!=='void02'&&owner.domainTimer>0&&!game.domainClash)}
+function domainFighters(){return onlineMode?[player,enemy,...onlineRemotePlayers.values()]:[player,enemy]}
 function releaseDomainOccupants(owner){
   for(const f of [player,enemy,trainingDummy]){if(!f)continue;if(f.domainInsideOwner===owner)f.domainInsideOwner=null;if(f.domainEscapedOwner===owner)f.domainEscapedOwner=null}
  }
@@ -1557,14 +1566,14 @@ function damage(target,amount,source,opts={}){
   if(source===player&&target.onlineSessionId&&onlineRoom){
    if(opts.damageType!=='domain'&&opts.damageType!=='vehicle'){
     const move=String(source.motion&&source.motion.name||source.onlineLastMove||'m1_1').slice(0,48);
-    try{onlineRoom.send('combat:hit',{targetId:target.onlineSessionId,move})}catch(e){}
+    try{onlineRoom.send('combat:hit',{targetId:target.onlineSessionId,move,damageType:String(opts.damageType||'melee')})}catch(e){}
    }
    return;
   }
   if(source&&source.onlineSessionId&&target===player)return;
  }
  const sukunaFireArmor=!!(target.sukunaFireCast>0);
- const activeBarrier=[player,enemy].find(domainIsActive);if(activeBarrier&&source&&opts.damageType!=='domain'&&(source.domainInsideOwner===activeBarrier)!==(target.domainInsideOwner===activeBarrier))return;
+ const activeBarrier=domainFighters().find(domainIsActive);if(activeBarrier&&source&&opts.damageType!=='domain'&&(source.domainInsideOwner===activeBarrier)!==(target.domainInsideOwner===activeBarrier))return;
  if(game.domainClash&&source&&game.domainClash.members.includes(source)&&game.domainClash.members.includes(target)&&opts.damageType!=='domain-clash-m1')return;
  if(target.char==='ten'&&target.tenRabbitSwarm){target.tenRabbitSwarm=null}
  if(target.char==='ten'&&target.tenGardenTimer>0&&source&&source.team!==target.team){target.tenGardenTimer=0;target.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · INTERRUPTED',850)}
@@ -1713,9 +1722,12 @@ function setSkillMotion(f,idx,angle,target){
 
 function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  if(!f||!t||t.dead||(t.block&&kind!=='megumiSerpent'))return false;
- if(onlineMode&&f===player&&t.onlineSessionId&&onlineRoom){
-  const move=String(f.motion&&f.motion.name||f.onlineLastMove||kind).slice(0,48);
-  try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move})}catch(e){}
+ if(onlineMode&&onlineRoom&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player))){
+  const moveByKind={yujiDrag:'yujiCursedDrag',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge'};
+  const move=moveByKind[kind]||String(f.motion&&f.motion.name||f.onlineLastMove||kind).slice(0,48);
+  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee'})}catch(e){}}
+  f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;
+  t.capturedBy=f;t.block=false;t.stun=Math.max(t.stun,duration+.2);t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
   setMotion(f,move,duration,angle,t);return true;
  }
  if(t.vehicle)toggleCityVehicle(t);
@@ -1730,7 +1742,7 @@ function releaseGrab(f,launch=true){
 }
 function updateGrab(f,dt){
  if(!f||!f.grabTarget)return;
- const t=f.grabTarget,kind=f.grabKind;if(f.dead||f.stun>.08||t.dead||t.capturedBy!==f){releaseGrab(f,false);return}
+ const t=f.grabTarget,kind=f.grabKind,serverControlled=onlineMode&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player));if(f.dead||f.stun>.08||t.dead||t.capturedBy!==f){releaseGrab(f,false);return}
  f.grabElapsed+=dt;let aim=aimedAt(f),a=Math.atan2(aim.y-f.y,aim.x-f.x);if(f.team!=='player')a=Math.atan2(player.y-f.y,player.x-f.x);f.grabAngle=a;f.face=a;
  const progress=clamp(f.grabElapsed/f.grabDuration,0,1),fx=Math.cos(a),fy=Math.sin(a),oldX=f.x,oldY=f.y;
  if(kind==='yujiDrag'){f.x+=fx*188*dt;f.y+=fy*188*dt;collideWorld(f);t.x=f.x+fx*46;t.y=f.y+fy*46}
@@ -1748,7 +1760,7 @@ function updateGrab(f,dt){
  while(f.grabElapsed>=f.grabTick&&f.grabTick<f.grabDuration){
   f.grabTick+=kind==='yujiDrag'?.25:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
   const hit=kind==='yujiDrag'?1.1:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*MAHITO_MODES[f.soulMode].damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
-  if(hit>0){
+  if(hit>0&&!serverControlled){
    damage(t,hit,f,{stun:kind==='sukunaFlurry'?.065:.03,color,ignoreInvuln:true,unblockable:true});
    if(kind==='sukunaFlurry'){
     const cutIndex=Math.floor(f.grabElapsed/.095),side=cutIndex%2?1:-1;
@@ -1759,7 +1771,7 @@ function updateGrab(f,dt){
  }
  f.vx=0;f.vy=0;
  if(f.grabElapsed>=f.grabDuration){const finish=kind==='sukunaCleave'?Math.max(10,t.hp*.4):f.grabFinishDamage,finalAngle=f.grabAngle,launch=kind!=='toadPull';releaseGrab(f,false);
-  if(finish>0)damage(t,finish,f,{stun:.8,kx:Math.cos(finalAngle)*(kind==='yujiDrag'?16:kind==='sukunaFlurry'?17:12),ky:Math.sin(finalAngle)*(kind==='yujiDrag'?16:kind==='sukunaFlurry'?17:12),unblockable:true,big:true,color,ignoreInvuln:true});
+  if(finish>0&&!serverControlled)damage(t,finish,f,{stun:.8,kx:Math.cos(finalAngle)*(kind==='yujiDrag'?16:kind==='sukunaFlurry'?17:12),ky:Math.sin(finalAngle)*(kind==='yujiDrag'?16:kind==='sukunaFlurry'?17:12),unblockable:true,big:true,color,ignoreInvuln:true});
   if(launch){t.vx=Math.cos(finalAngle)*(kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:13);t.vy=Math.sin(finalAngle)*(kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:13);t.jump=Math.max(t.jump,.28);t.jumpV=Math.max(t.jumpV,2.4)}else t.stun=Math.max(t.stun,.25);
   setMotion(f,kind==='yujiDrag'?'yujiCursedDragEnd':kind==='todoThrow'?'todoSwiftThrow':kind==='mahitoTransfigure'?'mahitoTransfigureEnd':kind==='gojoFaceGrater'?'gojoFaceGraterEnd':kind==='sukunaCleave'?'sukunaCleaveEnd':kind==='sukunaFlurry'?'sukunaFlurryEnd':kind==='bloodEdge'?'chosoEdgeSlam':'megumiToadRelease',.42,finalAngle,t);
   burst(t.x,t.y,color,kind==='yujiDrag'?34:24,7);addDebris(t.x,t.y,color,kind==='yujiDrag'?12:8);game.shake=Math.max(game.shake,kind==='yujiDrag'?13:9);game.hitStop=Math.max(game.hitStop,.075);
@@ -2061,7 +2073,7 @@ function drawCityTrain(){
 }
 
 function drawTrainingDummy(){
- if(!trainingDummy)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
+ if(!trainingDummy)return;const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
  const d=trainingDummy,x=sx(d.x),y=sy(d.y);
  ctx.save();
  ctx.globalAlpha=.96;
@@ -3105,7 +3117,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);if(onlineMode){for(const remote of onlineRemotePlayers.values())updateGrab(remote,dt)}updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -4490,7 +4502,7 @@ function drawTrashManDomainCan(){
 function drawTrashManEffects(){
  for(const f of [player,enemy]){
   if(!f||f.dead||f.char!=='trashman')continue;
-  const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))continue;
+  const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))continue;
   if(f.trashGiantCan){
    const g=f.trashGiantCan,x=sx(g.x),y=sy(g.y);ctx.save();ctx.globalAlpha=.15;ctx.fillStyle='#a3bb84';ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.8;ctx.strokeStyle='#a4b68d';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();const fallOffset=(g.dropTimer||0)>0?(g.dropTimer||0)*330:0;drawTrashCan(g.x,g.y-fallOffset,1.9+Math.max(0,g.dropTimer||0)*.7,Math.sin(game.time*1.8)*.035,0);
   }
@@ -4507,7 +4519,7 @@ function drawTrashManEffects(){
   }
  }
 }
-function drawFighter(f){if(f.dead||f.isTrainingDummy||f.vehicle)return;const activeDomain=[player,enemy].find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}if(f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)}
+function drawFighter(f){if(f.dead||f.isTrainingDummy||f.vehicle)return;const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;drawHeadHands(f);if(f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}if(f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)}
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
  ctx.save();ctx.translate(x1,y1);ctx.rotate(Math.atan2(dy,dx));ctx.fillStyle=edge;ctx.fillRect(-1,-width/2-1,len+2,width+2);ctx.fillStyle=color;ctx.fillRect(0,-width/2,len,width);ctx.restore();
@@ -4963,7 +4975,7 @@ function yujiDomainSmokeEdge(x,h,t,phase=0){return h*(.535+.032*Math.sin(x*.0085
 function isFullScreenDomainActive(){
  // A full-screen domain owns the arena from wind-up through its final frame, including clashes.
  const fullScreenTypes=['void','shrine','soul','hakari','yuta','trash'];
- return [player,enemy].some(f=>f&&!f.dead&&fullScreenTypes.includes(f.domainType)&&(f.domainTimer>0||f.domainWindup>0||f.domainState==='clashing'));
+ return domainFighters().some(f=>f&&!f.dead&&fullScreenTypes.includes(f.domainType)&&(f.domainTimer>0||f.domainWindup>0||f.domainState==='clashing'));
 }
 function drawYujiDomainSmokeBackground(){
  const cache=getYujiSmokeBackgroundCache(W,H);
@@ -5204,7 +5216,7 @@ function drawIdleDeathGamble(f){
  ctx.restore();
 }
 function drawTenSummons(){
- const activeDomain=[player,enemy].find(domainIsActive),fighters=[player,enemy,trainingDummy].filter(f=>f&&f.char==='ten'&&!f.dead&&(!activeDomain||domainViewMatches(f,activeDomain)));
+ const activeDomain=domainFighters().find(domainIsActive),fighters=[player,enemy,trainingDummy].filter(f=>f&&f.char==='ten'&&!f.dead&&(!activeDomain||domainViewMatches(f,activeDomain)));
  for(const f of fighters){
   const x=sx(f.x),y=sy(f.y),a=f.face||0;
   if(f.tenToadVisual>0){
@@ -5290,14 +5302,14 @@ function drawDomainBackdrops(){
  // Paint full-screen domain backgrounds before any fighter, skill, projectile or particle visuals.
  updateEffectsViewportBounds();
  if(game.domainClash)drawDomainClashArena();
- for(const f of [player,enemy]){
+ for(const f of domainFighters()){
   const clashant=!!(game.domainClash&&game.domainClash.members.includes(f));
   if(f&&!f.dead&&!clashant&&(f.domainTimer>0||f.domainWindup>0||f.domainType==='void02'))drawDomainArena(f);
  }
 }
 function drawEffects(){
  updateEffectsViewportBounds();
- const activeDomainView=[player,enemy].find(domainIsActive);for(const f of [player,enemy]){
+ const activeDomainView=domainFighters().find(domainIsActive);for(const f of [player,enemy]){
   const visibleInDomainView=!activeDomainView||domainViewMatches(f,activeDomainView);
   if(f&&!f.dead&&visibleInDomainView&&f.bloodRain)drawBloodRain(f);
   if(f&&!f.dead&&visibleInDomainView&&f.char==='restless'&&(f.awakeMode==='gamble'||f.jackpot)&&f.domainType!=='hakari')drawIdleDeathGamble(f)
@@ -5609,7 +5621,7 @@ function draw(){
  ctx.restore();
  positionVesselAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
- if(game.started){for(const f of [player,enemy]){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
+ if(game.started){for(const f of domainFighters()){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  if(!game.started){camera.x=1100;camera.y=750;drawMenuBackdrop()}else if(!mobileControlsEnabled){ctx.save();ctx.translate(mouse.x,mouse.y);ctx.strokeStyle='#eaf7ffcc';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.moveTo(-14,0);ctx.lineTo(-5,0);ctx.moveTo(5,0);ctx.lineTo(14,0);ctx.moveTo(0,-14);ctx.lineTo(0,-5);ctx.moveTo(0,5);ctx.lineTo(0,14);ctx.stroke();ctx.restore()}else if(mobileControlsEnabled){drawMobileEnemyPointer()}
 }
 function drawMenuBackdrop(){ctx.save();ctx.fillStyle='#0a111b66';ctx.fillRect(0,0,W,H);ctx.restore()}
