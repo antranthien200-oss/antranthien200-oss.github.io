@@ -318,7 +318,9 @@ export class CityRoom extends Room{
      else{owner.moveX=0;owner.moveY=0;owner.x=clamp(p.x-Math.cos(Math.atan2(p.vy,p.vx))*30,45,WORLD_WIDTH-45);owner.y=clamp(p.y-Math.sin(Math.atan2(p.vy,p.vx))*30,45,WORLD_HEIGHT-45);owner.jump=Math.max(owner.jump,.55);owner.vx=0;owner.vy=0}
     }
    }else if(p.kind==="bloodBomb"){
-    p.life-=dt;
+    const aimX=Number(owner.aimX)||p.aimX,aimY=Number(owner.aimY)||p.aimY;
+    const dx=aimX-p.x,dy=aimY-p.y,len=Math.hypot(dx,dy)||1,step=Math.min(len,220*dt);
+    p.x+=dx/len*step;p.y+=dy/len*step;p.travelled+=step;p.life-=dt;
     if(p.detonate||p.life<=0){
      for(const [targetId,candidate] of this.state.players){
       if(targetId===p.ownerId||candidate.dead||distance(candidate,p)>165)continue;
