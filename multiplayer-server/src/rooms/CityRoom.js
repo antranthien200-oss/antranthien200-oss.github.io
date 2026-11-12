@@ -134,11 +134,13 @@ export class CityRoom extends Room{
   const id=client.sessionId,player=this.state.players.get(id),targetId=String(payload.targetId||""),target=this.state.players.get(targetId);
   const clash=player?.domainClashId?this.domainClashes.get(player.domainClashId):null;
   if(!clash||!target||!clash.participants.includes(targetId)||player.dead||target.dead||player.stun>0||target.grabbedBy)return;
-  const now=Date.now(),last=clash.lastHitAt.get(id)||0;
+  const now=Date.now(),last=clash.lastHitAt.get(id)||0,requestedFace=Number(payload.face);
   if(now-last<270)return;
+  if(Number.isFinite(requestedFace))player.face=clamp(requestedFace,-Math.PI,Math.PI);
   const d=distance(player,target),angle=Math.atan2(target.y-player.y,target.x-player.x),delta=Math.atan2(Math.sin(angle-player.face),Math.cos(angle-player.face));
   if(d>160||Math.abs(delta)>1.5)return;
   clash.lastHitAt.set(id,now);clash.scores.set(id,Math.min(100,(clash.scores.get(id)||0)+6.25));
+  this.broadcast("combat:action",{sessionId:id,kind:"m1",character:player.character,awakened:player.awakened,serverTime:now,face:player.face,domainClashId:clash.id});
   this.broadcast("domain:clash:score",{id,participants:clash.participants,scores:Object.fromEntries(clash.scores),time:clash.time,serverTime:now});
   if((clash.scores.get(id)||0)>=100)this.finishDomainClash(clash,id,"SCORE");
  }
@@ -151,6 +153,7 @@ export class CityRoom extends Room{
    if(winnerId&&sessionId===winnerId){
     p.domainWindup=0;p.domainTimer=Math.max(2,p.domainDuration||8);p.domainCastAt=now;
    }else{
+    if(winnerId&&!p.awakened)p.meter=Math.max(p.meter,75);
     p.domainType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0;
    }
   }
@@ -248,11 +251,13 @@ export class CityRoom extends Room{
   const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id);
   if(!a||!target||a===target||a.dead||target.dead||a.stun>0||a.activeGrabTarget||target.grabbedBy)return;
   const move=String(payload.move||"").slice(0,48);if(!isMoveAllowed(a.character,move))return;
+  const now=Date.now(),actionTimes=this.lastActionAt.get(client.sessionId);
+  if(!actionTimes||![...actionTimes.values()].some(at=>now-at<4500))return;
   const profile=combatProfile(a.character,move,a.awakened),requestedType=String(payload.damageType||"melee");
   if(profile.range>=600||["bullet","projectile","explosion"].includes(requestedType))return;
   const d=distance(a,target),angle=Math.atan2(target.y-a.y,target.x-a.x),delta=Math.atan2(Math.sin(angle-a.face),Math.cos(angle-a.face));
   if(d>Math.min(profile.range,430)||Math.abs(delta)>profile.arc)return;
-  const family=/^(m1_|yutaM1_)/i.test(move)?"m1":move.replace(/[0-9]+/g,"#"),key=client.sessionId+":"+id+":"+family,now=Date.now();
+  const family=/^(m1_|yutaM1_)/i.test(move)?"m1":move.replace(/[0-9]+/g,"#"),key=client.sessionId+":"+id+":"+family;
   if(now-(this.lastHitAt.get(key)||0)<profile.cooldown*1000)return;this.lastHitAt.set(key,now);
   const damageType="melee";
   if(this.resolveCounter(a,target,damageType))return;
