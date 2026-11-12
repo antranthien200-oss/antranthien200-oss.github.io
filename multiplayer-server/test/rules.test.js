@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {MAX_PLAYERS,CHARACTER_IDS,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,isBlockedByBuilding,rayHitsRect,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
+import {MAX_PLAYERS,CHARACTER_IDS,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
 test("one shared city has 16 seats",()=>assert.equal(MAX_PLAYERS,16));
 test("character list has the supported fighters",()=>{assert.ok(CHARACTER_IDS.includes("vessel"));assert.ok(!CHARACTER_IDS.includes("bad"))});
 test("all fixed spawns are on-map and separated",()=>{const ps=Array.from({length:16},(_,i)=>createSpawn(i));let min=Infinity;for(let i=0;i<ps.length;i++){assert.ok(ps[i].x>=45&&ps[i].x<=3255);assert.ok(ps[i].y>=45&&ps[i].y<=1955);for(let j=i+1;j<ps.length;j++)min=Math.min(min,Math.hypot(ps[i].x-ps[j].x,ps[i].y-ps[j].y))}assert.ok(min>=72)});
@@ -27,4 +27,17 @@ test("valid M1 and character skill names pass building-hit move validation",()=>
  assert.equal(isMoveAllowed("yuta","yutaM1_1"),true);
  assert.equal(isMoveAllowed("yuta","gojoPurple"),false);
  assert.equal(isMoveAllowed("honored","gojoPurple"),true);
+});
+
+test("server grab profiles cover supported player grabs",()=>{
+ assert.equal(grabSettings("vessel","yujiCursedDrag").duration,1.05);
+ assert.equal(grabSettings("honored","gojoFaceGrater").finishDamage,13);
+ assert.equal(grabSettings("todo","todoSwiftGrab").kind,"todoThrow");
+ assert.equal(grabSettings("yuta","yutaM1_1"),null);
+});
+test("counter windows are limited to intended character actions",()=>{
+ assert.equal(counterSettings("vessel","4",false).kind,"manji");
+ assert.equal(counterSettings("trashman","special",false).kind,"trashSwap");
+ assert.equal(counterSettings("vessel","special",true).kind,"sukunaCleaveCounter");
+ assert.equal(counterSettings("honored","special",false),null);
 });
