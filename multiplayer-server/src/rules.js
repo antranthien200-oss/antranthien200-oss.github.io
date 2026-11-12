@@ -80,6 +80,21 @@ export function isProjectileMoveAllowed(character,moveName){
  if(!isMoveAllowed(character,move)||/domain|shrine|void|hakari|soul/i.test(move))return false;
  return combatProfile(character,move).range>=650;
 }
+export function isProjectileKindAllowed(character,moveName,kindName){
+ const move=String(moveName||"").slice(0,48),kind=String(kindName||"");
+ const allowed={
+  trashCan:/^(trashCanThrow|trashManThrow|trashManFlyingCan)$/i,
+  red:/^gojoRed$/i,
+  blueMax:/^gojoBlueMax$/i,
+  redmax:/^gojoRedMax$/i,
+  hollow:/^gojoPurple$/i,
+  tenNue:/^megumiNue$/i,
+  bloodBomb:/^chosoBombPlant$/i
+ };
+ if(kind==="trashCan"&&/^trashCanThrow$/i.test(move))return true;
+ if(kind==="trashCan"&&!/^trashman$/i.test(character))return false;
+ return !!allowed[kind]&&allowed[kind].test(move)&&isProjectileMoveAllowed(character,move);
+}
 export function domainSettings(character,domainType){
  if(!(DOMAIN_BY_CHARACTER[character]||[]).includes(domainType))return null;
  if(domainType==="hakari")return{radius:1500,duration:120};
