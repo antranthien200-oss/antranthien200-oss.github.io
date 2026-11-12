@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {MAX_PLAYERS,CHARACTER_IDS,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
+import {MAX_PLAYERS,CHARACTER_IDS,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,isProjectileMoveAllowed,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
 test("one shared city has 16 seats",()=>assert.equal(MAX_PLAYERS,16));
 test("character list has the supported fighters",()=>{assert.ok(CHARACTER_IDS.includes("vessel"));assert.ok(!CHARACTER_IDS.includes("bad"))});
 test("all fixed spawns are on-map and separated",()=>{const ps=Array.from({length:16},(_,i)=>createSpawn(i));let min=Infinity;for(let i=0;i<ps.length;i++){assert.ok(ps[i].x>=45&&ps[i].x<=3255);assert.ok(ps[i].y>=45&&ps[i].y<=1955);for(let j=i+1;j<ps.length;j++)min=Math.min(min,Math.hypot(ps[i].x-ps[j].x,ps[i].y-ps[j].y))}assert.ok(min>=72)});
@@ -40,4 +40,16 @@ test("counter windows are limited to intended character actions",()=>{
  assert.equal(counterSettings("trashman","special",false).kind,"trashSwap");
  assert.equal(counterSettings("vessel","special",true).kind,"sukunaCleaveCounter");
  assert.equal(counterSettings("honored","special",false),null);
+});
+
+test("movement intent is normalized and bounded independently of reported position",()=>{
+ const n=normalizePlayerUpdate({x:1000,y:800,moveX:1,moveY:1},{x:1000,y:800,face:0},33);
+ assert.ok(Math.abs(Math.hypot(n.moveX,n.moveY)-1)<1e-9);
+ assert.equal(n.moveScale,1);
+});
+test("server projectile eligibility requires an allowed long-range move",()=>{
+ assert.equal(isProjectileMoveAllowed("honored","gojoBlue"),true);
+ assert.equal(isProjectileMoveAllowed("trashman","trashManThrow"),true);
+ assert.equal(isProjectileMoveAllowed("vessel","gojoBlue"),false);
+ assert.equal(isProjectileMoveAllowed("honored","gojoVoid"),false);
 });
