@@ -332,15 +332,15 @@ export class CityRoom extends Room{
    const activeBuildings=BUILDING_LAYOUT.filter((building,index)=>!this.state.world.buildings.get(String(index))?.collapsed);
    if(p.kind!=="sukunaFireArrow"&&isBlockedByBuilding(p,activeBuildings,Math.max(7,p.r*.65))){end(p);continue}
    if(p.kind==="sukunaFireArrow"){
-    let hitTarget=null;
+    let hitTarget=null,hitTargetId="";
     for(const [targetId,candidate] of this.state.players){
      if(targetId===p.ownerId||candidate.dead||candidate.vehicleId)continue;
-     if(pointSegmentDistance(candidate,from,p)<=p.r+23){hitTarget=candidate;break}
+     if(pointSegmentDistance(candidate,from,p)<=p.r+23){hitTarget=candidate;hitTargetId=targetId;break}
     }
     if(hitTarget||p.life<=0||p.travelled>=p.maxDistance){
      const x=hitTarget?hitTarget.x:p.x,y=hitTarget?hitTarget.y:p.y;
      this.createFireZone(owner,x,y,Math.atan2(p.vy,p.vx),now);
-     end(p,"combat:projectile-impact",{targetId:hitTarget?hitTarget.sessionId:""});
+     end(p,"combat:projectile-impact",{targetId:hitTargetId});
      continue;
     }
    }else if(p.kind!=="blueMax"&&p.kind!=="bloodBomb"){
@@ -464,5 +464,5 @@ export class CityRoom extends Room{
    if(target.hp<=0)this.killPlayer(target);
   }
  }
-this.tickProjectiles(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=600){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||!o.domainType||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||700,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r||t.invuln>0)continue;const damage=o.domainType==="void"?4:o.domainType==="shrine"?5:3;t.hp=Math.max(0,t.hp-damage);t.stun=Math.max(t.stun,o.domainType==="void"?.7:.18);t.invuln=.25;if(t.hp<=0)this.killPlayer(t)}}}}
+this.tickProjectiles(dt,now);this.tickFireZones(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=600){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||!o.domainType||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||700,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r||t.invuln>0)continue;const damage=o.domainType==="void"?4:o.domainType==="shrine"?5:3;t.hp=Math.max(0,t.hp-damage);t.stun=Math.max(t.stun,o.domainType==="void"?.7:.18);t.invuln=.25;if(t.hp<=0)this.killPlayer(t)}}}}
 }
