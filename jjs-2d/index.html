@@ -4633,11 +4633,8 @@ function drawHeadHands(f){
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(name==='trashCanPickup'||f.carryingTrashCan){
-  const hold=P(31,0,24);let canX=hold.x,canY=hold.y;
-  if(name==='trashCanPickup'&&Number.isFinite(f.trashCanPickupFromX)&&Number.isFinite(f.trashCanPickupFromY)){
-   const grab=smoothstep01(progress/.82);canX=lerp(sx(f.trashCanPickupFromX),hold.x,grab);canY=lerp(sy(f.trashCanPickupFromY)-f.jump*3,hold.y,grab)-Math.sin(grab*Math.PI)*7;
-  }
-  drawTrashCanScreen(canX,canY,.9,angle,0);
+  const hold=P(31,0,24);
+  drawTrashCanScreen(hold.x,hold.y,.9,angle,0);
  }
  if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
