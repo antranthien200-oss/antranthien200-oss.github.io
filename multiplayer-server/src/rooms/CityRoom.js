@@ -33,7 +33,16 @@ export class CityRoom extends Room{
   }
  }
  onReconnect(client){const p=this.state.players.get(client.sessionId);if(p)p.connected=true;console.log("[city] reconnected",p?.name||client.sessionId)}
- onLeave(client){const p=this.state.players.get(client.sessionId);if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===client.sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}this.state.players.delete(client.sessionId);this.lastUpdateAt.delete(client.sessionId);this.lastCarControlAt.delete(client.sessionId);this.lastActionAt.delete(client.sessionId);this.lastBuildingAt.delete(client.sessionId);for(const k of this.lastHitAt.keys())if(k.startsWith(client.sessionId+":"))this.lastHitAt.delete(k);this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] left",p?.name||client.sessionId,this.state.players.size+"/16")}
+ onLeave(client){
+  const sessionId=client.sessionId,p=this.state.players.get(sessionId);
+  if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}
+  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);
+  for(const map of [this.lastHitAt,this.lastBuildingAt,this.lastPropHitAt]){
+   for(const key of map.keys())if(key.startsWith(sessionId+":")||key.includes(":"+sessionId+":"))map.delete(key);
+  }
+  this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});
+  console.log("[city] left",p?.name||sessionId,this.state.players.size+"/16");
+ }
  updatePlayer(client,payload){const p=this.state.players.get(client.sessionId);if(!p||p.dead)return;const now=Date.now(),prev=this.lastUpdateAt.get(client.sessionId)||now-50,n=normalizePlayerUpdate(payload,p,now-prev);if(!n)return;this.lastUpdateAt.set(client.sessionId,now);p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.attackAnim=n.attackAnim;p.attackType=n.attackType;p.motionName=n.motionName;p.motionProgress=n.motionProgress;if(p.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(!c||c.destroyed||c.occupiedBy!==client.sessionId)p.vehicleId="";else{p.x=c.x;p.y=c.y}}else{
    const activeBuildings=BUILDING_LAYOUT.filter((building,index)=>!this.state.world.buildings.get(String(index))?.collapsed);
    const proposed={x:n.x,y:n.y};
@@ -57,8 +66,8 @@ export class CityRoom extends Room{
  combatHit(client,payload={}){const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id);if(!a||!target||a===target||a.dead||target.dead||a.stun>0)return;const move=String(payload.move||"").slice(0,48);if(!isMoveAllowed(a.character,move))return;const profile=combatProfile(a.character,move,a.awakened),d=distance(a,target),angle=Math.atan2(target.y-a.y,target.x-a.x),delta=Math.atan2(Math.sin(angle-a.face),Math.cos(angle-a.face));if(d>profile.range||Math.abs(delta)>profile.arc)return;const family=/^(m1_|yutaM1_)/i.test(move)?"m1":move.replace(/[0-9]+/g,"#"),key=client.sessionId+":"+id+":"+family,now=Date.now();if(now-(this.lastHitAt.get(key)||0)<profile.cooldown*1000)return;this.lastHitAt.set(key,now);if(target.invuln>0)return;const incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face)),blocking=target.block&&Math.abs(guard)<=1.18;if(blocking){target.hp=Math.max(1,target.hp-profile.damage*.12);target.meter=clamp(target.meter+profile.damage*.12,0,100);target.invuln=.08;a.meter=clamp(a.meter+1,0,100);return}target.hp=Math.max(0,target.hp-profile.damage);target.stun=Math.max(target.stun,profile.stun);target.invuln=.12;target.x=clamp(target.x+Math.cos(angle)*profile.knockback,45,WORLD_WIDTH-45);target.y=clamp(target.y+Math.sin(angle)*profile.knockback,45,WORLD_HEIGHT-45);target.meter=clamp(target.meter+profile.damage*.28,0,100);a.meter=clamp(a.meter+profile.damage*.5,0,100);if(target.hp<=0)this.killPlayer(target)}
  killPlayer(p){if(p.dead)return;p.hp=0;p.dead=true;p.respawnTimer=2.5;p.stun=0;p.invuln=0;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0;if(p.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}p.vehicleId=""}}
  hitBuilding(client,payload={}){
-  const p=this.state.players.get(client.sessionId),id=Number(payload.buildingId);
-  if(!p||p.dead||p.vehicleId||p.attackAnim<=0||!isMoveAllowed(p.character,p.motionName)||!Number.isInteger(id)||id<0||id>=BUILDING_LAYOUT.length)return;
+  const p=this.state.players.get(client.sessionId),id=Number(payload.buildingId),move=String(payload.move||p?.motionName||"").slice(0,48);
+  if(!p||p.dead||p.vehicleId||!isMoveAllowed(p.character,move)||!Number.isInteger(id)||id<0||id>=BUILDING_LAYOUT.length)return;
   const b=BUILDING_LAYOUT[id],state=this.state.world.buildings.get(String(id));
   if(!state||state.collapsed||!rayHitsRect(p,p.face,b,1100))return;
   const key=client.sessionId+":"+id,now=Date.now();
