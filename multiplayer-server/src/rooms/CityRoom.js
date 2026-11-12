@@ -1,6 +1,6 @@
 import { Room } from "colyseus";
 import { schema,t } from "@colyseus/schema";
-import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isMoveAllowed,isProjectileKindAllowed,isProjectileMoveAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
+import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isMoveAllowed,isMoveAuthorizedForAction,isProjectileKindAllowed,isProjectileMoveAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
 const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerState");
 const BuildingState=schema({stage:t.number().default(0),collapsed:t.boolean().default(false)},"BuildingState");
 const CarState=schema({x:t.number().default(0),y:t.number().default(0),angle:t.number().default(0),vx:t.number().default(0),vy:t.number().default(0),speed:t.number().default(0),occupiedBy:t.string().default(""),destroyed:t.boolean().default(false),respawnTimer:t.number().default(0)},"CarState");
@@ -210,7 +210,7 @@ export class CityRoom extends Room{
   const now=Date.now(),last=this.lastProjectileAt.get(ownerId)||0;
   if(now-last<Math.max(110,profile.cooldown*1000)){reject();return}
   if(!manualTrash&&!golden){
-   if(!["1","2","3","4","special"].includes(owner.lastActionKind)||now-(Number(owner.lastActionAt)||0)>5200){reject();return}
+   if(!["1","2","3","4","special"].includes(owner.lastActionKind)||now-(Number(owner.lastActionAt)||0)>5200||!isMoveAuthorizedForAction(owner.character,move,owner.lastActionKind)){reject();return}
    if(this.lastProjectileActionAt.get(ownerId)===owner.lastActionAt){reject();return}
    this.lastProjectileActionAt.set(ownerId,owner.lastActionAt);
   }
@@ -391,6 +391,7 @@ export class CityRoom extends Room{
   const actionAge=now-(Number(a.lastActionAt)||0);
   if(isM1){if(a.lastActionKind!=="m1"||actionAge>900)return}
   else if(!["1","2","3","4","special"].includes(a.lastActionKind)||actionAge>5200)return;
+  if(!isMoveAuthorizedForAction(a.character,move,a.lastActionKind))return;
   const profile=combatProfile(a.character,move,a.awakened),requestedType=String(payload.damageType||"melee");
   if(profile.range>=600||["bullet","projectile","explosion"].includes(requestedType))return;
   const d=distance(a,target),angle=Math.atan2(target.y-a.y,target.x-a.x),delta=Math.atan2(Math.sin(angle-a.face),Math.cos(angle-a.face));
