@@ -184,7 +184,7 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-ar
 #mobileJoystick{position:absolute;left:max(9px,env(safe-area-inset-left));bottom:calc(13px + env(safe-area-inset-bottom));width:clamp(123px,33vw,147px);aspect-ratio:1;border:6px solid #000;border-radius:50%;background:#000;box-shadow:0 0 0 1px rgba(0,0,0,.24);pointer-events:auto;touch-action:none}
 #mobileJoystick:before{content:"";position:absolute;inset:6%;border:3px solid #fff;border-radius:50%;background:transparent;pointer-events:none}
 .mobile-joy-knob{position:absolute;left:50%;top:50%;width:43%;height:43%;transform:translate(-50%,-50%);border-radius:50%;border:0;background:#fff;box-shadow:none;pointer-events:none}
-.mobile-joy-label{display:none}
+.mobile-joy-label{display:none}\nbody.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:absolute;left:50%;bottom:5px;transform:translateX(-50%);font:900 9px/1 ui-monospace,monospace;letter-spacing:.12em;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
 
 /* G and R sit immediately beside the joystick, vertically stacked. */
 .mobile-left-actions{position:absolute;left:calc(max(9px,env(safe-area-inset-left)) + clamp(123px,33vw,147px) + 7px);bottom:calc(38px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;pointer-events:none}
@@ -1146,8 +1146,9 @@ function updateOnlineNetwork(dt){
  const motion=player.motion;if(motion&&motion.name)player.onlineLastMove=String(motion.name).slice(0,48);
  if(player.vehicle){
   const mobile=mobileControlsEnabled&&mobileJoyPointer!==null;
-  const steer=mobile?clamp(mobileMove.x,-1,1):(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
-  const throttle=mobile?-mobileMove.y:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
+  const mobileControl=mobile?mobileVehicleControl(player.vehicle):null;
+  const steer=mobile?mobileControl.steer:(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
+  const throttle=mobile?mobileControl.throttle:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
   onlineRoom.send('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05});
  }
  let moveX=0,moveY=0;
@@ -1383,13 +1384,13 @@ $('mobileControlsToggle').onclick=()=>{mobileControlsEnabled=!mobileControlsEnab
 const mobileJoystick=$('mobileJoystick'),mobileJoyKnob=$('mobileJoyKnob');
 let mobileJoyPointer=null;
 // Last non-neutral joystick direction controls facing and attack aim in mobile mode.
-const mobileFacing={x:1,y:0},mobileMove={x:0,y:0};
+const mobileFacing={x:1,y:0},mobileMove={x:0,y:0},mobileCarMove={x:0,y:0};
 function updateMobileAimPointer(){
  const range=Math.max(120,Math.min(W,H)*.65);
  mouse.x=W/2+mobileFacing.x*range;
  mouse.y=H/2+mobileFacing.y*range;
 }
-function clearMobileJoyKeys(){['w','a','s','d'].forEach(k=>keys.delete(k));mobileMove.x=0;mobileMove.y=0;if(mobileJoyKnob)mobileJoyKnob.style.transform='translate(-50%,-50%)'}
+function clearMobileJoyKeys(){['w','a','s','d'].forEach(k=>keys.delete(k));mobileMove.x=0;mobileMove.y=0;mobileCarMove.x=0;mobileCarMove.y=0;if(mobileJoyKnob)mobileJoyKnob.style.transform='translate(-50%,-50%)'}
 function moveMobileJoystick(e){
  const rect=mobileJoystick.getBoundingClientRect(),cx=rect.left+rect.width/2,cy=rect.top+rect.height/2,delta=screenDeltaToGame(e.clientX-cx,e.clientY-cy);
  let dx=delta.x,dy=delta.y,max=rect.width*.31,len=Math.hypot(dx,dy)||0;
@@ -1397,13 +1398,22 @@ function moveMobileJoystick(e){
  mobileJoyKnob.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';
  ['w','a','s','d'].forEach(k=>keys.delete(k));
  const threshold=rect.width*.12;
- if(len>threshold){
-  const directionLength=Math.hypot(dx,dy)||1;
-  mobileFacing.x=dx/directionLength;
-  mobileFacing.y=dy/directionLength;
-  mobileMove.x=dx/max;mobileMove.y=dy/max;
-  updateMobileAimPointer();
- }else{mobileMove.x=0;mobileMove.y=0}
+ if(player&&player.vehicle){
+  // In a car, the stick points toward the direction the driver wants to travel.
+  // Vehicle steering then turns toward that heading automatically.
+  mobileCarMove.x=len>threshold?dx/max:0;
+  mobileCarMove.y=len>threshold?dy/max:0;
+  mobileMove.x=0;mobileMove.y=0;
+ }else{
+  mobileCarMove.x=0;mobileCarMove.y=0;
+  if(len>threshold){
+   const directionLength=Math.hypot(dx,dy)||1;
+   mobileFacing.x=dx/directionLength;
+   mobileFacing.y=dy/directionLength;
+   mobileMove.x=dx/max;mobileMove.y=dy/max;
+   updateMobileAimPointer();
+  }else{mobileMove.x=0;mobileMove.y=0}
+ }
  if(Math.abs(dx)>threshold)keys.add(dx<0?'a':'d');
  if(Math.abs(dy)>threshold)keys.add(dy<0?'w':'s');
 }
@@ -2812,7 +2822,7 @@ if(f.char==='choso'){
  }
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
@@ -3571,17 +3581,29 @@ function collideVehicleWorld(car,oldX,oldY){
   if(Math.hypot(car.x-other.x,car.y-other.y)<43){car.x=oldX;car.y=oldY;car.vx*=.15;car.vy*=.15;car.speed*=.25;return}
  }
 }
+function mobileVehicleControl(car){
+ const magnitude=Math.hypot(mobileCarMove.x,mobileCarMove.y);
+ if(magnitude<.12)return {steer:0,throttle:0};
+ const desiredAngle=Math.atan2(mobileCarMove.x,-mobileCarMove.y);
+ const angleDifference=Math.atan2(Math.sin(desiredAngle-car.angle),Math.cos(desiredAngle-car.angle));
+ return {steer:clamp(angleDifference/.78,-1,1),throttle:clamp(magnitude,0,1)};
+}
 function updateDrivenVehicle(f,dt){
  const car=f.vehicle;if(!car||car.destroyed){f.vehicle=null;return}
  if(onlineMode&&f===player){f.x=car.x;f.y=car.y;f.vx=car.vx||0;f.vy=car.vy||0;return}
  car.hitEnemyCooldown=Math.max(0,(car.hitEnemyCooldown||0)-dt);
  car.hitDummyCooldown=Math.max(0,(car.hitDummyCooldown||0)-dt);
  const mobileDriving=mobileControlsEnabled&&mobileJoyPointer!==null;
- const steer=mobileDriving?clamp(mobileMove.x,-1,1):(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
- const forward=mobileDriving?mobileMove.y<-.16:(movementKeys.has('w')||movementKeys.has('arrowup'));
- const reverse=mobileDriving?mobileMove.y>.16:(movementKeys.has('s')||movementKeys.has('arrowdown'));
+ const mobileControl=mobileDriving?mobileVehicleControl(car):null;
+ const steer=mobileDriving?mobileControl.steer:(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
+ const forward=mobileDriving?mobileControl.throttle>0:(movementKeys.has('w')||movementKeys.has('arrowup'));
+ const reverse=mobileDriving?false:(movementKeys.has('s')||movementKeys.has('arrowdown'));
  const drifting=(keys.has(' ')||keys.has('shift'))&&Math.abs(car.speed)>80&&steer!==0;
- if(forward){if(car.speed<0)car.speed=Math.min(0,car.speed+620*dt);else car.speed=Math.min(car.maxSpeed,car.speed+340*dt)}
+ if(mobileDriving){
+  const throttle=mobileControl.throttle;
+  if(throttle>0){if(car.speed<0)car.speed=Math.min(0,car.speed+620*dt);else car.speed=Math.min(car.maxSpeed,car.speed+340*throttle*dt)}
+  else car.speed*=Math.exp(-1.05*dt);
+ }else if(forward){if(car.speed<0)car.speed=Math.min(0,car.speed+620*dt);else car.speed=Math.min(car.maxSpeed,car.speed+340*dt)}
  else if(reverse){if(car.speed>0)car.speed=Math.max(0,car.speed-560*dt);else car.speed=Math.max(-car.maxReverse,car.speed-230*dt)}
  else car.speed*=Math.exp(-.34*dt);
  if(steer!==0&&Math.abs(car.speed)>10){
