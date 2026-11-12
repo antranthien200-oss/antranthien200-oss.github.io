@@ -41,7 +41,12 @@ export class CityRoom extends Room{
   this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.activeMoveUntil.delete(sessionId);this.activeMoveSpeed.delete(sessionId);this.lastProjectileAt.delete(sessionId);this.lastProjectileActionAt.delete(sessionId);
   for(const [zoneId,zone] of this.fireZones)if(zone.ownerId===sessionId){this.fireZones.delete(zoneId);this.broadcast("combat:fire-zone-end",{sessionId,id:zoneId})}
   for(const [key,projectile] of this.projectiles)if(projectile.ownerId===sessionId){this.projectiles.delete(key);this.broadcast("combat:projectile-end",{sessionId,id:projectile.clientId})}
-  for(const [id,clash] of this.domainClashes)if(clash.participants.includes(sessionId))this.finishDomainClash(clash,clash.participants.find(x=>x!==sessionId)||null,"DISCONNECT");
+  for(const [id,clash] of this.domainClashes)if(clash.participants.includes(sessionId)){
+   const remaining=clash.participants.filter(x=>x!==sessionId&&this.state.players.has(x));
+   let winner=null,best=-1,tie=false;
+   for(const participant of remaining){const score=clash.scores.get(participant)||0;if(score>best){best=score;winner=participant;tie=false}else if(score===best)tie=true}
+   this.finishDomainClash(clash,tie?null:winner,"DISCONNECT");
+  }
   for(const map of [this.lastHitAt,this.lastBuildingAt,this.lastPropHitAt]){
    for(const key of map.keys())if(key.startsWith(sessionId+":")||key.includes(":"+sessionId+":"))map.delete(key);
   }
