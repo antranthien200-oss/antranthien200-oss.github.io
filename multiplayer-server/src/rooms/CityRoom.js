@@ -406,7 +406,63 @@ killPlayer(p){
   if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)return;const key=client.sessionId+":"+id,now=Date.now();if(now-(this.lastPropHitAt.get(key)||0)<240)return;this.lastPropHitAt.set(key,now);state.hp=Math.max(0,state.hp-1);if(state.hp<=0){state.alive=false;state.respawnTimer=15}}
  enterCar(client,payload={}){const p=this.state.players.get(client.sessionId),id=String(payload.carId??""),c=this.state.world.cars.get(id);if(!p||p.dead||p.vehicleId||!c||c.destroyed||c.occupiedBy||distance(p,c)>110)return;c.occupiedBy=client.sessionId;c.speed=0;c.vx=0;c.vy=0;p.vehicleId=id;p.x=c.x;p.y=c.y;p.block=false;p.attackAnim=0;p.motionName=""}
  exitCar(client){const p=this.state.players.get(client.sessionId);if(!p||!p.vehicleId)return;const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===client.sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;p.x=clamp(c.x+Math.cos(c.angle)*35,45,WORLD_WIDTH-45);p.y=clamp(c.y+Math.sin(c.angle)*35,45,WORLD_HEIGHT-45)}p.vehicleId=""}
- driveCar(client,payload={}){const p=this.state.players.get(client.sessionId);if(!p||p.dead||!p.vehicleId)return;const c=this.state.world.cars.get(p.vehicleId);if(!c||c.destroyed||c.occupiedBy!==client.sessionId)return;const now=Date.now(),prev=this.lastCarControlAt.get(client.sessionId)||now-50;const dt=clamp((now-prev)/1000,.02,.12);this.lastCarControlAt.set(client.sessionId,now);const steer=clamp(Number(payload.steer)||0,-1,1),throttle=clamp(Number(payload.throttle)||0,-1,1),drift=payload.drift===true&&Math.abs(c.speed)>80&&Math.abs(steer)>.05;if(throttle>0){if(c.speed<0)c.speed=Math.min(0,c.speed+620*dt);else c.speed=Math.min(680,c.speed+340*dt)}else if(throttle<0){if(c.speed>0)c.speed=Math.max(0,c.speed-560*dt);else c.speed=Math.max(-210,c.speed-230*dt)}else c.speed*=Math.exp(-.34*dt);if(Math.abs(steer)>.01&&Math.abs(c.speed)>10)c.angle+=steer*(.75+Math.min(1,Math.abs(c.speed)/320)*1.15)*dt*(c.speed>=0?1:-1);if(drift)c.speed=Math.min(680,c.speed+78*dt);const hx=Math.sin(c.angle),hy=-Math.cos(c.angle),grip=drift?1.25:8.5,blend=clamp(grip*dt,0,1);c.vx+=(hx*c.speed-c.vx)*blend;c.vy+=(hy*c.speed-c.vy)*blend;const oldX=c.x,oldY=c.y,nextX=clamp(c.x+c.vx*dt,45,WORLD_WIDTH-45),nextY=clamp(c.y+c.vy*dt,45,WORLD_HEIGHT-45);const box={x:nextX-38,y:nextY-20,w:76,h:40};const hitBuilding=BUILDING_LAYOUT.some((b,index)=>{const state=this.state.world.buildings.get(String(index));return !state?.collapsed&&box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y});const hitCar=Array.from(this.state.world.cars.entries()).some(([otherId,other])=>otherId!==p.vehicleId&&!other.destroyed&&Math.hypot(nextX-other.x,nextY-other.y)<68);if(hitBuilding||hitCar){c.x=oldX;c.y=oldY;c.speed*=-.28;c.vx*=-.25;c.vy*=-.25}else{c.x=nextX;c.y=nextY}p.x=c.x;p.y=c.y;p.face=Math.atan2(hy,hx);if(Math.abs(c.speed)>110){for(const [id,target] of this.state.players){if(id===client.sessionId||target.dead||target.vehicleId||distance(c,target)>54)continue;const key="car:"+p.vehicleId+":"+id;if(now-(this.lastHitAt.get(key)||0)<650)continue;this.lastHitAt.set(key,now);target.hp=Math.max(0,target.hp-18);target.stun=Math.max(target.stun,.7);target.invuln=.18;target.x=clamp(target.x+hx*12,45,WORLD_WIDTH-45);target.y=clamp(target.y+hy*12,45,WORLD_HEIGHT-45);if(target.hp<=0)this.killPlayer(target)}}}
+ driveCar(client,payload={}){
+  const p=this.state.players.get(client.sessionId);
+  if(!p||p.dead||!p.vehicleId)return;
+  const c=this.state.world.cars.get(p.vehicleId);
+  if(!c||c.destroyed||c.occupiedBy!==client.sessionId)return;
+  const now=Date.now(),prev=this.lastCarControlAt.get(client.sessionId)||now-50,dt=clamp((now-prev)/1000,.02,.12);
+  this.lastCarControlAt.set(client.sessionId,now);
+  const steer=clamp(Number(payload.steer)||0,-1,1),throttle=clamp(Number(payload.throttle)||0,-1,1);
+  const drift=payload.drift===true&&Math.abs(c.speed)>80&&Math.abs(steer)>.05;
+  if(throttle>0){if(c.speed<0)c.speed=Math.min(0,c.speed+620*dt);else c.speed=Math.min(680,c.speed+340*dt)}
+  else if(throttle<0){if(c.speed>0)c.speed=Math.max(0,c.speed-560*dt);else c.speed=Math.max(-210,c.speed-230*dt)}
+  else c.speed*=Math.exp(-.34*dt);
+  if(Math.abs(steer)>.01&&Math.abs(c.speed)>10)c.angle+=steer*(.75+Math.min(1,Math.abs(c.speed)/320)*1.15)*dt*(c.speed>=0?1:-1);
+  if(drift)c.speed=Math.min(680,c.speed+78*dt);
+  const hx=Math.sin(c.angle),hy=-Math.cos(c.angle),grip=drift?1.25:8.5,blend=clamp(grip*dt,0,1);
+  c.vx+=(hx*c.speed-c.vx)*blend;c.vy+=(hy*c.speed-c.vy)*blend;
+  const oldX=c.x,oldY=c.y,nextX=clamp(c.x+c.vx*dt,45,WORLD_WIDTH-45),nextY=clamp(c.y+c.vy*dt,45,WORLD_HEIGHT-45);
+  const box={x:nextX-38,y:nextY-20,w:76,h:40},impactSpeed=Math.abs(c.speed);
+  let hitBuilding=false;
+  for(let index=0;index<BUILDING_LAYOUT.length;index++){
+   const b=BUILDING_LAYOUT[index],state=this.state.world.buildings.get(String(index));
+   if(!state||state.collapsed||box.x>=b.x+b.w||box.x+box.w<=b.x||box.y>=b.y+b.h||box.y+box.h<=b.y)continue;
+   if(impactSpeed>=135){
+    const key="car:"+p.vehicleId+":"+index,lastHit=this.lastBuildingAt.get(key)||0;
+    if(now-lastHit>=720){
+     this.lastBuildingAt.set(key,now);
+     const stages=impactSpeed>=370?3:impactSpeed>=245?2:1;
+     state.stage=Math.min(3,state.stage+stages);
+     if(state.stage>=3)state.collapsed=true;
+    }
+   }
+   if(!state.collapsed){hitBuilding=true;break}
+  }
+  if(impactSpeed>=95){
+   for(const source of PROP_SPAWNS){
+    const state=this.state.world.props.get(String(source.id));
+    if(!state||!state.alive||box.x>=source.x+source.w||box.x+box.w<=source.x||box.y>=source.y+source.h||box.y+box.h<=source.y)continue;
+    const key="car:"+p.vehicleId+":"+source.id,lastHit=this.lastPropHitAt.get(key)||0;
+    if(now-lastHit>=350){this.lastPropHitAt.set(key,now);state.hp=0;state.alive=false;state.respawnTimer=15}
+   }
+  }
+  const hitCar=Array.from(this.state.world.cars.entries()).some(([otherId,other])=>otherId!==p.vehicleId&&!other.destroyed&&Math.hypot(nextX-other.x,nextY-other.y)<68);
+  if(hitBuilding||hitCar){c.x=oldX;c.y=oldY;c.speed*=-.32;c.vx*=-.24;c.vy*=-.24}
+  else{c.x=nextX;c.y=nextY}
+  p.x=c.x;p.y=c.y;p.face=Math.atan2(hy,hx);
+  if(impactSpeed>110){
+   for(const [id,target] of this.state.players){
+    if(id===client.sessionId||target.dead||target.vehicleId||distance(c,target)>54)continue;
+    const key="car:"+p.vehicleId+":"+id;
+    if(now-(this.lastHitAt.get(key)||0)<650)continue;
+    this.lastHitAt.set(key,now);target.hp=Math.max(0,target.hp-18);target.stun=Math.max(target.stun,.7);target.invuln=.18;
+    target.x=clamp(target.x+hx*12,45,WORLD_WIDTH-45);target.y=clamp(target.y+hy*12,45,WORLD_HEIGHT-45);
+    if(target.hp<=0)this.killPlayer(target);
+   }
+  }
+ }
+
  tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);if(p.domainWindup>0){p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0)p.domainTimer=p.domainDuration||0}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRadius=0;p.domainCastAt=0}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
   if(!target.grabbedBy)continue;
   const owner=this.state.players.get(target.grabbedBy);
