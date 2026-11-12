@@ -14,10 +14,7 @@ export function normalizePlayerUpdate(input,current,elapsedMs=50,maxDistanceOver
  if(!input||typeof input!=="object"||Array.isArray(input))return null;
  const ox=finite(current.x,1250),oy=finite(current.y,765);
  let x=clamp(finite(input.x,ox),45,WORLD_WIDTH-45),y=clamp(finite(input.y,oy),45,WORLD_HEIGHT-45);
- const elapsed=clamp(finite(elapsedMs,50),16,250);
- const max=Number.isFinite(Number(maxDistanceOverride))?clamp(Number(maxDistanceOverride),8,320):clamp(32+elapsed*.95,70,270);
- const dx=x-ox,dy=y-oy,d=Math.hypot(dx,dy);
- if(d>max){x=ox+dx/d*max;y=oy+dy/d*max}
+ // Multiplayer position updates are no longer distance-limited by anti-cheat.
  let moveX=clamp(finite(input.moveX,0),-1,1),moveY=clamp(finite(input.moveY,0),-1,1);
  const moveLength=Math.hypot(moveX,moveY);
  if(moveLength>1){moveX/=moveLength;moveY/=moveLength}
