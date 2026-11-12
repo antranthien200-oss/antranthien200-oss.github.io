@@ -1496,7 +1496,7 @@ function resolveDomainClash(winner,reason='TIME'){
   }else{f.domainState='active';f.domainTimer=Math.max(2,f.domainTimer||0);f.domainWindup=0;f.domainWindupStart=0;f.block=false;f.stun=Math.min(f.stun||0,.12)}
  }
  if(winner){const loser=contestants.find(x=>x!==winner);if(loser&&!loser.awakened)loser.meter=Math.max(loser.meter||0,75);
-  burst(winner.x,winner.y,winner.team==='player'?'#77e7ff':'#ff8798',52,8);popText(winner.x,winner.y-82,'DOMAIN CLASH · WINNER','#fff0b8',19);showToast((winner.team==='player'?'YOU WIN':'CPU WINS')+' · DOMAIN CLASH',1500);game.shake=Math.max(game.shake,9);
+  burst(winner.x,winner.y,winner.team==='player'?'#77e7ff':'#ff8798',52,8);popText(winner.x,winner.y-82,'DOMAIN CLASH · WINNER','#fff0b8',19);showToast(onlineMode?(winner===player?'YOU WIN · DOMAIN CLASH':'OTHER PLAYER WINS · DOMAIN CLASH'):(winner.team==='player'?'YOU WIN':'CPU WINS')+' · DOMAIN CLASH',1500);game.shake=Math.max(game.shake,9);
  }else{for(const f of contestants){f.domainType='';f.domainTimer=0;f.domainTick=0;f.domainState='';f.domainDuration=0;f.domainFlashTimer=0;burst(f.x,f.y,'#e5e9f4',24,5)}showToast(reason==='TIME'?'DOMAIN CLASH · BOTH DOMAINS BREAK':'DOMAIN CLASH · DRAW',1500);game.shake=Math.max(game.shake,7)}
  if(winner&&winner.domainTimer>0)captureDomainOccupants(winner);updateDomainClashHud();updateHud(true);
 }
@@ -1522,7 +1522,7 @@ function useDomainClashM1(f){
  const range=mobileControlsEnabled&&f===player?145:132,d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)));
  if(d<=range&&arc<(mobileControlsEnabled&&f===player?1.45:1.28)){const color=f.team==='player'?'#82e8ff':'#ff899b';
   if(onlineMode&&game.domainClash.serverAuthoritative){
-   if(f===player&&onlineRoom)try{onlineRoom.send('domain:clash-hit',{targetId:t.onlineSessionId})}catch(error){}
+   if(f===player&&onlineRoom)try{onlineRoom.send('domain:clash-hit',{targetId:t.onlineSessionId,face:angle})}catch(error){}
    burst(t.x,t.y,color,7,3);m1Feedback(f,t,angle,true,false);
   }else{
    damage(t,3.2,f,{stun:0,invuln:0,kx:0,ky:0,color,unblockable:true,ignoreInvuln:true,damageType:'domain-clash-m1'});m1Feedback(f,t,angle,true,false);
