@@ -996,17 +996,17 @@ const nativeProjectilePush=projectiles.push.bind(projectiles);
 let onlineProjectileCounter=0;
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
  const shot={...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)};
- const networkKinds=['trashCan','red','fire','blueMax','redmax','hollow','tenNue','bloodBomb'];
- if(onlineMode&&onlineRoom&&shot.owner===player&&networkKinds.includes(String(shot.kind||''))&&!shot.domainBound&&!(shot.kind==='tenNue'&&shot.rideOwner)){
+ const networkKinds=['trashCan','red','fire','blueMax','redmax','hollow','tenNue','bloodBomb','sukunaFireArrow'];
+ if(onlineMode&&onlineRoom&&shot.owner===player&&networkKinds.includes(String(shot.kind||''))){
   const move=String(shot.owner.motion&&shot.owner.motion.name||shot.owner.onlineLastMove||'').slice(0,48);
   if(move){
    const aim=shot.kind==='tenNue'&&Number.isFinite(shot.aimX)&&Number.isFinite(shot.aimY)?{x:shot.aimX,y:shot.aimY}:aimedAt(shot.owner);
    let vx=Number(shot.vx)||0,vy=Number(shot.vy)||0;
-   if(Math.hypot(vx,vy)<2){const angle=Math.atan2(aim.y-shot.y,aim.x-shot.x),speed=shot.kind==='blueMax'?520/60:shot.kind==='bloodBomb'?220/60:shot.kind==='tenNue'?18:8;vx=Math.cos(angle)*speed;vy=Math.sin(angle)*speed}
+   if(shot.kind!=='bloodBomb'&&Math.hypot(vx,vy)<2){const angle=Math.atan2(aim.y-shot.y,aim.x-shot.x),speed=shot.kind==='blueMax'?520/60:shot.kind==='tenNue'?18:shot.kind==='sukunaFireArrow'?21:8;vx=Math.cos(angle)*speed;vy=Math.sin(angle)*speed}
    shot.vx=vx;shot.vy=vy;
    const id=String(++onlineProjectileCounter);
    shot.networkId=id;shot.networkSessionId=onlineSessionId;shot.serverOwnedVisual=true;
-   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:700),kind:shot.kind,color:shot.color,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage})}
+   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:shot.kind==='sukunaFireArrow'?980:shot.kind==='trashCan'&&shot.golden?4200:700),kind:shot.kind,color:shot.color,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage,golden:!!shot.golden,domainBound:!!shot.domainBound,rideVariant:!!shot.rideOwner})}
    catch(error){shot.serverOwnedVisual=false;console.warn('Online projectile registration failed',error)}
   }
  }
@@ -1161,7 +1161,7 @@ function updateOnlineNetwork(dt){
  if(mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
  const moveLength=Math.hypot(moveX,moveY)||1;moveX/=moveLength;moveY/=moveLength;
  const aim=aimedAt(player);
- const snapshot={x:player.x,y:player.y,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
+ const snapshot={x:player.x,y:player.y,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
 function drawOnlineRemoteDomains(){
