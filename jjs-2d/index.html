@@ -1092,6 +1092,16 @@ function updateOnlineNetwork(dt){
  const snapshot={x:player.x,y:player.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainRadius:Number(player.domainRadius)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
+function drawOnlineRemoteDomains(){
+ if(!onlineMode)return;
+ const colors={void:'#9ba9ff',void02:'#b4b4ff',shrine:'#ef526c',hakari:'#c18cff',soul:'#75ddc2',yuta:'#efc4f5',trash:'#b6d88d'};
+ for(const remote of onlineRemotePlayers.values()){
+  if(remote.dead||!remote.domainType||remote.domainTimer<=0)continue;
+  const x=sx(remote.domainCenterX||remote.x),y=sy(remote.domainCenterY||remote.y),r=clamp(remote.domainRadius||700,80,1600);
+  ctx.save();ctx.globalAlpha=.12;ctx.fillStyle=colors[remote.domainType]||'#b9d5ff';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=.72;ctx.strokeStyle=colors[remote.domainType]||'#b9d5ff';ctx.lineWidth=4;ctx.setLineDash([18,12]);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+ }
+}
 function drawOnlineNameplate(remote){
  if(!remote||remote.dead)return;
  const x=sx(remote.x),y=sy(remote.y)-55-remote.jump*3,name=String(remote.onlineName||'PLAYER').toUpperCase();
@@ -1327,6 +1337,7 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
   if(hi>=Math.max(lo,18)&&lo<nearest){nearest=lo;hit=b}
  }
  if(!hit)return false;
+ if(onlineMode&&f===player&&onlineRoom){const buildingId=staticBuildings.indexOf(hit);if(buildingId>=0)onlineRoom.send('world:building-hit',{buildingId});return true}
  hit.skillHits=(hit.skillHits||0)+1;hit.damageStage=Math.min(3,hit.skillHits);hit.lastSkillHit=game.time;
  const cx=hit.x+hit.w/2,cy=hit.y+hit.h/2;
  if(hit.damageStage>=3){
@@ -3094,7 +3105,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -3368,6 +3379,7 @@ function collideVehicleWorld(car,oldX,oldY){
 }
 function updateDrivenVehicle(f,dt){
  const car=f.vehicle;if(!car||car.destroyed){f.vehicle=null;return}
+ if(onlineMode&&f===player){f.x=car.x;f.y=car.y;f.vx=car.vx||0;f.vy=car.vy||0;return}
  car.hitEnemyCooldown=Math.max(0,(car.hitEnemyCooldown||0)-dt);
  car.hitDummyCooldown=Math.max(0,(car.hitDummyCooldown||0)-dt);
  const mobileDriving=mobileControlsEnabled&&mobileJoyPointer!==null;
@@ -3412,6 +3424,13 @@ function updateDrivenVehicle(f,dt){
 }
 function toggleCityVehicle(f){
  if(!f)return false;
+ if(onlineMode&&f===player&&onlineRoom){
+  if(f.vehicle){onlineRoom.send('car:exit',{});return true}
+  let nearest=null,best=88;
+  for(const car of parkedCars){if(car.destroyed||car.occupied)continue;const d=dist(f,car);if(d<best){best=d;nearest=car}}
+  if(!nearest)return false;
+  onlineRoom.send('car:enter',{carId:String(nearest.id)});return true;
+ }
  if(f.vehicle){
   const car=f.vehicle;car.occupied=false;car.speed=0;car.vx=0;car.vy=0;f.vehicle=null;
   f.x=car.x+Math.cos(car.angle)*35;f.y=car.y+Math.sin(car.angle)*35;collideWorld(f);f.vx=0;f.vy=0;
@@ -5581,6 +5600,7 @@ function draw(){
  if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawDomainBackdrops();
+ if(onlineMode)drawOnlineRemoteDomains();
  if(!isFullScreenDomainActive()){drawMap();drawDynamicCityObjects();drawCityVehicles();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawVesselAwakeningSmoke(remote);}
