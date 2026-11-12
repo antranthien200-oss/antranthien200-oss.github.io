@@ -10,8 +10,21 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),finite=(v,d)=>Number.isFinite(Num
 export function sanitizePlayerName(value,fallback="Player"){const n=String(value??"").replace(/[^a-zA-Z0-9 _-]/g,"").trim().slice(0,16);return n||fallback}
 export function createSpawn(index=0){const slot=((Math.floor(index)%MAX_PLAYERS)+MAX_PLAYERS)%MAX_PLAYERS,a=-Math.PI/2+slot*Math.PI*2/MAX_PLAYERS,r=220;return{x:clamp(1250+Math.cos(a)*r,50,WORLD_WIDTH-50),y:clamp(765+Math.sin(a)*r,50,WORLD_HEIGHT-50)}}
 export function findAvailableSpawn(players=[]){const occupied=Array.from(players||[]);let best=createSpawn(0),bestD=-1;for(let i=0;i<MAX_PLAYERS;i++){const p=createSpawn(i),d=occupied.length?Math.min(...occupied.map(q=>Math.hypot(finite(q.x,p.x)-p.x,finite(q.y,p.y)-p.y))):Infinity;if(d>bestD){bestD=d;best=p}if(d>=72)return p}return best}
-export function normalizePlayerUpdate(input,current,elapsedMs=50){if(!input||typeof input!=="object"||Array.isArray(input))return null;const ox=finite(current.x,1250),oy=finite(current.y,765);let x=clamp(finite(input.x,ox),45,WORLD_WIDTH-45),y=clamp(finite(input.y,oy),45,WORLD_HEIGHT-45);const elapsed=clamp(finite(elapsedMs,50),16,250),max=clamp(32+elapsed*.95,70,270),dx=x-ox,dy=y-oy,d=Math.hypot(dx,dy);if(d>max){x=ox+dx/d*max;y=oy+dy/d*max}const m=String(input.motionName??""),a=String(input.attackType??"");return{x,y,face:clamp(finite(input.face,finite(current.face,0)),-Math.PI,Math.PI),walk:clamp(finite(input.walk,0),0,2),jump:clamp(finite(input.jump,0),0,150),block:input.block===true,attackAnim:clamp(finite(input.attackAnim,0),0,5),attackType:/^[a-zA-Z0-9_ -]{0,32}$/.test(a)?a:"",motionName:/^[a-zA-Z0-9_]{1,48}$/.test(m)?m:"",motionProgress:clamp(finite(input.motionProgress,0),0,1)}}
-export function combatProfile(character,moveName,awakened=false){const m=String(moveName||"").slice(0,48);if(/black.?flash/i.test(m))return{damage:20,range:230,arc:1.2,stun:.9,knockback:15,cooldown:.22};if(/^(m1_|yutaM1_)/i.test(m)){const fin=/_4$/.test(m);return{damage:fin?9:4.5,range:awakened?205:150,arc:1.35,stun:fin?.58:.22,knockback:fin?10:1.4,cooldown:.12}}if(/gojoPurple|hollow|piercing|bloodPlasma|piercingBlood|JacobLadder/i.test(m))return{damage:18,range:900,arc:.72,stun:.55,knockback:9,cooldown:.28};if(/gojoBlue|gojoRed|bloodRain|trashManFlyingCan|trashManThrow|projectile/i.test(m))return{damage:12,range:700,arc:.9,stun:.38,knockback:7,cooldown:.22};if(/domain|shrine|void|hakari|soul/i.test(m))return{damage:8,range:950,arc:Math.PI,stun:.55,knockback:2,cooldown:.42};if(/drag|facegrater|cleave|toad|transfigure|serpent|edge|grab|crush|slam|rush|counter|flurry|throw|haymaker/i.test(m))return{damage:awakened?16:13,range:360,arc:1.35,stun:.68,knockback:11,cooldown:.24};return{damage:awakened?11:9,range:330,arc:1.15,stun:.42,knockback:7,cooldown:.2}}
+export function normalizePlayerUpdate(input,current,elapsedMs=50,maxDistanceOverride=null){
+ if(!input||typeof input!=="object"||Array.isArray(input))return null;
+ const ox=finite(current.x,1250),oy=finite(current.y,765);
+ let x=clamp(finite(input.x,ox),45,WORLD_WIDTH-45),y=clamp(finite(input.y,oy),45,WORLD_HEIGHT-45);
+ const elapsed=clamp(finite(elapsedMs,50),16,250);
+ const max=Number.isFinite(Number(maxDistanceOverride))?clamp(Number(maxDistanceOverride),8,320):clamp(32+elapsed*.95,70,270);
+ const dx=x-ox,dy=y-oy,d=Math.hypot(dx,dy);
+ if(d>max){x=ox+dx/d*max;y=oy+dy/d*max}
+ let moveX=clamp(finite(input.moveX,0),-1,1),moveY=clamp(finite(input.moveY,0),-1,1);
+ const moveLength=Math.hypot(moveX,moveY);
+ if(moveLength>1){moveX/=moveLength;moveY/=moveLength}
+ const m=String(input.motionName??""),a=String(input.attackType??"");
+ return{x,y,face:clamp(finite(input.face,finite(current.face,0)),-Math.PI,Math.PI),walk:clamp(finite(input.walk,0),0,2),jump:clamp(finite(input.jump,0),0,150),block:input.block===true,attackAnim:clamp(finite(input.attackAnim,0),0,5),attackType:/^[a-zA-Z0-9_ -]{0,32}$/.test(a)?a:"",motionName:/^[a-zA-Z0-9_]{1,48}$/.test(m)?m:"",motionProgress:clamp(finite(input.motionProgress,0),0,1),moveX,moveY,moveScale:clamp(finite(input.moveScale,1),1,1.5)}
+}
+export function combatProfile(character,moveName,awakened=false){const m=String(moveName||"").slice(0,48);if(/black.?flash/i.test(m))return{damage:20,range:230,arc:1.2,stun:.9,knockback:15,cooldown:.22};if(/^(m1_|yutaM1_)/i.test(m)){const fin=/_4$/.test(m);return{damage:fin?9:4.5,range:awakened?205:150,arc:1.35,stun:fin?.58:.22,knockback:fin?10:1.4,cooldown:.12}}if(/gojoPurple|hollow|piercing|bloodPlasma|piercingBlood|JacobLadder/i.test(m))return{damage:18,range:900,arc:.72,stun:.55,knockback:9,cooldown:.28};if(/gojoBlue|gojoRed|bloodRain|bloodPlasma|piercingBlood|trashManFlyingCan|trashManThrow|sukunaFireArrow|projectile/i.test(m))return{damage:12,range:700,arc:.9,stun:.38,knockback:7,cooldown:.22};if(/domain|shrine|void|hakari|soul/i.test(m))return{damage:8,range:950,arc:Math.PI,stun:.55,knockback:2,cooldown:.42};if(/drag|facegrater|cleave|toad|transfigure|serpent|edge|grab|crush|slam|rush|counter|flurry|throw|haymaker/i.test(m))return{damage:awakened?16:13,range:360,arc:1.35,stun:.68,knockback:11,cooldown:.24};return{damage:awakened?11:9,range:330,arc:1.15,stun:.42,knockback:7,cooldown:.2}}
 export function grabSettings(character,moveName){
  const move=String(moveName||"");
  if(character==="vessel"&&/yujiCursedDrag/i.test(move))return{kind:"yujiDrag",duration:1.05,tickDamage:1.1,tickInterval:.25,finishDamage:12,knockback:16};
@@ -60,6 +73,11 @@ export function isMoveAllowed(character, moveName) {
   trashman:/^trashMan/i
  };
  return !!allowed[character]&&allowed[character].test(move);
+}
+export function isProjectileMoveAllowed(character,moveName){
+ const move=String(moveName||"").slice(0,48);
+ if(!isMoveAllowed(character,move)||/domain|shrine|void|hakari|soul/i.test(move))return false;
+ return combatProfile(character,move).range>=650;
 }
 export function domainSettings(character,domainType){
  if(!(DOMAIN_BY_CHARACTER[character]||[]).includes(domainType))return null;
