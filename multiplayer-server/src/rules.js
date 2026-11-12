@@ -11,7 +11,29 @@ export function sanitizePlayerName(value,fallback="Player"){const n=String(value
 export function createSpawn(index=0){const slot=((Math.floor(index)%MAX_PLAYERS)+MAX_PLAYERS)%MAX_PLAYERS,a=-Math.PI/2+slot*Math.PI*2/MAX_PLAYERS,r=220;return{x:clamp(1250+Math.cos(a)*r,50,WORLD_WIDTH-50),y:clamp(765+Math.sin(a)*r,50,WORLD_HEIGHT-50)}}
 export function findAvailableSpawn(players=[]){const occupied=Array.from(players||[]);let best=createSpawn(0),bestD=-1;for(let i=0;i<MAX_PLAYERS;i++){const p=createSpawn(i),d=occupied.length?Math.min(...occupied.map(q=>Math.hypot(finite(q.x,p.x)-p.x,finite(q.y,p.y)-p.y))):Infinity;if(d>bestD){bestD=d;best=p}if(d>=72)return p}return best}
 export function normalizePlayerUpdate(input,current,elapsedMs=50){if(!input||typeof input!=="object"||Array.isArray(input))return null;const ox=finite(current.x,1250),oy=finite(current.y,765);let x=clamp(finite(input.x,ox),45,WORLD_WIDTH-45),y=clamp(finite(input.y,oy),45,WORLD_HEIGHT-45);const elapsed=clamp(finite(elapsedMs,50),16,250),max=clamp(32+elapsed*.95,70,270),dx=x-ox,dy=y-oy,d=Math.hypot(dx,dy);if(d>max){x=ox+dx/d*max;y=oy+dy/d*max}const m=String(input.motionName??""),a=String(input.attackType??"");return{x,y,face:clamp(finite(input.face,finite(current.face,0)),-Math.PI,Math.PI),walk:clamp(finite(input.walk,0),0,2),jump:clamp(finite(input.jump,0),0,150),block:input.block===true,attackAnim:clamp(finite(input.attackAnim,0),0,5),attackType:/^[a-zA-Z0-9_ -]{0,32}$/.test(a)?a:"",motionName:/^[a-zA-Z0-9_]{1,48}$/.test(m)?m:"",motionProgress:clamp(finite(input.motionProgress,0),0,1)}}
-export function combatProfile(character,moveName,awakened=false){const m=String(moveName||"").slice(0,48);if(/black.?flash/i.test(m))return{damage:20,range:230,arc:1.2,stun:.9,knockback:15,cooldown:.22};if(/^(m1_|yutaM1_)/i.test(m)){const fin=/_4$/.test(m);return{damage:fin?9:4.5,range:awakened?205:150,arc:1.35,stun:fin?.58:.22,knockback:fin?10:1.4,cooldown:.12}}if(/gojoPurple|hollow|piercing|bloodPlasma|piercingBlood|JacobLadder/i.test(m))return{damage:18,range:900,arc:.72,stun:.55,knockback:9,cooldown:.28};if(/gojoBlue|gojoRed|bloodRain|trashManFlyingCan|trashManThrow|projectile/i.test(m))return{damage:12,range:700,arc:.9,stun:.38,knockback:7,cooldown:.22};if(/domain|shrine|void|hakari|soul/i.test(m))return{damage:8,range:950,arc:Math.PI,stun:.55,knockback:2,cooldown:.42};if(/grab|crush|slam|rush|counter|flurry|throw|haymaker/i.test(m))return{damage:awakened?16:13,range:360,arc:1.35,stun:.68,knockback:11,cooldown:.24};return{damage:awakened?11:9,range:330,arc:1.15,stun:.42,knockback:7,cooldown:.2}}
+export function combatProfile(character,moveName,awakened=false){const m=String(moveName||"").slice(0,48);if(/black.?flash/i.test(m))return{damage:20,range:230,arc:1.2,stun:.9,knockback:15,cooldown:.22};if(/^(m1_|yutaM1_)/i.test(m)){const fin=/_4$/.test(m);return{damage:fin?9:4.5,range:awakened?205:150,arc:1.35,stun:fin?.58:.22,knockback:fin?10:1.4,cooldown:.12}}if(/gojoPurple|hollow|piercing|bloodPlasma|piercingBlood|JacobLadder/i.test(m))return{damage:18,range:900,arc:.72,stun:.55,knockback:9,cooldown:.28};if(/gojoBlue|gojoRed|bloodRain|trashManFlyingCan|trashManThrow|projectile/i.test(m))return{damage:12,range:700,arc:.9,stun:.38,knockback:7,cooldown:.22};if(/domain|shrine|void|hakari|soul/i.test(m))return{damage:8,range:950,arc:Math.PI,stun:.55,knockback:2,cooldown:.42};if(/drag|facegrater|cleave|toad|transfigure|serpent|edge|grab|crush|slam|rush|counter|flurry|throw|haymaker/i.test(m))return{damage:awakened?16:13,range:360,arc:1.35,stun:.68,knockback:11,cooldown:.24};return{damage:awakened?11:9,range:330,arc:1.15,stun:.42,knockback:7,cooldown:.2}}
+export function grabSettings(character,moveName){
+ const move=String(moveName||"");
+ if(character==="vessel"&&/yujiCursedDrag/i.test(move))return{kind:"yujiDrag",duration:1.05,tickDamage:1.1,tickInterval:.25,finishDamage:12,knockback:16};
+ if(character==="honored"&&/gojoFaceGrater/i.test(move))return{kind:"gojoFaceGrater",duration:.95,tickDamage:3.2,tickInterval:.22,finishDamage:13,knockback:13};
+ if(character==="vessel"&&/sukunaCleave|sukunaFlurry/i.test(move))return{kind:"sukunaFlurry",duration:1,tickDamage:1.6,tickInterval:.12,finishDamage:16,knockback:18};
+ if(character==="todo"&&/todoSwiftGrab/i.test(move))return{kind:"todoThrow",duration:.82,tickDamage:1.8,tickInterval:.22,finishDamage:12,knockback:13};
+ if(character==="perfection"&&/mahitoTransfigure/i.test(move))return{kind:"mahitoTransfigure",duration:1.2,tickDamage:2,tickInterval:.22,finishDamage:14,knockback:12};
+ if(character==="ten"&&/megumiToad|megumiSerpent/i.test(move))return{kind:/Serpent/i.test(move)?"megumiSerpent":"toadPull",duration:.9,tickDamage:0,tickInterval:.2,finishDamage:7,knockback:0};
+ if(character==="choso"&&/chosoEdge/i.test(move))return{kind:"bloodEdge",duration:.82,tickDamage:1.9,tickInterval:.2,finishDamage:9,knockback:13};
+ return null;
+}
+export function counterSettings(character,action,awakened=false){
+ if(character==="yuta"&&action==="3")return{kind:"yutaOutburst",window:.25,cooldown:16};
+ if(character==="trashman"&&action==="special")return{kind:"trashSwap",window:.42,cooldown:9.5};
+ if(character==="vessel"&&action==="special"&&awakened)return{kind:"sukunaCleaveCounter",window:.65,cooldown:15};
+ if(character==="restless"&&action==="special"&&!awakened)return{kind:"door",window:.6,cooldown:16};
+ if(character==="vessel"&&action==="4"&&!awakened)return{kind:"manji",window:.6,cooldown:20};
+ if(character==="todo"&&action==="3")return{kind:"todoDream",window:.7,cooldown:18};
+ if(character==="todo"&&action==="4")return{kind:"todoBrothers",window:.85,cooldown:35};
+ if(character==="choso"&&action==="3"&&!awakened)return{kind:"bloodSupernova",window:.62,cooldown:18};
+ return null;
+}
 export function isBlockedByBuilding(position,buildings=BUILDING_LAYOUT,radius=29){
  for(const building of buildings){
   const px=clamp(position.x,building.x,building.x+building.w);
