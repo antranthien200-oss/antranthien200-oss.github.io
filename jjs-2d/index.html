@@ -993,7 +993,20 @@ const destructibles=[
 const parkedCars=Array.from({length:11},(_,i)=>({id:i,x:1601+i*108,y:1635,homeX:1601+i*108,homeY:1635,angle:0,vx:0,vy:0,speed:0,maxSpeed:680,maxReverse:210,color:['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'][i%6],highlight:['#d99c8d','#a8c3d0','#dfc891','#a7c7a9','#c0acd0','#e1e5e4'][i%6],occupied:false,destroyed:false,skidTimer:0,hitEnemyCooldown:0,hitDummyCooldown:0,skidMarks:[]}));
 const particles=[],projectiles=[],debris=[],texts=[],doorTraps=[],trailStrokes=[],fireZones=[];
 const nativeProjectilePush=projectiles.push.bind(projectiles);
-projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>({...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)})));
+let onlineProjectileCounter=0;
+projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
+ const shot={...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)};
+ if(onlineMode&&onlineRoom&&shot.owner===player&&['trashCan','red','fire'].includes(String(shot.kind||''))){
+  const move=String(shot.owner.motion&&shot.owner.motion.name||shot.owner.onlineLastMove||'').slice(0,48);
+  if(move){
+   const id=String(++onlineProjectileCounter);
+   shot.networkId=id;shot.networkSessionId=onlineSessionId;shot.serverOwnedVisual=true;
+   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx:shot.vx,vy:shot.vy,r:shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||700,kind:shot.kind,color:shot.color})}
+   catch(error){shot.serverOwnedVisual=false;console.warn('Online projectile registration failed',error)}
+  }
+ }
+ return shot;
+}));
 const trashCanSpawns=[{x:270,y:593},{x:750,y:593},{x:1920,y:593},{x:2400,y:949},{x:1051,y:255}];
 const trashCans=[];
 function resetTrashCans(){trashCans.length=0;for(const p of trashCanSpawns)trashCans.push({x:p.x,y:p.y,homeX:p.x,homeY:p.y,carried:false,flash:0,throws:0});}
@@ -1110,7 +1123,7 @@ function updateOnlineRemotePlayers(dt){
 }
 function updateOnlineNetwork(dt){
  if(!onlineMode||!onlineRoom||!player)return;
- updateOnlineRemotePlayers(dt);onlineSendAccumulator+=dt;if(onlineSendAccumulator<.05)return;onlineSendAccumulator=0;
+ updateOnlineRemotePlayers(dt);onlineSendAccumulator+=dt;if(onlineSendAccumulator<1/30)return;onlineSendAccumulator-=1/30;
  const motion=player.motion;if(motion&&motion.name)player.onlineLastMove=String(motion.name).slice(0,48);
  if(player.vehicle){
   const mobile=mobileControlsEnabled&&mobileJoyPointer!==null;
@@ -1118,7 +1131,14 @@ function updateOnlineNetwork(dt){
   const throttle=mobile?-mobileMove.y:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
   onlineRoom.send('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05});
  }
- const snapshot={x:player.x,y:player.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
+ let moveX=0,moveY=0;
+ if(movementKeys.has('w')||movementKeys.has('arrowup'))moveY--;
+ if(movementKeys.has('s')||movementKeys.has('arrowdown'))moveY++;
+ if(movementKeys.has('a')||movementKeys.has('arrowleft'))moveX--;
+ if(movementKeys.has('d')||movementKeys.has('arrowright'))moveX++;
+ if(mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
+ const moveLength=Math.hypot(moveX,moveY)||1;moveX/=moveLength;moveY/=moveLength;
+ const snapshot={x:player.x,y:player.y,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
 function drawOnlineRemoteDomains(){
@@ -1416,7 +1436,9 @@ function beginDomainClash(a,b){
  showToast('DOMAIN CLASH · LAND HITS TO WIN',1600);burst((a.x+b.x)/2,(a.y+b.y)/2,'#e8edff',46,9);game.shake=Math.max(game.shake,12);updateDomainClashHud();return true;
 }
 function updateDomainClash(dt){
- const q=game.domainClash;if(!q)return;const [a,b]=q.members;
+ const q=game.domainClash;if(!q)return;
+ if(onlineMode&&q.serverAuthoritative){updateDomainClashHud();return}
+ const [a,b]=q.members;
  if(a.dead&&!b.dead){resolveDomainClash(b,'KNOCKOUT');return}if(b.dead&&!a.dead){resolveDomainClash(a,'KNOCKOUT');return}if(a.dead&&b.dead){resolveDomainClash(null,'KNOCKOUT');return}
  q.time=Math.max(0,q.time-dt);const p=q.scores.player||0,e=q.scores.enemy||0;
  if(p>=100){resolveDomainClash(a);return}if(e>=100){resolveDomainClash(b);return}
@@ -1427,9 +1449,14 @@ function useDomainClashM1(f){
  const aim={x:t.x,y:t.y},angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackCd=.27;f.attackAnim=.19;f.attackType='clash-punch';f.combo=(f.combo%3)+1;f.comboTimer=.38;setMotion(f,'m1_'+f.combo,.2,angle,t);
  const range=mobileControlsEnabled&&f===player?145:132,d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)));
  if(d<=range&&arc<(mobileControlsEnabled&&f===player?1.45:1.28)){const color=f.team==='player'?'#82e8ff':'#ff899b';
-  damage(t,3.2,f,{stun:0,invuln:0,kx:0,ky:0,color,unblockable:true,ignoreInvuln:true,damageType:'domain-clash-m1'});m1Feedback(f,t,angle,true,false);
-  if(!game.domainClash)return;game.domainClash.scores[f.team]=clamp((game.domainClash.scores[f.team]||0)+6.25,0,100);burst(t.x,t.y,color,7,3);popText(t.x,t.y-48,'+6.25%','#fff2be',10);game.hitStop=Math.max(game.hitStop,.012);updateDomainClashHud();
-  if(game.domainClash.scores[f.team]>=100)resolveDomainClash(f);
+  if(onlineMode&&game.domainClash.serverAuthoritative){
+   if(f===player&&onlineRoom)try{onlineRoom.send('domain:clash-hit',{targetId:t.onlineSessionId})}catch(error){}
+   burst(t.x,t.y,color,7,3);m1Feedback(f,t,angle,true,false);
+  }else{
+   damage(t,3.2,f,{stun:0,invuln:0,kx:0,ky:0,color,unblockable:true,ignoreInvuln:true,damageType:'domain-clash-m1'});m1Feedback(f,t,angle,true,false);
+   if(!game.domainClash)return;game.domainClash.scores[f.team]=clamp((game.domainClash.scores[f.team]||0)+6.25,0,100);burst(t.x,t.y,color,7,3);popText(t.x,t.y-48,'+6.25%','#fff2be',10);game.hitStop=Math.max(game.hitStop,.012);updateDomainClashHud();
+   if(game.domainClash.scores[f.team]>=100)resolveDomainClash(f);
+  }
  }else m1Feedback(f,t,angle,false,false);
 }
 function domainIsActive(owner){return !!(owner&&!owner.dead&&owner.domainType&&owner.domainType!=='void02'&&owner.domainTimer>0&&!game.domainClash)}
@@ -1585,13 +1612,13 @@ function damage(target,amount,source,opts={}){
  if(target.dead)return;
  if(onlineMode){
   if(source===player&&target.onlineSessionId&&onlineRoom){
-   if(opts.damageType!=='domain'&&opts.damageType!=='vehicle'){
+   if(opts.damageType!=='domain'&&opts.damageType!=='vehicle'&&opts.damageType!=='domain-clash-m1'){
     const move=String(source.motion&&source.motion.name||source.onlineLastMove||'m1_1').slice(0,48);
     try{onlineRoom.send('combat:hit',{targetId:target.onlineSessionId,move,damageType:String(opts.damageType||'melee')})}catch(e){}
    }
    return;
   }
-  if(source&&source.onlineSessionId&&target===player)return;
+  if(source&&source.onlineSessionId)return;
  }
  const sukunaFireArmor=!!(target.sukunaFireCast>0);
  const activeBarrier=domainFighters().find(domainIsActive);if(activeBarrier&&source&&opts.damageType!=='domain'&&(source.domainInsideOwner===activeBarrier)!==(target.domainInsideOwner===activeBarrier))return;
@@ -2266,7 +2293,7 @@ function useAttack(f,kind){
  if(f.sukunaFireCast>0)return;
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
  if(f.block)return;
- if(onlineMode&&f===player&&onlineRoom){try{onlineRoom.send('combat:action',{kind:String(kind)})}catch(e){}}
+ if(onlineMode&&f===player&&onlineRoom){try{onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0})}catch(e){}}
  const c=CHARS[f.char],t=targetOf(f);
  if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0)return;
