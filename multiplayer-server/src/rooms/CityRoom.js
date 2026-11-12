@@ -195,19 +195,24 @@ export class CityRoom extends Room{
   const reject=()=>{if(clientId)client.send("combat:projectile-reject",{id:clientId})};
   const ownerId=client.sessionId,owner=this.state.players.get(ownerId);
   if(!owner||owner.dead||owner.stun>0||owner.vehicleId||!payload||typeof payload!=="object"){reject();return}
-  const move=String(payload.move||"").slice(0,48),profile=combatProfile(owner.character,move,owner.awakened);
-  if(!isProjectileMoveAllowed(owner.character,move)){reject();return}
+  const move=String(payload.move||"").slice(0,48),kind=String(payload.kind||"projectile").slice(0,32);
+  const profile=combatProfile(owner.character,move,owner.awakened);
+  if(!isProjectileMoveAllowed(owner.character,move)||!isProjectileKindAllowed(owner.character,move,kind)){reject();return}
   const x=Number(payload.x),y=Number(payload.y),vx=Number(payload.vx),vy=Number(payload.vy),speed=Math.hypot(vx,vy);
-  if(![x,y,vx,vy].every(Number.isFinite)||distance(owner,{x,y})>115||speed<2||speed>28){reject();return}
-  const kind=String(payload.kind||"projectile").slice(0,32);
-  if(!isProjectileKindAllowed(owner.character,move,kind)){reject();return}
-  if(!clientId){return}
+  const isBomb=kind==="bloodBomb",domainBound=payload.domainBound===true;
+  const golden=payload.golden===true&&domainBound&&kind==="trashCan"&&owner.character==="trashman"&&owner.domainType==="trash"&&owner.domainTimer>0&&move==="trashManFlyingCan";
+  const rideVariant=payload.rideVariant===true&&kind==="tenNue"&&owner.character==="ten"&&move==="megumiNue";
+  const manualTrash=kind==="trashCan"&&move==="trashCanThrow";
+  if(domainBound&&!golden){reject();return}
+  if(![x,y,vx,vy].every(Number.isFinite)||distance(owner,{x,y})>115||(isBomb?speed>1:speed<2||speed>28)){reject();return}
+  if(!clientId)return;
   const id=ownerId+":"+clientId;if(this.projectiles.has(id)){reject();return}
   const now=Date.now(),last=this.lastProjectileAt.get(ownerId)||0;
   if(now-last<Math.max(110,profile.cooldown*1000)){reject();return}
-  if(kind!=="trashCan"){
-   const actions=this.lastActionAt.get(ownerId);
-   if(!actions||![...actions.values()].some(at=>now-at<5200)){reject();return}
+  if(!manualTrash&&!golden){
+   if(!["1","2","3","4","special"].includes(owner.lastActionKind)||now-(Number(owner.lastActionAt)||0)>5200){reject();return}
+   if(this.lastProjectileActionAt.get(ownerId)===owner.lastActionAt){reject();return}
+   this.lastProjectileActionAt.set(ownerId,owner.lastActionAt);
   }
   this.lastProjectileAt.set(ownerId,now);
   const aimX=clamp(Number(payload.aimX)||owner.aimX||owner.x,45,WORLD_WIDTH-45),aimY=clamp(Number(payload.aimY)||owner.aimY||owner.y,45,WORLD_HEIGHT-45);
@@ -216,30 +221,63 @@ export class CityRoom extends Room{
    targetId="";let best=Infinity;
    for(const [otherId,other] of this.state.players){if(otherId===ownerId||other.dead)continue;const d=Math.hypot(other.x-aimX,other.y-aimY);if(d<best){best=d;targetId=otherId}}
   }
-  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed,r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:now+200,detonate:false};
+  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed,r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:now+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
+  if(rideVariant){owner.moveX=0;owner.moveY=0;owner.vx=0;owner.vy=0}
   this.projectiles.set(id,projectile);
-  this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move});
+  this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move,golden,domainBound,rideVariant});
  }
  detonateProjectile(client,payload={}){
   const key=client.sessionId+":"+String(payload.id||"").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32),projectile=this.projectiles.get(key);
   if(projectile&&projectile.ownerId===client.sessionId&&projectile.kind==="bloodBomb")projectile.detonate=true;
+ }
+ applyProjectileDamage(owner,target,damage,stun,push,angle,unblockable=false,ignoreInvuln=false){
+  if(!owner||!target||target.dead)return false;
+  if(!ignoreInvuln&&target.invuln>0)return false;
+  if(this.resolveCounter(owner,target,"projectile"))return false;
+  const incoming=Math.atan2(owner.y-target.y,owner.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
+  const blocked=!unblockable&&target.block&&Math.abs(guard)<=1.18,actual=blocked?damage*.12:damage;
+  target.hp=Math.max(blocked?1:0,target.hp-actual);target.stun=Math.max(target.stun,blocked?.08:stun);
+  target.invuln=blocked?.08:ignoreInvuln?.04:.12;
+  if(!blocked&&push>0){target.x=clamp(target.x+Math.cos(angle)*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+Math.sin(angle)*push,45,WORLD_HEIGHT-45)}
+  target.meter=clamp(target.meter+actual*.28,0,100);owner.meter=clamp(owner.meter+actual*.5,0,100);
+  if(target.hp<=0)this.killPlayer(target);
+  return true;
+ }
+ createFireZone(owner,x,y,angle,now=Date.now()){
+  if(!owner||owner.dead)return null;
+  const id=owner.sessionId+":"+now+":"+Math.random().toString(36).slice(2,7);
+  const zone={id,ownerId:owner.sessionId,x:clamp(x,55,WORLD_WIDTH-55),y:clamp(y,55,WORLD_HEIGHT-55),radius:270,life:5.8,nextTickAt:now+360,angle,seed:Math.random()*Math.PI*2};
+  this.fireZones.set(id,zone);
+  this.broadcast("combat:fire-zone",{sessionId:owner.sessionId,id,x:zone.x,y:zone.y,radius:zone.radius,life:zone.life,angle,seed:zone.seed,serverTime:now});
+  for(const [targetId,target] of this.state.players){
+   if(targetId===owner.sessionId||target.dead||distance(target,zone)>zone.radius)continue;
+   const a=Math.atan2(target.y-zone.y,target.x-zone.x);
+   this.applyProjectileDamage(owner,target,18,.32,0,a,true,true);
+  }
+  return zone;
+ }
+ tickFireZones(dt,now=Date.now()){
+  for(const [id,zone] of this.fireZones){
+   const owner=this.state.players.get(zone.ownerId);
+   if(!owner||owner.dead){this.fireZones.delete(id);this.broadcast("combat:fire-zone-end",{sessionId:zone.ownerId,id});continue}
+   zone.life=Math.max(0,zone.life-dt);
+   if(now>=zone.nextTickAt&&zone.life>0){
+    zone.nextTickAt=now+360;
+    for(const [targetId,target] of this.state.players){
+     if(targetId===zone.ownerId||target.dead||distance(target,zone)>zone.radius)continue;
+     const a=Math.atan2(target.y-zone.y,target.x-zone.x);
+     this.applyProjectileDamage(owner,target,7.5,0,0,a,true,true);
+    }
+   }
+   if(zone.life<=0){this.fireZones.delete(id);this.broadcast("combat:fire-zone-end",{sessionId:zone.ownerId,id})}
+  }
  }
  tickProjectiles(dt,now=Date.now()){
   const end=(p,event="combat:projectile-end",extra={})=>{
    this.projectiles.delete(p.id);
    this.broadcast(event,{sessionId:p.ownerId,id:p.clientId,x:p.x,y:p.y,...extra});
   };
-  const hurt=(owner,target,damage,stun,push,angle)=>{
-   if(this.resolveCounter(owner,target,"projectile"))return;
-   const blocked=target.block&&Math.abs(Math.atan2(Math.sin(Math.atan2(owner.y-target.y,owner.x-target.x)-target.face),Math.cos(Math.atan2(owner.y-target.y,owner.x-target.x)-target.face)))<=1.18;
-   const actual=blocked?damage*.12:damage;
-   target.hp=Math.max(blocked?1:0,target.hp-actual);
-   target.stun=Math.max(target.stun,blocked?.08:stun);
-   target.invuln=blocked?.08:.12;
-   if(!blocked){target.x=clamp(target.x+Math.cos(angle)*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+Math.sin(angle)*push,45,WORLD_HEIGHT-45)}
-   target.meter=clamp(target.meter+actual*.28,0,100);owner.meter=clamp(owner.meter+actual*.5,0,100);
-   if(target.hp<=0)this.killPlayer(target);
-  };
+  const hurt=(owner,target,damage,stun,push,angle,unblockable=false)=>this.applyProjectileDamage(owner,target,damage,stun,push,angle,unblockable,false);
   for(const [id,p] of this.projectiles){
    const owner=this.state.players.get(p.ownerId);
    if(!owner||owner.dead){end(p);continue}
@@ -257,26 +295,25 @@ export class CityRoom extends Room{
     if(near){
      const angle=Math.atan2(p.y-near.y,p.x-near.x),pull=clamp((150-gap)*.035,.8,3.2);
      near.vx+=Math.cos(angle)*pull;near.vy+=Math.sin(angle)*pull;
-     if(gap<105&&now>=p.nextTickAt){
-      p.nextTickAt=now+200;hurt(owner,near,p.profile.damage,p.profile.stun,p.profile.knockback,angle);
-     }
+     if(gap<105&&now>=p.nextTickAt){p.nextTickAt=now+200;hurt(owner,near,p.profile.damage,p.profile.stun,p.profile.knockback,angle)}
     }
    }else if(p.kind==="redmax"||p.kind==="hollow"||p.kind==="tenNue"){
     if(target){
-     const dx=target.x-p.x,dy=target.y-p.y,len=Math.hypot(dx,dy)||1,speed=p.speed||Math.hypot(p.vx,p.vy)||17;
-     const turn=clamp(dt*(p.kind==="hollow"?1.35:p.kind==="tenNue"?2.8:2.1),0,1);
+     const dx=target.x-p.x,dy=target.y-p.y,len=Math.hypot(dx,dy)||1,speed=p.speed||Math.hypot(p.vx,p.vy)||17,turn=clamp(dt*(p.kind==="hollow"?1.35:p.kind==="tenNue"?2.8:2.1),0,1);
      p.vx+=(dx/len*speed-p.vx)*turn;p.vy+=(dy/len*speed-p.vy)*turn;
     }
     const sx=p.vx*60*dt,sy=p.vy*60*dt;p.x+=sx;p.y+=sy;p.travelled+=Math.hypot(sx,sy);p.life-=dt;
+    if(p.rideVariant){
+     if(owner.stun>.04){p.rideVariant=false;owner.vx=p.vx*.35;owner.vy=p.vy*.35}
+     else{owner.moveX=0;owner.moveY=0;owner.x=clamp(p.x-Math.cos(Math.atan2(p.vy,p.vx))*30,45,WORLD_WIDTH-45);owner.y=clamp(p.y-Math.sin(Math.atan2(p.vy,p.vx))*30,45,WORLD_HEIGHT-45);owner.jump=Math.max(owner.jump,.55);owner.vx=0;owner.vy=0}
+    }
    }else if(p.kind==="bloodBomb"){
-    const dx=owner.aimX-p.x,dy=owner.aimY-p.y,len=Math.hypot(dx,dy)||1,step=Math.min(len,220*dt);
-    p.x+=dx/len*step;p.y+=dy/len*step;p.travelled+=step;p.life-=dt;
+    p.life-=dt;
     if(p.detonate||p.life<=0){
      for(const [targetId,candidate] of this.state.players){
-      if(targetId===p.ownerId||candidate.dead)continue;
-      const d=distance(candidate,p);if(d>165)continue;
+      if(targetId===p.ownerId||candidate.dead||distance(candidate,p)>165)continue;
       const angle=Math.atan2(candidate.y-p.y,candidate.x-p.x);
-      hurt(owner,candidate,p.profile.damage,.6,p.profile.knockback,angle);
+      hurt(owner,candidate,p.profile.damage,.6,p.profile.knockback,angle,true);
      }
      end(p,"combat:projectile-explode");continue;
     }
@@ -284,9 +321,29 @@ export class CityRoom extends Room{
     const sx=p.vx*60*dt,sy=p.vy*60*dt;p.x+=sx;p.y+=sy;p.travelled+=Math.hypot(sx,sy);p.life-=dt;
    }
    p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);
+   if(p.domainBound){
+    if(owner.domainType!=="trash"||owner.domainTimer<=0){end(p);continue}
+    const dx=p.x-owner.domainX,dy=p.y-owner.domainY,d=Math.hypot(dx,dy)||1,limit=Math.max(80,(owner.domainRadius||430)-p.r);
+    if(d>limit){
+     const nx=dx/d,ny=dy/d,dot=p.vx*nx+p.vy*ny;
+     p.vx-=2*dot*nx;p.vy-=2*dot*ny;p.x=owner.domainX+nx*(limit-3);p.y=owner.domainY+ny*(limit-3);p.bounceCount++;
+    }
+   }
    const activeBuildings=BUILDING_LAYOUT.filter((building,index)=>!this.state.world.buildings.get(String(index))?.collapsed);
-   if(isBlockedByBuilding(p,activeBuildings,Math.max(7,p.r*.65))){end(p);continue}
-   if(p.kind!=="blueMax"&&p.kind!=="bloodBomb"){
+   if(p.kind!=="sukunaFireArrow"&&isBlockedByBuilding(p,activeBuildings,Math.max(7,p.r*.65))){end(p);continue}
+   if(p.kind==="sukunaFireArrow"){
+    let hitTarget=null;
+    for(const [targetId,candidate] of this.state.players){
+     if(targetId===p.ownerId||candidate.dead||candidate.vehicleId)continue;
+     if(pointSegmentDistance(candidate,from,p)<=p.r+23){hitTarget=candidate;break}
+    }
+    if(hitTarget||p.life<=0||p.travelled>=p.maxDistance){
+     const x=hitTarget?hitTarget.x:p.x,y=hitTarget?hitTarget.y:p.y;
+     this.createFireZone(owner,x,y,Math.atan2(p.vy,p.vx),now);
+     end(p,"combat:projectile-impact",{targetId:hitTarget?hitTarget.sessionId:""});
+     continue;
+    }
+   }else if(p.kind!=="blueMax"&&p.kind!=="bloodBomb"){
     let hitTarget=null,hitId="";
     for(const [targetId,candidate] of this.state.players){
      if(targetId===p.ownerId||candidate.dead||candidate.vehicleId||candidate.invuln>0)continue;
@@ -294,7 +351,7 @@ export class CityRoom extends Room{
     }
     if(hitTarget){
      const angle=Math.atan2(p.y-from.y,p.x-from.x);
-     hurt(owner,hitTarget,p.profile.damage,p.profile.stun,p.profile.knockback,angle);
+     hurt(owner,hitTarget,p.profile.damage,p.profile.stun,p.profile.knockback,angle,p.kind==="fire"||p.kind==="hollow");
      end(p,"combat:projectile-hit",{targetId:hitId});continue;
     }
    }
@@ -302,7 +359,7 @@ export class CityRoom extends Room{
   }
   if(now-this.projectileBatchAt>=100){
    this.projectileBatchAt=now;
-   const live=Array.from(this.projectiles.values(),p=>({sessionId:p.ownerId,id:p.clientId,x:p.x,y:p.y,vx:p.vx,vy:p.vy,life:p.life,travelled:p.travelled,maxDistance:p.maxDistance,kind:p.kind,serverTime:now}));
+   const live=Array.from(this.projectiles.values(),p=>({sessionId:p.ownerId,id:p.clientId,x:p.x,y:p.y,vx:p.vx,vy:p.vy,life:p.life,travelled:p.travelled,maxDistance:p.maxDistance,kind:p.kind,golden:p.golden,domainBound:p.domainBound,rideVariant:p.rideVariant,serverTime:now}));
    if(live.length)this.broadcast("combat:projectile-state",{projectiles:live,serverTime:now});
   }
  }
