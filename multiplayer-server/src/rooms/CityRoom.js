@@ -22,7 +22,7 @@ export class CityRoom extends Room{
   this.setSimulationInterval(ms=>this.tick(ms/1000),33);
  }
  onJoin(client,options={}){const others=[];this.state.players.forEach(p=>others.push(p));const spawn=findAvailableSpawn(others),character=CHARACTER_IDS.includes(options.character)?options.character:"vessel",hp=CHARACTER_HP[character]||100,p=new PlayerState(),name=sanitizePlayerName(options.name,"Player");p.name=name==="Player"?"Player-"+client.sessionId.slice(0,4).toUpperCase():name;p.character=character;p.x=spawn.x;p.y=spawn.y;p.hp=hp;p.maxHp=hp;this.state.players.set(client.sessionId,p);this.lastUpdateAt.set(client.sessionId,Date.now());this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] joined",p.name,this.state.players.size+"/16")}
- async async onDrop(client){
+ async onDrop(client){
   const p=this.state.players.get(client.sessionId);
   if(p)p.connected=false;
   try{
