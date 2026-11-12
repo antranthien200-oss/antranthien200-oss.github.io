@@ -74,6 +74,24 @@ export function isMoveAllowed(character, moveName) {
  };
  return !!allowed[character]&&allowed[character].test(move);
 }
+export function isMoveAuthorizedForAction(character,moveName,actionKind){
+ const move=String(moveName||""),action=String(actionKind||"");
+ if(action==="m1")return /^(m1_[1-4]|yutaM1_[1-4]|yutaDomainSwordRun)$/i.test(move);
+ if(action==="special")return isMoveAllowed(character,move)&&!/^(m1_|yutaM1_)/i.test(move);
+ const slots={
+  honored:[["gojoBlue","gojoBlueMax"],["gojoRed","gojoRedMax"],["gojoRapid"],["gojoTwofold","gojoVoid"]],
+  vessel:[["yujiCursedDrag"],["yujiCrush","sukunaOpen","sukunaFireArrowCast"],["yujiDivergent","sukunaHeadCarryWindup"],["yujiManjiCounter","sukunaShrine","sukunaFlurryWindup"]],
+  restless:[["hakariBall","hakariVolley"],["hakariDoors","hakariRushdown"],["hakariRough","hakariOverwhelming"],["hakariFever","hakariSurge"]],
+  ten:[["megumiRabbit","megumiElephant"],["megumiNue","megumiSerpent"],["megumiToad","megumiSwarm"],["megumiDog","megumiMahoraga"]],
+  perfection:[["mahitoStockpile","mahitoTransfigure"],["mahitoSoulFire","mahitoDisfigure"],["mahitoFocus","mahitoSpikes"],["mahitoRepel","mahitoDomain"]],
+  todo:[["todoSwiftKick","todoIdol"],["todoBrute","todoClimax"],["todoPebble","todoDreams"],["todoElbow","todoBrothers"]],
+  choso:[["chosoPiercing","chosoExorcism"],["chosoScale","chosoWingKing"],["chosoSupernova","chosoBloodRain"],["chosoEdge","chosoPlasma"]],
+  yuta:[["yutaSevering","yutaElbowRush","rikaSmash","rikaDownslam"],["yutaSlash","yutaCopy","rikaLaunch","rikaSlam"],["yutaOutburst","yutaEnergyRipple","rikaThrow","yutaTrueLoveBeam"],["yutaSecondWind","yutaDomain","rikaHaymaker"]],
+  trashman:[["trashManThrow","trashManFlyingCan"],["trashManGarbagePunch","trashManStench"],["trashManBigCan","trashManEruption"],["trashManCanBarrage","trashManDomain"]]
+ };
+ const index=Number(action)-1;
+ return Number.isInteger(index)&&index>=0&&index<4&&!!slots[character]&&slots[character][index].includes(move);
+}
 export function isProjectileMoveAllowed(character,moveName){
  const move=String(moveName||"").slice(0,48);
  if(/^trashCanThrow$/i.test(move))return true;
