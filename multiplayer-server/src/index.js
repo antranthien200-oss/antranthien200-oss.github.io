@@ -8,7 +8,15 @@ const server = defineServer({
   rooms: { city: defineRoom(CityRoom) },
   express: (app) => {
     app.get("/", (_req, res) => res.status(200).send("Balls Shenanigan multiplayer server"));
-    app.get("/health", (_req, res) => res.status(200).json({ ok: true, room: "city", maxPlayers: 16 }));
+    app.get("/health", (_req, res) => res.status(200).json({
+      ok: true,
+      room: "city",
+      maxPlayers: 16,
+      tickHz: 30,
+      statePatchHz: 30,
+      projectileSnapshotHz: 10,
+      buildCommit: process.env.RENDER_GIT_COMMIT || "local"
+    }));
   }
 });
 
