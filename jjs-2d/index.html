@@ -1120,16 +1120,13 @@ function applyOnlineRoomState(state){
  }
  const localClashId=String(local&&local.domainClashId||'');
  if(localClashId&&player){
-  const opponentEntry=entries.find(([id,net])=>id!==onlineSessionId&&String(net.domainClashId||'')===localClashId);
-  const opponent=opponentEntry?onlineRemotePlayers.get(opponentEntry[0]):null;
-  if(opponent){
+  const opponents=entries.filter(([id,net])=>id!==onlineSessionId&&String(net.domainClashId||'')===localClashId).map(([id])=>onlineRemotePlayers.get(id)).filter(Boolean);
+  if(opponents.length){
    if(!game.domainClash||game.domainClash.id!==localClashId){
-    game.domainClash={id:localClashId,members:[player,opponent],time:15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};
-    updateDomainClashHud();showToast('DOMAIN CLASH · LAND HITS TO WIN',1300);
-   }else game.domainClash.members=[player,opponent];
+    game.domainClash={id:localClashId,members:[player,...opponents],time:15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};
+    updateDomainClashHud();showToast(opponents.length>1?'MULTI DOMAIN CLASH · LAND HITS TO WIN':'DOMAIN CLASH · LAND HITS TO WIN',1300);
+   }else game.domainClash.members=[player,...opponents];
   }
- }else if(game.domainClash&&game.domainClash.serverAuthoritative){
-  game.domainClash=null;updateDomainClashHud();
  }
  const label=$('onlinePlayersCount');if(label)label.textContent=entries.length+' / 16 PLAYERS';
 }
@@ -1277,13 +1274,15 @@ function bindOnlineRoom(client,room){
  });
  room.onMessage('domain:clash:start',data=>{
   if(!data||!Array.isArray(data.participants)||!data.participants.includes(onlineSessionId))return;
-  const otherId=data.participants.find(id=>id!==onlineSessionId),remote=onlineRemotePlayers.get(otherId);
-  if(remote&&player){game.domainClash={id:String(data.id),members:[player,remote],time:Number(data.time)||15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};updateDomainClashHud();showToast('DOMAIN CLASH · LAND HITS TO WIN',1300)}
+  const opponents=data.participants.filter(id=>id!==onlineSessionId).map(id=>onlineRemotePlayers.get(id)).filter(Boolean);
+  if(opponents.length&&player){game.domainClash={id:String(data.id),members:[player,...opponents],time:Number(data.time)||15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};updateDomainClashHud();showToast(opponents.length>1?'MULTI DOMAIN CLASH · LAND HITS TO WIN':'DOMAIN CLASH · LAND HITS TO WIN',1300)}
  });
  room.onMessage('domain:clash:score',data=>{
   const q=game.domainClash;if(!q||!q.serverAuthoritative||q.id!==String(data.id))return;
-  const otherId=(data.participants||[]).find(id=>id!==onlineSessionId),scores=data.scores||{};
-  q.scores.player=Number(scores[onlineSessionId])||0;q.scores.enemy=Number(scores[otherId])||0;q.time=Number(data.time)||q.time;updateDomainClashHud();
+  const participants=data.participants||[],scores=data.scores||{};
+  q.scores.player=Number(scores[onlineSessionId])||0;
+  q.scores.enemy=Math.max(0,...participants.filter(id=>id!==onlineSessionId).map(id=>Number(scores[id])||0));
+  q.time=Number(data.time)||q.time;updateDomainClashHud();
  });
  room.onMessage('domain:clash:end',data=>{
   const q=game.domainClash;if(!q||!q.serverAuthoritative||q.id!==String(data.id))return;
@@ -1538,7 +1537,7 @@ function updateDomainClash(dt){
  if(q.time<=0){if(Math.abs(p-e)<.001)resolveDomainClash(null,'TIME');else resolveDomainClash(p>e?a:b,'TIME');return}updateDomainClashHud();
 }
 function useDomainClashM1(f){
- if(!f||f.dead||!game.domainClash||f.attackCd>0)return;const t=game.domainClash.members.find(x=>x!==f);if(!t||t.dead)return;
+ if(!f||f.dead||!game.domainClash||f.attackCd>0)return;const t=game.domainClash.members.filter(x=>x&&x!==f&&!x.dead).sort((a,b)=>dist(f,a)-dist(f,b))[0];if(!t)return;
  const aim={x:t.x,y:t.y},angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackCd=.27;f.attackAnim=.19;f.attackType='clash-punch';f.combo=(f.combo%3)+1;f.comboTimer=.38;setMotion(f,'m1_'+f.combo,.2,angle,t);
  const range=mobileControlsEnabled&&f===player?145:132,d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)));
  if(d<=range&&arc<(mobileControlsEnabled&&f===player?1.45:1.28)){const color=f.team==='player'?'#82e8ff':'#ff899b';
@@ -1555,16 +1554,18 @@ function useDomainClashM1(f){
 function domainIsActive(owner){return !!(owner&&!owner.dead&&owner.domainType&&owner.domainType!=='void02'&&owner.domainTimer>0&&!game.domainClash)}
 function domainFighters(){return onlineMode?[player,enemy,...onlineRemotePlayers.values()]:[player,enemy]}
 function releaseDomainOccupants(owner){
-  for(const f of [player,enemy,trainingDummy]){if(!f)continue;if(f.domainInsideOwner===owner)f.domainInsideOwner=null;if(f.domainEscapedOwner===owner)f.domainEscapedOwner=null}
+  const fighters=onlineMode?[player,enemy,trainingDummy,...onlineRemotePlayers.values()]:[player,enemy,trainingDummy];
+  for(const f of fighters){if(!f)continue;if(f.domainInsideOwner===owner)f.domainInsideOwner=null;if(f.domainEscapedOwner===owner)f.domainEscapedOwner=null}
  }
  function captureDomainOccupants(owner){
   if(!owner)return;
   releaseDomainOccupants(owner);
-  for(const f of [player,enemy,trainingDummy]){if(!f||f.dead)continue;f.domainInsideOwner=owner;f.domainEscapedOwner=null}
+  const fighters=onlineMode?[player,enemy,trainingDummy,...onlineRemotePlayers.values()]:[player,enemy,trainingDummy];
+  for(const f of fighters){if(!f||f.dead)continue;f.domainInsideOwner=owner;f.domainEscapedOwner=null}
  }
  function updateDomainContainment(f){
   if(!f||game.domainClash)return;
-  const owner=[player,enemy].find(o=>domainIsActive(o));
+  const owner=domainFighters().find(o=>domainIsActive(o));
   if(!owner){if(f.domainInsideOwner)f.domainInsideOwner=null;if(f.domainEscapedOwner)f.domainEscapedOwner=null;return}
   if(!f.dead){f.domainInsideOwner=owner;f.domainEscapedOwner=null}
  }
