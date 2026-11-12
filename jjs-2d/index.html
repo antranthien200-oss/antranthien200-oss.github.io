@@ -1006,7 +1006,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
    shot.vx=vx;shot.vy=vy;
    const id=String(++onlineProjectileCounter);
    shot.networkId=id;shot.networkSessionId=onlineSessionId;shot.serverOwnedVisual=true;
-   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||700,kind:shot.kind,color:shot.color,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage})}
+   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:700),kind:shot.kind,color:shot.color,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage})}
    catch(error){shot.serverOwnedVisual=false;console.warn('Online projectile registration failed',error)}
   }
  }
@@ -1250,7 +1250,9 @@ function bindOnlineRoom(client,room){
  room.onMessage('combat:projectile',receiveOnlineProjectile);
  room.onMessage('combat:projectile-state',data=>{for(const state of data&&data.projectiles||[]){const i=findOnlineProjectileIndex(state.sessionId,state.id);if(i>=0){const p=projectiles[i];p.networkX=Number(state.x)||p.x;p.networkY=Number(state.y)||p.y;p.networkLife=Number(state.life)||p.life;p.travelled=Number(state.travelled)||p.travelled||0;p.maxDistance=Number(state.maxDistance)||p.maxDistance||700;p.altitude=p.kind==='tenNue'?Math.sin(Math.PI*clamp(p.travelled/p.maxDistance,0,1))*175:p.altitude||0}}});
  room.onMessage('combat:projectile-hit',data=>removeOnlineProjectile(data,true));
+ room.onMessage('combat:projectile-explode',data=>removeOnlineProjectile(data,true));
  room.onMessage('combat:projectile-end',data=>removeOnlineProjectile(data,false));
+ room.onMessage('combat:projectile-reject',data=>{const i=data&&projectiles.findIndex(p=>p&&p.networkId===String(data.id)&&p.networkSessionId===onlineSessionId);if(i>=0)projectiles[i].serverOwnedVisual=false});
  room.onMessage('domain:cast',data=>{
   if(!data||data.sessionId===onlineSessionId)return;
   const remote=onlineRemotePlayers.get(data.sessionId);if(!remote)return;
@@ -2532,7 +2534,7 @@ if(f.attackCd>0)return;
    const px=f.x,py=f.y,tx=t.x,ty=t.y;f.x=tx;f.y=ty;t.x=px;t.y=py;const face=Math.atan2(t.y-f.y,t.x-f.x);f.face=face;t.face=Math.atan2(f.y-t.y,f.x-t.x);setMotion(f,'todoBoogie',.48,face,t);setMotion(t,'todoBoogieVictim',.48,t.face,f);collideWorld(f);collideWorld(t);f.specialCd=6;if(!f.awakened)f.meter=clamp(f.meter+5,0,100);burst(px,py,'#6edbff',20,5);burst(tx,ty,'#f6dd8e',20,5);game.shake=6;return;
   }
   if(f.char==='choso'){
-   if(f.bloodBomb){setMotion(f,'chosoDetonate',.42,aimedAngle(f),t);f.bloodBomb.detonate=true;f.bloodBomb=null;f.specialCd=5;return}
+   if(f.bloodBomb){const bomb=f.bloodBomb;setMotion(f,'chosoDetonate',.42,aimedAngle(f),t);if(onlineMode&&onlineRoom&&f===player&&bomb.serverOwnedVisual)try{onlineRoom.send('combat:projectile-detonate',{id:bomb.networkId})}catch(error){}bomb.detonate=true;f.bloodBomb=null;f.specialCd=5;return}
    if(f.convergenceOrbs<4){f.convergenceOrbs=Math.min(4,f.convergenceOrbs+1);f.specialCd=1.05;setMotion(f,'chosoConvergence',.45,f.face,t);burst(f.x,f.y,'#d93652',12,4);popText(f.x,f.y-58,'CONVERGENCE ×'+f.convergenceOrbs,'#ff9ead',15);return}
    const a=aimedAngle(f);setMotion(f,'chosoBombPlant',.55,a,t);f.convergenceOrbs=Math.max(0,f.convergenceOrbs-1);projectiles.push({x:f.x+Math.cos(a)*95,y:f.y+Math.sin(a)*95,vx:0,vy:0,r:12,life:5,owner:f,kind:'bloodBomb',damage:12,color:'#b82e45',detonate:false});f.bloodBomb=projectiles[projectiles.length-1];f.specialCd=2;return;
   }
