@@ -1216,10 +1216,21 @@ function findOnlineProjectileIndex(sessionId,id){
 function receiveOnlineProjectile(data){
  if(!data||!data.sessionId||!data.id)return;
  const index=findOnlineProjectileIndex(data.sessionId,data.id);
- if(index>=0){Object.assign(projectiles[index],{x:Number(data.x)||projectiles[index].x,y:Number(data.y)||projectiles[index].y,serverOwnedVisual:true});return}
+ if(index>=0){Object.assign(projectiles[index],{x:Number(data.x)||projectiles[index].x,y:Number(data.y)||projectiles[index].y,networkX:Number(data.x)||projectiles[index].x,networkY:Number(data.y)||projectiles[index].y,serverOwnedVisual:true,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant});return}
  if(data.sessionId===onlineSessionId)return;
  const owner=onlineRemotePlayers.get(data.sessionId)||Object.assign(makeFighter('enemy','vessel',Number(data.x)||0,Number(data.y)||0),{onlineSessionId:data.sessionId});
- nativeProjectilePush({x:Number(data.x)||0,y:Number(data.y)||0,networkX:Number(data.x)||0,networkY:Number(data.y)||0,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||18,life:Number(data.life)||1.2,maxDistance:Number(data.maxDistance)||700,travelled:0,owner,targetRef:player,kind:String(data.kind||'projectile'),color:String(data.color||'#b8e8ff'),networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true});
+ nativeProjectilePush({x:Number(data.x)||0,y:Number(data.y)||0,networkX:Number(data.x)||0,networkY:Number(data.y)||0,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||18,life:Number(data.life)||1.2,maxDistance:Number(data.maxDistance)||700,travelled:0,owner,targetRef:player,kind:String(data.kind||'projectile'),color:String(data.color||'#b8e8ff'),golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant,networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true});
+}
+function spawnOnlineSukunaFireZone(data){
+ if(!data||!data.id||!data.sessionId||fireZones.some(z=>z.onlineId===String(data.id)))return;
+ const owner=data.sessionId===onlineSessionId?player:onlineRemotePlayers.get(data.sessionId);
+ if(!owner)return;
+ const zone={x:Number(data.x)||0,y:Number(data.y)||0,life:clamp(Number(data.life)||5.8,.1,5.8),max:clamp(Number(data.life)||5.8,.1,5.8),radius:clamp(Number(data.radius)||270,80,400),tick:.36,owner,angle:Number(data.angle)||0,seed:Number(data.seed)||.37,serverOwned:true,onlineId:String(data.id)};
+ fireZones.push(zone);fireBurst(zone.x,zone.y,28);game.shake=Math.max(game.shake,6);
+}
+function removeOnlineFireZone(data){
+ if(!data||!data.id)return;
+ for(let i=fireZones.length-1;i>=0;i--)if(fireZones[i].onlineId===String(data.id))fireZones.splice(i,1);
 }
 function removeOnlineProjectile(data,hit=false){
  if(!data||!data.sessionId||!data.id)return;
@@ -1248,10 +1259,13 @@ function bindOnlineRoom(client,room){
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
  room.onMessage('combat:projectile',receiveOnlineProjectile);
- room.onMessage('combat:projectile-state',data=>{for(const state of data&&data.projectiles||[]){const i=findOnlineProjectileIndex(state.sessionId,state.id);if(i>=0){const p=projectiles[i];p.networkX=Number(state.x)||p.x;p.networkY=Number(state.y)||p.y;p.networkLife=Number(state.life)||p.life;p.travelled=Number(state.travelled)||p.travelled||0;p.maxDistance=Number(state.maxDistance)||p.maxDistance||700;p.altitude=p.kind==='tenNue'?Math.sin(Math.PI*clamp(p.travelled/p.maxDistance,0,1))*175:p.altitude||0}}});
+ room.onMessage('combat:projectile-state',data=>{for(const state of data&&data.projectiles||[]){const i=findOnlineProjectileIndex(state.sessionId,state.id);if(i>=0){const p=projectiles[i];p.networkX=Number(state.x)||p.x;p.networkY=Number(state.y)||p.y;p.networkLife=Number(state.life)||p.life;p.networkVx=Number(state.vx)||p.networkVx||p.vx;p.networkVy=Number(state.vy)||p.networkVy||p.vy;p.travelled=Number(state.travelled)||p.travelled||0;p.maxDistance=Number(state.maxDistance)||p.maxDistance||700;p.golden=!!state.golden;p.domainBound=!!state.domainBound;p.rideVariant=!!state.rideVariant;p.altitude=p.kind==='tenNue'?Math.sin(Math.PI*clamp(p.travelled/p.maxDistance,0,1))*175:p.altitude||0}}});
  room.onMessage('combat:projectile-hit',data=>removeOnlineProjectile(data,true));
+ room.onMessage('combat:projectile-impact',data=>removeOnlineProjectile(data,true));
  room.onMessage('combat:projectile-explode',data=>removeOnlineProjectile(data,true));
  room.onMessage('combat:projectile-end',data=>removeOnlineProjectile(data,false));
+ room.onMessage('combat:fire-zone',spawnOnlineSukunaFireZone);
+ room.onMessage('combat:fire-zone-end',removeOnlineFireZone);
  room.onMessage('combat:projectile-reject',data=>{const i=data&&projectiles.findIndex(p=>p&&p.networkId===String(data.id)&&p.networkSessionId===onlineSessionId);if(i>=0)projectiles[i].serverOwnedVisual=false});
  room.onMessage('domain:cast',data=>{
   if(!data||data.sessionId===onlineSessionId)return;
@@ -2800,7 +2814,9 @@ function spawnSukunaFireZone(x,y,owner,angle=0){
 }
 function updateSukunaFireZones(dt){
  for(let i=fireZones.length-1;i>=0;i--){
-  const zone=fireZones[i];zone.life-=dt;zone.tick-=dt;
+  const zone=fireZones[i];zone.life-=dt;
+  if(zone.serverOwned){if(zone.life<=0)fireZones.splice(i,1);continue}
+  zone.tick-=dt;
   if(zone.tick<=0&&zone.life>0){
    zone.tick=.36;
    for(const target of tenTargets(zone.owner)){
