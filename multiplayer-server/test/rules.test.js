@@ -46,10 +46,25 @@ test("movement intent is normalized and bounded independently of reported positi
  const n=normalizePlayerUpdate({x:1000,y:800,moveX:1,moveY:1},{x:1000,y:800,face:0},33);
  assert.ok(Math.abs(Math.hypot(n.moveX,n.moveY)-1)<1e-9);
  assert.equal(n.moveScale,1);
+ const aimed=normalizePlayerUpdate({aimX:99999,aimY:-50},{x:1000,y:800,face:0},33);
+ assert.equal(aimed.aimX,3255);assert.equal(aimed.aimY,45);
 });
 test("server projectile eligibility requires an allowed long-range move",()=>{
  assert.equal(isProjectileMoveAllowed("honored","gojoBlue"),true);
  assert.equal(isProjectileMoveAllowed("trashman","trashManThrow"),true);
  assert.equal(isProjectileMoveAllowed("vessel","gojoBlue"),false);
  assert.equal(isProjectileMoveAllowed("honored","gojoVoid"),false);
+});
+
+test("guided projectile moves have server profiles and domain casts are excluded",()=>{
+ assert.equal(isProjectileMoveAllowed("honored","gojoBlueMax"),true);
+ assert.equal(isProjectileMoveAllowed("honored","gojoRedMax"),true);
+ assert.equal(isProjectileMoveAllowed("honored","gojoPurple"),true);
+ assert.equal(isProjectileMoveAllowed("ten","megumiNue"),true);
+ assert.equal(isProjectileMoveAllowed("choso","chosoBombPlant"),true);
+ assert.equal(isProjectileMoveAllowed("honored","trashCanThrow"),true);
+ assert.equal(isProjectileMoveAllowed("honored","gojoVoid"),false);
+ assert.equal(combatProfile("honored","gojoPurple").damage,70);
+ assert.equal(combatProfile("honored","gojoRedMax").damage,30);
+ assert.equal(combatProfile("honored","gojoBlueMax").damage,2.2);
 });
