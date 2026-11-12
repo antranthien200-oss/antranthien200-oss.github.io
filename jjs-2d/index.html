@@ -184,7 +184,8 @@ body.mobile-controls-enabled.game-active .bottom{bottom:calc(235px + env(safe-ar
 #mobileJoystick{position:absolute;left:max(9px,env(safe-area-inset-left));bottom:calc(13px + env(safe-area-inset-bottom));width:clamp(123px,33vw,147px);aspect-ratio:1;border:6px solid #000;border-radius:50%;background:#000;box-shadow:0 0 0 1px rgba(0,0,0,.24);pointer-events:auto;touch-action:none}
 #mobileJoystick:before{content:"";position:absolute;inset:6%;border:3px solid #fff;border-radius:50%;background:transparent;pointer-events:none}
 .mobile-joy-knob{position:absolute;left:50%;top:50%;width:43%;height:43%;transform:translate(-50%,-50%);border-radius:50%;border:0;background:#fff;box-shadow:none;pointer-events:none}
-.mobile-joy-label{display:none}\nbody.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:absolute;left:50%;bottom:5px;transform:translateX(-50%);font:900 9px/1 ui-monospace,monospace;letter-spacing:.12em;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
+.mobile-joy-label{display:none}
+body.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:absolute;left:50%;bottom:5px;transform:translateX(-50%);font:900 9px/1 ui-monospace,monospace;letter-spacing:.12em;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none}
 
 /* G and R sit immediately beside the joystick, vertically stacked. */
 .mobile-left-actions{position:absolute;left:calc(max(9px,env(safe-area-inset-left)) + clamp(123px,33vw,147px) + 7px);bottom:calc(38px + env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px;pointer-events:none}
