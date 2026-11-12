@@ -14,7 +14,7 @@ export class CityRoom extends Room{
  maxClients=MAX_PLAYERS;autoDispose=false;patchRate=33;maxMessagesPerSecond=90;
  onCreate(){
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
-  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.activeMoveUntil=new Map();this.activeMoveSpeed=new Map();this.projectiles=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
+  this.lastUpdateAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.activeMoveUntil=new Map();this.activeMoveSpeed=new Map();this.projectiles=new Map();this.lastProjectileAt=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
@@ -38,7 +38,7 @@ export class CityRoom extends Room{
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
-  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.activeMoveUntil.delete(sessionId);this.activeMoveSpeed.delete(sessionId);
+  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.activeMoveUntil.delete(sessionId);this.activeMoveSpeed.delete(sessionId);this.lastProjectileAt.delete(sessionId);
   for(const [key,projectile] of this.projectiles)if(projectile.ownerId===sessionId){this.projectiles.delete(key);this.broadcast("combat:projectile-end",{sessionId,id:projectile.clientId})}
   for(const [id,clash] of this.domainClashes)if(clash.participants.includes(sessionId))this.finishDomainClash(clash,clash.participants.find(x=>x!==sessionId)||null,"DISCONNECT");
   for(const map of [this.lastHitAt,this.lastBuildingAt,this.lastPropHitAt]){
@@ -180,6 +180,9 @@ export class CityRoom extends Room{
   const clientId=String(payload.id||"").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32);
   if(!clientId)return;
   const id=ownerId+":"+clientId;if(this.projectiles.has(id))return;
+  const now=Date.now(),last=this.lastProjectileAt.get(ownerId)||0;
+  if(now-last<Math.max(110,profile.cooldown*1000))return;
+  this.lastProjectileAt.set(ownerId,now);
   const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed,r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,4),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,kind:String(payload.kind||"projectile").slice(0,32),color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff"};
   this.projectiles.set(id,projectile);
   this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move});
@@ -191,6 +194,9 @@ export class CityRoom extends Room{
    const from={x:projectile.x,y:projectile.y};
    const stepX=projectile.vx*60*dt,stepY=projectile.vy*60*dt;
    projectile.x+=stepX;projectile.y+=stepY;projectile.travelled+=Math.hypot(stepX,stepY);projectile.life-=dt;
+   projectile.vx*=Math.pow(.993,dt*60);projectile.vy*=Math.pow(.993,dt*60);
+   const activeBuildings=BUILDING_LAYOUT.filter((building,index)=>!this.state.world.buildings.get(String(index))?.collapsed);
+   if(isBlockedByBuilding(projectile,activeBuildings,Math.max(7,projectile.r*.65))){this.projectiles.delete(id);this.broadcast("combat:projectile-end",{sessionId:projectile.ownerId,id:projectile.clientId});continue}
    let hitTarget=null,hitId="";
    for(const [targetId,target] of this.state.players){
     if(targetId===projectile.ownerId||target.dead||target.vehicleId||target.invuln>0)continue;
