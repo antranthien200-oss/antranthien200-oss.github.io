@@ -1041,9 +1041,16 @@ function applyOnlineRoomState(state){
  if(!state||!state.players)return;
  const world=state.world;
  if(world){
-  if(world.buildings)world.buildings.forEach((net,id)=>{const b=staticBuildings[Number(id)];if(b){b.skillHits=Number(net.stage)||0;b.damageStage=Number(net.stage)||0;b.collapsed=!!net.collapsed}});
+  if(world.buildings)world.buildings.forEach((net,id)=>{const b=staticBuildings[Number(id)];if(b){
+   const previousStage=b.damageStage||0,nextStage=Number(net.stage)||0,wasCollapsed=!!b.collapsed,nextCollapsed=!!net.collapsed;
+   b.skillHits=nextStage;b.damageStage=nextStage;b.collapsed=nextCollapsed;
+   if(nextStage>previousStage)showVehicleBuildingDamage(b,nextStage,nextCollapsed&&!wasCollapsed);
+  }});
   if(world.cars)world.cars.forEach((net,id)=>{const car=parkedCars.find(c=>String(c.id)===String(id));if(car){car.x=Number(net.x)||car.x;car.y=Number(net.y)||car.y;car.angle=Number(net.angle)||0;car.vx=Number(net.vx)||0;car.vy=Number(net.vy)||0;car.speed=Number(net.speed)||0;car.occupied=!!net.occupiedBy;car.destroyed=!!net.destroyed;car.serverOccupiedBy=String(net.occupiedBy||'')}});
-  if(world.props)world.props.forEach((net,id)=>{const prop=destructibles.find(p=>String(p.id)===String(id));if(prop){prop.hp=Number(net.hp)||0;prop.alive=!!net.alive}});
+  if(world.props)world.props.forEach((net,id)=>{const prop=destructibles.find(p=>String(p.id)===String(id));if(prop){
+   const wasAlive=prop.alive;prop.hp=Number(net.hp)||0;prop.alive=!!net.alive;
+   if(wasAlive&&!prop.alive){const cx=prop.x+prop.w/2,cy=prop.y+prop.h/2;addDebris(cx,cy,prop.color,26);burst(cx,cy,'#f9e6c7',22,6);game.shake=Math.max(game.shake,4);popText(cx,cy-38,'CRATE SMASHED','#f4e2bc',13)}
+  }});
   onlineTrainX=Number(world.trainX)>-9000?Number(world.trainX):null;
   onlineTrainWarning=!!world.trainWarning;
  }
@@ -3281,7 +3288,19 @@ function updateProjectiles(dt){
 }
 
 function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){const d=doorTraps[i];d.life-=dt;if(d.life<=0){doorTraps.splice(i,1);continue}const f=d.owner;if(!d.hit&&f&&f.jump<=0&&dist(f,d)<48&&keys.has(' ')){f.jump=1.65;f.jumpV=8.5;d.life=0;burst(d.x,d.y,'#e5c5ff',16,4);popText(d.x,d.y-38,'BOUNCE!','#e9d5ff',14)}}}
-function updateDestructibles(dt){if(onlineMode)return;for(const o of destructibles){if(!o.alive)continue;for(const f of [player,enemy]){if(f.dead||dist({x:o.x+o.w/2,y:o.y+o.h/2},f)>45)continue;if(f.attackAnim>0&&f.attackType==='punch'){const oldHp=o.hp;o.hp-=.045*dt*60;/* crate damage is live-rendered */if(o.hp<=0){o.alive=false;addDebris(o.x+o.w/2,o.y+o.h/2,o.color,22);burst(o.x+o.w/2,o.y+o.h/2,'#f9e6c7',15,4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100)}}}}}
+function updateDestructibles(dt){
+ if(onlineMode)return;
+ for(const o of destructibles){
+  if(!o.alive){if(o.respawnTimer>0){o.respawnTimer=Math.max(0,o.respawnTimer-dt);if(o.respawnTimer===0){o.alive=true;o.hp=3}}continue}
+  for(const f of [player,enemy]){
+   if(f.dead||dist({x:o.x+o.w/2,y:o.y+o.h/2},f)>45)continue;
+   if(f.attackAnim>0&&f.attackType==='punch'){
+    o.hp-=.045*dt*60;
+    if(o.hp<=0){o.alive=false;o.respawnTimer=15;addDebris(o.x+o.w/2,o.y+o.h/2,o.color,22);burst(o.x+o.w/2,o.y+o.h/2,'#f9e6c7',15,4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100)}
+   }
+  }
+ }
+}
 function updateMobileCooldowns(){
  if(!player)return;
  document.querySelectorAll('#mobileControls [data-mobile-action]').forEach(btn=>{
@@ -3600,12 +3619,53 @@ function drawCityVehicles(){
   }
  }
 }
+function showVehicleBuildingDamage(b,stage,collapsed){
+ const cx=b.x+b.w/2,cy=b.y+b.h/2;
+ if(collapsed){
+  addDebris(cx,cy,b.c,34);addDebris(cx-b.w*.2,cy+b.h*.12,'#73808a',18);
+  burst(cx,cy,'#c3cbd0',38,9);game.shake=Math.max(game.shake,9);
+  popText(cx,cy-65,b.name+' · SMASHED','#f3e1bd',19);
+ }else{
+  addDebris(cx+rnd(-b.w*.25,b.w*.25),cy+rnd(-b.h*.2,b.h*.2),'#b9c2c3',stage===1?8:16);
+  burst(cx,cy,'#dce3e5',stage===1?12:20,stage===1?4:6);
+  game.shake=Math.max(game.shake,stage===2?5:3);
+  popText(cx,cy-62,b.name+' · DAMAGED '+stage+'/3','#f4e2bc',14);
+ }
+}
+function damageVehicleBuilding(car,b,index,speed){
+ const now=game.time,hitTimes=car.buildingHitTimes||(car.buildingHitTimes={}),last=hitTimes[index]??-10;
+ if(now-last<.72)return;
+ hitTimes[index]=now;
+ const hits=speed>=370?3:speed>=245?2:1;
+ b.skillHits=Math.min(3,(b.skillHits||0)+hits);b.damageStage=b.skillHits;b.lastSkillHit=now;
+ const wasCollapsed=!!b.collapsed;if(b.damageStage>=3)b.collapsed=true;
+ showVehicleBuildingDamage(b,b.damageStage,b.collapsed&&!wasCollapsed);
+}
+function smashVehicleProps(car){
+ if(Math.abs(car.speed)<95)return;
+ const box={left:car.x-38,right:car.x+38,top:car.y-21,bottom:car.y+21};
+ for(const o of destructibles){
+  if(!o.alive||box.right<o.x||box.left>o.x+o.w||box.bottom<o.y||box.top>o.y+o.h)continue;
+  const cooldowns=car.propHitTimes||(car.propHitTimes={}),last=cooldowns[o.id]??-10;
+  if(game.time-last<.35)continue;
+  cooldowns[o.id]=game.time;o.hp=0;o.alive=false;o.respawnTimer=15;
+  const cx=o.x+o.w/2,cy=o.y+o.h/2;
+  addDebris(cx,cy,o.color,26);burst(cx,cy,'#f9e6c7',22,6);
+  game.shake=Math.max(game.shake,4);popText(cx,cy-38,'CRATE SMASHED','#f4e2bc',13);
+ }
+}
 function collideVehicleWorld(car,oldX,oldY){
  car.x=clamp(car.x,38,WORLD.w-38);car.y=clamp(car.y,38,WORLD.h-38);
- for(const b of staticBuildings){
-  if(b.collapsed)continue;
+ smashVehicleProps(car);
+ for(let i=0;i<staticBuildings.length;i++){
+  const b=staticBuildings[i];if(b.collapsed)continue;
   const px=clamp(car.x,b.x,b.x+b.w),py=clamp(car.y,b.y,b.y+b.h),dx=car.x-px,dy=car.y-py;
-  if(dx*dx+dy*dy<38*38){car.x=oldX;car.y=oldY;car.vx*=.18;car.vy*=.18;car.speed*=.35;return}
+  if(dx*dx+dy*dy<38*38){
+   const impactSpeed=Math.abs(car.speed);
+   if(impactSpeed>=135)damageVehicleBuilding(car,b,i,impactSpeed);
+   if(b.collapsed)continue;
+   car.x=oldX;car.y=oldY;car.vx*=impactSpeed>=135?-.24:.18;car.vy*=impactSpeed>=135?-.24:.18;car.speed*=impactSpeed>=135?-.32:.35;return;
+  }
  }
  for(const other of parkedCars){
   if(other===car||other.destroyed)continue;
