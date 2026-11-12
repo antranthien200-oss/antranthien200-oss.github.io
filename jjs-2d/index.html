@@ -1068,13 +1068,34 @@ function applyOnlineRoomState(state){
   if(!remote.dead)remote.wasDead=false;
  }
  for(const [id] of onlineRemotePlayers)if(!seen.has(id))onlineRemotePlayers.delete(id);
+ const bindReplicatedGrab=(owner,target)=>{
+  if(!owner)return;
+  if(!target){owner.grabTarget=null;owner.grabKind='';owner.grabRemaining=0;owner.grabDuration=0;owner.grabElapsed=0;return}
+  owner.grabTarget=target;
+  owner.grabKind=String(target.grabKind||owner.grabKind||'');
+  owner.grabDuration=Math.max(.08,Number(target.grabDuration)||owner.grabDuration||.8);
+  owner.grabRemaining=Math.max(0,Number(target.grabRemaining)||0);
+  owner.grabElapsed=clamp(owner.grabDuration-owner.grabRemaining,0,owner.grabDuration);
+  owner.grabTick=.08;
+  owner.grabAngle=Number.isFinite(owner.face)?owner.face:0;
+  owner.grabColor=owner.grabKind==='yujiDrag'||owner.grabKind==='sukunaFlurry'?'#44d8ff':owner.grabKind==='bloodEdge'?'#d73555':'#a9d8ff';
+  target.capturedBy=owner;
+ };
  if(player){
-  player.capturedBy=player.grabbedBy?onlineRemotePlayers.get(player.grabbedBy)||null:null;
-  if(player.activeGrabTarget){const held=onlineRemotePlayers.get(player.activeGrabTarget);if(held){player.grabTarget=held;held.capturedBy=player}}else player.grabTarget=null;
+  const captor=player.grabbedBy?onlineRemotePlayers.get(player.grabbedBy)||null:null;
+  player.capturedBy=captor;
+  if(captor&&String(player.motionName||'').startsWith('captured_')){
+   player.motion={name:String(player.motionName),t:clamp(Number(player.grabDuration)-Number(player.grabRemaining),0,1),duration:Math.max(.08,Number(player.grabDuration)||.8),angle:captor.face,target:captor};
+   player.attackAnim=Number(player.attackAnim)||0;
+   player.attackType=String(player.attackType||'grab');
+  }
+  const held=player.activeGrabTarget?onlineRemotePlayers.get(player.activeGrabTarget):null;
+  bindReplicatedGrab(player,held||null);
  }
  for(const remote of onlineRemotePlayers.values()){
   remote.capturedBy=remote.grabbedBy?(remote.grabbedBy===onlineSessionId?player:onlineRemotePlayers.get(remote.grabbedBy)||null):null;
-  if(remote.activeGrabTarget){const held=remote.activeGrabTarget===onlineSessionId?player:onlineRemotePlayers.get(remote.activeGrabTarget);remote.grabTarget=held||null;if(held)held.capturedBy=remote}else remote.grabTarget=null;
+  const held=remote.activeGrabTarget?(remote.activeGrabTarget===onlineSessionId?player:onlineRemotePlayers.get(remote.activeGrabTarget)):null;
+  bindReplicatedGrab(remote,held||null);
  }
  const label=$('onlinePlayersCount');if(label)label.textContent=entries.length+' / 16 PLAYERS';
 }
