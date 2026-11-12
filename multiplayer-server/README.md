@@ -3,10 +3,10 @@ Colyseus backend for one persistent shared city with a hard cap of 16 seats.
 
 ## Online systems in this beta
 - Server-owned HP, meter, stun, invulnerability, awakening, death and respawn.
-- Server validates melee/skill hit range, facing, per-move cadence, block direction and damage.
+- Server validates melee/skill hit range, facing, per-move cadence, block direction and damage. Building damage is checked against the current character move, hit ray and per-building cooldown; player movement and car movement are blocked by live building footprints.
 - Buildings, small destructible props, car occupancy/driving, train timing and train collisions are shared world state.
 - Domain zones apply server-side periodic damage.
-- 25-second seat hold for temporary connection drops.
+- 25-second awaited seat hold for temporary connection drops, with the same player state kept for automatic/manual reconnection.
 
 Movement remains client-predicted with server-side bounds checks. Not every bespoke grab/counter, projectile trajectory or cinematic domain effect has been migrated into a fully authoritative simulation; this remains a multiplayer beta.
 
