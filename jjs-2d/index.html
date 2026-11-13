@@ -3509,21 +3509,91 @@ function drawMap(){if(isFullScreenDomainActive())return;
   ctx.fillStyle='#7ee0a9';ctx.fillRect(sx0+3,sy0+22,6,6);
  }
 
- // Neighbourhood park retained from the newer map addition.
- ctx.fillStyle='#536f54';ctx.fillRect(2250,990,450,430);ctx.fillStyle='#6d8663';ctx.fillRect(2262,1002,426,406);
- ctx.strokeStyle='#b6c4a6';ctx.lineWidth=3;ctx.strokeRect(2262,1002,426,406);
- ctx.fillStyle='#c0b7a0';ctx.fillRect(2445,1005,46,392);ctx.fillRect(2265,1182,420,42);ctx.fillStyle='#d4ccb4';ctx.fillRect(2270,1190,410,26);
- for(const [tx,ty] of [[2310,1050],[2638,1050],[2310,1360],[2638,1360],[2385,1260],[2560,1125]]){
-  ctx.fillStyle='#344738';ctx.beginPath();ctx.ellipse(tx,ty+4,24,20,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#527b54';ctx.beginPath();ctx.ellipse(tx,ty,22,19,0,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#82a777';ctx.beginPath();ctx.ellipse(tx-5,ty-5,10,8,0,0,Math.PI*2);ctx.fill();
- }
- for(const [bx,by] of [[2375,1150],[2555,1310]]){
-  ctx.fillStyle='#344047';ctx.fillRect(bx-24,by-5,48,9);ctx.fillStyle='#b48d62';ctx.fillRect(bx-21,by-4,42,4);
-  ctx.fillStyle='#344047';ctx.fillRect(bx-17,by+4,4,9);ctx.fillRect(bx+13,by+4,4,9);
- }
- ctx.fillStyle='#e0ebd2';ctx.font='900 11px system-ui';ctx.textAlign='center';ctx.fillText('NEIGHBOURHOOD PARK',2475,1380);
-
+  // Neighbourhood park: detailed block-built landscaping matching the town's top-down pixel geometry.
+  // The original 450 x 430 footprint and location remain unchanged.
+  ctx.fillStyle='#27343a';ctx.fillRect(2244,984,462,442);
+  ctx.fillStyle='#8b998b';ctx.fillRect(2250,990,450,430);
+  ctx.fillStyle='#d0d0b9';ctx.fillRect(2257,997,436,416);
+  ctx.fillStyle='#527b58';ctx.fillRect(2263,1003,424,404);
+  // Subtle square-cut lawn variation.
+  for(let gy=1010;gy<1400;gy+=32){
+   for(let gx=2270;gx<2680;gx+=32){
+    ctx.fillStyle=((gx/32+gy/32)%2===0)?'#5a835d':'#567e59';
+    ctx.fillRect(gx,gy,28,28);
+   }
+  }
+  // Wide paved crosswalks connect the park entrances using squared stone slabs.
+  ctx.fillStyle='#78847e';ctx.fillRect(2263,1182,424,52);ctx.fillRect(2449,1003,52,404);
+  ctx.fillStyle='#c6c5ad';ctx.fillRect(2267,1186,416,44);ctx.fillRect(2453,1007,44,396);
+  ctx.fillStyle='#d7d2bd';ctx.fillRect(2271,1190,408,36);ctx.fillRect(2457,1011,36,396);
+  ctx.strokeStyle='#a7a99a';ctx.lineWidth=1;
+  for(let px=2280;px<2680;px+=32){ctx.beginPath();ctx.moveTo(px,1191);ctx.lineTo(px,1225);ctx.stroke()}
+  for(let py=1020;py<1400;py+=32){ctx.beginPath();ctx.moveTo(2458,py);ctx.lineTo(2492,py);ctx.stroke()}
+  // Entrance pads.
+  ctx.fillStyle='#d5d0bb';ctx.fillRect(2249,1192,18,32);ctx.fillRect(2683,1192,18,32);
+  ctx.fillRect(2460,989,30,19);ctx.fillRect(2460,1401,30,20);
+  // Square fountain plaza with layered stone rim and tiled water basin.
+  ctx.fillStyle='#6e7b75';ctx.fillRect(2408,1141,134,134);
+  ctx.fillStyle='#d0cbb6';ctx.fillRect(2414,1147,122,122);
+  ctx.fillStyle='#a9aa98';ctx.fillRect(2421,1154,108,108);
+  ctx.fillStyle='#667d80';ctx.fillRect(2427,1160,96,96);
+  ctx.fillStyle='#4e8790';ctx.fillRect(2433,1166,84,84);
+  ctx.fillStyle='#579ba0';ctx.fillRect(2437,1170,76,76);
+  ctx.fillStyle='#6cb0ad';ctx.fillRect(2441,1174,28,20);ctx.fillRect(2481,1200,27,19);
+  ctx.fillStyle='#86c1b4';ctx.fillRect(2464,1183,18,48);
+  ctx.fillStyle='#d5ded0';ctx.fillRect(2468,1190,10,34);
+  ctx.fillStyle='#e1e0c9';ctx.fillRect(2464,1186,18,7);ctx.fillRect(2461,1220,24,7);
+  ctx.fillStyle='#3d6f77';ctx.fillRect(2440,1173,5,5);ctx.fillRect(2502,1237,5,5);ctx.fillRect(2440,1237,5,5);ctx.fillRect(2502,1173,5,5);
+  // Low square planting beds and chunky ornamental trees, matching the existing town trees.
+  const parkTrees=[[2305,1060],[2645,1060],[2305,1350],[2645,1350],[2360,1280],[2590,1110]];
+  for(const [tx,ty] of parkTrees){
+   ctx.fillStyle='#405c45';ctx.fillRect(tx-31,ty-28,62,58);
+   ctx.fillStyle='#78916c';ctx.fillRect(tx-28,ty-25,56,52);
+   ctx.fillStyle='#496f4e';ctx.fillRect(tx-24,ty-22,48,43);
+   ctx.fillStyle='#2e513b';ctx.fillRect(tx-5,ty-1,10,24);
+   ctx.fillStyle='#294d39';ctx.fillRect(tx-24,ty-22,48,28);
+   ctx.fillStyle='#31583d';ctx.fillRect(tx-20,ty-29,40,30);
+   ctx.fillStyle='#3e6b47';ctx.fillRect(tx-16,ty-36,32,12);
+   ctx.fillStyle='#4d7950';ctx.fillRect(tx-10,ty-41,20,8);
+   ctx.fillStyle='#628b56';ctx.fillRect(tx-7,ty-36,14,6);
+   ctx.fillStyle='#294d39';ctx.fillRect(tx-27,ty-15,7,15);ctx.fillRect(tx+20,ty-18,7,16);
+   ctx.fillStyle='#d94343';ctx.fillRect(tx-17,ty-22,6,5);ctx.fillRect(tx+11,ty-31,5,5);ctx.fillRect(tx+2,ty-10,6,5);
+  }
+  // Neatly clipped rectangular flower beds with small pixel flowers.
+  const flowerBeds=[[2350,1042,56,20],[2576,1042,56,20],[2350,1374,56,18],[2576,1374,56,18],[2280,1260,18,54],[2652,1118,18,54]];
+  for(const [fx,fy,fw,fh] of flowerBeds){
+   ctx.fillStyle='#405c45';ctx.fillRect(fx-3,fy-3,fw+6,fh+6);
+   ctx.fillStyle='#638454';ctx.fillRect(fx,fy,fw,fh);
+   for(let k=0;k<Math.floor(fw/14);k++){
+    const px=fx+5+k*14,py=fy+Math.floor(fh/2)-2;
+    ctx.fillStyle=k%3===0?'#e5c47a':k%3===1?'#d87b83':'#d9d9a1';
+    ctx.fillRect(px,py,5,5);ctx.fillStyle='#456d46';ctx.fillRect(px-2,py+5,9,4);
+   }
+  }
+  // Matching timber benches with squared legs and ground shadows.
+  for(const [bx,by] of [[2372,1138],[2580,1278]]){
+   ctx.fillStyle='#344047';ctx.fillRect(bx-27,by-3,58,17);
+   ctx.fillStyle='#855f43';ctx.fillRect(bx-24,by-5,52,6);
+   ctx.fillStyle='#b48d62';ctx.fillRect(bx-24,by-1,52,5);
+   ctx.fillStyle='#6d503c';ctx.fillRect(bx-21,by+5,5,12);ctx.fillRect(bx+15,by+5,5,12);
+  }
+  // Small square lamps and bins beside paths.
+  for(const [lx,ly] of [[2335,1239],[2618,1168]]){
+   ctx.fillStyle='#26343a';ctx.fillRect(lx-5,ly-2,10,25);
+   ctx.fillStyle='#344047';ctx.fillRect(lx-8,ly-9,16,8);
+   ctx.fillStyle='#e8e3b9';ctx.fillRect(lx-5,ly-7,10,4);
+   ctx.fillStyle='#f2d99a22';ctx.fillRect(lx-12,ly-15,24,5);
+  }
+  for(const [bx,by] of [[2290,1292],[2660,1290]]){
+   ctx.fillStyle='#26343a';ctx.fillRect(bx-8,by-3,16,19);
+   ctx.fillStyle='#617a70';ctx.fillRect(bx-6,by-5,12,15);
+   ctx.fillStyle='#aab6a4';ctx.fillRect(bx-7,by-7,14,3);
+   ctx.fillStyle='#344a43';ctx.fillRect(bx-5,by+10,10,3);
+  }
+  // Fine path edging and park-name plaque.
+  ctx.strokeStyle='#829087';ctx.lineWidth=2;ctx.strokeRect(2264,1004,422,402);
+  ctx.fillStyle='#34483e';ctx.fillRect(2399,1380,152,18);
+  ctx.fillStyle='#dbe2ca';ctx.font='900 10px system-ui';ctx.textAlign='center';ctx.fillText('NEIGHBOURHOOD PARK',2475,1393);
  // Car park retained, including its perpendicular parking bays and painted vehicles.
  ctx.fillStyle='#303b42';ctx.fillRect(1530,1548,1220,175);ctx.fillStyle='#5a6667';ctx.fillRect(1540,1558,1200,155);
  ctx.strokeStyle='#d1d5c9';ctx.lineWidth=3;ctx.strokeRect(1540,1558,1200,155);
