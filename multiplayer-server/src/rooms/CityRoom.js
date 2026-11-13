@@ -68,10 +68,13 @@ export class CityRoom extends Room{
   p.meter=clamp(Number(payload.meter)||0,0,100);
   p.consecutiveJackpots=Math.max(0,Math.min(100,Math.floor(Number(payload.consecutiveJackpots)||0)));
   if(p.awakened){
-   p.awakeFuelDrainRate=clamp(Number(payload.awakeFuelDrainRate)||p.awakeFuelDrainRate,0,3);
-   if(p.character==="restless"&&payload.jackpot===true&&!p.jackpot){
-    p.jackpot=true;p.awakeMode="jackpot";p.awakeFuel=clamp(Number(payload.awakeFuel)||100,0,100);
-    p.awakeFuelDrainRate=clamp(Number(payload.awakeFuelDrainRate)||1,0,3);
+   if(payload.awakened===false&&!p.jackpot)this.endAwakening(p);
+   else{
+    p.awakeFuelDrainRate=clamp(Number(payload.awakeFuelDrainRate)||p.awakeFuelDrainRate,0,3);
+    if(p.character==="restless"&&payload.jackpot===true&&!p.jackpot){
+     p.jackpot=true;p.awakeMode="jackpot";p.awakeFuel=clamp(Number(payload.awakeFuel)||100,0,100);
+     p.awakeFuelDrainRate=clamp(Number(payload.awakeFuelDrainRate)||1,0,3);
+    }
    }
   }
   p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.vx=n.vx;p.vy=n.vy;p.attackAnim=n.attackAnim;p.attackType=n.attackType;
@@ -235,14 +238,15 @@ detonateProjectile(client,payload={}){
   if(!owner||!target||target.dead)return false;
   if(!ignoreInvuln&&target.invuln>0)return false;
   if(this.resolveCounter(owner,target,"projectile"))return false;
+  const jackpotProtected=this.consumeJackpotFuel(target,damage);
   const incoming=Math.atan2(owner.y-target.y,owner.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
   const blocked=!unblockable&&target.block&&Math.abs(guard)<=1.18;
   if(blocked){
-   const chip=damage*.12;target.hp=Math.max(0,target.hp-chip);
+   const chip=damage*.12;if(!jackpotProtected)target.hp=Math.max(0,target.hp-chip);
    if(!target.awakened)target.meter=clamp(target.meter+damage*.12,0,100);
    target.stun=Math.max(target.stun,.0);target.invuln=.08;
   }else{
-   target.hp=Math.max(0,target.hp-damage);target.stun=Math.max(target.stun,stun);target.invuln=.12;
+   if(!jackpotProtected)target.hp=Math.max(0,target.hp-damage);target.stun=Math.max(target.stun,stun);target.invuln=.12;
    if(push>0){target.vx=clamp((Number(target.vx)||0)+Math.cos(angle)*push,-60,60);target.vy=clamp((Number(target.vy)||0)+Math.sin(angle)*push,-60,60)}
    if(!target.awakened)target.meter=clamp(target.meter+damage*.42,0,100);
    if(!owner.awakened)owner.meter=clamp(owner.meter+damage*.58,0,100);
@@ -372,6 +376,20 @@ detonateProjectile(client,payload={}){
    if(live.length)this.broadcast("combat:projectile-state",{projectiles:live,serverTime:now});
   }
  }
+ endAwakening(p){
+  if(!p)return;
+  const hadJackpot=!!p.jackpot;
+  p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;
+  p.domainStunGuaranteed=false;p.domainType="";p.domainTimer=0;p.domainWindup=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0;
+  if(hadJackpot){p.meter=Math.min(100,40+(p.consecutiveJackpots||0)*25);p.consecutiveJackpots=(p.consecutiveJackpots||0)+1}
+  else if(p.character==="restless")p.consecutiveJackpots=0;
+ }
+ consumeJackpotFuel(target,amount){
+  if(!target||!target.jackpot)return false;
+  target.awakeFuel=Math.max(0,(target.awakeFuel||0)-Math.max(0,Number(amount)||0)/3.33);
+  if(target.awakeFuel<=0)this.endAwakening(target);
+  return !!target.jackpot;
+ }
  awakenPlayer(client){
   const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;
   p.awakened=true;p.meter=0;p.awakeFuel=100;p.jackpot=false;p.awakeFuelDrainRate=100/(p.character==="restless"?121.25:60);
@@ -388,7 +406,7 @@ detonateProjectile(client,payload={}){
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
   if(Math.abs(facing)>1.18)return false;
   const projectile=["bullet","projectile","explosion"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-  const hurt=(target,amount,stun,push)=>{target.hp=Math.max(0,target.hp-amount);target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+nx*push,-60,60);target.vy=clamp((Number(target.vy)||0)+ny*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
+  const hurt=(target,amount,stun,push)=>{if(!this.consumeJackpotFuel(target,amount))target.hp=Math.max(0,target.hp-amount);target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+nx*push,-60,60);target.vy=clamp((Number(target.vy)||0)+ny*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
   defender.counterKind="";defender.counterWindow=0;
   if(kind==="sukunaCleaveCounter"&&(projectile||incomingType==="domain"||d>220))return false;
   if(kind==="yutaOutburst"){defender.invuln=Math.max(defender.invuln,.5);if(!projectile){attacker.stun=Math.max(attacker.stun,.48);attacker.x=clamp(attacker.x+nx*8,45,WORLD_WIDTH-45);attacker.y=clamp(attacker.y+ny*8,45,WORLD_HEIGHT-45)}return true}
@@ -416,6 +434,7 @@ detonateProjectile(client,payload={}){
   const blockedDamage=Number.isFinite(blockedValue)?clamp(blockedValue,0,250):amount*.12;
   if(this.resolveCounter(a,target,incomingType))return;
   if(target.invuln>0&&!ignoreInvuln)return;
+  const jackpotProtected=this.consumeJackpotFuel(target,amount);
   const grab=grabSettings(a.character,move);
   if(grab){
    if(target.vehicleId)return;
@@ -425,13 +444,13 @@ detonateProjectile(client,payload={}){
   const incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
   const frontGuard=target.block&&Math.abs(guard)<=1.18;
   if((frontGuard||blockAllSides)&&!unblockable){
-   target.hp=Math.max(0,target.hp-blockedDamage);
+   if(!jackpotProtected)target.hp=Math.max(0,target.hp-blockedDamage);
    if(!target.awakened)target.meter=clamp(target.meter+amount*.12,0,100);
    target.invuln=.08;
    if(target.hp<=0)this.killPlayer(target);
    return;
   }
-  target.hp=Math.max(0,target.hp-amount);
+  if(!jackpotProtected)target.hp=Math.max(0,target.hp-amount);
   target.stun=Math.max(target.stun,stun);
   target.invuln=invuln;
   target.vx=clamp((Number(target.vx)||0)+kx,-60,60);
@@ -521,7 +540,7 @@ killPlayer(p){
     if(now-(this.lastHitAt.get(key)||0)<680)continue;
     this.lastHitAt.set(key,now);
     if(this.resolveCounter(p,target,"vehicle"))continue;
-    target.hp=Math.max(0,target.hp-hitDamage);
+    if(!this.consumeJackpotFuel(target,hitDamage))target.hp=Math.max(0,target.hp-hitDamage);
     target.stun=Math.max(target.stun,.5+speedRatio*.45);target.invuln=.12;
     target.vx=clamp((Number(target.vx)||0)+hx*push,-60,60);
     target.vy=clamp((Number(target.vy)||0)+hy*push,-60,60);
@@ -532,7 +551,7 @@ killPlayer(p){
   }
  }
 
- tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);if(p.domainWindup>0){p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0)p.domainTimer=p.domainDuration||0}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRadius=0;p.domainCastAt=0}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
+ tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);if(p.awakened&&p.awakeFuelDrainRate>0){p.awakeFuel=Math.max(0,p.awakeFuel-p.awakeFuelDrainRate*dt);if(p.awakeFuel<=0)this.endAwakening(p)}if(p.jackpot&&!p.dead&&!p.domainClashId)p.hp=Math.min(p.maxHp,p.hp+4*dt);if(p.domainWindup>0){p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0){p.domainTimer=p.domainDuration||0;if(p.character==="restless"&&p.domainType==="hakari"&&p.domainStunGuaranteed){let nearest=null,best=Infinity;for(const [otherId,other] of this.state.players){if(otherId===id||other.dead)continue;const d=distance(p,other);if(d<best){best=d;nearest=other}}if(nearest&&best<600){nearest.stun=Math.max(nearest.stun,.7);nearest.invuln=0}p.domainStunGuaranteed=false}}}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRadius=0;p.domainCastAt=0;p.domainStunGuaranteed=false}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.domainStunGuaranteed=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
   if(!target.grabbedBy)continue;
   const owner=this.state.players.get(target.grabbedBy);
   if(!owner||owner.dead||owner.activeGrabTarget!==targetId){if(owner)owner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.24);continue}
@@ -548,7 +567,7 @@ killPlayer(p){
   else{target.x=clamp(owner.x+fx*52,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*52,45,WORLD_HEIGHT-45)}
   target.face=angle+Math.PI;target.block=false;target.stun=Math.max(target.stun,.08);
   target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
-  if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabKind==="sukunaFlurry"?.095:.2;target.hp=Math.max(0,target.hp-target.grabTickDamage);target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
+  if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabKind==="sukunaFlurry"?.095:.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage))target.hp=Math.max(0,target.hp-target.grabTickDamage);target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
   if(target.hp<=0){this.killPlayer(target);continue}
   if(target.grabRemaining<=0){
    const finish=target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
