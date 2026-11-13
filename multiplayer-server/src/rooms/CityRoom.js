@@ -40,7 +40,7 @@ export class CityRoom extends Room{
    console.log("[city] reconnect window expired",client.sessionId);
   }
  }
- onReconnect(client){const p=this.state.players.get(client.sessionId);if(p)p.connected=true;console.log("[city] reconnected",p?.name||client.sessionId)}
+ onReconnect(client){const p=this.state.players.get(client.sessionId);if(p){p.connected=true;this.lastActivityAt.set(client.sessionId,Date.now())}console.log("[city] reconnected",p?.name||client.sessionId)}
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
