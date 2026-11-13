@@ -1940,10 +1940,10 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  if(onlineMode&&onlineRoom&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player))){
   const moveByKind={yujiDrag:'yujiCursedDrag',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge'};
   const move=moveByKind[kind]||String(f.motion&&f.motion.name||f.onlineLastMove||kind).slice(0,48);
-  const grabTickDamage=kind==='yujiDrag'?1.1:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*(MAHITO_MODES[f.soulMode]||MAHITO_MODES[0]).damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
+  const grabTickDamage=kind==='yujiDrag'?1.1:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*(MAHITO_MODES[f.soulMode]||MAHITO_MODES[0]).damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
   const grabTickInterval=kind==='yujiDrag'?.25:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
   const grabKnockback=kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:kind==='toadPull'?0:13;
-  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:Number(finishDamage)||0,grabKnockback})}catch(e){}}
+  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback})}catch(e){}}
   f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;
   t.capturedBy=f;t.block=false;t.stun=Math.max(t.stun,duration+.2);t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
   setMotion(f,move,duration,angle,t);return true;
