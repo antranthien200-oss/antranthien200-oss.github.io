@@ -117,14 +117,15 @@ export class CityRoom extends Room{
  }
 combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),kind=String(payload.kind||"");
-  if(!p||p.dead||p.vehicleId||p.stun>0||p.grabbedBy||p.activeGrabTarget)return;
+  if(!p||p.dead||p.vehicleId||(p.stun>0&&kind!=="dash")||p.grabbedBy||p.activeGrabTarget)return;
   if(!["m1","dash","special","awaken","domain02","1","2","3","4"].includes(kind))return;
   if(kind==="domain02"&&(p.character!=="honored"||(p.awakened===false&&p.meter<100)))return;
   const counter=counterSettings(p.character,kind,p.awakened);
   const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten");
-  const cooldown=kind==="domain02"?24:modeToggle?.08:(counter?.cooldown??(kind==="m1"?.12:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
+  const cooldown=kind==="domain02"?24:modeToggle?.08:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
   const now=Date.now(),times=this.lastActionAt.get(id)||new Map();
   if(now-(times.get(kind)||0)<cooldown*1000)return;
+  if(kind==="dash"&&p.stun>0){p.stun=0;p.invuln=Math.max(p.invuln,.24)}
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
   if(kind==="awaken"&&!modeToggle){if(p.awakened||p.meter<100)return;this.awakenPlayer(client)}
   if(kind==="domain02"){
