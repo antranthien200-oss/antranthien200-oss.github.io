@@ -743,6 +743,25 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  background:rgba(116,137,155,.46);
  box-shadow:0 0 0 1px rgba(0,0,0,.24),inset 0 0 0 3px rgba(255,255,255,.16);
 }
+
+/* Live accessory preview: show the current fighter and the item being hovered. */
+.accessory-preview-layout{display:grid;grid-template-columns:minmax(190px,230px) minmax(0,1fr);gap:13px;align-items:start}
+.accessory-preview-panel{position:sticky;top:0;overflow:hidden;padding:12px;border:1px solid #78cfff4a;border-radius:6px;background:linear-gradient(155deg,#13253a,#091321);box-shadow:inset 0 0 22px #4ebfff0a}
+.accessory-preview-kicker{color:#84dfff;font-size:8px;font-weight:1000;letter-spacing:.16em}
+.accessory-preview-name{margin:5px 0 8px;color:#f2f7ff;font-size:12px;font-weight:1000;letter-spacing:.08em}
+#accessoryPreviewCanvas{display:block;width:100%;height:auto;aspect-ratio:13/9;border:1px solid #ffffff20;border-radius:4px;background:#08111d}
+.accessory-preview-label{min-height:24px;padding-top:9px;color:#ffe0a1;font-size:8px;font-weight:950;letter-spacing:.1em;line-height:1.45}
+.accessory-preview-tip{padding-top:8px;border-top:1px solid #ffffff17;color:#8297b2;font-size:7px;font-weight:900;letter-spacing:.12em}
+.accessory-preview-items{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;min-width:0}
+.accessory-preview-items .menu-option{min-height:132px;padding:11px}
+.accessory-preview-items .option-icon{font-size:29px;margin-bottom:5px}
+@media(max-width:640px){
+ .accessory-preview-layout{grid-template-columns:minmax(0,1fr);gap:10px}
+ .accessory-preview-panel{position:relative;padding:10px}
+ #accessoryPreviewCanvas{max-height:170px;width:auto;max-width:100%;margin:0 auto}
+ .accessory-preview-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .accessory-preview-items .menu-option{min-height:120px;padding:10px}
+}
 </style>
 </head>
 <body>
@@ -947,14 +966,53 @@ const ACCESSORY_SLOTS=[
  ]}
 ];
 const accessoryLoadouts=Object.fromEntries(Object.keys(CHARS).map(k=>[k,{head:'none',face:'none',neck:'none',aura:'none'}]));
-let accessorySlot='head',menuView='';
+let accessorySlot='head',menuView='',accessoryPreviewHoverId=null,accessoryPreviewFrame=0;
 function getFighterLook(f){return CHARS[f.char]||CHARS.honored}
-function getFighterAccessories(f){return f&&f.team==='player'?(accessoryLoadouts[f.char]||{}):{}}
+function getFighterAccessories(f){return f&&f.accessoryPreview?f.accessoryPreview:(f&&f.team==='player'?(accessoryLoadouts[f.char]||{}):{})}
 function findAccessory(slotId,itemId){const slot=ACCESSORY_SLOTS.find(s=>s.id===slotId);return slot&&slot.items.find(item=>item.id===itemId)}
 function getAccessorySummary(char){const loadout=accessoryLoadouts[char]||{};const names=[];for(const slot of ACCESSORY_SLOTS){const item=findAccessory(slot.id,loadout[slot.id]);if(item)names.push(item.name)}return names.length?names.join(' · '):'NONE EQUIPPED'}
 function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentAccessoriesSummary').textContent=getAccessorySummary(selected)}
 function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub()}
-function closeMenuSub(){$('menuSub').hidden=true;menuView=''}
+function closeMenuSub(){
+ $('menuSub').hidden=true;menuView='';accessoryPreviewHoverId=null;
+ if(accessoryPreviewFrame){cancelAnimationFrame(accessoryPreviewFrame);accessoryPreviewFrame=0}
+}
+function drawAccessoryPreview(itemId=null){
+ const canvas=$('accessoryPreviewCanvas');if(!canvas)return;
+ const previewContext=canvas.getContext('2d');if(!previewContext)return;
+ const oldContext=ctx,scale=2,previewChar=selected,loadout={...(accessoryLoadouts[previewChar]||{})};
+ if(itemId!==null)loadout[accessorySlot]=itemId;
+ const previewFighter={char:previewChar,team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:loadout};
+ ctx=previewContext;
+ try{
+  ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,260,180);ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle='#08111d';ctx.fillRect(0,0,260,180);
+  ctx.strokeStyle='#ffffff0b';ctx.lineWidth=1;
+  for(let x=10;x<260;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,180);ctx.stroke()}
+  for(let y=10;y<180;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(260,y);ctx.stroke()}
+  const cx=130,headY=76,theme=getStunTintedTheme(previewFighter);
+  ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(cx,133,54,11,0,0,Math.PI*2);ctx.fill();
+  drawAccessoryAura(previewFighter,cx,headY,1.12);
+  drawFloatingHand(cx-39,headY+35,-.2,theme,1.2);
+  drawFloatingHand(cx+39,headY+35,.2,theme,1.2);
+  ctx.save();ctx.translate(cx,headY);
+  drawCuteHead(previewFighter,CHARS[previewChar],theme);
+  drawAccessoryOverlays(previewFighter,0,0);
+  ctx.restore();
+ }finally{ctx=oldContext}
+ const label=$('accessoryPreviewLabel'),item=itemId===null?null:findAccessory(accessorySlot,itemId);
+ if(label)label.textContent=item?('PREVIEWING · '+item.name):(accessoryLoadouts[previewChar][accessorySlot]&&accessoryLoadouts[previewChar][accessorySlot]!=='none'?'EQUIPPED · '+(findAccessory(accessorySlot,accessoryLoadouts[previewChar][accessorySlot])?.name||'ACCESSORY'):'NO '+(ACCESSORY_SLOTS.find(slot=>slot.id===accessorySlot)?.label||'ACCESSORY')+' EQUIPPED');
+}
+function startAccessoryPreviewAnimation(){
+ if(accessoryPreviewFrame)return;
+ const tick=()=>{
+  accessoryPreviewFrame=0;
+  if(menuView!=='accessory'||$('menuSub').hidden)return;
+  drawAccessoryPreview(accessoryPreviewHoverId);
+  accessoryPreviewFrame=requestAnimationFrame(tick);
+ };
+ tick();
+}
 function renderMenuSub(){
  const isCharacter=menuView==='character',isOnline=menuView==='online',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;
  $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':isOnline?'ONLINE MULTIPLAYER':'CUSTOMIZATION';
@@ -969,9 +1027,11 @@ function renderMenuSub(){
   tabWrap.innerHTML=ACCESSORY_SLOTS.map(s=>'<button class="accessory-tab '+(accessorySlot===s.id?'active':'')+'" data-accessory-slot="'+s.id+'">'+s.label+'</button>').join('');
   const slot=ACCESSORY_SLOTS.find(s=>s.id===accessorySlot)||ACCESSORY_SLOTS[0],equipped=accessoryLoadouts[selected][slot.id]||'none';
   const choices=[{id:'none',name:'REMOVE',icon:'✕',desc:'Unequip the current item from this slot.'},...slot.items];
-  html=choices.map(item=>'<button class="menu-option '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'"><span class="option-icon">'+item.icon+'</span><span class="accessory-chip">'+slot.label+'</span><span class="option-name">'+item.name+'</span><span class="option-desc">'+item.desc+'</span></button>').join('');
+  const itemCards=choices.map(item=>'<button class="menu-option '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'"><span class="option-icon">'+item.icon+'</span><span class="accessory-chip">'+slot.label+'</span><span class="option-name">'+item.name+'</span><span class="option-desc">'+item.desc+'</span></button>').join('');
+  html='<div class="accessory-preview-layout"><aside class="accessory-preview-panel"><div class="accessory-preview-kicker">LIVE CHARACTER PREVIEW</div><div class="accessory-preview-name">'+CHARS[selected].name+'</div><canvas id="accessoryPreviewCanvas" width="520" height="360" aria-label="Character accessory preview"></canvas><div id="accessoryPreviewLabel" class="accessory-preview-label"></div><div class="accessory-preview-tip">HOVER AN ITEM TO TRY IT ON</div></aside><div class="accessory-preview-items">'+itemCards+'</div></div>';
  }
  $('menuSubCards').innerHTML=html;
+ if(!isOnline&&!isCharacter){accessoryPreviewHoverId=null;drawAccessoryPreview();startAccessoryPreviewAnimation()}
  $('menuSubSelected').textContent=isOnline?'ONE SHARED SERVER · 16 PLAYER LIMIT':isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
  $('menuSubDone').innerHTML=isOnline?'BACK <span>→</span>':'DONE <span>→</span>';
  if(isOnline){
@@ -981,7 +1041,13 @@ function renderMenuSub(){
  }
  document.querySelectorAll('[data-character]').forEach(btn=>btn.addEventListener('click',()=>{selected=btn.dataset.character;updateMenuSummary();closeMenuSub()}));
  document.querySelectorAll('[data-accessory-slot]').forEach(btn=>btn.addEventListener('click',()=>{accessorySlot=btn.dataset.accessorySlot;renderMenuSub()}));
- document.querySelectorAll('[data-accessory]').forEach(btn=>btn.addEventListener('click',()=>{accessoryLoadouts[selected][accessorySlot]=btn.dataset.accessory;updateMenuSummary();renderMenuSub()}));
+ document.querySelectorAll('[data-accessory]').forEach(btn=>{
+  const previewItem=()=>{accessoryPreviewHoverId=btn.dataset.accessory;drawAccessoryPreview(accessoryPreviewHoverId)};
+  const restorePreview=()=>{accessoryPreviewHoverId=null;drawAccessoryPreview()};
+  btn.addEventListener('mouseenter',previewItem);btn.addEventListener('mouseleave',restorePreview);
+  btn.addEventListener('focus',previewItem);btn.addEventListener('blur',restorePreview);
+  btn.addEventListener('click',()=>{accessoryLoadouts[selected][accessorySlot]=btn.dataset.accessory;accessoryPreviewHoverId=null;updateMenuSummary();renderMenuSub()});
+ });
 }
 $('switchCharBtn').addEventListener('click',()=>showMenuSub('character'));
 $('switchAccessoriesBtn').addEventListener('click',()=>showMenuSub('accessory'));
