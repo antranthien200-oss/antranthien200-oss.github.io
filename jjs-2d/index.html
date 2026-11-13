@@ -1103,8 +1103,9 @@ function applyOnlineRoomState(state){
    // Keep local movement predicted; gently correct only real drift instead of pulling
    // the player back toward every slightly older server snapshot.
    const dx=Number(local.x)-player.x,dy=Number(local.y)-player.y,d=Math.hypot(dx,dy);
-   if(d>1){
-    const correction=d>260?.22:d>90?.045:.008;
+   if(d>480){player.x=Number(local.x);player.y=Number(local.y)}
+   else if(d>1){
+    const correction=d>100?.025:.006;
     player.x+=dx*correction;player.y+=dy*correction;
    }
   }
@@ -1123,9 +1124,13 @@ function applyOnlineRoomState(state){
   const snapshotX=Number(net.x),snapshotY=Number(net.y),snapshotFace=Number.isFinite(Number(net.face))?Number(net.face):remote.networkFace||remote.face,snapshotTime=performance.now();
   if(Number.isFinite(snapshotX)&&Number.isFinite(snapshotY)){
    if(!remote.networkSnapshots)remote.networkSnapshots=[];
-   const history=remote.networkSnapshots,last=history[history.length-1],faceDelta=last?Math.atan2(Math.sin(snapshotFace-last.face),Math.cos(snapshotFace-last.face)):Infinity;
-   if(!last||Math.hypot(snapshotX-last.x,snapshotY-last.y)>.15||Math.abs(faceDelta)>.002){
-    history.push({time:last?Math.max(snapshotTime,last.time+.01):snapshotTime,x:snapshotX,y:snapshotY,face:snapshotFace});
+   const history=remote.networkSnapshots,last=history[history.length-1],jumpDistance=last?Math.hypot(snapshotX-last.x,snapshotY-last.y):0,faceDelta=last?Math.atan2(Math.sin(snapshotFace-last.face),Math.cos(snapshotFace-last.face)):Infinity;
+   if(!last||jumpDistance>260||jumpDistance>.15||Math.abs(faceDelta)>.002){
+    // Respawns and explicit teleports should start a fresh buffer, not interpolate
+    // across the entire map as though the player moved there normally.
+    if(last&&jumpDistance>260)history.length=0;
+    const previous=history[history.length-1];
+    history.push({time:previous?Math.max(snapshotTime,previous.time+.01):snapshotTime,x:snapshotX,y:snapshotY,face:snapshotFace});
     while(history.length>8)history.shift();
    }
    remote.networkX=snapshotX;remote.networkY=snapshotY;remote.networkFace=snapshotFace;
