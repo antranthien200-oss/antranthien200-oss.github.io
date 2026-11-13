@@ -103,14 +103,19 @@ export class CityRoom extends Room{
 combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),kind=String(payload.kind||"");
   if(!p||p.dead||p.vehicleId||p.stun>0||p.grabbedBy||p.activeGrabTarget)return;
-  if(!["m1","dash","special","awaken","1","2","3","4"].includes(kind))return;
+  if(!["m1","dash","special","awaken","domain02","1","2","3","4"].includes(kind))return;
+  if(kind==="domain02"&&(p.character!=="honored"||(p.awakened===false&&p.meter<100)))return;
   const counter=counterSettings(p.character,kind,p.awakened);
   const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten");
-  const cooldown=modeToggle?.08:(counter?.cooldown??(kind==="m1"?.12:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
+  const cooldown=kind==="domain02"?24:modeToggle?.08:(counter?.cooldown??(kind==="m1"?.12:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
   const now=Date.now(),times=this.lastActionAt.get(id)||new Map();
   if(now-(times.get(kind)||0)<cooldown*1000)return;
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
   if(kind==="awaken"&&!modeToggle){if(p.awakened||p.meter<100)return;this.awakenPlayer(client)}
+  if(kind==="domain02"){
+   if(!p.awakened)p.meter=0;
+   p.domainType="void02";p.domainTimer=.22;p.domainWindup=0;p.domainDuration=.22;p.domainRadius=0;p.domainX=p.x;p.domainY=p.y;p.domainCastAt=now;
+  }
   times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
   this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,serverTime:now,face:p.face});
@@ -535,5 +540,5 @@ killPlayer(p){
    if(target.hp<=0)this.killPlayer(target);
   }
  }
-this.tickProjectiles(dt,now);this.tickFireZones(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=350){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||o.domainType!=="void"||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||760,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r)continue;t.stun=Math.max(t.stun,.42);t.invuln=0}}}}
+this.tickProjectiles(dt,now);this.tickFireZones(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=350){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||o.domainType!=="void"||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||Math.hypot(WORLD_WIDTH,WORLD_HEIGHT),120,Math.hypot(WORLD_WIDTH,WORLD_HEIGHT));for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r)continue;t.stun=Math.max(t.stun,.42);t.invuln=0}}}}
 }
