@@ -73,41 +73,11 @@
   .primary{appearance:none;border:0;border-radius:6px;padding:13px 20px;background:linear-gradient(100deg,#ee3f60,#ff765e);color:white;font-weight:1000;letter-spacing:.16em;font-size:12px;cursor:pointer;box-shadow:0 7px 22px #f34a6440;transition:.15s;width:100%}
   .primary:hover{filter:brightness(1.1);transform:translateY(-1px)}
   .footnote{font-size:9px;color:#8492a5;margin-top:11px;line-height:1.4}
-  #pause{position:fixed;inset:0;z-index:6;display:none;align-items:center;justify-content:center;padding:22px;background:radial-gradient(ellipse at 50% 45%,rgba(18,30,48,.54),rgba(3,6,12,.88) 72%),rgba(3,6,12,.72);backdrop-filter:blur(9px) saturate(.78);-webkit-backdrop-filter:blur(9px) saturate(.78);color:#f5f7ff}
-  #pause:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.15;background-image:linear-gradient(rgba(176,202,236,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(176,202,236,.22) 1px,transparent 1px);background-size:42px 42px;mask-image:radial-gradient(ellipse at center,#000 10%,transparent 78%)}
-  #pause .pause-shell{position:relative;width:min(760px,94vw);overflow:hidden;border:1px solid rgba(190,211,241,.28);border-radius:12px;background:linear-gradient(118deg,rgba(14,22,35,.98),rgba(8,13,23,.98) 58%,rgba(13,19,30,.98));box-shadow:0 28px 100px rgba(0,0,0,.62),inset 0 1px rgba(255,255,255,.07)}
-  #pause .pause-shell:before{content:"";position:absolute;left:0;top:0;width:4px;height:100%;background:linear-gradient(180deg,#ff5367 0%,#ff8a67 44%,rgba(255,138,103,0) 100%)}
-  #pause .pause-topline{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:17px 22px;border-bottom:1px solid rgba(209,224,246,.12);background:rgba(255,255,255,.018)}
-  #pause .pause-brand{display:flex;align-items:center;gap:11px;color:#eaf0fb;font-size:10px;font-weight:950;letter-spacing:.19em}
-  #pause .pause-brand-mark{width:31px;height:31px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.32);border-radius:6px;background:linear-gradient(145deg,#27364b,#111a29);font-size:15px;color:#fff}
-  #pause .pause-brand small{display:block;margin-top:4px;color:#8090a8;font-size:8px;letter-spacing:.22em}
-  #pause .pause-state{display:flex;align-items:center;gap:8px;color:#b9c7dc;font-size:9px;font-weight:900;letter-spacing:.15em}
-  #pause .pause-state i{width:7px;height:7px;border-radius:50%;background:#ff6676;box-shadow:0 0 12px #ff5367}
-  #pause .pause-main{display:grid;grid-template-columns:1.08fr .92fr;min-height:300px}
-  #pause .pause-copy{display:flex;flex-direction:column;justify-content:center;padding:36px 38px 32px}
-  #pause .pause-eyebrow{display:flex;align-items:center;gap:9px;color:#91a2ba;font-size:9px;font-weight:950;letter-spacing:.22em}
-  #pause .pause-eyebrow:before{content:"";width:25px;height:2px;background:#ff6474}
-  #pause h2{margin:17px 0 10px;font-size:clamp(48px,7vw,76px);line-height:.9;font-weight:1000;letter-spacing:-.065em;color:#f7f9ff;text-shadow:0 5px 24px rgba(0,0,0,.4)}
-  #pause h2 span{color:#ff5b70}
-  #pause .pause-copy p{max-width:330px;margin:0;color:#aab8cc;font-size:12px;line-height:1.7}
-  #pause .pause-rule{width:100%;max-width:300px;height:1px;margin:25px 0 16px;background:linear-gradient(90deg,rgba(184,205,235,.34),transparent)}
-  #pause .pause-hint{display:flex;align-items:center;gap:9px;color:#71839b;font-size:8px;font-weight:900;letter-spacing:.16em}
-  #pause kbd{min-width:34px;padding:5px 7px;border:1px solid rgba(210,225,246,.22);border-radius:4px;background:rgba(255,255,255,.055);color:#e1e9f6;font:900 9px inherit;text-align:center}
-  #pause .pause-actions{display:flex;flex-direction:column;justify-content:center;gap:10px;padding:28px 30px;border-left:1px solid rgba(209,224,246,.11);background:linear-gradient(145deg,rgba(255,255,255,.025),rgba(255,255,255,0))}
-  #pause .pause-actions-label{margin:0 0 4px 2px;color:#8192aa;font-size:8px;font-weight:950;letter-spacing:.24em}
-  #pause button{appearance:none;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;min-height:49px;margin:0;padding:0 15px;border:1px solid rgba(200,218,243,.2);border-radius:6px;background:rgba(255,255,255,.045);color:#e9eff9;font:900 10px inherit;letter-spacing:.14em;text-align:left;cursor:pointer;transition:transform .16s,border-color .16s,background .16s,filter .16s}
-  #pause button:hover{transform:translateX(3px);border-color:rgba(228,238,255,.56);background:rgba(255,255,255,.085);filter:brightness(1.12)}
-  #pause button:focus-visible{outline:2px solid #ff7b89;outline-offset:3px}
-  #pause button .pause-button-left{display:flex;align-items:center;gap:12px}
-  #pause button .pause-button-icon{width:24px;height:24px;display:grid;place-items:center;border-radius:4px;background:rgba(255,255,255,.075);color:#d9e4f6;font-size:14px}
-  #pause button .pause-button-key{color:#7e91aa;font-size:8px;letter-spacing:.1em}
-  #pause #resumeBtn{border-color:rgba(255,91,112,.7);background:linear-gradient(105deg,#ed405f,#ff765f);box-shadow:0 9px 28px rgba(239,65,91,.24);color:#fff}
-  #pause #resumeBtn .pause-button-icon{background:rgba(255,255,255,.16);color:#fff}
-  #pause #resumeBtn .pause-button-key{color:rgba(255,255,255,.78)}
-  #pause #restartBtn{border-color:rgba(145,176,214,.2)}
-  #pause #menuBtn{border-color:rgba(145,176,214,.12);background:rgba(4,9,17,.28);color:#aebbd0}
-  #pause .pause-bottomline{display:flex;justify-content:space-between;gap:12px;padding:11px 22px;border-top:1px solid rgba(209,224,246,.1);color:#64748a;font-size:7px;font-weight:900;letter-spacing:.2em}
-  @media(max-width:620px){#pause{padding:13px}#pause .pause-shell{width:min(440px,96vw);border-radius:10px}#pause .pause-topline{padding:13px 15px}#pause .pause-main{grid-template-columns:1fr;min-height:0}#pause .pause-copy{padding:25px 24px 17px}#pause h2{margin:12px 0 8px;font-size:54px}#pause .pause-copy p{font-size:11px}#pause .pause-rule{margin:16px 0 10px}#pause .pause-actions{padding:17px 20px 22px;border-left:0;border-top:1px solid rgba(209,224,246,.11)}#pause .pause-bottomline{padding:10px 15px;font-size:6px}#pause .pause-state{font-size:7px;letter-spacing:.1em}}
+  #pause{position:fixed;inset:0;z-index:4;display:none;align-items:center;justify-content:center;background:#05080dbb;backdrop-filter:blur(5px)}
+  #pause .pausebox{width:min(330px,90vw);padding:24px;background:#111925;border:1px solid #ffffff33;border-radius:9px;text-align:center}
+  #pause h2{margin:0 0 7px;font-size:28px;letter-spacing:.1em}
+  #pause p{color:#b3bfce;font-size:12px;margin:0 0 18px}
+  #pause button{margin-top:8px}
   #hitFlash{position:fixed;inset:0;pointer-events:none;opacity:0;background:radial-gradient(circle,transparent 45%,#ff344b55 100%)}
   @media(max-width:640px){.toprow{left:8px;right:8px;top:8px}.fighter-card{width:42vw;padding:8px}.fighter-name{font-size:10px}.fighter-sub{font-size:8px}#roundLabel{top:83px}#comboDisplay{top:112px;padding:5px 9px}#comboDisplay .combo-count{font-size:18px}#comboDisplay .combo-label{font-size:7px}.controls{display:none}.bottom{bottom:9px}.slot{width:61px;height:54px}.slot .slotname{font-size:8px}#modeTag{display:none}.menu-grid{grid-template-columns:1fr}.roster{grid-template-columns:repeat(3,1fr)}.fighter-pick{min-height:103px}}
 
@@ -847,30 +817,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
   </section></div>
 </div>
 <div id="onlinePlayersHud"><span id="onlinePlayersCount">1 / 16 PLAYERS</span><button type="button" id="onlineLeaveBtn">LEAVE</button></div>
-<div id="pause" aria-hidden="true">
-  <section class="pause-shell" role="dialog" aria-modal="true" aria-labelledby="pauseTitle">
-    <div class="pause-topline">
-      <div class="pause-brand"><span class="pause-brand-mark">Ⅱ</span><span>BALLS SHENANIGAN<small>IN-GAME MENU</small></span></div>
-      <div class="pause-state"><i></i> LOCAL PAUSE</div>
-    </div>
-    <div class="pause-main">
-      <div class="pause-copy">
-        <div class="pause-eyebrow">SYSTEM MENU / 01</div>
-        <h2 id="pauseTitle">PAUSED<span>.</span></h2>
-        <p>Take a breath. Your local game is paused until you jump back into the fight.</p>
-        <div class="pause-rule"></div>
-        <div class="pause-hint"><kbd>ESC</kbd> TO RESUME</div>
-      </div>
-      <div class="pause-actions">
-        <div class="pause-actions-label">QUICK ACTIONS</div>
-        <button class="pause-primary" id="resumeBtn" type="button"><span class="pause-button-left"><span class="pause-button-icon">▶</span>RESUME MATCH</span><span class="pause-button-key">ESC ↵</span></button>
-        <button id="restartBtn" type="button"><span class="pause-button-left"><span class="pause-button-icon">↻</span>RESTART MATCH</span><span class="pause-button-key">RESET</span></button>
-        <button id="menuBtn" type="button"><span class="pause-button-left"><span class="pause-button-icon">⌂</span>CHARACTER SELECT</span><span class="pause-button-key">MENU</span></button>
-      </div>
-    </div>
-    <div class="pause-bottomline"><span>BALLS SHENANIGAN / CITY FIGHT</span><span>PAUSE MENU</span></div>
-  </section>
-</div>
+<div id="pause"><div class="pausebox"><h2>PAUSED</h2><p>Catch your breath. The fight is still waiting.</p><button class="primary" id="resumeBtn">RESUME · ESC</button><button class="primary" id="restartBtn" style="background:linear-gradient(100deg,#53677d,#35465b);box-shadow:none">RESTART MATCH</button><button class="primary" id="menuBtn" style="background:linear-gradient(100deg,#303d50,#202a39);box-shadow:none">CHARACTER SELECT</button></div></div>
 <script>
 (() => {
 'use strict';
