@@ -19,7 +19,7 @@ export class CityRoom extends Room{
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
-  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
+  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
   this.onMessage("network:ping",(client,payload={})=>{const sentAt=Number(payload.sentAt);if(Number.isFinite(sentAt))client.send("network:pong",{sentAt})});
   this.setSimulationInterval(ms=>this.tick(ms/1000),33);
  }
@@ -58,6 +58,32 @@ export class CityRoom extends Room{
   }
   this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});
   console.log("[city] left",p?.name||sessionId,this.state.players.size+"/16");
+ }
+ resetCharacter(client){
+  const id=client.sessionId,p=this.state.players.get(id);if(!p)return;
+  const now=Date.now();
+  const others=[];for(const [otherId,other] of this.state.players)if(otherId!==id)others.push(other);
+  const spawn=findAvailableSpawn(others);
+  if(p.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget="";}
+  if(p.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
+  const clash=p.domainClashId?this.domainClashes.get(p.domainClashId):null;
+  if(clash)this.finishDomainClash(clash,null,"RESET");
+  if(p.vehicleId){const car=this.state.world.cars.get(p.vehicleId);if(car&&car.occupiedBy===id){car.occupiedBy="";car.speed=0;car.vx=0;car.vy=0}}
+  for(const [projectileId,projectile] of this.projectiles)if(projectile.ownerId===id){this.projectiles.delete(projectileId);this.broadcast("combat:projectile-end",{sessionId:id,id:projectile.clientId})}
+  for(const [zoneId,zone] of this.fireZones)if(zone.ownerId===id){this.fireZones.delete(zoneId);this.broadcast("combat:fire-zone-end",{sessionId:id,id:zoneId})}
+  p.x=spawn.x;p.y=spawn.y;p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.moveScale=1;p.aimX=spawn.x;p.aimY=spawn.y;
+  p.face=0;p.walk=0;p.jump=0;p.block=false;p.attackAnim=0;p.attackType="";
+  p.motionName="";p.motionProgress=0;p.motionDuration=1;p.motionStartedAt=0;p.lastActionKind="";p.lastActionAt=0;
+  p.hp=p.maxHp=CHARACTER_HP[p.character]||100;p.meter=0;p.stun=0;p.invuln=1.2;p.dead=false;p.respawnTimer=0;
+  p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.consecutiveJackpots=0;p.domainStunGuaranteed=false;
+  p.vehicleId="";p.trashCanId="";
+  p.domainType="";p.domainTimer=0;p.domainWindupStart=0;p.domainRequestType="";p.domainRadius=0;p.domainX=spawn.x;p.domainY=spawn.y;p.domainWindup=0;p.domainDuration=0;p.domainCastAt=0;p.domainClashId="";
+  p.counterKind="";p.counterWindow=0;p.sukunaFireCast=0;
+  p.tenDogActive=false;p.tenDogCharges=0;p.tenDogTimer=0;p.tenGardenTimer=0;p.soulMode=0;p.convergenceOrbs=0;p.tenBase=false;p.shadowTimer=0;
+  p.rikaSummoned=false;p.rikaMode=false;p.reserveBallWindow=0;p.yutaCopyIndex=0;
+  p.grabbedBy="";p.activeGrabTarget="";p.grabKind="";p.grabRemaining=0;p.grabDuration=0;p.grabTick=0;p.grabTickInterval=0;p.grabTickDamage=0;p.grabFinishDamage=0;p.grabKnockback=0;
+  this.lastActionAt.delete(id);this.lastCarControlAt.delete(id);this.lastUpdateAt.set(id,now);
+  client.send("player:reset",{character:p.character,x:p.x,y:p.y,invuln:p.invuln});
  }
  updatePlayer(client,payload){
   const id=client.sessionId,p=this.state.players.get(id);if(!p||!payload||typeof payload!=="object")return;
