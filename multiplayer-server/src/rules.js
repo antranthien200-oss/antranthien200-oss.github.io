@@ -1,6 +1,6 @@
 export const MAX_PLAYERS=16,WORLD_WIDTH=3300,WORLD_HEIGHT=2000,TRAIN_TRACK_Y=1810;
 export const CHARACTER_IDS=Object.freeze(["honored","vessel","restless","ten","perfection","todo","choso","yuta","trashman"]);
-export const CHARACTER_HP=Object.freeze({honored:100,vessel:85,restless:105,ten:92,perfection:95,todo:100,choso:95,yuta:100,trashman:100});
+export const CHARACTER_HP=Object.freeze({honored:100,vessel:85,restless:100,ten:85,perfection:100,todo:110,choso:100,yuta:90,trashman:105});
 export const DOMAIN_BY_CHARACTER=Object.freeze({honored:["void","void02"],vessel:["shrine"],restless:["hakari"],perfection:["soul"],yuta:["yuta"],trashman:["trash"]});
 export const BUILDING_LAYOUT=Object.freeze([
 {x:95,y:50,w:365,h:215,name:"SHOP"},{x:590,y:55,w:365,h:215,name:"CAFE"},{x:115,y:315,w:365,h:190,name:"APARTMENTS"},{x:620,y:315,w:365,h:190,name:"BOOKSTORE"},{x:1535,y:50,w:410,h:215,name:"OFFICE"},{x:2220,y:45,w:505,h:215,name:"HOTEL"},{x:1555,y:315,w:410,h:190,name:"STATION"},{x:2250,y:315,w:505,h:190,name:"DEPOT"},{x:95,y:1020,w:365,h:210,name:"MARKET"},{x:610,y:1030,w:365,h:210,name:"STORE"},{x:130,y:1365,w:365,h:190,name:"GARAGE"},{x:625,y:1375,w:365,h:190,name:"CLINIC"},{x:2740,y:1035,w:330,h:390,name:"GYM"}]);
