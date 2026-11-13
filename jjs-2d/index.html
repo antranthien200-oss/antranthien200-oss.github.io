@@ -1777,9 +1777,9 @@ function damage(target,amount,source,opts={}){
  if(target.dead)return;
  if(onlineMode){
   if(source===player&&target.onlineSessionId&&onlineRoom){
-   if(opts.damageType!=='domain'&&opts.damageType!=='vehicle'&&opts.damageType!=='domain-clash-m1'){
+   if(opts.damageType!=='vehicle'&&opts.damageType!=='domain-clash-m1'){
     const move=String(source.motion&&source.motion.name||source.onlineLastMove||'m1_1').slice(0,48);
-    const hitPacket={targetId:target.onlineSessionId,move,amount:Number(amount)||0,stun:opts.stun??.35,invuln:opts.invuln??.12,kx:opts.kx??0,ky:opts.ky??0,blockedDamage:opts.blockedDamage??null,unblockable:opts.unblockable===true,ignoreInvuln:opts.ignoreInvuln===true,blockAllSides:opts.blockAllSides===true,damageType:String(opts.damageType||'melee').slice(0,24)};
+    const hitPacket={targetId:target.onlineSessionId,move,amount:Number(amount)||0,stun:opts.stun??.35,invuln:opts.invuln??.12,kx:opts.kx??0,ky:opts.ky??0,blockedDamage:opts.blockedDamage??(Number(amount)||0)*.12,unblockable:opts.unblockable===true,ignoreInvuln:opts.ignoreInvuln===true,blockAllSides:opts.blockAllSides===true,damageType:String(opts.damageType||'melee').slice(0,24)};
     try{onlineRoom.send('combat:hit',hitPacket)}catch(e){}
    }
    return;
