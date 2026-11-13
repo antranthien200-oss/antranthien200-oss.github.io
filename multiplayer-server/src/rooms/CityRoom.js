@@ -94,11 +94,12 @@ combatAction(client,payload={}){
   if(!p||p.dead||p.vehicleId||p.stun>0||p.grabbedBy||p.activeGrabTarget)return;
   if(!["m1","dash","special","awaken","1","2","3","4"].includes(kind))return;
   const counter=counterSettings(p.character,kind,p.awakened);
-  const cooldown=counter?.cooldown??(kind==="m1"?.12:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42);
+  const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten");
+  const cooldown=modeToggle?.08:(counter?.cooldown??(kind==="m1"?.12:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
   const now=Date.now(),times=this.lastActionAt.get(id)||new Map();
   if(now-(times.get(kind)||0)<cooldown*1000)return;
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
-  if(kind==="awaken"){if(p.awakened||p.meter<100)return;this.awakenPlayer(client)}
+  if(kind==="awaken"&&!modeToggle){if(p.awakened||p.meter<100)return;this.awakenPlayer(client)}
   times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
   this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,serverTime:now,face:p.face});
@@ -346,7 +347,7 @@ detonateProjectile(client,payload={}){
    if(live.length)this.broadcast("combat:projectile-state",{projectiles:live,serverTime:now});
   }
  }
- awakenPlayer(client){const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;p.awakened=true;p.meter=0;p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:25));if(p.character==="restless"){p.domainType="hakari";p.domainWindup=1.25;p.domainDuration=120;p.domainTimer=0;p.domainRadius=1500;p.domainX=p.x;p.domainY=p.y}}
+ awakenPlayer(client){const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;p.awakened=true;p.meter=0;p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:p.character==="honored"||p.character==="yuta"?25:15));if(p.character==="restless"){p.domainType="hakari";p.domainWindup=1.25;p.domainDuration=120;p.domainTimer=0;p.domainRadius=Math.hypot(WORLD_WIDTH,WORLD_HEIGHT);p.domainX=p.x;p.domainY=p.y}}
  resolveCounter(attacker,defender,incomingType="melee"){
   const kind=defender.counterKind;
   if(!kind||defender.counterWindow<=0)return false;
@@ -446,12 +447,14 @@ killPlayer(p){
   if(drift)c.speed=Math.min(680,c.speed+78*dt);
   const hx=Math.sin(c.angle),hy=-Math.cos(c.angle),grip=drift?1.25:8.5,blend=clamp(grip*dt,0,1);
   c.vx+=(hx*c.speed-c.vx)*blend;c.vy+=(hy*c.speed-c.vy)*blend;
-  const oldX=c.x,oldY=c.y,nextX=clamp(c.x+c.vx*dt,45,WORLD_WIDTH-45),nextY=clamp(c.y+c.vy*dt,45,WORLD_HEIGHT-45);
-  const box={x:nextX-38,y:nextY-20,w:76,h:40},impactSpeed=Math.abs(c.speed);
+  const oldX=c.x,oldY=c.y,nextX=clamp(c.x+c.vx*dt,38,WORLD_WIDTH-38),nextY=clamp(c.y+c.vy*dt,38,WORLD_HEIGHT-38);
+  const box={x:nextX-38,y:nextY-21,w:76,h:42},impactSpeed=Math.abs(c.speed);
   let hitBuilding=false;
   for(let index=0;index<BUILDING_LAYOUT.length;index++){
    const b=BUILDING_LAYOUT[index],state=this.state.world.buildings.get(String(index));
-   if(!state||state.collapsed||box.x>=b.x+b.w||box.x+box.w<=b.x||box.y>=b.y+b.h||box.y+box.h<=b.y)continue;
+   if(!state||state.collapsed)continue;
+   const px=clamp(nextX,b.x,b.x+b.w),py=clamp(nextY,b.y,b.y+b.h),dx=nextX-px,dy=nextY-py;
+   if(dx*dx+dy*dy>=38*38)continue;
    if(impactSpeed>=135){
     const key="car:"+p.vehicleId+":"+index,lastHit=this.lastBuildingAt.get(key)||0;
     if(now-lastHit>=720){
@@ -471,8 +474,9 @@ killPlayer(p){
     if(now-lastHit>=350){this.lastPropHitAt.set(key,now);state.hp=0;state.alive=false;state.respawnTimer=15}
    }
   }
-  const hitCar=Array.from(this.state.world.cars.entries()).some(([otherId,other])=>otherId!==p.vehicleId&&!other.destroyed&&Math.hypot(nextX-other.x,nextY-other.y)<68);
-  if(hitBuilding||hitCar){c.x=oldX;c.y=oldY;c.speed*=-.32;c.vx*=-.24;c.vy*=-.24}
+  const hitCar=Array.from(this.state.world.cars.entries()).some(([otherId,other])=>otherId!==p.vehicleId&&!other.destroyed&&Math.hypot(nextX-other.x,nextY-other.y)<43);
+  if(hitBuilding){c.x=oldX;c.y=oldY;c.speed*=-.32;c.vx*=-.24;c.vy*=-.24}
+  else if(hitCar){c.x=oldX;c.y=oldY;c.speed*=.25;c.vx*=.15;c.vy*=.15}
   else{c.x=nextX;c.y=nextY}
   p.x=c.x;p.y=c.y;p.face=Math.atan2(hy,hx);
   if(impactSpeed>110){
