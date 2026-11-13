@@ -585,21 +585,23 @@ killPlayer(p){
   const owner=this.state.players.get(target.grabbedBy);
   if(!owner||owner.dead||owner.activeGrabTarget!==targetId){if(owner)owner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.24);continue}
   const angle=owner.face,fx=Math.cos(angle),fy=Math.sin(angle);
-  if(["yujiDrag","gojoFaceGrater","bloodEdge"].includes(target.grabKind)){
-   const speed=target.grabKind==="gojoFaceGrater"?320:target.grabKind==="yujiDrag"?188:35;
-   const nx=clamp(owner.x+fx*speed*dt,45,WORLD_WIDTH-45),ny=clamp(owner.y+fy*speed*dt,45,WORLD_HEIGHT-45);
+  if(["yujiDrag","gojoFaceGrater","bloodEdge","sukunaCleave"].includes(target.grabKind)){
+   const gap=target.grabKind==="gojoFaceGrater"?Math.max(0,distance(owner,target)-56):target.grabKind==="sukunaCleave"?Math.max(0,distance(owner,target)-54):Infinity;
+   const speed=target.grabKind==="gojoFaceGrater"?760:target.grabKind==="sukunaCleave"?440:target.grabKind==="yujiDrag"?188:35;
+   const step=Number.isFinite(gap)?Math.min(gap,speed*dt):speed*dt;
+   const nx=clamp(owner.x+fx*step,45,WORLD_WIDTH-45),ny=clamp(owner.y+fy*step,45,WORLD_HEIGHT-45);
    if(!isBlockedByBuilding({x:nx,y:ny},BUILDING_LAYOUT.filter((b,index)=>!this.state.world.buildings.get(String(index))?.collapsed),29)){owner.x=nx;owner.y=ny}
   }
   const progress=target.grabDuration>0?1-target.grabRemaining/target.grabDuration:1;
   if(target.grabKind==="todoThrow"){const spin=progress*Math.PI*3.2;target.x=clamp(owner.x+Math.cos(angle+spin)*48,45,WORLD_WIDTH-45);target.y=clamp(owner.y+Math.sin(angle+spin)*34,45,WORLD_HEIGHT-45)}
   else if(target.grabKind==="toadPull"){target.x=clamp(owner.x+fx*50,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*50,45,WORLD_HEIGHT-45)}
-  else{target.x=clamp(owner.x+fx*52,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*52,45,WORLD_HEIGHT-45)}
+  else{const offset=target.grabKind==="yujiDrag"?46:target.grabKind==="gojoFaceGrater"?48:target.grabKind==="sukunaCleave"?47:target.grabKind==="mahitoTransfigure"?43:target.grabKind==="bloodEdge"?42:52;target.x=clamp(owner.x+fx*offset,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*offset,45,WORLD_HEIGHT-45)}
   target.face=angle+Math.PI;target.block=false;target.stun=Math.max(target.stun,.08);
   target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
   if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabTickInterval||.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage))target.hp=Math.max(0,target.hp-target.grabTickDamage);target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
   if(target.hp<=0){this.killPlayer(target);continue}
   if(target.grabRemaining<=0){
-   const finish=target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
+   const finish=target.grabKind==="sukunaCleave"?Math.max(10,target.hp*.4):target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
    target.hp=Math.max(0,target.hp-finish);target.stun=Math.max(target.stun,.82);target.invuln=Math.max(target.invuln,.16);
    target.x=clamp(target.x+fx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+fy*push,45,WORLD_HEIGHT-45);
    target.motionName="grabRelease";target.motionProgress=1;target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
