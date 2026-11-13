@@ -113,7 +113,7 @@ export function isProjectileKindAllowed(character,moveName,kindName){
 }
 export function domainSettings(character,domainType){
  if(!(DOMAIN_BY_CHARACTER[character]||[]).includes(domainType))return null;
- if(domainType==="hakari")return{radius:1500,duration:120};
+ if(domainType==="hakari")return{radius:Math.hypot(WORLD_WIDTH,WORLD_HEIGHT),duration:120};
  if(domainType==="void"||domainType==="void02")return{radius:760,duration:28};
  if(domainType==="shrine")return{radius:820,duration:28};
  if(domainType==="yuta")return{radius:620,duration:45};
