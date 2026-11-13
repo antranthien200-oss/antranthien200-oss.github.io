@@ -26,7 +26,7 @@ export function grabSettings(character,moveName){
  const move=String(moveName||"");
  if(character==="vessel"&&/yujiCursedDrag/i.test(move))return{kind:"yujiDrag",duration:1.05,tickDamage:1.1,tickInterval:.25,finishDamage:12,knockback:16};
  if(character==="honored"&&/gojoFaceGrater/i.test(move))return{kind:"gojoFaceGrater",duration:.95,tickDamage:3.2,tickInterval:.22,finishDamage:13,knockback:13};
- if(character==="vessel"&&/sukunaCleave|sukunaFlurry/i.test(move))return{kind:"sukunaFlurry",duration:1,tickDamage:1.6,tickInterval:.12,finishDamage:16,knockback:18};
+ if(character==="vessel"&&/sukunaCleave|sukunaFlurry/i.test(move)){const cleave=/sukunaCleave/i.test(move);return{kind:cleave?"sukunaCleave":"sukunaFlurry",duration:1,tickDamage:cleave?2.1:1.6,tickInterval:cleave?.14:.095,finishDamage:cleave?10:16,knockback:cleave?13:18};}
  if(character==="todo"&&/todoSwiftGrab/i.test(move))return{kind:"todoThrow",duration:.82,tickDamage:1.8,tickInterval:.22,finishDamage:12,knockback:13};
  if(character==="perfection"&&/mahitoTransfigure/i.test(move))return{kind:"mahitoTransfigure",duration:1.2,tickDamage:2,tickInterval:.22,finishDamage:14,knockback:12};
  if(character==="ten"&&/megumiToad|megumiSerpent/i.test(move))return{kind:/Serpent/i.test(move)?"megumiSerpent":"toadPull",duration:.9,tickDamage:0,tickInterval:.2,finishDamage:7,knockback:0};
