@@ -2465,7 +2465,8 @@ function useAttack(f,kind){
  if(f.sukunaFireCast>0)return;
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
  if(f.block)return;
- if(kind==='dash'&&f.dashCd>0)return;
+ if(kind==='dash'&&(f.dashCd>0||f.rooted>0||(f.char==='ten'&&f.shadowTimer>0)))return;
+ if(f.char==='ten'&&f.shadowTimer>0&&(kind==='2'||kind==='3'))return;
  if(kind==='m1'&&f.char!=='ten'&&f.attackCd>0)return;
  if(kind==='m1'&&f.char==='ten'&&f.tenNueM1Lock>0)return;
  if(kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
