@@ -76,7 +76,18 @@ export class CityRoom extends Room{
    else{p.x=c.x;p.y=c.y;p.vx=c.vx;p.vy=c.vy}
   }else{
    // Multiplayer positions are client-driven; no speed/teleport anti-cheat rejection.
-   p.x=n.x;p.y=n.y;
+   let x=clamp(n.x,45,WORLD_WIDTH-45),y=clamp(n.y,45,WORLD_HEIGHT-45);
+   const fullScreenTypes=["void","shrine","soul","hakari","yuta","trash"];
+   const fullScreenDomain=Array.from(this.state.players.values()).some(q=>!q.dead&&fullScreenTypes.includes(q.domainType)&&(q.domainTimer>0||q.domainWindup>0||q.domainClashId));
+   if(!fullScreenDomain){
+    for(let index=0;index<BUILDING_LAYOUT.length;index++){
+     const building=BUILDING_LAYOUT[index],state=this.state.world.buildings.get(String(index));
+     if(!state||state.collapsed)continue;
+     const px=clamp(x,building.x,building.x+building.w),py=clamp(y,building.y,building.y+building.h),dx=x-px,dy=y-py;
+     if(dx*dx+dy*dy<28*28){const length=Math.hypot(dx,dy)||1;x=px+dx/length*29;y=py+dy/length*29}
+    }
+   }
+   p.x=x;p.y=y;
   }
   const requested=String(payload.domainType||""),settings=domainSettings(p.character,requested);
   if(requested&&!p.domainType&&settings&&(p.awakened||p.meter>=100)&&!p.domainClashId){
@@ -479,13 +490,20 @@ killPlayer(p){
   else if(hitCar){c.x=oldX;c.y=oldY;c.speed*=.25;c.vx*=.15;c.vy*=.15}
   else{c.x=nextX;c.y=nextY}
   p.x=c.x;p.y=c.y;p.face=Math.atan2(hy,hx);
-  if(impactSpeed>110){
+  if(impactSpeed>95){
+   const speedRatio=clamp((impactSpeed-95)/(680-95),0,1),hitDamage=Math.round(10+22*speedRatio),push=5+speedRatio*7,angle=Math.atan2(hy,hx);
    for(const [id,target] of this.state.players){
-    if(id===client.sessionId||target.dead||target.vehicleId||distance(c,target)>54)continue;
+    if(id===client.sessionId||target.dead||target.vehicleId||distance(c,target)>52)continue;
     const key="car:"+p.vehicleId+":"+id;
-    if(now-(this.lastHitAt.get(key)||0)<650)continue;
-    this.lastHitAt.set(key,now);target.hp=Math.max(0,target.hp-18);target.stun=Math.max(target.stun,.7);target.invuln=.18;
-    target.x=clamp(target.x+hx*12,45,WORLD_WIDTH-45);target.y=clamp(target.y+hy*12,45,WORLD_HEIGHT-45);
+    if(now-(this.lastHitAt.get(key)||0)<680)continue;
+    this.lastHitAt.set(key,now);
+    if(this.resolveCounter(p,target,"vehicle"))continue;
+    target.hp=Math.max(0,target.hp-hitDamage);
+    target.stun=Math.max(target.stun,.5+speedRatio*.45);target.invuln=.12;
+    target.vx=clamp((Number(target.vx)||0)+hx*push,-60,60);
+    target.vy=clamp((Number(target.vy)||0)+hy*push,-60,60);
+    if(!target.awakened)target.meter=clamp(target.meter+hitDamage*.42,0,100);
+    if(!p.awakened)p.meter=clamp(p.meter+hitDamage*.58,0,100);
     if(target.hp<=0)this.killPlayer(target);
    }
   }
