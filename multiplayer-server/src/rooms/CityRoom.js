@@ -65,7 +65,7 @@ export class CityRoom extends Room{
   const now=Date.now(),prev=this.lastUpdateAt.get(id)||now-33,n=normalizePlayerUpdate(payload,p,now-prev);if(!n)return;
   this.lastUpdateAt.set(id,now);
   const previousMotion=p.motionName;
-  p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.attackAnim=n.attackAnim;p.attackType=n.attackType;
+  p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.vx=n.vx;p.vy=n.vy;p.attackAnim=n.attackAnim;p.attackType=n.attackType;
   p.motionName=n.motionName;p.motionProgress=n.motionProgress;p.motionDuration=n.motionDuration;
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
@@ -363,22 +363,40 @@ detonateProjectile(client,payload={}){
  combatHit(client,payload={}){
   const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id);
   if(!a||!target||a===target||a.dead||target.dead||a.stun>0||a.activeGrabTarget||target.grabbedBy)return;
-  const move=String(payload.move||"").slice(0,48);
-  // Resolve damage from the character profile without requiring action authorization,
-  // packet timing, server-side range estimates, or per-hit rate checks.
-  const profile=combatProfile(a.character,move,a.awakened);
-  if(this.resolveCounter(a,target,"melee"))return;
-  if(target.invuln>0)return;
-  const angle=Math.atan2(target.y-a.y,target.x-a.x),incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face)),blocking=target.block&&Math.abs(guard)<=1.18,grab=grabSettings(a.character,move);
-  if(blocking&&!(grab&&grab.kind==="megumiSerpent")){target.hp=Math.max(1,target.hp-profile.damage*.12);target.meter=clamp(target.meter+profile.damage*.12,0,100);target.invuln=.08;a.meter=clamp(a.meter+1,0,100);return}
+  const move=String(payload.move||"").slice(0,48),profile=combatProfile(a.character,move,a.awakened);
+  const incomingType=String(payload.damageType||"melee").slice(0,24);
+  const amountValue=Number(payload.amount),amount=Number.isFinite(amountValue)?clamp(amountValue,0,250):profile.damage;
+  const stunValue=Number(payload.stun),stun=Number.isFinite(stunValue)?clamp(stunValue,0,8):profile.stun;
+  const invulnValue=Number(payload.invuln),invuln=Number.isFinite(invulnValue)?clamp(invulnValue,0,5):.12;
+  const kxValue=Number(payload.kx),kyValue=Number(payload.ky);
+  const kx=Number.isFinite(kxValue)?clamp(kxValue,-60,60):0,ky=Number.isFinite(kyValue)?clamp(kyValue,-60,60):0;
+  const ignoreInvuln=payload.ignoreInvuln===true,unblockable=payload.unblockable===true;
+  const blockAllSides=payload.blockAllSides===true,blockedValue=Number(payload.blockedDamage);
+  const blockedDamage=Number.isFinite(blockedValue)?clamp(blockedValue,0,250):amount*.12;
+  if(this.resolveCounter(a,target,incomingType))return;
+  if(target.invuln>0&&!ignoreInvuln)return;
+  const grab=grabSettings(a.character,move);
   if(grab){
    if(target.vehicleId)return;
    target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grab.duration;target.grabDuration=grab.duration;target.grabTick=grab.tickInterval;target.grabTickDamage=grab.tickDamage;target.grabFinishDamage=grab.finishDamage;target.grabKnockback=grab.knockback;
    target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grab.duration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grab.duration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;return;
   }
-  target.hp=Math.max(0,target.hp-profile.damage);target.stun=Math.max(target.stun,profile.stun);target.invuln=.12;
-  target.x=clamp(target.x+Math.cos(angle)*profile.knockback,45,WORLD_WIDTH-45);target.y=clamp(target.y+Math.sin(angle)*profile.knockback,45,WORLD_HEIGHT-45);
-  target.meter=clamp(target.meter+profile.damage*.28,0,100);a.meter=clamp(a.meter+profile.damage*.5,0,100);
+  const incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
+  const frontGuard=target.block&&Math.abs(guard)<=1.18;
+  if((frontGuard||blockAllSides)&&!unblockable){
+   target.hp=Math.max(0,target.hp-blockedDamage);
+   if(!target.awakened)target.meter=clamp(target.meter+amount*.12,0,100);
+   target.invuln=.08;
+   if(target.hp<=0)this.killPlayer(target);
+   return;
+  }
+  target.hp=Math.max(0,target.hp-amount);
+  target.stun=Math.max(target.stun,stun);
+  target.invuln=invuln;
+  target.vx=clamp((Number(target.vx)||0)+kx,-60,60);
+  target.vy=clamp((Number(target.vy)||0)+ky,-60,60);
+  if(!target.awakened)target.meter=clamp(target.meter+amount*.42,0,100);
+  if(!a.awakened)a.meter=clamp(a.meter+amount*.58,0,100);
   if(target.hp<=0)this.killPlayer(target);
  }
 killPlayer(p){
