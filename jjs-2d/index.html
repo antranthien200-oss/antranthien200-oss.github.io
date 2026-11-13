@@ -1049,6 +1049,7 @@ let player,enemy,trainingDummy;
 
 let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
+const ONLINE_REMOTE_INTERPOLATION_DELAY_MS=90,ONLINE_MAX_EXTRAPOLATION_MS=100;
 let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='SERVER ADDRESS SAVED · CLICK CONNECT',onlineConnecting=false;
 let onlineReconnectTimer=null,onlineReconnectAttempt=0,onlineReconnectStartedAt=0,onlineReconnectToken='';
 let onlineActivitySentAt=0;
@@ -1099,9 +1100,13 @@ function applyOnlineRoomState(state){
   player.vehicle=nextVehicle;
   if(player.vehicle){player.x=player.vehicle.x;player.y=player.vehicle.y}
   else if(Number.isFinite(Number(local.x))&&Number.isFinite(Number(local.y))){
-   const d=Math.hypot(Number(local.x)-player.x,Number(local.y)-player.y);
-   const correction=clamp(.12+d*.00045,.12,.26);
-   player.x=lerp(player.x,Number(local.x),correction);player.y=lerp(player.y,Number(local.y),correction);
+   // Keep local movement predicted; gently correct only real drift instead of pulling
+   // the player back toward every slightly older server snapshot.
+   const dx=Number(local.x)-player.x,dy=Number(local.y)-player.y,d=Math.hypot(dx,dy);
+   if(d>1){
+    const correction=d>260?.22:d>90?.045:.008;
+    player.x+=dx*correction;player.y+=dy*correction;
+   }
   }
   if(!wasDead&&player.dead&&!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}
   if(wasDead&&!player.dead){player.x=Number(local.x)||player.x;player.y=Number(local.y)||player.y;game.playerDeathNotified=false;showToast('YOU RESPAWNED',900)}
@@ -1111,11 +1116,20 @@ function applyOnlineRoomState(state){
   if(sessionId===onlineSessionId)continue;seen.add(sessionId);
   const char=Object.prototype.hasOwnProperty.call(CHARS,String(net.character))?String(net.character):'vessel';
   let remote=onlineRemotePlayers.get(sessionId);
-  if(!remote){remote=makeFighter('enemy',char,Number(net.x)||1250,Number(net.y)||760);remote.team='enemy';remote.onlineSessionId=sessionId;remote.networkX=remote.x;remote.networkY=remote.y;remote.wasDead=false;onlineRemotePlayers.set(sessionId,remote)}
+  if(!remote){remote=makeFighter('enemy',char,Number(net.x)||1250,Number(net.y)||760);remote.team='enemy';remote.onlineSessionId=sessionId;remote.networkX=remote.x;remote.networkY=remote.y;remote.networkSnapshots=[];remote.wasDead=false;onlineRemotePlayers.set(sessionId,remote)}
   if(remote.char!==char){remote.char=char;remote.motion=null}
   const oldHp=Number(remote.hp)||0;
   remote.onlineName=String(net.name||'Player').slice(0,18);
-  remote.networkX=Number(net.x)||remote.x;remote.networkY=Number(net.y)||remote.y;remote.networkFace=Number.isFinite(Number(net.face))?Number(net.face):remote.face;
+  const snapshotX=Number(net.x),snapshotY=Number(net.y),snapshotFace=Number.isFinite(Number(net.face))?Number(net.face):remote.networkFace||remote.face,snapshotTime=performance.now();
+  if(Number.isFinite(snapshotX)&&Number.isFinite(snapshotY)){
+   if(!remote.networkSnapshots)remote.networkSnapshots=[];
+   const history=remote.networkSnapshots,last=history[history.length-1],faceDelta=last?Math.atan2(Math.sin(snapshotFace-last.face),Math.cos(snapshotFace-last.face)):Infinity;
+   if(!last||Math.hypot(snapshotX-last.x,snapshotY-last.y)>.15||Math.abs(faceDelta)>.002){
+    history.push({time:last?Math.max(snapshotTime,last.time+.01):snapshotTime,x:snapshotX,y:snapshotY,face:snapshotFace});
+    while(history.length>8)history.shift();
+   }
+   remote.networkX=snapshotX;remote.networkY=snapshotY;remote.networkFace=snapshotFace;
+  }
   remote.walk=Number(net.walk)||0;remote.jump=Number(net.jump)||0;remote.block=!!net.block;remote.awakened=!!net.awakened;remote.awakeMode=String(net.awakeMode||"");remote.awakeFuel=Number(net.awakeFuel)||0;remote.awakeFuelDrainRate=Number(net.awakeFuelDrainRate)||0;remote.jackpot=!!net.jackpot;remote.consecutiveJackpots=Number(net.consecutiveJackpots)||0;remote.domainStunGuaranteed=!!net.domainStunGuaranteed;remote.dead=!!net.dead;
   remote.hp=Number(net.hp)||0;remote.maxHp=Number(net.maxHp)||remote.maxHp;remote.meter=Number(net.meter)||0;
   remote.stun=Number(net.stun)||0;remote.invuln=Number(net.invuln)||0;remote.vx=Number(net.vx)||0;remote.vy=Number(net.vy)||0;
@@ -1189,13 +1203,38 @@ function applyOnlineRoomState(state){
  const label=$('onlinePlayersCount');if(label)label.textContent=entries.length+' / 16 PLAYERS';
 }
 function updateOnlineRemotePlayers(dt){
- const blend=clamp(dt*28,0,.9);
+ const now=performance.now(),renderTime=now-ONLINE_REMOTE_INTERPOLATION_DELAY_MS;
  for(const remote of onlineRemotePlayers.values()){
   advanceVehicleTransition(remote,dt);
-  remote.x=lerp(remote.x,remote.networkX,blend);
-  remote.y=lerp(remote.y,remote.networkY,blend);
-  const angle=Math.atan2(Math.sin(remote.networkFace-remote.face),Math.cos(remote.networkFace-remote.face));
-  remote.face+=angle*blend;
+  if(remote.vehicleTransition)continue;
+  if(remote.vehicle){remote.x=remote.vehicle.x;remote.y=remote.vehicle.y;continue}
+  const history=remote.networkSnapshots||[];
+  if(history.length>=2){
+   while(history.length>2&&history[1].time<renderTime-180)history.shift();
+   let a=history[0],b=history[1];
+   for(let i=1;i<history.length;i++){if(history[i].time>=renderTime){a=history[i-1];b=history[i];break}a=history[i-1];b=history[i]}
+   if(renderTime<=history[0].time){
+    remote.x=history[0].x;remote.y=history[0].y;remote.face=history[0].face;
+   }else if(renderTime<=b.time&&b.time>a.time){
+    const t=clamp((renderTime-a.time)/(b.time-a.time),0,1);
+    remote.x=lerp(a.x,b.x,t);remote.y=lerp(a.y,b.y,t);
+    const angle=Math.atan2(Math.sin(b.face-a.face),Math.cos(b.face-a.face));remote.face=a.face+angle*t;
+   }else{
+    // If a packet is late, briefly extrapolate from the last two snapshots instead
+    // of snapping backward. Extrapolation is deliberately capped to avoid runaway drift.
+    const span=Math.max(1,b.time-a.time),extra=clamp((renderTime-b.time)/1000,0,ONLINE_MAX_EXTRAPOLATION_MS/1000);
+    const vx=clamp((b.x-a.x)/(span/1000),-950,950),vy=clamp((b.y-a.y)/(span/1000),-950,950);
+    remote.x=b.x+vx*extra;remote.y=b.y+vy*extra;remote.face=b.face;
+   }
+  }else if(history.length===1){
+   const snap=history[0],blend=clamp(dt*20,0,.72);
+   remote.x=lerp(remote.x,snap.x,blend);remote.y=lerp(remote.y,snap.y,blend);
+   const angle=Math.atan2(Math.sin(snap.face-remote.face),Math.cos(snap.face-remote.face));remote.face+=angle*blend;
+  }else{
+   const blend=clamp(dt*20,0,.72);
+   remote.x=lerp(remote.x,remote.networkX,blend);remote.y=lerp(remote.y,remote.networkY,blend);
+   const angle=Math.atan2(Math.sin(remote.networkFace-remote.face),Math.cos(remote.networkFace-remote.face));remote.face+=angle*blend;
+  }
  }
 }
 function updateOnlineNetwork(dt){
@@ -1203,7 +1242,7 @@ function updateOnlineNetwork(dt){
  updateOnlineRemotePlayers(dt);
  onlineSendAccumulator+=Math.min(dt,.1);onlinePingAccumulator+=Math.min(dt,.1);
  if(onlinePingAccumulator>=2){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
- const networkSendInterval=1/60;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
+ const networkSendInterval=1/30;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
  const motion=player.motion;if(motion&&motion.name)player.onlineLastMove=String(motion.name).slice(0,48);
  if(player.vehicle&&!player.vehicleTransition){
   const mobile=mobileControlsEnabled&&mobileJoyPointer!==null;
