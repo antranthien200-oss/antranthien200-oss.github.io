@@ -113,11 +113,13 @@ export function isProjectileKindAllowed(character,moveName,kindName){
 }
 export function domainSettings(character,domainType){
  if(!(DOMAIN_BY_CHARACTER[character]||[]).includes(domainType))return null;
- if(domainType==="hakari")return{radius:Math.hypot(WORLD_WIDTH,WORLD_HEIGHT),duration:120};
- if(domainType==="void"||domainType==="void02")return{radius:760,duration:28};
- if(domainType==="shrine")return{radius:820,duration:28};
- if(domainType==="yuta")return{radius:620,duration:45};
- if(domainType==="soul")return{radius:660,duration:32};
- if(domainType==="trash")return{radius:430,duration:28};
+ const fullMapRadius=Math.hypot(WORLD_WIDTH,WORLD_HEIGHT);
+ if(domainType==="hakari")return{radius:fullMapRadius,duration:120};
+ if(domainType==="void")return{radius:fullMapRadius,duration:14};
+ if(domainType==="void02")return{radius:0,duration:.22};
+ if(domainType==="shrine")return{radius:fullMapRadius,duration:18};
+ if(domainType==="yuta")return{radius:fullMapRadius,duration:45};
+ if(domainType==="soul")return{radius:fullMapRadius,duration:14};
+ if(domainType==="trash")return{radius:fullMapRadius,duration:28};
  return null;
 }
