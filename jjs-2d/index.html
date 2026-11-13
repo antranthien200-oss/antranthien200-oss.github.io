@@ -1500,7 +1500,7 @@ document.querySelectorAll('[data-mobile-action]').forEach(btn=>{
 syncMobileControls();
 
 function togglePause(){if(!game.started||game.over)return;game.paused=!game.paused;document.body.classList.toggle('game-paused',game.paused);if(game.paused){stopMobileJoystick();mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none'}
-$('resumeBtn').onclick=togglePause;$('restartBtn').onclick=()=>{resetMatch();game.paused=false;$('pause').style.display='none';showToast('ROUND 1',800)};
+$('resumeBtn').onclick=togglePause;$('restartBtn').onclick=()=>{resetMatch();game.paused=false;document.body.classList.remove('game-paused');syncMobileControls();$('pause').style.display='none';showToast('ROUND 1',800)};
 $('menuBtn').onclick=()=>{game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused','online-mode');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
 function showToast(){const toast=$('toast');if(toast){toast.textContent='';toast.classList.remove('show')}game.toastTimer=0}function showCombatAnnouncement(message,type='ko'){const el=$('combatNotice');if(!el)return;el.textContent=message;el.classList.remove('ko','death','active');el.classList.add(type);void el.offsetWidth;el.classList.add('active');game.combatNoticeTimer=1.35}
 function registerPlayerHit(target,source,amount){
