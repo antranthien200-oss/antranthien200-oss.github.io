@@ -15,7 +15,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),distance=(a,b)=>Math.hypot(a.x-b.
 const pointSegmentDistance=(point,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy||1,t=clamp(((point.x-a.x)*dx+(point.y-a.y)*dy)/length,0,1);return Math.hypot(point.x-(a.x+dx*t),point.y-(a.y+dy*t))};
 const CLASHABLE_DOMAINS=new Set(["void","shrine","hakari","soul","yuta","trash"]);
 export class CityRoom extends Room{
- maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/60;maxMessagesPerSecond=180;
+ maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/30;maxMessagesPerSecond=180;
  onCreate(){
   this.maxClients=MAX_PLAYERS;
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
