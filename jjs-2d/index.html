@@ -719,6 +719,30 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 #awakeningCutscene.vessel-awakening-zoom .awaken-backdrop-lines,
 #awakeningCutscene.vessel-awakening-zoom .awaken-flash,
 #awakeningCutscene.vessel-awakening-zoom .awaken-content{display:none!important}
+
+/* Unified translucent glass finish for all mobile controls (paint only). */
+#mobileControls #mobileJoystick{
+ border-color:rgba(245,250,255,.72);
+ background:rgba(5,10,18,.30);
+ box-shadow:0 0 0 1px rgba(0,0,0,.24),inset 0 0 0 3px rgba(255,255,255,.08);
+ backdrop-filter:blur(2px);
+ -webkit-backdrop-filter:blur(2px);
+}
+#mobileControls #mobileJoystick:before{border-color:rgba(245,250,255,.72)}
+#mobileControls .mobile-joy-knob{background:rgba(255,255,255,.70)}
+#mobileControls .mobile-btn:not(.cooling){
+ border-color:rgba(245,250,255,.72);
+ background:rgba(5,10,18,.30);
+ box-shadow:0 0 0 1px rgba(0,0,0,.24),inset 0 0 0 3px rgba(255,255,255,.08);
+ backdrop-filter:blur(2px);
+ -webkit-backdrop-filter:blur(2px);
+}
+#mobileControls .mobile-btn:not(.cooling):active,
+#mobileControls .mobile-btn:not(.cooling).active{
+ border-color:rgba(255,255,255,.88);
+ background:rgba(116,137,155,.46);
+ box-shadow:0 0 0 1px rgba(0,0,0,.24),inset 0 0 0 3px rgba(255,255,255,.16);
+}
 </style>
 </head>
 <body>
