@@ -13,7 +13,7 @@ const server = defineServer({
       room: "city",
       maxPlayers: 16,
       tickHz: 30,
-      statePatchHz: 60,
+      statePatchHz: 30,
       projectileSnapshotHz: 30,
       buildCommit: process.env.RENDER_GIT_COMMIT || "local"
     }));
