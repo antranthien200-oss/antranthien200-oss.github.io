@@ -11,7 +11,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),distance=(a,b)=>Math.hypot(a.x-b.
 const pointSegmentDistance=(point,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy||1,t=clamp(((point.x-a.x)*dx+(point.y-a.y)*dy)/length,0,1);return Math.hypot(point.x-(a.x+dx*t),point.y-(a.y+dy*t))};
 const CLASHABLE_DOMAINS=new Set(["void","shrine","hakari","soul","yuta","trash"]);
 export class CityRoom extends Room{
- maxClients=MAX_PLAYERS;autoDispose=false;patchRate=33;maxMessagesPerSecond=90;
+ maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/60;maxMessagesPerSecond=180;
  onCreate(){
   this.maxClients=MAX_PLAYERS;
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
@@ -20,6 +20,7 @@ export class CityRoom extends Room{
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
   this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
+  this.onMessage("network:ping",(client,payload={})=>{const sentAt=Number(payload.sentAt);if(Number.isFinite(sentAt))client.send("network:pong",{sentAt})});
   this.setSimulationInterval(ms=>this.tick(ms/1000),33);
  }
  onJoin(client,options={}){
@@ -386,7 +387,7 @@ detonateProjectile(client,payload={}){
    }
    if(p.life<=0||p.travelled>=p.maxDistance||p.x<20||p.y<20||p.x>WORLD_WIDTH-20||p.y>WORLD_HEIGHT-20){end(p);continue}
   }
-  if(now-this.projectileBatchAt>=100){
+  if(now-this.projectileBatchAt>=33){
    this.projectileBatchAt=now;
    const live=Array.from(this.projectiles.values(),p=>({sessionId:p.ownerId,id:p.clientId,x:p.x,y:p.y,vx:p.vx,vy:p.vy,life:p.life,travelled:p.travelled,maxDistance:p.maxDistance,kind:p.kind,golden:p.golden,domainBound:p.domainBound,rideVariant:p.rideVariant,serverTime:now}));
    if(live.length)this.broadcast("combat:projectile-state",{projectiles:live,serverTime:now});
