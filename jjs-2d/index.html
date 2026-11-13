@@ -1058,7 +1058,7 @@ function applyOnlineRoomState(state){
  const local=state.players.get(onlineSessionId);
  if(local&&player){
   const wasDead=player.dead;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
-  player.meter=clamp(Number(local.meter)||0,0,100);player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;
+  player.meter=clamp(Number(local.meter)||0,0,100);player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;
   player.domainType=String(local.domainType||'');player.domainTimer=Number(local.domainTimer)||0;player.domainRadius=Number(local.domainRadius)||0;
   player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;player.domainWindup=Number(local.domainWindup)||0;player.domainDuration=Number(local.domainDuration)||0;player.counterKind=String(local.counterKind||'');player.counterWindow=Number(local.counterWindow)||0;player.grabbedBy=String(local.grabbedBy||'');player.activeGrabTarget=String(local.activeGrabTarget||'');player.grabKind=String(local.grabKind||'');player.grabRemaining=Number(local.grabRemaining)||0;player.grabDuration=Number(local.grabDuration)||0;player.motionName=String(local.motionName||'');player.motionProgress=Number(local.motionProgress)||0;player.motionDuration=Number(local.motionDuration)||player.motionDuration||1;player.motionStartedAt=Number(local.motionStartedAt)||0;player.domainClashId=String(local.domainClashId||'');player.attackAnim=Number(local.attackAnim)||0;player.attackType=String(local.attackType||'');
@@ -1089,7 +1089,7 @@ function applyOnlineRoomState(state){
   remote.networkX=Number(net.x)||remote.x;remote.networkY=Number(net.y)||remote.y;remote.networkFace=Number.isFinite(Number(net.face))?Number(net.face):remote.face;
   remote.walk=Number(net.walk)||0;remote.jump=Number(net.jump)||0;remote.block=!!net.block;remote.awakened=!!net.awakened;remote.dead=!!net.dead;
   remote.hp=Number(net.hp)||0;remote.maxHp=Number(net.maxHp)||remote.maxHp;remote.meter=Number(net.meter)||0;
-  remote.stun=Number(net.stun)||0;remote.invuln=Number(net.invuln)||0;
+  remote.stun=Number(net.stun)||0;remote.invuln=Number(net.invuln)||0;remote.vx=Number(net.vx)||0;remote.vy=Number(net.vy)||0;
   remote.domainType=String(net.domainType||'');remote.domainTimer=Number(net.domainTimer)||0;remote.domainRadius=Number(net.domainRadius)||0;
   remote.domainCenterX=Number(net.domainX)||remote.networkX;remote.domainCenterY=Number(net.domainY)||remote.networkY;remote.domainWindup=Number(net.domainWindup)||0;remote.domainDuration=Number(net.domainDuration)||0;remote.counterKind=String(net.counterKind||'');remote.counterWindow=Number(net.counterWindow)||0;remote.grabbedBy=String(net.grabbedBy||'');remote.activeGrabTarget=String(net.activeGrabTarget||'');remote.grabKind=String(net.grabKind||'');remote.grabRemaining=Number(net.grabRemaining)||0;remote.grabDuration=Number(net.grabDuration)||0;remote.motionName=String(net.motionName||'');remote.motionProgress=Number(net.motionProgress)||0;remote.motionDuration=clamp(Number(net.motionDuration)||1,.08,12);remote.motionStartedAt=Number(net.motionStartedAt)||0;remote.domainClashId=String(net.domainClashId||'');
   const previousVehicle=remote.vehicle||null,nextVehicle=net.vehicleId?parkedCars.find(c=>String(c.id)===String(net.vehicleId))||null:null;
@@ -1188,7 +1188,7 @@ function updateOnlineNetwork(dt){
  if(mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
  const moveLength=Math.hypot(moveX,moveY)||1;moveX/=moveLength;moveY/=moveLength;
  const aim=aimedAt(player);
- const snapshot={x:player.x,y:player.y,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,trashCanId:player.carryingTrashCan?String(player.carryingTrashCan.id??''):'',domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
+ const snapshot={x:player.x,y:player.y,vx:player.vx||0,vy:player.vy||0,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,trashCanId:player.carryingTrashCan?String(player.carryingTrashCan.id??''):'',domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainRadius:Number(player.domainRadius)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
 function drawOnlineRemoteDomains(){
@@ -1779,7 +1779,8 @@ function damage(target,amount,source,opts={}){
   if(source===player&&target.onlineSessionId&&onlineRoom){
    if(opts.damageType!=='domain'&&opts.damageType!=='vehicle'&&opts.damageType!=='domain-clash-m1'){
     const move=String(source.motion&&source.motion.name||source.onlineLastMove||'m1_1').slice(0,48);
-    try{onlineRoom.send('combat:hit',{targetId:target.onlineSessionId,move,damageType:String(opts.damageType||'melee')})}catch(e){}
+    const hitPacket={targetId:target.onlineSessionId,move,amount:Number(amount)||0,stun:opts.stun??.35,invuln:opts.invuln??.12,kx:opts.kx??0,ky:opts.ky??0,blockedDamage:opts.blockedDamage??null,unblockable:opts.unblockable===true,ignoreInvuln:opts.ignoreInvuln===true,blockAllSides:opts.blockAllSides===true,damageType:String(opts.damageType||'melee').slice(0,24)};
+    try{onlineRoom.send('combat:hit',hitPacket)}catch(e){}
    }
    return;
   }
