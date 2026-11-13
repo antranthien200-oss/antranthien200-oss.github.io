@@ -196,7 +196,7 @@ finishDomainClash(clash,winnerId=null,reason="TIME"){
    targetId="";let best=Infinity;
    for(const [otherId,other] of this.state.players){if(otherId===ownerId||other.dead)continue;const d=Math.hypot(other.x-aimX,other.y-aimY);if(d<best){best=d;targetId=otherId}}
   }
-  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed:Math.hypot(vx,vy),r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:Date.now()+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
+  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed:Math.hypot(vx,vy),r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,damage:clamp(Number(payload.damage)||profile.damage,0,250),kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:Date.now()+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
   if(rideVariant){owner.moveX=0;owner.moveY=0;owner.vx=0;owner.vy=0}
   this.projectiles.set(id,projectile);
   this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move,golden,domainBound,rideVariant});
@@ -210,11 +210,17 @@ detonateProjectile(client,payload={}){
   if(!ignoreInvuln&&target.invuln>0)return false;
   if(this.resolveCounter(owner,target,"projectile"))return false;
   const incoming=Math.atan2(owner.y-target.y,owner.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
-  const blocked=!unblockable&&target.block&&Math.abs(guard)<=1.18,actual=blocked?damage*.12:damage;
-  target.hp=Math.max(blocked?1:0,target.hp-actual);target.stun=Math.max(target.stun,blocked?.08:stun);
-  target.invuln=blocked?.08:ignoreInvuln?.04:.12;
-  if(!blocked&&push>0){target.x=clamp(target.x+Math.cos(angle)*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+Math.sin(angle)*push,45,WORLD_HEIGHT-45)}
-  target.meter=clamp(target.meter+actual*.28,0,100);owner.meter=clamp(owner.meter+actual*.5,0,100);
+  const blocked=!unblockable&&target.block&&Math.abs(guard)<=1.18;
+  if(blocked){
+   const chip=damage*.12;target.hp=Math.max(0,target.hp-chip);
+   if(!target.awakened)target.meter=clamp(target.meter+damage*.12,0,100);
+   target.stun=Math.max(target.stun,.0);target.invuln=.08;
+  }else{
+   target.hp=Math.max(0,target.hp-damage);target.stun=Math.max(target.stun,stun);target.invuln=.12;
+   if(push>0){target.vx=clamp((Number(target.vx)||0)+Math.cos(angle)*push,-60,60);target.vy=clamp((Number(target.vy)||0)+Math.sin(angle)*push,-60,60)}
+   if(!target.awakened)target.meter=clamp(target.meter+damage*.42,0,100);
+   if(!owner.awakened)owner.meter=clamp(owner.meter+damage*.58,0,100);
+  }
   if(target.hp<=0)this.killPlayer(target);
   return true;
  }
@@ -270,7 +276,7 @@ detonateProjectile(client,payload={}){
     if(near){
      const angle=Math.atan2(p.y-near.y,p.x-near.x),pull=clamp((150-gap)*.035,.8,3.2);
      near.vx+=Math.cos(angle)*pull;near.vy+=Math.sin(angle)*pull;
-     if(gap<105&&now>=p.nextTickAt){p.nextTickAt=now+200;hurt(owner,near,p.profile.damage,p.profile.stun,p.profile.knockback,angle)}
+     if(gap<105&&now>=p.nextTickAt){p.nextTickAt=now+200;hurt(owner,near,p.damage,p.profile.stun,p.profile.knockback,angle)}
     }
    }else if(p.kind==="redmax"||p.kind==="hollow"||p.kind==="tenNue"){
     if(target){
@@ -290,7 +296,7 @@ detonateProjectile(client,payload={}){
      for(const [targetId,candidate] of this.state.players){
       if(targetId===p.ownerId||candidate.dead||distance(candidate,p)>165)continue;
       const angle=Math.atan2(candidate.y-p.y,candidate.x-p.x);
-      hurt(owner,candidate,p.profile.damage,.6,p.profile.knockback,angle,true);
+      hurt(owner,candidate,p.damage,.6,p.profile.knockback,angle,true);
      }
      end(p,"combat:projectile-explode");continue;
     }
@@ -328,7 +334,7 @@ detonateProjectile(client,payload={}){
     }
     if(hitTarget){
      const angle=Math.atan2(p.y-from.y,p.x-from.x);
-     hurt(owner,hitTarget,p.profile.damage,p.profile.stun,p.profile.knockback,angle,p.kind==="fire"||p.kind==="hollow");
+     hurt(owner,hitTarget,p.damage,p.profile.stun,p.profile.knockback,angle,p.kind==="fire"||p.kind==="hollow");
      end(p,"combat:projectile-hit",{targetId:hitId});continue;
     }
    }
