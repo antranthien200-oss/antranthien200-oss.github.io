@@ -347,13 +347,13 @@ detonateProjectile(client,payload={}){
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
   if(Math.abs(facing)>1.18)return false;
   const projectile=["bullet","projectile","explosion"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-  const hurt=(target,amount,stun,push)=>{target.hp=Math.max(0,target.hp-amount);target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.x=clamp(target.x+nx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+ny*push,45,WORLD_HEIGHT-45);if(target.hp<=0)this.killPlayer(target)};
-  if(kind==="sukunaCleaveCounter"&&(projectile||d>220))return false;
+  const hurt=(target,amount,stun,push)=>{target.hp=Math.max(0,target.hp-amount);target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+nx*push,-60,60);target.vy=clamp((Number(target.vy)||0)+ny*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
   defender.counterKind="";defender.counterWindow=0;
+  if(kind==="sukunaCleaveCounter"&&(projectile||incomingType==="domain"||d>220))return false;
   if(kind==="yutaOutburst"){defender.invuln=Math.max(defender.invuln,.5);if(!projectile){attacker.stun=Math.max(attacker.stun,.48);attacker.x=clamp(attacker.x+nx*8,45,WORLD_WIDTH-45);attacker.y=clamp(attacker.y+ny*8,45,WORLD_HEIGHT-45)}return true}
-  if(kind==="trashSwap"){if(projectile)return true;defender.invuln=Math.max(defender.invuln,.48);defender.x=clamp(attacker.x+nx*68,45,WORLD_WIDTH-45);defender.y=clamp(attacker.y+ny*68,45,WORLD_HEIGHT-45);hurt(attacker,8,.72,12);return true}
+  if(kind==="trashSwap"){defender.invuln=Math.max(defender.invuln,.48);defender.x=clamp(attacker.x+nx*68,45,WORLD_WIDTH-45);defender.y=clamp(attacker.y+ny*68,45,WORLD_HEIGHT-45);hurt(attacker,8,.72,12);return true}
   if(kind==="sukunaCleaveCounter"){defender.invuln=Math.max(defender.invuln,1.15);hurt(attacker,Math.max(14,attacker.hp*.22),1,15);return true}
-  if(kind==="door"){if(projectile)return true;hurt(attacker,5,.5,7);return true}
+  if(kind==="door"){if(incomingType!=="melee")return projectile;hurt(attacker,5,.5,7);return true}
   if(kind==="manji"){defender.invuln=Math.max(defender.invuln,.72);hurt(attacker,8.5,.68,10);return true}
   if(kind==="todoDream"){defender.invuln=Math.max(defender.invuln,.45);hurt(attacker,13,.8,12);return true}
   if(kind==="todoBrothers"){defender.invuln=Math.max(defender.invuln,.6);hurt(attacker,28,1,17);return true}
@@ -507,5 +507,5 @@ killPlayer(p){
    if(target.hp<=0)this.killPlayer(target);
   }
  }
-this.tickProjectiles(dt,now);this.tickFireZones(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=600){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||!o.domainType||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||700,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r||t.invuln>0)continue;const damage=o.domainType==="void"?4:o.domainType==="shrine"?5:3;t.hp=Math.max(0,t.hp-damage);t.stun=Math.max(t.stun,o.domainType==="void"?.7:.18);t.invuln=.25;if(t.hp<=0)this.killPlayer(t)}}}}
+this.tickProjectiles(dt,now);this.tickFireZones(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}if(now-this.domainTickAt>=350){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||o.domainType!=="void"||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||760,120,1600);for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r)continue;t.stun=Math.max(t.stun,.42);t.invuln=0}}}}
 }
