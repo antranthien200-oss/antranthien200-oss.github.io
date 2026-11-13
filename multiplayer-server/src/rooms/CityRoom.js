@@ -1,7 +1,7 @@
 import { Room } from "colyseus";
 import { schema,t } from "@colyseus/schema";
 import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
-const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerState");
+const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerState");
 const BuildingState=schema({stage:t.number().default(0),collapsed:t.boolean().default(false)},"BuildingState");
 const CarState=schema({x:t.number().default(0),y:t.number().default(0),angle:t.number().default(0),vx:t.number().default(0),vy:t.number().default(0),speed:t.number().default(0),occupiedBy:t.string().default(""),destroyed:t.boolean().default(false),respawnTimer:t.number().default(0)},"CarState");
 const PropState=schema({hp:t.number().default(3),alive:t.boolean().default(true),respawnTimer:t.number().default(0)},"PropState");
@@ -65,6 +65,15 @@ export class CityRoom extends Room{
   const now=Date.now(),prev=this.lastUpdateAt.get(id)||now-33,n=normalizePlayerUpdate(payload,p,now-prev);if(!n)return;
   this.lastUpdateAt.set(id,now);
   const previousMotion=p.motionName;
+  p.meter=clamp(Number(payload.meter)||0,0,100);
+  p.consecutiveJackpots=Math.max(0,Math.min(100,Math.floor(Number(payload.consecutiveJackpots)||0)));
+  if(p.awakened){
+   p.awakeFuelDrainRate=clamp(Number(payload.awakeFuelDrainRate)||p.awakeFuelDrainRate,0,3);
+   if(p.character==="restless"&&payload.jackpot===true&&!p.jackpot){
+    p.jackpot=true;p.awakeMode="jackpot";p.awakeFuel=clamp(Number(payload.awakeFuel)||100,0,100);
+    p.awakeFuelDrainRate=clamp(Number(payload.awakeFuelDrainRate)||1,0,3);
+   }
+  }
   p.face=n.face;p.walk=n.walk;p.jump=n.jump;p.block=n.block;p.vx=n.vx;p.vy=n.vy;p.attackAnim=n.attackAnim;p.attackType=n.attackType;
   p.motionName=n.motionName;p.motionProgress=n.motionProgress;p.motionDuration=n.motionDuration;
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
@@ -363,7 +372,16 @@ detonateProjectile(client,payload={}){
    if(live.length)this.broadcast("combat:projectile-state",{projectiles:live,serverTime:now});
   }
  }
- awakenPlayer(client){const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;p.awakened=true;p.meter=0;p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:p.character==="honored"||p.character==="yuta"?25:15));if(p.character==="restless"){p.domainType="hakari";p.domainWindup=1.25;p.domainDuration=120;p.domainTimer=0;p.domainRadius=Math.hypot(WORLD_WIDTH,WORLD_HEIGHT);p.domainX=p.x;p.domainY=p.y}}
+ awakenPlayer(client){
+  const p=this.state.players.get(client.sessionId);if(!p||p.dead||p.awakened||p.meter<100)return;
+  p.awakened=true;p.meter=0;p.awakeFuel=100;p.jackpot=false;p.awakeFuelDrainRate=100/(p.character==="restless"?121.25:60);
+  p.awakeMode=({honored:"sixeyes",vessel:"king",restless:"gamble",ten:"insanity",perfection:"essence",todo:"memories",yuta:"trueLove",trashman:"trashstorm",choso:"brother"})[p.character]||"";
+  p.hp=Math.min(p.maxHp,p.hp+(p.character==="vessel"?45:p.character==="honored"||p.character==="yuta"?25:15));
+  if(p.character==="restless"){
+   p.domainType="hakari";p.domainWindup=1.25;p.domainDuration=120;p.domainTimer=0;p.domainRadius=Math.hypot(WORLD_WIDTH,WORLD_HEIGHT);p.domainX=p.x;p.domainY=p.y;
+   p.domainStunGuaranteed=Array.from(this.state.players.values()).some(q=>q!==p&&!q.dead&&distance(p,q)<600);
+  }
+ }
  resolveCounter(attacker,defender,incomingType="melee"){
   const kind=defender.counterKind;
   if(!kind||defender.counterWindow<=0)return false;
