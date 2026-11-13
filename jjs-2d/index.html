@@ -1945,11 +1945,11 @@ let camera={x:1100,y:750};
 function activeMoves(f){if(f.char==='yuta'){if(f.domainType==='yuta'&&f.domainTimer>0){const moves=(f.awakened?CHARS.yuta.awakeMoves:CHARS.yuta.moves).map(m=>m.slice());moves[3]=f.yutaHeldKatana?['KATANA · '+f.yutaHeldKatana.technique,'Press M1 to run and activate the copied technique']:f.yutaJacobReady?["JACOB'S LADDER",'Press 4 while aiming at a target']:['AUTHENTIC MUTUAL LOVE · '+Math.min(4,f.yutaDomainHits||0)+'/4','Walk near one of the four landed katanas'];return moves}if(f.rikaMode)return f.awakened?YUTA_RIKA_AWAKE_MOVES:YUTA_RIKA_MOVES;if(f.awakened){const moves=CHARS.yuta.awakeMoves.map(m=>m.slice());moves[1]=['COPY: '+YUTA_COPY_OPTIONS[(f.yutaCopyIndex||0)%YUTA_COPY_OPTIONS.length],'Cycle the copied technique with G'];return moves}return CHARS.yuta.moves}if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
 function targetOf(f){
  if(f===player&&onlineMode){
-  if(trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<112&&dist(f,trainingDummy)<980)return trainingDummy}
+  if(trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
   const targets=[...onlineRemotePlayers.values()].filter(t=>!t.dead);
   if(targets.length){const aim=aimWorld();targets.sort((a,b)=>(dist(aim,a)+dist(f,a)*.08)-(dist(aim,b)+dist(f,b)*.08));return targets[0]}
  }
- if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<112&&dist(f,trainingDummy)<980)return trainingDummy}
+ if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
  return f===player?enemy:player;
 }
 function aimedAt(f){return f.team==='player'?aimWorld():{x:player.x,y:player.y}}
@@ -2229,12 +2229,12 @@ function settleThrownCan(p){if(!p||p.kind!=='trashCan'||!p.propRef||p.propRef.ca
 function updateTrashCanRespawns(dt){for(const prop of trashCans){if(prop.carried!=='cooldown')continue;prop.respawnTimer=Math.max(0,(prop.respawnTimer||0)-dt);if(prop.respawnTimer<=0){prop.carried=false;prop.x=prop.homeX;prop.y=prop.homeY;prop.flash=.8;burst(prop.x,prop.y,'#c5d0d9',12,2.5);}}}
 function updateTrainingDummy(dt){
  if(!trainingDummy)return;
- if(trainingDummy.dead){trainingDummy.respawn-=dt;if(trainingDummy.respawn<=0){trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.x=1860;trainingDummy.y=1190;burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14)}return}
- // The dummy is an inert NPC: it never attacks, blocks, counters, or starts a skill.
- trainingDummy.aiDisabled=true;trainingDummy.block=false;trainingDummy.counterWindow=0;trainingDummy.counterKind='';
- trainingDummy.attackAnim=0;trainingDummy.attackType='';trainingDummy.motion=null;trainingDummy.domainWindup=0;trainingDummy.domainTimer=0;trainingDummy.grabTarget=null;trainingDummy.counterWindow=0;trainingDummy.skillCd=[999,999,999,999];trainingDummy.specialCd=999;
+ if(trainingDummy.dead){trainingDummy.respawn-=dt;if(trainingDummy.respawn<=0){trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.motion=null;trainingDummy.attackAnim=0;trainingDummy.attackType='';trainingDummy.x=1860;trainingDummy.y=1190;burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14)}return}
+ // Keep the dummy passive, but preserve hit reactions and knockback from player attacks.
+ trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.block=false;trainingDummy.counterWindow=0;trainingDummy.counterKind='';
+ trainingDummy.domainWindup=0;trainingDummy.domainTimer=0;trainingDummy.grabTarget=null;trainingDummy.skillCd=[999,999,999,999];trainingDummy.specialCd=999;
  trainingDummy.stun=Math.max(0,trainingDummy.stun-dt);trainingDummy.invuln=Math.max(0,trainingDummy.invuln-dt);trainingDummy.flash=Math.max(0,trainingDummy.flash-dt);updateTenEffects(trainingDummy,dt);
- trainingDummy.vx*=Math.pow(.72,dt*60);trainingDummy.vy*=Math.pow(.72,dt*60);
+ trainingDummy.vx*=Math.pow(.84,dt*60);trainingDummy.vy*=Math.pow(.84,dt*60);
  trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1800,1920);trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1130,1250);
 }
 function drawTrashCanScreen(x,y,scale=1,angle=0,flash=0){
@@ -2342,9 +2342,11 @@ function drawTrainingDummy(){
  ctx.fillStyle='#10191f';ctx.beginPath();ctx.ellipse(x,y+23,59,20,0,0,Math.PI*2);ctx.fill();
  ctx.strokeStyle='#75cfc4';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.ellipse(x,y+23,53,17,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
  if(!d.dead){
-  // Same featureless pixel-circle head and pixel-circle fists as the rest of the game.
-  d.team='enemy';d.block=false;d.motion=null;d.attackAnim=0;d.attackType='';
-  drawHeadHands(d);
+  // Render the same round head-and-hands style in white, without changing the real fighter data.
+  const dummyVisual={...d,char:'dummy',team:'enemy',block:false};
+  drawHeadHands(dummyVisual);
+  // Real text is placed over the centre of the dummy's face.
+  ctx.save();ctx.fillStyle='#17212a';ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('[Dummy]',x,y-(d.jump||0)*3-23);ctx.restore();
   const bw=150,bx=x-bw/2,by=y-112;
   ctx.fillStyle='#061216f2';ctx.fillRect(bx,by,bw,35);
   ctx.strokeStyle='#75cfc4';ctx.lineWidth=1.25;ctx.strokeRect(bx,by,bw,35);
@@ -4368,7 +4370,8 @@ const JJS_HEAD_PALETTE={
  todo:{main:'#e58a24',accent:'#ffc26d',shadow:'#7d3e10'},
  yuta:{main:'#e85ca9',accent:'#ffaddb',shadow:'#852b60'},
  choso:{main:'#96374b',accent:'#e15b70',shadow:'#572332'},
- trashman:{main:'#778489',accent:'#bed0ad',shadow:'#39464c'}
+ trashman:{main:'#778489',accent:'#bed0ad',shadow:'#39464c'},
+ dummy:{main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'}
 };
 function getFighterTheme(f){
  if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
