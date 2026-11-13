@@ -1027,6 +1027,7 @@ let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
 let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='SERVER ADDRESS SAVED · CLICK CONNECT',onlineConnecting=false;
 let onlineReconnectTimer=null,onlineReconnectAttempt=0,onlineReconnectStartedAt=0,onlineReconnectToken='';
+let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
 const onlineRemotePlayers=new Map();
 try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL}catch(e){}
@@ -1247,7 +1248,7 @@ function handleOnlineDisconnect(code){
  document.body.classList.remove('game-active','game-paused','online-mode');
  $('menu').style.display='flex';$('hud').style.display='none';
  const onlineHud=$('onlinePlayersHud');if(onlineHud)onlineHud.style.display='none';
- setOnlineStatus(Number(code)===4003?'RECONNECTION FAILED · TRY AGAIN':'CONNECTION LOST · TRY AGAIN');
+ setOnlineStatus(Number(code)===4008?'REMOVED · INACTIVE FOR 5 MINUTES':Number(code)===4003?'RECONNECTION FAILED · TRY AGAIN':'CONNECTION LOST · TRY AGAIN');
  showMenuSub('online');
 }
 function scheduleOnlineReconnect(droppedRoom){
@@ -1376,6 +1377,14 @@ async function joinOnlineServer(){
  }catch(error){onlineRoom=null;onlineClient=null;onlineSessionId=null;const message=String(error&&error.message||error);setOnlineStatus(/full|locked|capacity|available room|seat/i.test(message)?'SERVER FULL · 16/16 PLAYERS':'CONNECTION FAILED · CHECK SERVER URL');console.error('Balls Shenanigan online connection failed:',error)}
  finally{onlineConnecting=false;const b=$('onlineJoinBtn');if(b){b.disabled=false;b.textContent='CONNECT TO THE ONE SERVER'}}
 }
+function sendOnlineActivity(){
+ if(!onlineMode||!onlineRoom)return;
+ const now=Date.now();if(now-onlineActivitySentAt<2500)return;
+ onlineActivitySentAt=now;
+ try{onlineRoom.send('player:activity',{})}catch(error){}
+}
+['keydown','pointerdown','pointermove','touchstart','touchmove','wheel'].forEach(type=>addEventListener(type,sendOnlineActivity,{passive:true}));
+addEventListener('pagehide',()=>{if(onlineMode)leaveOnlineServer()});
 function leaveOnlineServer(){
  const room=onlineRoom;clearOnlineReconnect();
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
@@ -1510,7 +1519,7 @@ syncMobileControls();
 function updatePauseActionButton(){const button=$('restartBtn');if(!button)return;const label=onlineMode?'RESET CHARACTER':'RESTART MATCH';const textNode=Array.from(button.childNodes).find(node=>node.nodeType===3);if(textNode)textNode.textContent=label;button.setAttribute('aria-label',label)}
 function togglePause(){if(!game.started||game.over)return;updatePauseActionButton();game.paused=!game.paused;document.body.classList.toggle('game-paused',game.paused);if(game.paused){stopMobileJoystick();mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none'}
 $('resumeBtn').onclick=togglePause;$('restartBtn').onclick=()=>{if(onlineMode&&onlineRoom){clearHeldInputs();try{onlineRoom.send('player:reset',{});showToast('RESETTING CHARACTER',700)}catch(error){console.warn('Online character reset failed:',error);showToast('RESET FAILED · CHECK CONNECTION',900)}return}resetMatch();game.paused=false;document.body.classList.remove('game-paused');syncMobileControls();$('pause').style.display='none';showToast('ROUND 1',800)};
-$('menuBtn').onclick=()=>{game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused','online-mode');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
+$('menuBtn').onclick=()=>{if(onlineMode){leaveOnlineServer();return}game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused','online-mode');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
 function showToast(){const toast=$('toast');if(toast){toast.textContent='';toast.classList.remove('show')}game.toastTimer=0}function showCombatAnnouncement(message,type='ko'){const el=$('combatNotice');if(!el)return;el.textContent=message;el.classList.remove('ko','death','active');el.classList.add(type);void el.offsetWidth;el.classList.add('active');game.combatNoticeTimer=1.35}
 function registerPlayerHit(target,source,amount){
  if(source!==player||target===player||amount<=0)return;
