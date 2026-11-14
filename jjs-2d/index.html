@@ -975,7 +975,12 @@ const ACCESSORY_SLOTS=[
   {id:'cat-ears',name:'CAT EARS',icon:'♧',desc:'A pair of soft cat ears.'},
   {id:'bunny-ears',name:'BUNNY EARS',icon:'♢',desc:'Tall floppy bunny ears.'},
   {id:'oni-horns',name:'ONI HORNS',icon:'♨',desc:'Small dark red demon horns.'},
-  {id:'sailor-cap',name:'SAILOR CAP',icon:'⌑',desc:'A neat navy anime sailor cap.'}
+  {id:'sailor-cap',name:'SAILOR CAP',icon:'⌑',desc:'A neat navy anime sailor cap.'},
+  {id:'emo-fringe',name:'EMO FRINGE',icon:'◢',desc:'Black side-swept fringe.'},
+  {id:'wolf-ears',name:'WOLF EARS',icon:'♧',desc:'Dark pointed wolf ears.'},
+  {id:'black-headphones',name:'BLACK HEADPHONES',icon:'♬',desc:'Chunky black headphones.'},
+  {id:'broken-crown',name:'BROKEN CROWN',icon:'♜',desc:'A jagged dark crown.'},
+  {id:'cyber-horns',name:'CYBER HORNS',icon:'⌁',desc:'Sleek metallic horns.'}
  ]},
  {id:'face',label:'FACE GEAR',items:[
   {id:'blindfold',name:'BLACK BLINDFOLD',icon:'▰',desc:'A wrapped, layered band with a subtle side clasp.'},
@@ -986,7 +991,12 @@ const ACCESSORY_SLOTS=[
   {id:'star-stickers',name:'STAR STICKERS',icon:'✧',desc:'Tiny golden star stickers.'},
   {id:'pink-blush',name:'PINK BLUSH',icon:'⁙',desc:'Soft pink cheek marks.'},
   {id:'fox-guard',name:'FOX GUARD',icon:'狐',desc:'A blank fox-shaped lower mask.'},
-  {id:'midnight-mask',name:'MIDNIGHT MASK',icon:'▰',desc:'A dark cloth face covering.'}
+  {id:'midnight-mask',name:'MIDNIGHT MASK',icon:'▰',desc:'A dark cloth face covering.'},
+  {id:'glitch-visor',name:'GLITCH VISOR',icon:'▥',desc:'A dark digital visor.'},
+  {id:'cross-mark',name:'CROSS MARK',icon:'✚',desc:'A small scarlet cross mark.'},
+  {id:'dark-monocle',name:'DARK MONOCLE',icon:'◉',desc:'A single cool lens.'},
+  {id:'ink-tears',name:'INK TEARS',icon:'⋮',desc:'Dark streak markings.'},
+  {id:'shadow-mask',name:'SHADOW MASK',icon:'▰',desc:'A plain charcoal face cover.'}
  ]},
  {id:'neck',label:'NECK & BACK',items:[
   {id:'red-scarf',name:'RED SCARF',icon:'≋',desc:'A bold wrapped scarf with two short trailing ends.'},
@@ -997,7 +1007,12 @@ const ACCESSORY_SLOTS=[
   {id:'moon-pendant',name:'MOON PENDANT',icon:'☾',desc:'A silver crescent necklace.'},
   {id:'mini-cape',name:'MINI CAPE',icon:'◈',desc:'A short midnight cape.'},
   {id:'angel-wings',name:'ANGEL WINGS',icon:'♧',desc:'Small white wings at the sides.'},
-  {id:'fluffy-collar',name:'FLUFFY COLLAR',icon:'❋',desc:'A soft winter collar.'}
+  {id:'fluffy-collar',name:'FLUFFY COLLAR',icon:'❋',desc:'A soft winter collar.'},
+  {id:'chain-choker',name:'CHAIN CHOKER',icon:'⛓',desc:'A dark metal choker.'},
+  {id:'spiked-collar',name:'SPIKED COLLAR',icon:'⌑',desc:'A black spiked collar.'},
+  {id:'black-wings',name:'BLACK WINGS',icon:'♧',desc:'Small dark wings.'},
+  {id:'red-tie',name:'RED TIE',icon:'♦',desc:'A narrow crimson tie.'},
+  {id:'strapped-harness',name:'STRAPPED HARNESS',icon:'╳',desc:'Dark crossed shoulder straps.'}
  ]},
  {id:'aura',label:'AURA',items:[
   {id:'blue-flame',name:'BLUE CURSED ENERGY',icon:'✧',desc:'Layered electric arcs and blue energy sparks.'},
@@ -1008,7 +1023,12 @@ const ACCESSORY_SLOTS=[
   {id:'heart-orbit',name:'HEART ORBIT',icon:'♥',desc:'Tiny hearts circling your character.'},
   {id:'starlight',name:'STARLIGHT',icon:'✧',desc:'A ring of twinkling stars.'},
   {id:'toxic-mist',name:'TOXIC MIST',icon:'☣',desc:'A strange green drifting mist.'},
-  {id:'void-rift',name:'VOID RIFT',icon:'◉',desc:'A purple fractured energy ring.'}
+  {id:'void-rift',name:'VOID RIFT',icon:'◉',desc:'A purple fractured energy ring.'},
+  {id:'black-flame',name:'BLACK FLAME',icon:'♨',desc:'Dark flames around you.'},
+  {id:'electric-static',name:'ELECTRIC STATIC',icon:'ϟ',desc:'Sharp violet electric sparks.'},
+  {id:'red-motes',name:'RED MOTES',icon:'✣',desc:'Floating crimson particles.'},
+  {id:'glitch-pulse',name:'GLITCH PULSE',icon:'▦',desc:'A shifting digital ring.'},
+  {id:'frost-ring',name:'FROST RING',icon:'❄',desc:'A pale icy aura.'}
  ]}
 ];const accessoryLoadouts=Object.fromEntries(Object.keys(CHARS).map(k=>[k,{head:'none',face:'none',neck:'none',aura:'none'}]));
 let accessorySlot='head',menuView='',accessoryPreviewHoverId=null,accessoryPreviewFrame=0;
@@ -4659,6 +4679,24 @@ function drawAccessoryAura(f,x,y,scale=1){
   ctx.globalAlpha=.58;ctx.strokeStyle='#d0b0ff';ctx.lineWidth=1.5;
   ctx.beginPath();ctx.ellipse(0,0,22,17,-t*.15,.55,Math.PI*1.55);ctx.stroke();
   for(let i=0;i<6;i++){const a=t*.2+i*Math.PI/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*25,Math.sin(a)*20);ctx.lineTo(Math.cos(a)*34,Math.sin(a)*27);ctx.stroke()}
+ }else if(id==='black-flame'){
+  ctx.globalAlpha=.8;ctx.strokeStyle='#151522';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,26,21,t*.12,.05,Math.PI*1.9);ctx.stroke();
+  ctx.strokeStyle='#694b7e';ctx.lineWidth=1.8;
+  for(let i=0;i<6;i++){const a=t*.22+i*Math.PI/3,px=Math.cos(a)*26,py=Math.sin(a)*21;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.cos(a)*7,py+Math.sin(a)*7);ctx.stroke()}
+ }else if(id==='electric-static'){
+  ctx.globalAlpha=.9;ctx.strokeStyle='#b48aff';ctx.lineWidth=2;
+  for(let i=0;i<7;i++){const a=t*.3+i*Math.PI*2/7,co=Math.cos(a),si=Math.sin(a),r=24+(i%2)*4;ctx.beginPath();ctx.moveTo(co*r,si*r);ctx.lineTo(co*(r+4)-si*3,si*(r+4)+co*3);ctx.lineTo(co*(r+9),si*(r+9));ctx.stroke()}
+ }else if(id==='red-motes'){
+  ctx.globalAlpha=.85;ctx.fillStyle='#e83d58';
+  for(let i=0;i<9;i++){const a=t*.24+i*Math.PI*2/9,r=21+(i%3)*5,px=Math.cos(a)*r,py=Math.sin(a)*r;ctx.fillRect(Math.round(px-1.5),Math.round(py-1.5),3,3)}
+ }else if(id==='glitch-pulse'){
+  const shift=Math.sin(t*3)*3;ctx.globalAlpha=.65;ctx.strokeStyle='#8b70b9';ctx.lineWidth=2;ctx.strokeRect(-25+shift,-20,50,40);
+  ctx.strokeStyle='#c0a4e8';ctx.lineWidth=1.4;ctx.strokeRect(-20-shift,-24,40,48);
+  ctx.fillStyle='#b49bdf';for(let i=0;i<4;i++)ctx.fillRect(-29+(i*17+Math.floor(t*9)%7),-8+i*6,5,2);
+ }else if(id==='frost-ring'){
+  ctx.globalAlpha=.8;ctx.strokeStyle='#a8eaff';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,27,22,-t*.08,.12,Math.PI*1.9);ctx.stroke();
+  ctx.strokeStyle='#e4faff';ctx.lineWidth=1;
+  for(let i=0;i<8;i++){const a=t*.12+i*Math.PI/4,px=Math.cos(a)*27,py=Math.sin(a)*22;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.cos(a)*5,py+Math.sin(a)*5);ctx.stroke()}
  }
  ctx.restore();
 }
@@ -4719,6 +4757,20 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   ctx.fillStyle='#aebbd0';
   for(let i=0;i<9;i++){const ang=Math.PI+i*Math.PI/8,px=Math.cos(ang)*13,py=9+Math.sin(ang)*5;ctx.beginPath();ctx.arc(px,py,3.4,0,Math.PI*2);ctx.fill()}
   ctx.strokeStyle='#eaf1ff';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,8,14,.08*Math.PI,.92*Math.PI);ctx.stroke();
+ }else if(a.neck==='chain-choker'){
+  ctx.strokeStyle='#111722';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,4,13,.15*Math.PI,.85*Math.PI);ctx.stroke();
+  ctx.strokeStyle='#8791a7';ctx.lineWidth=1.4;ctx.beginPath();ctx.arc(0,4,13,.15*Math.PI,.85*Math.PI);ctx.stroke();
+ }else if(a.neck==='spiked-collar'){
+  ctx.strokeStyle='#202637';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,4,14,.12*Math.PI,.88*Math.PI);ctx.stroke();
+  ctx.fillStyle='#555a70';ctx.strokeStyle='#080c16';ctx.lineWidth=1;
+  for(let i=0;i<7;i++){const ang=.15*Math.PI+i*.7*Math.PI/6,px=Math.cos(ang)*14,py=4+Math.sin(ang)*14;ctx.beginPath();ctx.moveTo(px-2,py);ctx.lineTo(px,py-5);ctx.lineTo(px+2,py);ctx.fill();ctx.stroke()}
+ }else if(a.neck==='black-wings'){
+  for(const side of [-1,1]){ctx.save();ctx.translate(side*14,12);ctx.scale(side,1);polygon([[0,0],[-5,-7],[-12,-10],[-10,-3],[-16,0],[-8,6],[-1,5]],'#24283c','#080b14',1.5);ctx.strokeStyle='#77718f';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-3,-2);ctx.lineTo(-10,3);ctx.moveTo(-2,2);ctx.lineTo(-7,5);ctx.stroke();ctx.restore()}
+ }else if(a.neck==='red-tie'){
+  polygon([[-3,7],[3,7],[2,13],[5,24],[0,27],[-5,24],[-2,13]],'#9d233b','#4d1225',1.2);polygon([[-3,7],[3,7],[2,11],[-2,11]],'#d9475d',null);
+ }else if(a.neck==='strapped-harness'){
+  ctx.strokeStyle='#101827';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-17,5);ctx.lineTo(14,24);ctx.moveTo(17,5);ctx.lineTo(-14,24);ctx.stroke();
+  ctx.strokeStyle='#65718b';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-17,5);ctx.lineTo(14,24);ctx.moveTo(17,5);ctx.lineTo(-14,24);ctx.stroke();ctx.fillStyle='#b0a5bb';ctx.fillRect(-2,12,4,4);
  }
 
  // Headwear uses crisp silhouettes, layered edges, and small material highlights.
@@ -4767,6 +4819,20 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   polygon([[-17,-14],[-13,-22],[-4,-25],[7,-23],[15,-17],[13,-12],[-14,-12]],'#263f69','#101d35',1.8);
   polygon([[-13,-14],[14,-14],[19,-10],[8,-8],[-17,-10]],'#e9edf5','#64758c',1.3);
   ctx.fillStyle='#e36b91';ctx.fillRect(-2,-19,4,3);
+ }else if(a.head==='emo-fringe'){
+  polygon([[-15,-9],[-16,-19],[-10,-23],[-4,-22],[2,-26],[9,-22],[15,-16],[15,-8],[9,-12],[5,-4],[1,-13],[-4,-3],[-7,-13],[-13,-7]],'#141522','#05060c',1.4);
+  ctx.fillStyle='#4d5268';ctx.fillRect(-8,-20,3,2);ctx.fillRect(1,-23,3,2);
+ }else if(a.head==='wolf-ears'){
+  polygon([[-15,-10],[-18,-28],[-4,-17]],'#262537','#090912',1.7);polygon([[15,-10],[18,-28],[4,-17]],'#262537','#090912',1.7);
+  polygon([[-14,-15],[-16,-24],[-8,-18]],'#65506d',null);polygon([[14,-15],[16,-24],[8,-18]],'#65506d',null);
+ }else if(a.head==='black-headphones'){
+  ctx.strokeStyle='#090b13';ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,-1,18,Math.PI,Math.PI*2);ctx.stroke();
+  ctx.fillStyle='#262b3d';ctx.fillRect(-20,-5,6,13);ctx.fillRect(14,-5,6,13);ctx.fillStyle='#777b94';ctx.fillRect(-19,-3,2,8);ctx.fillRect(17,-3,2,8);
+ }else if(a.head==='broken-crown'){
+  polygon([[-15,-13],[-14,-24],[-7,-17],[-4,-27],[1,-18],[5,-23],[8,-17],[14,-20],[13,-12]],'#252536','#090912',1.7);
+  ctx.fillStyle='#6d607d';ctx.fillRect(-12,-13,24,3);ctx.fillStyle='#c34a65';ctx.fillRect(-2,-19,4,3);
+ }else if(a.head==='cyber-horns'){
+  for(const side of [-1,1]){polygon([[side*4,-14],[side*7,-22],[side*15,-25],[side*10,-16]],'#41465d','#111522',1.5);ctx.strokeStyle='#a1b7d9';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(side*8,-18);ctx.lineTo(side*13,-23);ctx.stroke()}
  }
 
  // Face gear is deliberately featureless: no eyes, nose, mouth, or face-shaped graphics.
@@ -4819,6 +4885,20 @@ function drawAccessoryOverlays(f,x,y,scale=1){
  }else if(a.face==='midnight-mask'){
   polygon([[-15,-1],[-11,1],[11,1],[15,-1],[13,12],[8,15],[-8,15],[-13,12]],'#172033','#080d18',1.5);
   ctx.strokeStyle='#526b8d';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-9,5);ctx.lineTo(9,5);ctx.moveTo(-7,9);ctx.lineTo(7,9);ctx.stroke();
+ }else if(a.face==='glitch-visor'){
+  polygon([[-17,-8],[-13,-11],[13,-11],[17,-8],[14,0],[-14,0]],'#101322','#05070e',1.7);
+  ctx.fillStyle='#8b78bc';ctx.fillRect(-11,-7,7,2);ctx.fillRect(1,-4,8,2);ctx.fillStyle='#e5b9ff';ctx.fillRect(-5,-3,3,1);
+ }else if(a.face==='cross-mark'){
+  ctx.fillStyle='#c52b49';ctx.fillRect(-2,-13,4,15);ctx.fillRect(-7,-8,14,4);ctx.fillStyle='#f07b8d';ctx.fillRect(-1,-12,2,4);
+ }else if(a.face==='dark-monocle'){
+  ctx.strokeStyle='#29263a';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(7,-5,6,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#8c92af';ctx.lineWidth=1;ctx.beginPath();ctx.arc(7,-5,4,Math.PI*1.1,Math.PI*1.9);ctx.stroke();ctx.beginPath();ctx.moveTo(12,0);ctx.lineTo(15,5);ctx.stroke();
+ }else if(a.face==='ink-tears'){
+  ctx.fillStyle='#272638';ctx.beginPath();ctx.moveTo(-10,-2);ctx.quadraticCurveTo(-13,4,-10,9);ctx.quadraticCurveTo(-7,4,-10,-2);ctx.fill();
+  ctx.beginPath();ctx.moveTo(10,-2);ctx.quadraticCurveTo(7,4,10,9);ctx.quadraticCurveTo(13,4,10,-2);ctx.fill();
+ }else if(a.face==='shadow-mask'){
+  polygon([[-15,-1],[-11,1],[11,1],[15,-1],[13,13],[8,15],[-8,15],[-13,13]],'#171923','#070910',1.5);
+  ctx.fillStyle='#36394d';ctx.fillRect(-10,4,20,2);
  }
  ctx.restore();
 }
