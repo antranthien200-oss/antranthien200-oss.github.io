@@ -970,28 +970,47 @@ const ACCESSORY_SLOTS=[
   {id:'spikes-white',name:'WHITE SPIKES',icon:'✦',desc:'Layered ivory spikes with cool steel edging.'},
   {id:'spikes-black',name:'BLACK SPIKES',icon:'✧',desc:'A sharp obsidian crown with blue-grey highlights.'},
   {id:'crown',name:'CURSED CROWN',icon:'♛',desc:'An ornate gold crown set with a crimson curse gem.'},
-  {id:'halo',name:'FLOATING HALO',icon:'◎',desc:'A suspended double-ring halo with tiny light marks.'}
+  {id:'halo',name:'FLOATING HALO',icon:'◎',desc:'A suspended double-ring halo with tiny light marks.'},
+  {id:'pink-bow',name:'PINK BOW',icon:'🎀',desc:'A cute pink ribbon bow.'},
+  {id:'cat-ears',name:'CAT EARS',icon:'♧',desc:'A pair of soft cat ears.'},
+  {id:'bunny-ears',name:'BUNNY EARS',icon:'♢',desc:'Tall floppy bunny ears.'},
+  {id:'oni-horns',name:'ONI HORNS',icon:'♨',desc:'Small dark red demon horns.'},
+  {id:'sailor-cap',name:'SAILOR CAP',icon:'⌑',desc:'A neat navy anime sailor cap.'}
  ]},
  {id:'face',label:'FACE GEAR',items:[
   {id:'blindfold',name:'BLACK BLINDFOLD',icon:'▰',desc:'A wrapped, layered band with a subtle side clasp.'},
   {id:'shades',name:'CURSED VISOR',icon:'◫',desc:'One seamless blue-glass visor with a bright reflection.'},
   {id:'oni-mask',name:'BLANK PORCELAIN GUARD',icon:'⬟',desc:'A smooth, faceted lower-face guard with no features.'},
-  {id:'sukuna-marks',name:'CRIMSON SIGIL',icon:'ϟ',desc:'Angular crimson curse runes along the temples.'}
+  {id:'sukuna-marks',name:'CRIMSON SIGIL',icon:'ϟ',desc:'Angular crimson curse runes along the temples.'},
+  {id:'heart-glasses',name:'HEART GLASSES',icon:'♡',desc:'Cute pink heart-shaped glasses.'},
+  {id:'star-stickers',name:'STAR STICKERS',icon:'✧',desc:'Tiny golden star stickers.'},
+  {id:'pink-blush',name:'PINK BLUSH',icon:'⁙',desc:'Soft pink cheek marks.'},
+  {id:'fox-guard',name:'FOX GUARD',icon:'狐',desc:'A blank fox-shaped lower mask.'},
+  {id:'midnight-mask',name:'MIDNIGHT MASK',icon:'▰',desc:'A dark cloth face covering.'}
  ]},
  {id:'neck',label:'NECK & BACK',items:[
   {id:'red-scarf',name:'RED SCARF',icon:'≋',desc:'A bold wrapped scarf with two short trailing ends.'},
   {id:'black-scarf',name:'SHADOW SCARF',icon:'⌁',desc:'A midnight wrap trimmed with cold blue stitching.'},
   {id:'gold-chain',name:'GOLD CHAIN',icon:'◇',desc:'A linked gold necklace with a small diamond pendant.'},
-  {id:'raised-collar',name:'RAISED COLLAR',icon:'⋀',desc:'Armored side panels with metal seams and rivets.'}
+  {id:'raised-collar',name:'RAISED COLLAR',icon:'⋀',desc:'Armored side panels with metal seams and rivets.'},
+  {id:'pink-ribbon',name:'PINK RIBBON',icon:'🎀',desc:'A pastel ribbon tied at the neck.'},
+  {id:'moon-pendant',name:'MOON PENDANT',icon:'☾',desc:'A silver crescent necklace.'},
+  {id:'mini-cape',name:'MINI CAPE',icon:'◈',desc:'A short midnight cape.'},
+  {id:'angel-wings',name:'ANGEL WINGS',icon:'♧',desc:'Small white wings at the sides.'},
+  {id:'fluffy-collar',name:'FLUFFY COLLAR',icon:'❋',desc:'A soft winter collar.'}
  ]},
  {id:'aura',label:'AURA',items:[
   {id:'blue-flame',name:'BLUE CURSED ENERGY',icon:'✧',desc:'Layered electric arcs and blue energy sparks.'},
   {id:'crimson-flame',name:'CRIMSON ENERGY',icon:'✹',desc:'A jagged red energy ring with sharp flares.'},
   {id:'shadow-smoke',name:'SHADOW SMOKE',icon:'◌',desc:'Dark drifting wisps with muted violet edges.'},
-  {id:'jackpot-sparks',name:'JACKPOT SPARKS',icon:'✦',desc:'Orbiting gold diamonds and bright square sparks.'}
+  {id:'jackpot-sparks',name:'JACKPOT SPARKS',icon:'✦',desc:'Orbiting gold diamonds and bright square sparks.'},
+  {id:'sakura-petals',name:'SAKURA PETALS',icon:'❀',desc:'Pink petals floating around you.'},
+  {id:'heart-orbit',name:'HEART ORBIT',icon:'♥',desc:'Tiny hearts circling your character.'},
+  {id:'starlight',name:'STARLIGHT',icon:'✧',desc:'A ring of twinkling stars.'},
+  {id:'toxic-mist',name:'TOXIC MIST',icon:'☣',desc:'A strange green drifting mist.'},
+  {id:'void-rift',name:'VOID RIFT',icon:'◉',desc:'A purple fractured energy ring.'}
  ]}
-];
-const accessoryLoadouts=Object.fromEntries(Object.keys(CHARS).map(k=>[k,{head:'none',face:'none',neck:'none',aura:'none'}]));
+];const accessoryLoadouts=Object.fromEntries(Object.keys(CHARS).map(k=>[k,{head:'none',face:'none',neck:'none',aura:'none'}]));
 let accessorySlot='head',menuView='',accessoryPreviewHoverId=null,accessoryPreviewFrame=0;
 function getFighterLook(f){return CHARS[f.char]||CHARS.honored}
 function getFighterAccessories(f){return f&&f.accessoryPreview?f.accessoryPreview:(f&&f.team==='player'?(accessoryLoadouts[f.char]||{}):{})}
@@ -4605,6 +4624,41 @@ function drawAccessoryAura(f,x,y,scale=1){
    if(i%3===0){ctx.strokeStyle='#fff0b0';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-6);ctx.lineTo(0,6);ctx.stroke()}
    ctx.restore();
   }
+ }else if(id==='sakura-petals'){
+  ctx.globalAlpha=.86;
+  for(let i=0;i<7;i++){
+   const a=t*.45+i*Math.PI*2/7,r=27+Math.sin(t*2+i)*3,px=Math.cos(a)*r,py=Math.sin(a)*r;
+   ctx.save();ctx.translate(px,py);ctx.rotate(a+t*.3);
+   ctx.fillStyle=i%2?'#f58fb6':'#ffd2e2';
+   ctx.beginPath();ctx.ellipse(0,0,3.2,5.5,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  }
+ }else if(id==='heart-orbit'){
+  ctx.globalAlpha=.9;
+  for(let i=0;i<5;i++){
+   const a=-t*.55+i*Math.PI*2/5,r=28,px=Math.cos(a)*r,py=Math.sin(a)*r;
+   ctx.save();ctx.translate(px,py);
+   ctx.fillStyle=i%2?'#ff7da9':'#ffc0d8';
+   ctx.beginPath();ctx.moveTo(0,4);ctx.bezierCurveTo(-9,-2,-5,-8,0,-4);ctx.bezierCurveTo(5,-8,9,-2,0,4);ctx.fill();ctx.restore();
+  }
+ }else if(id==='starlight'){
+  ctx.globalAlpha=.9;
+  for(let i=0;i<9;i++){
+   const a=t*.28+i*Math.PI*2/9,r=26+(i%2)*5,px=Math.cos(a)*r,py=Math.sin(a)*r,size=i%3===0?4:2.8;
+   ctx.save();ctx.translate(px,py);ctx.rotate(a+t*.2);ctx.fillStyle=i%2?'#fff2a8':'#c7edff';ctx.beginPath();
+   for(let j=0;j<8;j++){const q=-Math.PI/2+j*Math.PI/4,rr=j%2?size*.35:size;if(j===0)ctx.moveTo(Math.cos(q)*rr,Math.sin(q)*rr);else ctx.lineTo(Math.cos(q)*rr,Math.sin(q)*rr)}
+   ctx.closePath();ctx.fill();ctx.restore();
+  }
+ }else if(id==='toxic-mist'){
+  ctx.globalAlpha=.32;ctx.strokeStyle='#83e59a';ctx.lineWidth=5;
+  for(let i=0;i<4;i++){const a=t*.32+i*Math.PI/2,px=Math.cos(a)*25,py=Math.sin(a)*20;ctx.beginPath();ctx.arc(px,py,5+Math.sin(t*2+i)*1.5,0,Math.PI*1.7);ctx.stroke()}
+  ctx.globalAlpha=.7;ctx.fillStyle='#b1f6a7';
+  for(let i=0;i<5;i++){const a=-t*.3+i*Math.PI*2/5;ctx.fillRect(Math.round(Math.cos(a)*29),Math.round(Math.sin(a)*23),2,2)}
+ }else if(id==='void-rift'){
+  ctx.globalAlpha=.76;ctx.strokeStyle='#8b62d8';ctx.lineWidth=3;ctx.setLineDash([5,4]);
+  ctx.beginPath();ctx.ellipse(0,0,27,22,t*.12,.12,Math.PI*1.88);ctx.stroke();ctx.setLineDash([]);
+  ctx.globalAlpha=.58;ctx.strokeStyle='#d0b0ff';ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.ellipse(0,0,22,17,-t*.15,.55,Math.PI*1.55);ctx.stroke();
+  for(let i=0;i<6;i++){const a=t*.2+i*Math.PI/3;ctx.beginPath();ctx.moveTo(Math.cos(a)*25,Math.sin(a)*20);ctx.lineTo(Math.cos(a)*34,Math.sin(a)*27);ctx.stroke()}
  }
  ctx.restore();
 }
@@ -4643,6 +4697,28 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   polygon([[14,6],[11,8],[9,14],[12,16],[15,13]],'#344964','#101827',1);
   ctx.strokeStyle='#8ab4d6';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(-14,8);ctx.lineTo(-11,14);ctx.moveTo(14,8);ctx.lineTo(11,14);ctx.stroke();
   ctx.fillStyle='#e1c47e';ctx.fillRect(-13,17,2,2);ctx.fillRect(11,17,2,2);
+ }else if(a.neck==='pink-ribbon'){
+  polygon([[-14,8],[-10,10],[10,10],[14,8],[12,15],[-12,15]],'#e88bb9','#8e4775',1.5);
+  polygon([[-2,12],[-11,7],[-14,13],[-4,16]],'#ffb8d8','#a85c8d',1.2);
+  polygon([[2,12],[11,7],[14,13],[4,16]],'#ffb8d8','#a85c8d',1.2);
+  ctx.fillStyle='#ffe5f1';ctx.fillRect(-1,11,2,3);
+ }else if(a.neck==='moon-pendant'){
+  ctx.strokeStyle='#aeb8cd';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(0,1,13,.12*Math.PI,.88*Math.PI);ctx.stroke();
+  ctx.fillStyle='#dce8ff';ctx.beginPath();ctx.arc(0,14,4.5,.25,Math.PI*1.75);ctx.fill();
+  ctx.globalCompositeOperation='destination-out';ctx.beginPath();ctx.arc(2,12,4,.2,Math.PI*1.8);ctx.fill();ctx.globalCompositeOperation='source-over';
+ }else if(a.neck==='mini-cape'){
+  polygon([[-13,5],[-19,11],[-18,24],[-9,21],[0,25],[9,21],[18,24],[19,11],[13,5],[8,13],[-8,13]],'#303052','#111426',1.5);
+  polygon([[-8,13],[0,16],[8,13],[5,22],[0,25],[-5,22]],'#684b88','#28213d',1);
+ }else if(a.neck==='angel-wings'){
+  for(const side of [-1,1]){
+   ctx.save();ctx.translate(side*15,10);ctx.scale(side,1);
+   polygon([[0,0],[-4,-5],[-10,-5],[-8,0],[-12,3],[-7,7],[-2,6]],'#f4f5ff','#9ca9c2',1.2);
+   ctx.strokeStyle='#ffffff';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-3,-2);ctx.lineTo(-8,3);ctx.moveTo(-2,1);ctx.lineTo(-6,5);ctx.stroke();ctx.restore();
+  }
+ }else if(a.neck==='fluffy-collar'){
+  ctx.fillStyle='#aebbd0';
+  for(let i=0;i<9;i++){const ang=Math.PI+i*Math.PI/8,px=Math.cos(ang)*13,py=9+Math.sin(ang)*5;ctx.beginPath();ctx.arc(px,py,3.4,0,Math.PI*2);ctx.fill()}
+  ctx.strokeStyle='#eaf1ff';ctx.lineWidth=1.2;ctx.beginPath();ctx.arc(0,8,14,.08*Math.PI,.92*Math.PI);ctx.stroke();
  }
 
  // Headwear uses crisp silhouettes, layered edges, and small material highlights.
@@ -4668,6 +4744,29 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   ctx.strokeStyle='#fff0b3';ctx.lineWidth=1.1;ctx.beginPath();ctx.ellipse(-.4,-1.2,14.5,3.4,0,Math.PI*1.04,Math.PI*1.9);ctx.stroke();
   ctx.fillStyle='#fff1bb';for(const px of [-10,0,10])ctx.fillRect(px-1,-6,2,2);
   ctx.restore();
+ }else if(a.head==='pink-bow'){
+  polygon([[-2,-18],[-11,-25],[-14,-19],[-12,-13],[-3,-15]],'#f7a4ce','#a84f82',1.5);
+  polygon([[2,-18],[11,-25],[14,-19],[12,-13],[3,-15]],'#f7a4ce','#a84f82',1.5);
+  polygon([[-3,-20],[3,-20],[4,-15],[0,-13],[-4,-15]],'#ffe0ef','#b96a98',1.2);
+ }else if(a.head==='cat-ears'){
+  polygon([[-15,-10],[-17,-27],[-4,-17]],'#343047','#151323',1.7);
+  polygon([[15,-10],[17,-27],[4,-17]],'#343047','#151323',1.7);
+  polygon([[-14,-14],[-15,-23],[-8,-17]],'#f5a7c2',null);
+  polygon([[14,-14],[15,-23],[8,-17]],'#f5a7c2',null);
+ }else if(a.head==='bunny-ears'){
+  ctx.save();ctx.translate(-7,-19);ctx.rotate(-.16);
+  ctx.fillStyle='#f4edf4';ctx.strokeStyle='#a9a0b0';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,-9,4.5,13,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#f2a5c1';ctx.beginPath();ctx.ellipse(0,-9,2,9,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.save();ctx.translate(7,-19);ctx.rotate(.16);
+  ctx.fillStyle='#f4edf4';ctx.strokeStyle='#a9a0b0';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,-9,4.5,13,0,0,Math.PI*2);ctx.fill();ctx.stroke();
+  ctx.fillStyle='#f2a5c1';ctx.beginPath();ctx.ellipse(0,-9,2,9,0,0,Math.PI*2);ctx.fill();ctx.restore();
+ }else if(a.head==='oni-horns'){
+  ctx.fillStyle='#4e172c';ctx.strokeStyle='#1d0b17';ctx.lineWidth=1.5;
+  for(const side of [-1,1]){ctx.beginPath();ctx.moveTo(side*5,-14);ctx.quadraticCurveTo(side*12,-21,side*13,-28);ctx.quadraticCurveTo(side*6,-24,side*5,-14);ctx.fill();ctx.stroke();ctx.strokeStyle='#d86a78';ctx.beginPath();ctx.moveTo(side*7,-17);ctx.lineTo(side*11,-24);ctx.stroke();ctx.strokeStyle='#1d0b17'}
+ }else if(a.head==='sailor-cap'){
+  polygon([[-17,-14],[-13,-22],[-4,-25],[7,-23],[15,-17],[13,-12],[-14,-12]],'#263f69','#101d35',1.8);
+  polygon([[-13,-14],[14,-14],[19,-10],[8,-8],[-17,-10]],'#e9edf5','#64758c',1.3);
+  ctx.fillStyle='#e36b91';ctx.fillRect(-2,-19,4,3);
  }
 
  // Face gear is deliberately featureless: no eyes, nose, mouth, or face-shaped graphics.
@@ -4698,6 +4797,28 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   ctx.moveTo(-9,-12);ctx.lineTo(-6,-15);ctx.lineTo(-4,-12);ctx.moveTo(9,-12);ctx.lineTo(6,-15);ctx.lineTo(4,-12);ctx.stroke();
   ctx.fillStyle='#ff8da1';ctx.fillRect(-13,-12,2,2);ctx.fillRect(11,-12,2,2);
   ctx.restore();
+ }else if(a.face==='heart-glasses'){
+  for(const side of [-1,1]){
+   ctx.save();ctx.translate(side*7,-4);ctx.scale(side,1);
+   ctx.strokeStyle='#713d67';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-5,-1);ctx.bezierCurveTo(-8,-7,-1,-9,0,-4);ctx.bezierCurveTo(2,-9,8,-7,5,-1);ctx.lineTo(0,5);ctx.closePath();ctx.stroke();
+   ctx.fillStyle='rgba(255,151,198,.48)';ctx.fill();ctx.restore();
+  }
+  ctx.strokeStyle='#713d67';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(-2,-4);ctx.lineTo(2,-4);ctx.stroke();
+ }else if(a.face==='star-stickers'){
+  for(const side of [-1,1]){
+   ctx.save();ctx.translate(side*12,-5);ctx.rotate(side*.16);ctx.fillStyle='#ffd96c';ctx.strokeStyle='#a57935';ctx.lineWidth=.8;ctx.beginPath();
+   for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,r=i%2?1.5:4.1;if(i===0)ctx.moveTo(Math.cos(a)*r,Math.sin(a)*r);else ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r)}
+   ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+  }
+ }else if(a.face==='pink-blush'){
+  ctx.fillStyle='#f58eae';ctx.globalAlpha=.68;ctx.fillRect(-13,3,5,2);ctx.fillRect(-12,6,4,2);ctx.fillRect(8,3,5,2);ctx.fillRect(8,6,4,2);
+ }else if(a.face==='fox-guard'){
+  polygon([[-15,-1],[-18,-12],[-8,-7],[0,-3],[8,-7],[18,-12],[15,-1],[12,11],[5,16],[-5,16],[-12,11]],'#e8e5e2','#777481',1.5);
+  polygon([[-12,0],[-9,3],[-7,9],[0,12],[7,9],[9,3],[12,0],[10,11],[5,14],[-5,14],[-10,11]],'#f7f5f2','#b5acb6',.8);
+  ctx.fillStyle='#ba6c89';ctx.fillRect(-13,-6,3,2);ctx.fillRect(10,-6,3,2);
+ }else if(a.face==='midnight-mask'){
+  polygon([[-15,-1],[-11,1],[11,1],[15,-1],[13,12],[8,15],[-8,15],[-13,12]],'#172033','#080d18',1.5);
+  ctx.strokeStyle='#526b8d';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(-9,5);ctx.lineTo(9,5);ctx.moveTo(-7,9);ctx.lineTo(7,9);ctx.stroke();
  }
  ctx.restore();
 }
@@ -4709,40 +4830,6 @@ function drawSukunaSmileFace(alpha=1){
  ctx.textAlign='center';ctx.textBaseline='middle';
  ctx.font='bold 22px monospace';
  ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
- ctx.restore();
-}
-function drawAccessoryOverlays(f,x,y,scale=1){
- const a=getFighterAccessories(f);if(!Object.values(a).some(v=>v&&v!=='none'))return;
- ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
- if(a.neck==='red-scarf'||a.neck==='black-scarf'){
-  const col=a.neck==='red-scarf'?'#cf354d':'#202b40',edge=a.neck==='red-scarf'?'#641f32':'#101722';
-  ctx.fillStyle=edge;ctx.fillRect(-15,8,30,9);ctx.fillStyle=col;ctx.fillRect(-14,8,28,6);ctx.fillRect(-10,14,8,8);ctx.fillRect(4,13,8,10);
- }else if(a.neck==='gold-chain'){
-  ctx.strokeStyle='#8e672f';ctx.lineWidth=4;ctx.beginPath();ctx.arc(0,3,13,.2,Math.PI-.2);ctx.stroke();ctx.strokeStyle='#ffd66d';ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,3,13,.2,Math.PI-.2);ctx.stroke();ctx.fillStyle='#ffe08b';for(let i=-2;i<=2;i++)ctx.fillRect(i*4-1,13-Math.abs(i),3,3);
- }else if(a.neck==='raised-collar'){
-  ctx.fillStyle='#0e1725';ctx.fillRect(-17,5,7,14);ctx.fillRect(10,5,7,14);ctx.fillStyle='#52647e';ctx.fillRect(-16,6,3,10);ctx.fillRect(13,6,3,10);
- }
- if(a.head==='spikes-white'||a.head==='spikes-black'){
-  const col=a.head==='spikes-white'?'#edf4ff':'#101620',edge=a.head==='spikes-white'?'#64758e':'#05080d';
-  ctx.fillStyle=edge;ctx.fillRect(-15,-17,30,7);ctx.fillRect(-13,-22,6,8);ctx.fillRect(-5,-25,7,11);ctx.fillRect(5,-23,6,9);
-  ctx.fillStyle=col;ctx.fillRect(-13,-16,26,4);ctx.fillRect(-11,-21,4,7);ctx.fillRect(-4,-24,5,9);ctx.fillRect(6,-22,4,7);ctx.fillRect(12,-18,3,5);
- }else if(a.head==='crown'){
-  ctx.fillStyle='#7d4e24';ctx.fillRect(-14,-18,28,9);ctx.fillStyle='#f0bd4f';ctx.fillRect(-13,-20,26,7);ctx.fillRect(-12,-26,5,8);ctx.fillRect(-2,-29,5,11);ctx.fillRect(8,-26,5,8);ctx.fillStyle='#ff637a';ctx.fillRect(-2,-17,5,4);
- }else if(a.head==='halo'){
-  ctx.save();ctx.strokeStyle='#614b26';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,-23,15,5,0,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#ffe18b';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-23,15,5,0,0,Math.PI*2);ctx.stroke();ctx.restore();
- }
- if(a.face==='blindfold'){
-  ctx.fillStyle='#080d16';ctx.fillRect(-16,-7,32,8);ctx.fillStyle='#35465f';ctx.fillRect(-15,-6,30,2);
- }else if(a.face==='shades'){
-  // A single visor panel: no separate eye shapes or facial details.
-  ctx.fillStyle='#071320';ctx.fillRect(-16,-8,32,10);ctx.fillStyle='#3b9dcc';ctx.fillRect(-14,-7,28,6);ctx.fillStyle='#9beaff';ctx.fillRect(-12,-6,24,2);
- }else if(a.face==='oni-mask'){
-  // Smooth blank guard with a simple rim; deliberately no eyes, nose, or mouth.
-  ctx.fillStyle='#8995a5';ctx.fillRect(-13,0,26,12);ctx.fillStyle='#edf1f5';ctx.fillRect(-11,1,22,9);ctx.fillStyle='#c4ccd6';ctx.fillRect(-9,2,18,1);
- }else if(a.face==='sukuna-marks'){
-  // Abstract geometric curse sigils rather than eyes or other facial features.
-  ctx.fillStyle='#a72b43';ctx.fillRect(-15,-10,4,3);ctx.fillRect(-11,-7,3,3);ctx.fillRect(-14,-4,3,3);ctx.fillRect(11,-10,4,3);ctx.fillRect(8,-7,3,3);ctx.fillRect(11,-4,3,3);ctx.fillRect(-3,8,6,2);
- }
  ctx.restore();
 }
 function drawFloatingHand(x,y,angle,theme,scale=1){
