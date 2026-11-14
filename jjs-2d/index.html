@@ -3623,6 +3623,28 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
  }
  return true;
 }
+
+function damagePropsAlongRay(f,angle,maxRange=260){
+ if(!f||!Number.isFinite(angle))return false;
+ const aim=aimedAt(f),aimDistance=Math.hypot(aim.x-f.x,aim.y-f.y),range=Math.max(80,Math.min(maxRange,aimDistance+18));
+ const dx=Math.cos(angle),dy=Math.sin(angle);let hit=null,nearest=Infinity;
+ for(const prop of destructibles){
+  if(!prop.alive)continue;
+  let lo=0,hi=range;
+  if(Math.abs(dx)<1e-7){if(f.x<prop.x||f.x>prop.x+prop.w)continue}
+  else{let a=(prop.x-f.x)/dx,b=(prop.x+prop.w-f.x)/dx;if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b)}
+  if(Math.abs(dy)<1e-7){if(f.y<prop.y||f.y>prop.y+prop.h)continue}
+  else{let a=(prop.y-f.y)/dy,b=(prop.y+prop.h-f.y)/dy;if(a>b)[a,b]=[b,a];lo=Math.max(lo,a);hi=Math.min(hi,b)}
+  if(hi>=Math.max(lo,18)&&lo<nearest){nearest=lo;hit=prop}
+ }
+ if(!hit)return false;
+ if(onlineMode&&f===player&&onlineRoom){try{onlineRoom.send('world:prop-hit',{propId:hit.id})}catch(error){}return true}
+ hit.hp=0;hit.alive=false;hit.respawnTimer=15;
+ const cx=hit.x+hit.w/2,cy=hit.y+hit.h/2;
+ addDebris(cx,cy,hit.color,22);burst(cx,cy,'#f9e6c7',15,4);game.shake=Math.max(game.shake,4);
+ popText(cx,cy-38,'CRATE SMASHED','#f4e2bc',13);
+ return true;
+}
 const CLASHABLE_DOMAINS=['void','shrine','soul','hakari','yuta','trash'];
 function canDomainClash(a,b){
  if(!a||!b||a.dead||b.dead||!CLASHABLE_DOMAINS.includes(a.domainType)||!CLASHABLE_DOMAINS.includes(b.domainType))return false;
@@ -4578,9 +4600,10 @@ function useAttack(f,kind){
  if(kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
  if(['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
  if(kind==='special'&&f.specialCd>0)return;
+ if(kind==='dash'){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
  if(onlineMode&&f===player&&onlineRoom){try{const actionTarget=targetOf(f);onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||''})}catch(e){}}
  const c=CHARS[f.char],t=targetOf(f);
- if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
+ if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;let a=aimedAt(f),dx=a.x-f.x,dy=a.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);damageBuildingAlongRay(f,da,260);damagePropsAlongRay(f,da,260);f.vx+=dx/l*13;f.vy+=dy/l*13;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0)return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
  if(f.char==='ten'&&f.shadowTimer>0&&kind!=='special'&&kind!=='m1'&&kind!=='1'&&kind!=='4')return;
@@ -5919,7 +5942,7 @@ function collideVehicleWorld(car,oldX,oldY){
   const px=clamp(car.x,b.x,b.x+b.w),py=clamp(car.y,b.y,b.y+b.h),dx=car.x-px,dy=car.y-py;
   if(dx*dx+dy*dy<38*38){
    const impactSpeed=Math.abs(car.speed);
-   if(impactSpeed>=135)damageVehicleBuilding(car,b,i,impactSpeed);
+   if(impactSpeed>=95)damageVehicleBuilding(car,b,i,impactSpeed);
    if(b.collapsed)continue;
    car.x=oldX;car.y=oldY;car.vx*=impactSpeed>=135?-.24:.18;car.vy*=impactSpeed>=135?-.24:.18;car.speed*=impactSpeed>=135?-.32:.35;return;
   }
