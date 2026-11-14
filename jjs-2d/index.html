@@ -5515,41 +5515,63 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#526d58';ctx.fillRect(0,0,WORLD.w,23);ctx.fillRect(0,WORLD.h-23,WORLD.w,23);ctx.fillRect(0,0,23,WORLD.h);ctx.fillRect(WORLD.w-23,0,23,WORLD.h);
  // Two broad avenues meet at a clean, clearly marked intersection.
  const roadX=1100,roadW=300,roadY=640,roadH=250;
+ // Shared zebra dimensions: every bar is 84 x 13 world units, rotated for the other two sides.
+ const zebraCount=10,zebraBarLength=84,zebraBarThickness=13,zebraGap=8;
+ const zebraSpan=zebraCount*zebraBarThickness+(zebraCount-1)*zebraGap;
+ const sideCrossingY=roadY+(roadH-zebraSpan)/2;
+ const westCrossingX=roadX-zebraBarLength,eastCrossingX=roadX+roadW;
+ const endCrossingX=roadX+(roadW-zebraSpan)/2;
+ const northCrossingY=roadY-zebraBarLength,southCrossingY=roadY+roadH;
+ const sideCrossingEndY=sideCrossingY+zebraSpan,endCrossingEndX=endCrossingX+zebraSpan;
+ // Asphalt for the two avenues.
  ctx.fillStyle='#252e37';ctx.fillRect(0,roadY,WORLD.w,roadH);ctx.fillRect(roadX,0,roadW,WORLD.h);
- ctx.fillStyle='#687680';ctx.fillRect(0,roadY-17,WORLD.w,17);ctx.fillRect(0,roadY+roadH,WORLD.w,17);ctx.fillRect(roadX-17,0,17,WORLD.h);ctx.fillRect(roadX+roadW,0,17,WORLD.h);
- ctx.fillStyle='#95a0a6';ctx.fillRect(0,roadY-4,WORLD.w,4);ctx.fillRect(0,roadY+roadH,WORLD.w,4);ctx.fillRect(roadX-4,0,4,WORLD.h);ctx.fillRect(roadX+roadW,0,4,WORLD.h);
- // Dashed center lines restored to the original road style.
+ // Curb bands are interrupted at the four pedestrian openings; no grey curb block sits beside a crossing.
+ ctx.fillStyle='#687680';
+ ctx.fillRect(0,roadY-17,endCrossingX,17);
+ ctx.fillRect(endCrossingEndX,roadY-17,WORLD.w-endCrossingEndX,17);
+ ctx.fillRect(0,roadY+roadH,endCrossingX,17);
+ ctx.fillRect(endCrossingEndX,roadY+roadH,WORLD.w-endCrossingEndX,17);
+ ctx.fillRect(roadX-17,0,17,sideCrossingY);
+ ctx.fillRect(roadX-17,sideCrossingEndY,17,WORLD.h-sideCrossingEndY);
+ ctx.fillRect(roadX+roadW,0,17,sideCrossingY);
+ ctx.fillRect(roadX+roadW,sideCrossingEndY,17,WORLD.h-sideCrossingEndY);
+ // Thin inner road edging follows the same openings instead of crossing through the zebra bars.
+ ctx.fillStyle='#95a0a6';
+ ctx.fillRect(0,roadY-4,endCrossingX,4);
+ ctx.fillRect(endCrossingEndX,roadY-4,WORLD.w-endCrossingEndX,4);
+ ctx.fillRect(0,roadY+roadH,WORLD.w,4);
+ ctx.fillRect(0,roadY+roadH,endCrossingX,4);
+ ctx.fillRect(endCrossingEndX,roadY+roadH,WORLD.w-endCrossingEndX,4);
+ ctx.fillRect(roadX-4,0,4,sideCrossingY);
+ ctx.fillRect(roadX-4,sideCrossingEndY,4,WORLD.h-sideCrossingEndY);
+ ctx.fillRect(roadX+roadW,0,4,sideCrossingY);
+ ctx.fillRect(roadX+roadW,sideCrossingEndY,4,WORLD.h-sideCrossingEndY);
+ // Dashed lane markings stop at the crossing openings.
  ctx.strokeStyle='#e8dca7';ctx.lineWidth=4;ctx.setLineDash([42,34]);ctx.beginPath();
- ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);
- ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);
+ const roadMidY=roadY+roadH/2,roadMidX=roadX+roadW/2;
+ ctx.moveTo(0,roadMidY);ctx.lineTo(westCrossingX,roadMidY);
+ ctx.moveTo(westCrossingX+zebraBarLength,roadMidY);ctx.lineTo(eastCrossingX,roadMidY);
+ ctx.moveTo(eastCrossingX+zebraBarLength,roadMidY);ctx.lineTo(WORLD.w,roadMidY);
+ ctx.moveTo(roadMidX,0);ctx.lineTo(roadMidX,northCrossingY);
+ ctx.moveTo(roadMidX,northCrossingY+zebraBarLength);ctx.lineTo(roadMidX,southCrossingY);
+ ctx.moveTo(roadMidX,southCrossingY+zebraBarLength);ctx.lineTo(roadMidX,WORLD.h);
  ctx.stroke();ctx.setLineDash([]);
- // Four pedestrian crossings arranged like a standard four-way intersection.
- // Side crossings use horizontal bars; top and bottom crossings use vertical bars.
+ // Side crossings: horizontal bars, all 84 x 13.
  ctx.fillStyle='#e8e5d5';
- const zebraCount=10;
- const sideStripeWidth=84,sideStripeHeight=13,sideStripeGap=12;
- const sideCrossingSpan=zebraCount*sideStripeHeight+(zebraCount-1)*sideStripeGap;
- const sideCrossingY=roadY+roadH/2-sideCrossingSpan/2;
- const westCrossingX=roadX-17-sideStripeWidth;
- const eastCrossingX=roadX+roadW+17;
  for(let i=0;i<zebraCount;i++){
-  const y=sideCrossingY+i*(sideStripeHeight+sideStripeGap);
-  ctx.fillRect(westCrossingX,y,sideStripeWidth,sideStripeHeight);
-  ctx.fillRect(eastCrossingX,y,sideStripeWidth,sideStripeHeight);
+  const y=sideCrossingY+i*(zebraBarThickness+zebraGap);
+  ctx.fillRect(westCrossingX,y,zebraBarLength,zebraBarThickness);
+  ctx.fillRect(eastCrossingX,y,zebraBarLength,zebraBarThickness);
  }
- const endStripeWidth=12,endStripeHeight=35,endStripeGap=13;
- const endCrossingSpan=zebraCount*endStripeWidth+(zebraCount-1)*endStripeGap;
- const endCrossingX=roadX+roadW/2-endCrossingSpan/2;
- const northCrossingY=roadY-17-endStripeHeight;
- const southCrossingY=roadY+roadH+17;
+ // Top and bottom crossings: the same bars rotated to 13 x 84.
  for(let i=0;i<zebraCount;i++){
-  const x=endCrossingX+i*(endStripeWidth+endStripeGap);
-  ctx.fillRect(x,northCrossingY,endStripeWidth,endStripeHeight);
-  ctx.fillRect(x,southCrossingY,endStripeWidth,endStripeHeight);
+  const x=endCrossingX+i*(zebraBarThickness+zebraGap);
+  ctx.fillRect(x,northCrossingY,zebraBarThickness,zebraBarLength);
+  ctx.fillRect(x,southCrossingY,zebraBarThickness,zebraBarLength);
  }
  // Original lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
- ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,575,1],[1250,955,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
+ ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,500,1],[1250,1030,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
  // Continuous plain-concrete sidewalks on both sides of both avenues.
  // Each strip stops at the crossing road; the four corners meet without painting over asphalt.
  const sidewalkStrips=[
