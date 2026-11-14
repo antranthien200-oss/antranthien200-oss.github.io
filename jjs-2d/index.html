@@ -2203,15 +2203,16 @@ function drawOnlineFightScene(now){
   ctx.globalAlpha=1;
 
   // Small hit-stop shakes make each clean impact read without distorting the fighters.
-  const hitTimes=[.39,.59,.79,1.00,1.46,1.94,2.16,2.38,2.65,2.70];
+  // Keep impact feedback in the effects, not in the camera: only a tiny tap on heavy hits.
+  const hitTimes=[1.46,2.65,2.70];
   let shake=0;
   for(const at of hitTimes){
    let dt=phase-at;
    if(dt<0)dt+=CYCLE;
-   const power=clamp01(1-dt/.105);
-   shake=Math.max(shake,power*(at===1.46||at===2.65||at===2.70?3.1:1.45));
+   const power=clamp01(1-dt/.055);
+   shake=Math.max(shake,power*.38);
   }
-  const shakeX=shake?Math.sin(t*118)*shake:0,shakeY=shake?Math.cos(t*97)*shake*.52:0;
+  const shakeX=shake?Math.sin(t*86)*shake:0,shakeY=shake?Math.cos(t*73)*shake*.28:0;
   ctx.translate(shakeX,shakeY);
 
   const glow=(x,y,color,power=1)=>{
@@ -2229,35 +2230,18 @@ function drawOnlineFightScene(now){
 
   const drawSpeedStreaks=(x,y,dir,color,power)=>{
    if(power<=.02)return;
-   ctx.save();ctx.globalAlpha=.16+.2*power;ctx.lineCap='round';ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;
-   for(let i=0;i<7;i++){
-    const yy=y+(i-3)*9+Math.sin(t*19+i*1.7)*2;
-    const back=17+i*5+power*17;
-    ctx.lineWidth=i%3===0?2.8:1.35;
-    ctx.beginPath();ctx.moveTo(x-dir*back,yy);ctx.lineTo(x-dir*(back+20+power*23),yy+(i-3)*.6);ctx.stroke();
+   ctx.save();ctx.globalAlpha=.10+.08*power;ctx.lineCap='round';ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=4;
+   for(let i=0;i<3;i++){
+    const yy=y+(i-1)*7;
+    const back=12+i*4;
+    ctx.lineWidth=i===1?2:1;
+    ctx.beginPath();ctx.moveTo(x-dir*back,yy);ctx.lineTo(x-dir*(back+17),yy);ctx.stroke();
    }
    ctx.restore();
   };
-  const drawEcho=(fighter,x,y,dir,alpha)=>{
-   ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);
-   const theme=getStunTintedTheme(fighter);
-   drawFloatingHand(dir*16,10,.12*dir,theme,.94);
-   drawFloatingHand(dir*15,-10,-.12*dir,theme,.94);
-   drawCuteHead(fighter,CHARS[fighter.char],theme);
-   ctx.restore();
-  };
-  if(blueRush>.1){
-   const p=phase<1.04?between(.22,1.04):between(1.80,2.76);
-   drawSpeedStreaks(blueX,headY,-1,blue,blueRush);
-   drawEcho(blueFighter,blueX+17,headY+2,1,.12+.08*p);
-   drawEcho(blueFighter,blueX+31,headY+3,1,.075+.05*p);
-  }
-  if(redRush>.1){
-   const p=redAction?clamp01((phase-redAction.start)/(redAction.end-redAction.start)):between(1.04,1.18);
-   drawSpeedStreaks(redX,headY,1,red,redRush);
-   drawEcho(redFighter,redX-17,headY+2,-1,.13+.08*p);
-   drawEcho(redFighter,redX-31,headY+3,-1,.075+.05*p);
-  }
+  // Dash readability comes from a clean directional streak only; never duplicate the character.
+  if(blueRush>.1)drawSpeedStreaks(blueX,headY,-1,blue,.42);
+  if(redRush>.1)drawSpeedStreaks(redX,headY,1,red,.42);
 
   const fighterScale=1.06;
   const drawMenuFighter=f=>{
