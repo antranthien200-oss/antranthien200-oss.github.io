@@ -888,15 +888,20 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 .menu-sub.accessory-editor-open .accessory-preview-items{
  grid-template-columns:repeat(4,minmax(0,1fr));
  gap:11px;
+ justify-items:center;
  scroll-behavior:auto;
  overscroll-behavior:contain;
 }
 .menu-sub.accessory-editor-open .accessory-preview-items .menu-option,
 .menu-sub.accessory-editor-open .accessory-preview-items .menu-option:hover{
  min-height:0;
+ width:100%;
+ max-width:100%;
  aspect-ratio:1 / 1;
  padding:7px;
  display:grid;
+ justify-items:center;
+ align-items:center;
  place-items:center;
  overflow:hidden;
  transform:none;
@@ -906,9 +911,20 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  display:block;
  width:88%;
  height:88%;
+ margin:auto;
  object-fit:contain;
  image-rendering:pixelated;
  pointer-events:none;
+}
+.menu-sub.accessory-editor-open .accessory-none-icon{
+ display:grid;
+ place-items:center;
+ width:100%;
+ height:100%;
+ margin:auto;
+ color:#ff788d;
+ font:1000 54px/1 system-ui,sans-serif;
+ text-shadow:2px 2px 0 #341c2c;
 }
 @media(max-width:760px){
  .menu-sub.accessory-editor-open .accessory-preview-items{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
@@ -1200,21 +1216,27 @@ function drawAccessoryPreview(itemId=null){
 }
 function drawAccessoryTileArt(canvas,slotId,itemId){
  const art=canvas.getContext('2d');if(!art)return;
- const oldContext=ctx;ctx=art;
+ const source=document.createElement('canvas');source.width=96;source.height=96;
+ const sourceContext=source.getContext('2d');if(!sourceContext)return;
+ const oldContext=ctx;ctx=sourceContext;
  try{
   ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,96,96);ctx.imageSmoothingEnabled=false;
-  if(itemId==='none'){
-   ctx.save();ctx.strokeStyle='#ff788d';ctx.lineWidth=7;ctx.lineCap='square';
-   ctx.beginPath();ctx.moveTo(29,29);ctx.lineTo(67,67);ctx.moveTo(67,29);ctx.lineTo(29,67);ctx.stroke();
-   ctx.strokeStyle='#341c2c';ctx.lineWidth=2;ctx.stroke();
-   ctx.restore();return;
-  }
   const loadout={head:'none',face:'none',neck:'none',aura:'none'};
   loadout[slotId]=itemId;
   const previewFighter={char:selected,team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:loadout};
   if(slotId==='aura')drawAccessoryAura(previewFighter,48,48,1.25);
-  else drawAccessoryOverlays(previewFighter,48,45,1.7);
+  else drawAccessoryOverlays(previewFighter,48,slotId==='head'?73:slotId==='neck'?27:48,1.7);
  }finally{ctx=oldContext}
+ art.setTransform(1,0,0,1,0,0);art.clearRect(0,0,96,96);art.imageSmoothingEnabled=false;
+ const pixels=sourceContext.getImageData(0,0,96,96).data;
+ let left=96,top=96,right=-1,bottom=-1;
+ for(let y=0;y<96;y++)for(let x=0;x<96;x++){
+  if(pixels[(y*96+x)*4+3]>8){if(x<left)left=x;if(x>right)right=x;if(y<top)top=y;if(y>bottom)bottom=y}
+ }
+ if(right<left||bottom<top)return;
+ const width=right-left+1,height=bottom-top+1,fit=Math.min(1,80/Math.max(width,height));
+ const drawWidth=width*fit,drawHeight=height*fit;
+ art.drawImage(source,left,top,width,height,(96-drawWidth)/2,(96-drawHeight)/2,drawWidth,drawHeight);
 }
 function startAccessoryPreviewAnimation(){
  if(accessoryPreviewFrame)return;
@@ -1243,8 +1265,8 @@ function renderMenuSub(){
  }else{
   tabWrap.innerHTML=ACCESSORY_SLOTS.map(s=>'<button class="accessory-tab '+(accessorySlot===s.id?'active':'')+'" data-accessory-slot="'+s.id+'">'+s.label+'</button>').join('');
   const slot=ACCESSORY_SLOTS.find(s=>s.id===accessorySlot)||ACCESSORY_SLOTS[0],equipped=accessoryLoadouts[selected][slot.id]||'none';
-  const choices=[{id:'none',name:'REMOVE'},...slot.items];
-  const itemCards=choices.map(item=>'<button class="menu-option accessory-tile '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'" aria-label="'+item.name+'" title="'+item.name+'"><canvas class="accessory-art" width="96" height="96" aria-hidden="true"></canvas></button>').join('');
+  const choices=[{id:'none',name:'REMOVE',icon:'✕'},...slot.items];
+  const itemCards=choices.map(item=>'<button class="menu-option accessory-tile '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'" aria-label="'+item.name+'" title="'+item.name+'">'+(item.id==='none'?'<span class="accessory-none-icon" aria-hidden="true">'+item.icon+'</span>':'<canvas class="accessory-art" width="96" height="96" aria-hidden="true"></canvas>')+'</button>').join('');
   html='<div class="accessory-preview-layout"><aside class="accessory-preview-panel"><div class="accessory-preview-kicker">LIVE CHARACTER PREVIEW</div><div class="accessory-preview-name">'+CHARS[selected].name+'</div><canvas id="accessoryPreviewCanvas" width="640" height="720" aria-label="Large character accessory preview"></canvas><div id="accessoryPreviewLabel" class="accessory-preview-label"></div><div class="accessory-preview-tip">HOVER TO PREVIEW</div></aside><div class="accessory-preview-items">'+itemCards+'</div></div>';
  }
  $('menuSubCards').innerHTML=html;
