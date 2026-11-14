@@ -5523,29 +5523,29 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);
  ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);
  ctx.stroke();ctx.setLineDash([]);
- // Zebra crossings: swap each complete crossing footprint's length and width,
- // rotating the stripe pattern with the whole rectangle (not resizing each stripe in place).
+ // Four pedestrian crossings arranged like a standard four-way intersection.
+ // Side crossings use horizontal bars; top and bottom crossings use vertical bars.
  ctx.fillStyle='#e8e5d5';
- const crosswalkSideStripeCount=8;
- const horizontalCrosswalkLength=roadH-48;
- const horizontalCrosswalkWidth=crosswalkSideStripeCount*9+7*6;
- const horizontalCrosswalkY=roadY+roadH/2-horizontalCrosswalkWidth/2;
- const verticalCrosswalkLength=roadW-68;
- const verticalCrosswalkWidth=crosswalkSideStripeCount*8+7*4;
- const verticalCrosswalkX=roadX+roadW/2-verticalCrosswalkWidth/2;
- // West and east crossing blocks: 114 x 202 becomes 202 x 114.
- const westCrosswalkX=roadX-10-horizontalCrosswalkLength;
- const eastCrosswalkX=roadX+roadW+10;
- for(let i=0;i<crosswalkSideStripeCount;i++){
-  ctx.fillRect(westCrosswalkX,horizontalCrosswalkY+i*15,horizontalCrosswalkLength,9);
-  ctx.fillRect(eastCrosswalkX,horizontalCrosswalkY+i*15,horizontalCrosswalkLength,9);
+ const zebraCount=10;
+ const sideStripeWidth=84,sideStripeHeight=13,sideStripeGap=12;
+ const sideCrossingSpan=zebraCount*sideStripeHeight+(zebraCount-1)*sideStripeGap;
+ const sideCrossingY=roadY+roadH/2-sideCrossingSpan/2;
+ const westCrossingX=roadX-17-sideStripeWidth;
+ const eastCrossingX=roadX+roadW+17;
+ for(let i=0;i<zebraCount;i++){
+  const y=sideCrossingY+i*(sideStripeHeight+sideStripeGap);
+  ctx.fillRect(westCrossingX,y,sideStripeWidth,sideStripeHeight);
+  ctx.fillRect(eastCrossingX,y,sideStripeWidth,sideStripeHeight);
  }
- // North and south crossing blocks: 232 x 92 becomes 92 x 232.
- const northCrosswalkY=roadY-30-verticalCrosswalkLength;
- const southCrosswalkY=roadY+roadH+30;
- for(let i=0;i<crosswalkSideStripeCount;i++){
-  ctx.fillRect(verticalCrosswalkX+i*12,northCrosswalkY,8,verticalCrosswalkLength);
-  ctx.fillRect(verticalCrosswalkX+i*12,southCrosswalkY,8,verticalCrosswalkLength);
+ const endStripeWidth=12,endStripeHeight=35,endStripeGap=13;
+ const endCrossingSpan=zebraCount*endStripeWidth+(zebraCount-1)*endStripeGap;
+ const endCrossingX=roadX+roadW/2-endCrossingSpan/2;
+ const northCrossingY=roadY-17-endStripeHeight;
+ const southCrossingY=roadY+roadH+17;
+ for(let i=0;i<zebraCount;i++){
+  const x=endCrossingX+i*(endStripeWidth+endStripeGap);
+  ctx.fillRect(x,northCrossingY,endStripeWidth,endStripeHeight);
+  ctx.fillRect(x,southCrossingY,endStripeWidth,endStripeHeight);
  }
  // Original lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
