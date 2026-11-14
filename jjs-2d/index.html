@@ -1632,7 +1632,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
     <div class="mobile-setup-wrap">
       <button class="mobile-setup-button" id="mobileControlsToggle" type="button" aria-pressed="false">
         <span class="mobile-setup-icon">☷</span>
-        <strong id="mobileControlsTitle">ENABLE MOBILE CONTROLS</strong>
+        <strong id="mobileControlsTitle">MOBILE MODE · OFF</strong>
       </button>
     </div>
     <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-accessory-line"><span>ACCESSORIES</span><b id="currentAccessoriesSummary">NONE EQUIPPED</b></div></div>
@@ -2733,7 +2733,7 @@ function syncMobileControls(){
  const btn=$('mobileControlsToggle'),title=$('mobileControlsTitle'),hint=$('mobileSetupHint');
  document.body.classList.toggle('mobile-controls-enabled',mobileControlsEnabled);
  if(btn)btn.setAttribute('aria-pressed',mobileControlsEnabled?'true':'false');
- if(title)title.textContent=mobileControlsEnabled?'MOBILE CONTROLS · ON':'ENABLE MOBILE CONTROLS';
+ if(title)title.textContent=mobileControlsEnabled?'MOBILE MODE · ON':'MOBILE MODE · OFF';
  if(hint)hint.textContent=mobileControlsEnabled?'Touch controls ON · Joystick + combat buttons will appear in matches':'Touch controls are OFF · Keyboard and mouse remain available';
 }
 $('mobileControlsToggle').onclick=()=>{mobileControlsEnabled=!mobileControlsEnabled;try{localStorage.setItem('jjsMobileControls',mobileControlsEnabled?'1':'0')}catch(e){}syncMobileControls()};
