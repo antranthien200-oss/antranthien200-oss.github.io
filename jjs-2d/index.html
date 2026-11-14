@@ -5523,13 +5523,29 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);
  ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);
  ctx.stroke();ctx.setLineDash([]);
- // Zebra bars run across traffic, perpendicular to each road.
+ // Zebra crossings: swap each complete crossing footprint's length and width,
+ // rotating the stripe pattern with the whole rectangle (not resizing each stripe in place).
  ctx.fillStyle='#e8e5d5';
- for(let i=0;i<8;i++){
-  ctx.fillRect(roadX-124+i*15,roadY+24,9,roadH-48);
-  ctx.fillRect(roadX+roadW+17+i*15,roadY+24,9,roadH-48);
-  ctx.fillRect(roadX+34,roadY-122+i*12,roadW-68,8);
-  ctx.fillRect(roadX+34,roadY+roadH+22+i*12,roadW-68,8);
+ const crosswalkSideStripeCount=8;
+ const horizontalCrosswalkLength=roadH-48;
+ const horizontalCrosswalkWidth=crosswalkSideStripeCount*9+7*6;
+ const horizontalCrosswalkY=roadY+roadH/2-horizontalCrosswalkWidth/2;
+ const verticalCrosswalkLength=roadW-68;
+ const verticalCrosswalkWidth=crosswalkSideStripeCount*8+7*4;
+ const verticalCrosswalkX=roadX+roadW/2-verticalCrosswalkWidth/2;
+ // West and east crossing blocks: 114 x 202 becomes 202 x 114.
+ const westCrosswalkX=roadX-10-horizontalCrosswalkLength;
+ const eastCrosswalkX=roadX+roadW+10;
+ for(let i=0;i<crosswalkSideStripeCount;i++){
+  ctx.fillRect(westCrosswalkX,horizontalCrosswalkY+i*15,horizontalCrosswalkLength,9);
+  ctx.fillRect(eastCrosswalkX,horizontalCrosswalkY+i*15,horizontalCrosswalkLength,9);
+ }
+ // North and south crossing blocks: 232 x 92 becomes 92 x 232.
+ const northCrosswalkY=roadY-30-verticalCrosswalkLength;
+ const southCrosswalkY=roadY+roadH+30;
+ for(let i=0;i<crosswalkSideStripeCount;i++){
+  ctx.fillRect(verticalCrosswalkX+i*12,northCrosswalkY,8,verticalCrosswalkLength);
+  ctx.fillRect(verticalCrosswalkX+i*12,southCrosswalkY,8,verticalCrosswalkLength);
  }
  // Original lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
