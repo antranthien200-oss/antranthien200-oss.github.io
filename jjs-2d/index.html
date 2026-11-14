@@ -179,8 +179,8 @@
 .mobile-setup-button:hover{filter:brightness(1.16)}
 .mobile-setup-button:active{transform:translate(2px,2px);box-shadow:2px 2px 0 #03070d,inset 2px 2px 0 #d5f2ff25}
 .mobile-setup-button[aria-pressed="true"]{border-color:#8dffc2;background:linear-gradient(180deg,#174c3c 0%,#10382e 48%,#09251f 49%,#0d3228 100%);box-shadow:4px 4px 0 #03070d,inset 2px 2px 0 #d9ffed25,inset -3px -3px 0 #020811}
-.mobile-setup-button .mobile-setup-icon{grid-row:1;grid-column:1;align-self:center;font-size:25px;color:#8fdfff;text-align:center;text-shadow:2px 2px 0 #06101a}
-.mobile-setup-button[aria-pressed="true"] .mobile-setup-icon{color:#8dffc2}
+.mobile-setup-button .mobile-setup-icon{grid-row:1;grid-column:1;align-self:center;display:flex;align-items:center;justify-content:center;color:#fff;text-align:center}
+.mobile-setup-button .mobile-setup-icon svg{display:block;width:23px;height:23px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;filter:none}
 .mobile-setup-button strong{grid-row:1;grid-column:2;align-self:center;font-size:11px;letter-spacing:.1em;font-weight:1000;text-shadow:2px 2px 0 #06101a}
 .mobile-setup-button small{font-size:8px;letter-spacing:.1em;color:#b6d0e3;font-weight:900}
 .mobile-setup-hint{text-align:center;color:#afc1d2;font-size:9px;line-height:1.4;letter-spacing:.04em;text-shadow:1px 1px 0 #000}
@@ -1746,7 +1746,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 
     <div class="mobile-setup-wrap">
       <button class="mobile-setup-button" id="mobileControlsToggle" type="button" aria-pressed="false">
-        <span class="mobile-setup-icon">☷</span>
+        <span class="mobile-setup-icon" aria-hidden="true"><svg viewBox="0 0 24 24" focusable="false"><rect x="5" y="2" width="14" height="20" rx="2.4"></rect><path d="M9.5 5h5M11 18.5h2"></path></svg></span>
         <strong id="mobileControlsTitle">MOBILE MODE · OFF</strong>
       </button>
     </div>
