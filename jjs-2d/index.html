@@ -1020,6 +1020,203 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .menu-sub.accessory-editor-open .accessory-preview-items{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
  .menu-sub.accessory-editor-open .accessory-preview-items .menu-option{padding:6px}
 }
+
+/* Mobile accessory editor repair: fit the whole editor in the viewport and scroll only the item catalogue. */
+@media(max-width:760px){
+ #menu .menu-sub.accessory-editor-open{
+  align-items:center!important;
+  justify-content:center!important;
+  overflow:hidden!important;
+  padding:6px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-panel{
+  display:flex!important;
+  flex-direction:column!important;
+  width:calc(100vw - 12px)!important;
+  max-width:620px!important;
+  height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 12px)!important;
+  max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 12px)!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  padding:9px!important;
+  margin:0!important;
+  overflow:hidden!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-head{
+  flex:0 0 auto!important;
+  min-height:30px!important;
+  margin:0 0 7px!important;
+  gap:8px!important;
+  align-items:center!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-head h2{
+  margin:0!important;
+  font-size:clamp(18px,5vw,24px)!important;
+  line-height:1.1!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-close{
+  flex:0 0 30px!important;
+  width:30px!important;
+  height:30px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-slot-tabs{
+  display:grid!important;
+  flex:0 0 auto!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:6px!important;
+  margin:0 0 7px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-tab{
+  min-width:0!important;
+  min-height:32px!important;
+  padding:6px 4px!important;
+  font-size:8px!important;
+  line-height:1.1!important;
+ }
+ #menu .menu-sub.accessory-editor-open #menuSubCards{
+  display:flex!important;
+  flex:1 1 0!important;
+  width:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-layout{
+  display:flex!important;
+  flex:1 1 0!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  gap:7px!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  overflow:hidden!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-panel{
+  display:flex!important;
+  flex:0 0 clamp(112px,19vh,150px)!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  padding:4px!important;
+  overflow:hidden!important;
+ }
+ #menu .menu-sub.accessory-editor-open #accessoryPreviewCanvas{
+  display:block!important;
+  flex:0 1 auto!important;
+  width:auto!important;
+  height:auto!important;
+  max-width:100%!important;
+  max-height:clamp(100px,17vh,132px)!important;
+  min-width:0!important;
+  min-height:0!important;
+  margin:auto!important;
+  aspect-ratio:8/9!important;
+  object-fit:contain!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items{
+  display:grid!important;
+  flex:1 1 0!important;
+  width:100%!important;
+  height:0!important;
+  min-height:0!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:min-content!important;
+  align-content:start!important;
+  align-items:start!important;
+  gap:6px!important;
+  padding:0 3px 4px 0!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+  scrollbar-width:thin!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items .menu-option,
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items .menu-option:hover{
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  max-width:none!important;
+  aspect-ratio:1/1!important;
+  padding:4px!important;
+  transform:none!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items .accessory-art{
+  width:88%!important;
+  height:88%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  margin:auto!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-footer{
+  display:flex!important;
+  flex:0 0 auto!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:7px!important;
+  margin-top:6px!important;
+  padding-top:7px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-footer>span{
+  min-width:0!important;
+  max-width:65%!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-done{
+  flex:0 0 auto!important;
+  width:auto!important;
+  min-height:32px!important;
+  padding:7px 12px!important;
+ }
+}
+@media(max-height:520px){
+ #menu .menu-sub.accessory-editor-open .menu-sub-panel{
+  height:calc(100dvh - 10px)!important;
+  max-height:calc(100dvh - 10px)!important;
+  padding:6px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-head{margin-bottom:4px!important}
+ #menu .menu-sub.accessory-editor-open .accessory-slot-tabs{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  margin-bottom:5px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-tab{
+  flex:1 1 0!important;
+  min-height:28px!important;
+  padding:4px 2px!important;
+  font-size:7px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-layout{
+  flex-direction:row!important;
+  gap:7px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-panel{
+  flex:0 0 29%!important;
+  height:100%!important;
+ }
+ #menu .menu-sub.accessory-editor-open #accessoryPreviewCanvas{
+  max-height:calc(100dvh - 115px)!important;
+  max-width:100%!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items{
+  flex:1 1 0!important;
+  height:100%!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+ }
+ #menu .menu-sub.accessory-editor-open .menu-sub-footer{
+  margin-top:4px!important;
+  padding-top:5px!important;
+ }
+}
+
 </style>
 </head>
 <body>
