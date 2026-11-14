@@ -1273,24 +1273,33 @@ function closeMenuSub(){
  $('menuSub').hidden=true;$('menuSub').classList.remove('accessory-editor-open');menuView='';accessoryPreviewHoverId=null;
  if(accessoryPreviewFrame){cancelAnimationFrame(accessoryPreviewFrame);accessoryPreviewFrame=0}
 }
-function drawAccessoryPreview(itemId=null){
+function drawAccessoryPreview(itemId=null,now=0){
  const canvas=$('accessoryPreviewCanvas');if(!canvas)return;
  const previewContext=canvas.getContext('2d');if(!previewContext)return;
  const oldContext=ctx,scale=2,previewChar=selected,loadout={...(accessoryLoadouts[previewChar]||{})};
  if(itemId!==null)loadout[accessorySlot]=itemId;
  const previewFighter={char:previewChar,team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:loadout};
+ const phase=now*.001;
+ const headBob=Math.sin(phase*1.65)*1.8;
+ const headSway=Math.sin(phase*.9)*.018;
+ const leftHandBob=Math.sin(phase*2.1+.35)*1.15;
+ const rightHandBob=Math.sin(phase*2.1+Math.PI+.35)*1.15;
+ const leftHandTilt=Math.sin(phase*1.35)*.035;
+ const rightHandTilt=Math.sin(phase*1.35+Math.PI)*.035;
  ctx=previewContext;
  try{
   ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,320,360);ctx.imageSmoothingEnabled=false;
   const cx=160,headY=165,theme=getStunTintedTheme(previewFighter);
   ctx.save();ctx.translate(cx,headY);ctx.scale(3.25,3.25);
-  drawAccessoryAura(previewFighter,0,0,1.12);
-  drawFloatingHand(-18,16,-.18,theme,1.2);
-  drawFloatingHand(18,16,.18,theme,1.2);
+  drawAccessoryAura(previewFighter,0,headBob*.12,1.12);
+  drawFloatingHand(-18,16+leftHandBob,-.18+leftHandTilt,theme,1.2);
+  drawFloatingHand(18,16+rightHandBob,.18+rightHandTilt,theme,1.2);
+  ctx.save();ctx.translate(0,headBob);ctx.rotate(headSway);
   drawCuteHead(previewFighter,CHARS[previewChar],theme);
   drawAccessoryOverlays(previewFighter,0,0);
   ctx.restore();
-  ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(cx,296,100,15,0,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(cx,296+headBob*.55,100,15,0,0,Math.PI*2);ctx.fill();
  }finally{ctx=oldContext}
 }
 function drawAccessoryTileArt(canvas,slotId,itemId){
@@ -1323,10 +1332,10 @@ function startAccessoryPreviewAnimation(){
  const tick=now=>{
   accessoryPreviewFrame=0;
   if(menuView!=='accessory'||$('menuSub').hidden)return;
-  const hoveredAura=accessorySlot==='aura'&&accessoryPreviewHoverId&&accessoryPreviewHoverId!=='none';
-  const equippedAura=accessoryLoadouts[selected]?.aura&&accessoryLoadouts[selected].aura!=='none';
-  if(!hoveredAura&&!equippedAura)return;
-  if(now-lastDraw>=50){drawAccessoryPreview(accessoryPreviewHoverId);lastDraw=now}
+  if(now-lastDraw>=33){
+   drawAccessoryPreview(accessoryPreviewHoverId,now);
+   lastDraw=now;
+  }
   accessoryPreviewFrame=requestAnimationFrame(tick);
  };
  accessoryPreviewFrame=requestAnimationFrame(tick);
