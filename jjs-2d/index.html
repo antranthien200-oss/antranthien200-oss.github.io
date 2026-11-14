@@ -2079,79 +2079,72 @@ function drawOnlineFightScene(now){
  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
  const sceneCtx=canvas.getContext('2d');
  if(!sceneCtx)return;
- const oldContext=ctx,t=now*.001,scale=Math.min(rect.width/640,rect.height/250);
+ const oldContext=ctx,oldGameTime=game.time,t=now*.001,scale=Math.min(rect.width/640,rect.height/250);
  const offsetX=(rect.width-640*scale)*.5,offsetY=(rect.height-250*scale)*.5;
  try{
   sceneCtx.setTransform(1,0,0,1,0,0);
   sceneCtx.clearRect(0,0,width,height);
   sceneCtx.setTransform(dpr*scale,0,0,dpr*scale,dpr*offsetX,dpr*offsetY);
   sceneCtx.imageSmoothingEnabled=false;
-  ctx=sceneCtx;
+  ctx=sceneCtx;game.time=t;
 
-  // A subdued arena floor keeps the fighters and their skill outlines in focus.
   ctx.fillStyle='rgba(4,9,18,.18)';ctx.fillRect(0,0,640,250);
   ctx.strokeStyle='rgba(125,151,180,.17)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(42,214);ctx.lineTo(598,214);ctx.stroke();
-  for(let i=0;i<17;i++){
-   const x=54+i*33;
-   ctx.fillStyle='rgba(164,192,220,.22)';
-   ctx.fillRect(x,214+Math.sin(t*1.8+i)*1.4,2,2);
-  }
+  ctx.beginPath();ctx.moveTo(42,190);ctx.lineTo(598,190);ctx.stroke();
 
   const red='#ff5367',blue='#65d8ff',black='#030405';
   const redTheme={main:black,accent:red,shadow:red};
   const blueTheme={main:black,accent:blue,shadow:blue};
-  const redFighter={char:'vessel',team:'enemy',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:{head:'none',face:'none',neck:'none',aura:'none'}};
-  const blueFighter={char:'honored',team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:{head:'none',face:'none',neck:'none',aura:'none'}};
-  const pulse=.5+.5*Math.sin(t*2.7);
-  const lunge=smoothstep01(.5+.5*Math.sin(t*2.7-1.1));
-  const leftX=166+lunge*8,rightX=474-lunge*8;
-  const leftY=126+Math.sin(t*3.2)*3,rightY=126+Math.sin(t*3.2+1.2)*3;
+  const noAccessories={head:'none',face:'none',neck:'none',aura:'none'};
+  const redFighter={char:'vessel',team:'enemy',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:noAccessories,motion:{name:'yujiBlackFlash',angle:0}};
+  const blueFighter={char:'honored',team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:noAccessories,motion:{name:'m1_1',angle:Math.PI},m1HandTrailState:{name:'m1_1',a:[],b:[]}};
+  const pulse=.5+.5*Math.sin(t*2.5);
+  const redX=180+Math.sin(t*1.5)*3,blueX=460-Math.sin(t*1.5)*3;
+  const headY=112+Math.sin(t*2.3)*2;
+  const distance=blueX-redX,reach=clamp(distance*.56,23,76);
+  const project=(x,y,angle,forward,side,vertical=0)=>({
+   x:x+Math.cos(angle)*forward-Math.sin(angle)*side,
+   y:y+Math.sin(angle)*forward+Math.cos(angle)*side+vertical
+  });
 
-  // Both avatars use the exact pixel-circle head and detached-fist renderers used in matches.
-  const drawFighter=(fighter,theme,x,y,facing,attack)=>{
-   ctx.save();
-   ctx.translate(x,y);
-   const leadX=facing*(37+attack*17),leadY=-7-attack*13;
-   const rearX=-facing*31,rearY=17+Math.sin(t*3.4+(facing<0?1:0))*2;
-   drawFloatingHand(rearX,rearY,-facing*.12,theme,2.15);
-   drawFloatingHand(leadX,leadY,facing*.12,theme,2.15);
-   drawCuteHead(fighter,CHARS[fighter.char],theme);
-   ctx.restore();
-  };
+  const redLead=project(redX,headY,0,reach+58,-17,-3);
+  const redSupport=project(redX,headY,0,7,19,4);
+  const blueCycle=(t*1.12)%1;
+  const blueAttack=blueCycle<.32?smoothstep01(blueCycle/.32):blueCycle<.58?1-smoothstep01((blueCycle-.32)/.26):0;
+  const blueAlt=Math.floor(t*1.12)%2;
+  const blueForward=reach+10+30*blueAttack;
+  const blueA=project(blueX,headY,Math.PI,blueAlt===0?blueForward:reach-13+Math.sin(t*5)*1.4,blueAlt===0?15:-18,blueAlt===0?-2:0);
+  const blueB=project(blueX,headY,Math.PI,blueAlt===1?blueForward:reach-13+Math.sin(t*5+1)*1.4,blueAlt===1?-15:18,blueAlt===1?-2:0);
 
-  // Cross-cut crescents use the same curved silhouette as the game's awakened slash VFX.
-  const drawSkillCrescent=(x,y,length,thickness,rotation,color,alpha)=>{
-   ctx.save();ctx.translate(x,y);ctx.rotate(rotation);ctx.globalAlpha=alpha;
-   ctx.beginPath();ctx.moveTo(-length*.5,0);
-   ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
-   ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
-   ctx.closePath();
-   ctx.fillStyle=black;ctx.strokeStyle=color;ctx.lineWidth=3;ctx.lineJoin='round';
-   ctx.shadowColor=color;ctx.shadowBlur=10;
-   ctx.fill();ctx.stroke();
-   ctx.shadowBlur=3;ctx.globalAlpha=alpha*.56;ctx.strokeStyle=color;ctx.lineWidth=1.1;
-   ctx.beginPath();ctx.moveTo(-length*.16,-thickness*2.05);
-   ctx.quadraticCurveTo(0,-thickness*2.6,length*.16,-thickness*2.02);ctx.stroke();
-   ctx.restore();
-  };
+  ctx.fillStyle='rgba(0,0,0,.34)';
+  ctx.beginPath();ctx.ellipse(redX,headY+39,24,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(blueX,headY+39,24,5,0,0,Math.PI*2);ctx.fill();
 
-  // Slash effects pulse toward the center as the two fighters trade hits.
-  const strike=Math.max(0,Math.sin(t*2.7-1.1));
-  const slashAlpha=.25+strike*.72;
-  drawSkillCrescent(293+strike*10,119,105,8,-.16,red,slashAlpha);
-  drawSkillCrescent(347-strike*10,125,105,8,Math.PI+.16,blue,slashAlpha);
-  drawFighter(redFighter,redTheme,leftX,leftY,1,strike);
-  drawFighter(blueFighter,blueTheme,rightX,rightY,-1,1-strike*.45);
+  // The actual Yuji Black Flash skill effect: black core with the game's red lightning contour.
+  ctx.save();ctx.translate(redX,headY);drawVesselBaseSmoothSkillVfx(redFighter,'yujiBlackFlash',.52+.18*Math.sin(t*2.8));ctx.restore();
 
-  // Tiny color-matched impact pixels tie the two skill effects together.
-  ctx.globalAlpha=.35+strike*.65;
-  for(let i=0;i<7;i++){
-   const a=t*2+i*Math.PI*2/7,r=13+(i%3)*5;
+  // Blue alternates punches and reuses the same fading hand-trail renderer as gameplay.
+  const trailColor=brightenM1TrailColor(blue);
+  drawM1HandTrail(blueFighter,blueA,'a',blueX,headY,blueAlt===0,trailColor);
+  drawM1HandTrail(blueFighter,blueB,'b',blueX,headY,blueAlt===1,trailColor);
+
+  // In-game proportions: head radius 14.8px; floating fists radius 7.6px at M1/Black Flash scales.
+  drawFloatingHand(redSupport.x-redX,redSupport.y-headY,.1,redTheme,.92);
+  drawFloatingHand(redLead.x-redX,redLead.y-headY,-.08,redTheme,1.32);
+  drawCuteHead(redFighter,CHARS.vessel,redTheme);
+
+  drawFloatingHand(blueA.x-blueX,blueA.y-headY,.08,blueTheme,blueAlt===0?1.12:.94);
+  drawFloatingHand(blueB.x-blueX,blueB.y-headY,-.08,blueTheme,blueAlt===1?1.12:.94);
+  drawCuteHead(blueFighter,CHARS.honored,blueTheme);
+
+  const clashX=(redLead.x+blueA.x)*.5,clashY=(redLead.y+blueA.y)*.5;
+  ctx.globalAlpha=.35+.55*pulse;
+  for(let i=0;i<6;i++){
+   const a=t*2.4+i*Math.PI/3,r=7+(i%3)*4;
    ctx.fillStyle=i%2?red:blue;
-   ctx.fillRect(Math.round(320+Math.cos(a)*r),Math.round(122+Math.sin(a)*r),2+(i%2),2+(i%2));
+   ctx.fillRect(Math.round(clashX+Math.cos(a)*r),Math.round(clashY+Math.sin(a)*r),2,2);
   }
- }finally{ctx=oldContext}
+ }finally{ctx=oldContext;game.time=oldGameTime}
 }
 function applyOnlineRoomState(state){
  if(!state||!state.players)return;
