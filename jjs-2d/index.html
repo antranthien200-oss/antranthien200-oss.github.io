@@ -3503,13 +3503,61 @@ function settleThrownCan(p){if(!p||p.kind!=='trashCan'||!p.propRef||p.propRef.ca
 function updateTrashCanRespawns(dt){for(const prop of trashCans){if(prop.carried!=='cooldown')continue;prop.respawnTimer=Math.max(0,(prop.respawnTimer||0)-dt);if(prop.respawnTimer<=0){prop.carried=false;prop.x=prop.homeX;prop.y=prop.homeY;prop.flash=.8;burst(prop.x,prop.y,'#c5d0d9',12,2.5);}}}
 function updateTrainingDummy(dt){
  if(!trainingDummy)return;
- if(trainingDummy.dead){trainingDummy.respawn-=dt;if(trainingDummy.respawn<=0){trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.motion=null;trainingDummy.attackAnim=0;trainingDummy.attackType='';trainingDummy.x=1860;trainingDummy.y=1190;burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14)}return}
- // Keep the dummy passive, but preserve hit reactions and knockback from player attacks.
+ if(trainingDummy.dead){
+  trainingDummy.respawn-=dt;
+  if(trainingDummy.respawn<=0){
+   trainingDummy.dead=false;trainingDummy.hp=trainingDummy.maxHp;trainingDummy.stun=0;trainingDummy.invuln=0;
+   trainingDummy.vx=0;trainingDummy.vy=0;trainingDummy.jump=0;trainingDummy.jumpV=0;trainingDummy.rooted=0;
+   trainingDummy.capturedBy=null;trainingDummy.motion=null;trainingDummy.attackAnim=0;trainingDummy.attackType='';trainingDummy.flash=0;
+   trainingDummy.x=1860;trainingDummy.y=1190;
+   burst(trainingDummy.x,trainingDummy.y,'#8fe5da',16,3);popText(trainingDummy.x,trainingDummy.y-76,'DUMMY RESET','#aaf4e8',14);
+  }
+  return;
+ }
+ // Keep the dummy passive, but give it the same hit/capture timing and launch physics as a fighter.
  trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.block=false;trainingDummy.counterWindow=0;trainingDummy.counterKind='';
  trainingDummy.domainWindup=0;trainingDummy.domainTimer=0;trainingDummy.grabTarget=null;trainingDummy.skillCd=[999,999,999,999];trainingDummy.specialCd=999;
- trainingDummy.stun=Math.max(0,trainingDummy.stun-dt);trainingDummy.invuln=Math.max(0,trainingDummy.invuln-dt);trainingDummy.flash=Math.max(0,trainingDummy.flash-dt);updateTenEffects(trainingDummy,dt);
- trainingDummy.vx*=Math.pow(.84,dt*60);trainingDummy.vy*=Math.pow(.84,dt*60);
- trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1800,1920);trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1130,1250);
+ trainingDummy.stun=Math.max(0,trainingDummy.stun-dt);
+ trainingDummy.invuln=Math.max(0,trainingDummy.invuln-dt);
+ trainingDummy.flash=Math.max(0,trainingDummy.flash-dt);
+ trainingDummy.attackAnim=Math.max(0,(trainingDummy.attackAnim||0)-dt);
+ trainingDummy.blockImpact=Math.max(0,(trainingDummy.blockImpact||0)-dt);
+ if(trainingDummy.motion){
+  trainingDummy.motion.t+=dt;
+  if(trainingDummy.motion.t>=trainingDummy.motion.duration)trainingDummy.motion=null;
+ }
+ updateTenEffects(trainingDummy,dt);
+
+ // Captures are positioned by updateGrab / the grab sequence itself. Do not damp or
+ // clamp that position here, just as updateFighter does for a captured opponent.
+ const holder=trainingDummy.capturedBy;
+ if(holder&&!holder.dead&&(holder.grabTarget===trainingDummy||
+    (holder.vesselAwakenSequence&&holder.vesselAwakenSequence.target===trainingDummy))){
+  trainingDummy.vx=0;trainingDummy.vy=0;
+  return;
+ }
+ trainingDummy.capturedBy=null;
+
+ if(trainingDummy.rooted>0){
+  trainingDummy.rooted=Math.max(0,trainingDummy.rooted-dt);
+  trainingDummy.vx=0;trainingDummy.vy=0;
+ }else{
+  const drag=Math.pow(trainingDummy.stun>0?.985:.86,dt*60);
+  trainingDummy.vx*=drag;trainingDummy.vy*=drag;
+ }
+ trainingDummy.vx=clamp(trainingDummy.vx,-15,15);
+ trainingDummy.vy=clamp(trainingDummy.vy,-15,15);
+ if(trainingDummy.jump>0){
+  trainingDummy.jumpV-=20*dt;
+  trainingDummy.jump+=trainingDummy.jumpV*dt;
+  if(trainingDummy.jump<=0){trainingDummy.jump=0;trainingDummy.jumpV=0}
+ }
+
+ // Give launch moves room to read like they do against a normal opponent while
+ // keeping the dummy in its training area.
+ trainingDummy.x=clamp(trainingDummy.x+trainingDummy.vx*60*dt,1650,2070);
+ trainingDummy.y=clamp(trainingDummy.y+trainingDummy.vy*60*dt,1000,1380);
+ collideWorld(trainingDummy);
 }
 function drawTrashCanScreen(x,y,scale=1,angle=0,flash=0){
   ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
@@ -3616,8 +3664,9 @@ function drawTrainingDummy(){
  ctx.fillStyle='#10191f';ctx.beginPath();ctx.ellipse(x,y+23,59,20,0,0,Math.PI*2);ctx.fill();
  ctx.strokeStyle='#75cfc4';ctx.lineWidth=2;ctx.setLineDash([7,5]);ctx.beginPath();ctx.ellipse(x,y+23,53,17,0,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
  if(!d.dead){
-  // Render the same round head-and-hands style in white, without changing the real fighter data.
-  const dummyVisual={...d,char:'dummy',team:'enemy',block:false};
+  // Keep the dummy white, but preserve its real character type so skill-hit and
+  // captured animations use the same character-specific poses as a real opponent.
+  const dummyVisual={...d,team:'enemy',block:false,dummyWhiteVisual:true};
   drawHeadHands(dummyVisual);
   // Real text is placed over the centre of the dummy's face.
   ctx.save();ctx.fillStyle='#17212a';ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('[Dummy]',x,y-(d.jump||0)*3-23);ctx.restore();
@@ -5661,6 +5710,7 @@ const JJS_HEAD_PALETTE={
  dummy:{main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'}
 };
 function getFighterTheme(f){
+ if(f.dummyWhiteVisual)return {main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'};
  if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
  if(f.char==='vessel'&&f.awakened)return {main:'#9f3046',accent:'#f05c70',shadow:'#571c30'};
