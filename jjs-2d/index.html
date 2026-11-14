@@ -2581,7 +2581,7 @@ const nativeProjectilePush=projectiles.push.bind(projectiles);
 let onlineProjectileCounter=0;
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
  const shot={...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)};
- const networkKinds=['trashCan','red','fire','blueMax','redmax','hollow','tenNue','bloodBomb','sukunaFireArrow'];
+ const networkKinds=['trashCan','trashJunk','red','fire','blueMax','redmax','hollow','tenNue','bloodBomb','bloodBombProjectile','sukunaFireArrow','soul','bodyrepel','pebble','bloodBeam','ball'];
  if(onlineMode&&onlineRoom&&shot.owner===player&&networkKinds.includes(String(shot.kind||''))){
   const move=String(shot.owner.motion&&shot.owner.motion.name||shot.owner.onlineLastMove||'').slice(0,48);
   if(move){
@@ -2591,7 +2591,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
    shot.vx=vx;shot.vy=vy;
    const id=String(++onlineProjectileCounter);
    shot.networkId=id;shot.networkSessionId=onlineSessionId;shot.serverOwnedVisual=true;
-   const hitTuning=({trashCan:{hitStun:.78,knockbackScale:.78,unblockable:true,damageType:'projectile'},red:{hitStun:.48,knockbackScale:.55,damageType:'bullet',blockedDamage:shot.blockedDamage},fire:{hitStun:.8,knockbackScale:.65,unblockable:true,damageType:'explosion'},blueMax:{hitStun:.1,knockback:.8,knockbackScale:0,unblockable:true,ignoreInvuln:true,damageType:'melee'},redmax:{hitStun:.8,knockbackScale:.55,unblockable:true,damageType:'explosion'},hollow:{hitStun:.9,knockbackScale:.7,unblockable:true,damageType:'explosion'},tenNue:{hitStun:.95,knockbackScale:1,unblockable:true,damageType:'projectile'},bloodBomb:{hitStun:.6,knockback:10,unblockable:true,damageType:'explosion'},sukunaFireArrow:{hitStun:.32,knockback:8,damageType:'explosion'}})[shot.kind]||{};
+   const hitTuning=({trashCan:{hitStun:.78,knockbackScale:.78,unblockable:true,damageType:'projectile'},trashJunk:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},red:{hitStun:.48,knockbackScale:.55,damageType:'bullet',blockedDamage:shot.blockedDamage},fire:{hitStun:.8,knockbackScale:.65,unblockable:true,damageType:'explosion'},blueMax:{hitStun:.1,knockback:.8,knockbackScale:0,unblockable:true,ignoreInvuln:true,damageType:'melee'},redmax:{hitStun:.8,knockbackScale:.55,unblockable:true,damageType:'explosion'},hollow:{hitStun:.9,knockbackScale:.7,unblockable:true,damageType:'explosion'},tenNue:{hitStun:.95,knockbackScale:1,unblockable:true,damageType:'projectile'},bloodBomb:{hitStun:.6,knockback:10,unblockable:true,damageType:'explosion'},bloodBombProjectile:{hitStun:.55,knockback:9,damageType:'melee'},soul:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},bodyrepel:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},pebble:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},bloodBeam:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},ball:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},sukunaFireArrow:{hitStun:.32,knockback:8,damageType:'explosion'}})[shot.kind]||{};
    try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:shot.kind==='sukunaFireArrow'?980:shot.kind==='trashCan'&&shot.golden?4200:700),kind:shot.kind,color:shot.color,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage,...hitTuning,golden:!!shot.golden,domainBound:!!shot.domainBound,rideVariant:!!shot.rideOwner})}
    catch(error){shot.serverOwnedVisual=false;console.warn('Online projectile registration failed',error)}
   }
@@ -2606,6 +2606,7 @@ let player,enemy,trainingDummy;
 
 let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
+const ONLINE_STATE_SEND_RATE=30,ONLINE_STATE_SEND_INTERVAL=1/ONLINE_STATE_SEND_RATE,ONLINE_STATE_INTERVAL_MS=1000/ONLINE_STATE_SEND_RATE;
 const ONLINE_REMOTE_INTERPOLATION_MIN_MS=38,ONLINE_REMOTE_INTERPOLATION_MAX_MS=82,ONLINE_MAX_EXTRAPOLATION_MS=120;
 let onlineRemoteInterpolationDelayMs=44,onlineStateArrivalAt=0,onlineStateJitterMs=0;
 let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='READY',onlineConnecting=false;
@@ -3028,7 +3029,7 @@ function applyOnlineRoomState(state){
  if(onlineStateArrivalAt>0){
   const arrivalInterval=stateArrivalNow-onlineStateArrivalAt;
   if(arrivalInterval>=8&&arrivalInterval<=160){
-   const timingDeviation=Math.abs(arrivalInterval-25);
+   const timingDeviation=Math.abs(arrivalInterval-ONLINE_STATE_INTERVAL_MS);
    onlineStateJitterMs+=(timingDeviation-onlineStateJitterMs)*.12;
    onlineRemoteInterpolationDelayMs=clamp(ONLINE_REMOTE_INTERPOLATION_MIN_MS+onlineStateJitterMs*1.7,ONLINE_REMOTE_INTERPOLATION_MIN_MS,ONLINE_REMOTE_INTERPOLATION_MAX_MS);
   }
@@ -3052,7 +3053,8 @@ function applyOnlineRoomState(state){
  const entries=[];state.players.forEach((v,k)=>entries.push([k,v]));
  const local=state.players.get(onlineSessionId);
  if(local&&player){
-  const wasDead=player.dead;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
+  const wasDead=player.dead,oldLocalHp=Number(player.hp)||0;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
+   if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp;player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',12,4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,2.5);game.hitStop=Math.max(game.hitStop,.018)}}
   player.meter=clamp(Number(local.meter)||0,0,100);player.awakeMode=String(local.awakeMode||"");player.awakeFuel=Number(local.awakeFuel)||0;player.awakeFuelDrainRate=Number(local.awakeFuelDrainRate)||0;player.jackpot=!!local.jackpot;player.consecutiveJackpots=Number(local.consecutiveJackpots)||0;player.domainStunGuaranteed=!!local.domainStunGuaranteed;player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;
   player.domainType=String(local.domainType||'');player.domainTimer=Number(local.domainTimer)||0;player.domainWindupStart=Number(local.domainWindupStart)||player.domainWindupStart||0;player.domainRadius=Number(local.domainRadius)||0;
@@ -3126,7 +3128,7 @@ function applyOnlineRoomState(state){
    const duration=remote.motionDuration,reported=clamp(Number(net.motionProgress)||0,0,1)*duration,serverAge=remote.motionStartedAt?Math.max(0,(Date.now()-remote.motionStartedAt)/1000):reported;
    remote.motion={name:String(net.motionName),t:clamp(Math.max(reported,serverAge),0,duration),duration,activeDuration:duration,angle:remote.networkFace,target:null};
   }else remote.motion=null;
-  if(remote.hp<oldHp&&!remote.dead)popText(remote.x,remote.y-43,'-'+Math.round(oldHp-remote.hp),'#ffe1ac',13);
+  if(remote.hp<oldHp&&!remote.dead){const loss=oldHp-remote.hp;remote.flash=.16;burst(remote.x,remote.y,'#ffe1ac',10,3);popText(remote.x,remote.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,1.2)}
   if(remote.dead&&!remote.wasDead){popText(remote.x,remote.y-65,'K.O.','#ffcf75',25);remote.wasDead=true}
   if(!remote.dead)remote.wasDead=false;
  }
@@ -3212,7 +3214,7 @@ function updateOnlineNetwork(dt){
  updateOnlineRemotePlayers(dt);
  onlineSendAccumulator+=Math.min(dt,.1);onlinePingAccumulator+=Math.min(dt,.1);
  if(onlinePingAccumulator>=1){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
- const networkSendInterval=1/40;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
+ const networkSendInterval=ONLINE_STATE_SEND_INTERVAL;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
  const motion=player.motion;if(motion&&motion.name)player.onlineLastMove=String(motion.name).slice(0,48);
  if(player.vehicle&&!player.vehicleTransition){
   const mobile=mobileControlsEnabled&&mobileJoyPointer!==null;
@@ -4552,9 +4554,9 @@ function trashManUseSkill(f,idx,t,angle){
 }
 function updateTrashManEffects(f,dt){
  if(!f||f.char!=='trashman')return;
- if(f.trashGiantCan){const g=f.trashGiantCan;g.life-=dt;if(!g.landed){g.dropTimer=Math.max(0,(g.dropTimer||0)-dt);if(g.dropTimer===0){g.landed=true;game.shake=Math.max(game.shake,8);burst(g.x,g.y,'#c5d0b2',34,8);addDebris(g.x,g.y,'#65716e',15);for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius+12){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,9,f,{stun:.48,kx:Math.cos(a)*7,ky:Math.sin(a)*7,color:'#a9c58d',big:true,ignoreInvuln:true})}}}if(g.landed){g.tick-=dt;if(g.tick<=0){g.tick=.72;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,2.8,f,{stun:.12,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,color:'#9fb982',ignoreInvuln:true})}if(g.life>0)burst(g.x+rnd(-24,24),g.y+rnd(-24,24),'#9aa88d',3,2)}}if(g.life<=0)f.trashGiantCan=null}
- if(f.trashStinkArea){const a=f.trashStinkArea;a.life-=dt;a.tick-=dt;if(a.tick<=0){a.tick=.52;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f&&Math.hypot(target.x-a.x,target.y-a.y)<a.radius){damage(target,2.1,f,{stun:.12,color:'#9cc66d',ignoreInvuln:true});burst(target.x+rnd(-16,16),target.y+rnd(-14,14),'#91b86a',3,2)}}if(a.life<=0)f.trashStinkArea=null}
- if(f.trashBarrageTimer>0){f.trashBarrageTimer=Math.max(0,f.trashBarrageTimer-dt);f.trashBarrageTick-=dt;if(f.trashBarrageTick<=0){f.trashBarrageTick=.19;const a=f.trashBarrageAngle;for(const target of [player,enemy,trainingDummy])if(target&&!target.dead&&target!==f){const d=dist(f,target),da=Math.atan2(target.y-f.y,target.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-a),Math.cos(da-a)));if(d<168&&arc<1.05){damage(target,1.65,f,{stun:.08,kx:Math.cos(a)*.7,ky:Math.sin(a)*.7,color:'#c4d5ab',ignoreInvuln:true});burst(target.x,target.y,'#b1cc8e',2,2)}}}if(f.trashBarrageTimer<=0){if(f.motion&&f.motion.name==='trashManCanBarrage')f.motion=null;f.attackAnim=0}}
+ if(f.trashGiantCan){const g=f.trashGiantCan;g.life-=dt;if(!g.landed){g.dropTimer=Math.max(0,(g.dropTimer||0)-dt);if(g.dropTimer===0){g.landed=true;game.shake=Math.max(game.shake,8);burst(g.x,g.y,'#c5d0b2',34,8);addDebris(g.x,g.y,'#65716e',15);for(const target of tenTargets(f))if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius+12){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,9,f,{stun:.48,kx:Math.cos(a)*7,ky:Math.sin(a)*7,color:'#a9c58d',big:true,ignoreInvuln:true})}}}if(g.landed){g.tick-=dt;if(g.tick<=0){g.tick=.72;for(const target of tenTargets(f))if(target&&!target.dead&&target!==f&&Math.hypot(target.x-g.x,target.y-g.y)<g.radius){const a=Math.atan2(target.y-g.y,target.x-g.x);damage(target,2.8,f,{stun:.12,kx:Math.cos(a)*1.8,ky:Math.sin(a)*1.8,color:'#9fb982',ignoreInvuln:true})}if(g.life>0)burst(g.x+rnd(-24,24),g.y+rnd(-24,24),'#9aa88d',3,2)}}if(g.life<=0)f.trashGiantCan=null}
+ if(f.trashStinkArea){const a=f.trashStinkArea;a.life-=dt;a.tick-=dt;if(a.tick<=0){a.tick=.52;for(const target of tenTargets(f))if(target&&!target.dead&&target!==f&&Math.hypot(target.x-a.x,target.y-a.y)<a.radius){damage(target,2.1,f,{stun:.12,color:'#9cc66d',ignoreInvuln:true});burst(target.x+rnd(-16,16),target.y+rnd(-14,14),'#91b86a',3,2)}}if(a.life<=0)f.trashStinkArea=null}
+ if(f.trashBarrageTimer>0){f.trashBarrageTimer=Math.max(0,f.trashBarrageTimer-dt);f.trashBarrageTick-=dt;if(f.trashBarrageTick<=0){f.trashBarrageTick=.19;const a=f.trashBarrageAngle;for(const target of tenTargets(f))if(target&&!target.dead&&target!==f){const d=dist(f,target),da=Math.atan2(target.y-f.y,target.x-f.x),arc=Math.abs(Math.atan2(Math.sin(da-a),Math.cos(da-a)));if(d<168&&arc<1.05){damage(target,1.65,f,{stun:.08,kx:Math.cos(a)*.7,ky:Math.sin(a)*.7,color:'#c4d5ab',ignoreInvuln:true});burst(target.x,target.y,'#b1cc8e',2,2)}}}if(f.trashBarrageTimer<=0){if(f.motion&&f.motion.name==='trashManCanBarrage')f.motion=null;f.attackAnim=0}}
  if(f.trashBodyBarrageTimer>0){f.trashBodyBarrageTimer=Math.max(0,f.trashBodyBarrageTimer-dt);f.trashBodyBarrageTick-=dt;if(f.trashBodyBarrageTick<=0){f.trashBodyBarrageTick=.145;const base=f.trashBodyBarrageAngle;for(let i=0;i<3;i++){const angle=base+(i-1)*.33+rnd(-.08,.08),speed=rnd(10,14),x=f.x+Math.cos(angle)*20,y=f.y+Math.sin(angle)*20;projectiles.push({x,y,vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed,r:9,life:1.05,maxDistance:370,travelled:0,owner:f,kind:'trashJunk',damage:2.2,color:i%2?'#9dbb79':'#aeb7a1'})}burst(f.x,f.y,'#a8c68b',3,2)}if(f.trashBodyBarrageTimer<=0&&f.motion&&f.motion.name==='trashManEruption')f.motion=null}
  if(f.trashSwapDecoy){f.trashSwapDecoy.life-=dt;if(f.trashSwapDecoy.life<=0)f.trashSwapDecoy=null}
  if(f.trashGoldenCanInFlight){f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
@@ -8328,7 +8330,7 @@ function drawIdleDeathGamble(f){
  ctx.restore();
 }
 function drawTenSummons(){
- const activeDomain=domainFighters().find(domainIsActive),fighters=[player,enemy,trainingDummy].filter(f=>f&&f.char==='ten'&&!f.dead&&(!activeDomain||domainViewMatches(f,activeDomain)));
+ const activeDomain=domainFighters().find(domainIsActive),fighters=(onlineMode?[player,...onlineRemotePlayers.values(),trainingDummy]:[player,enemy,trainingDummy]).filter(f=>f&&f.char==='ten'&&!f.dead&&(!activeDomain||domainViewMatches(f,activeDomain)));
  for(const f of fighters){
   const x=sx(f.x),y=sy(f.y),a=f.face||0;
   if(f.tenToadVisual>0){
