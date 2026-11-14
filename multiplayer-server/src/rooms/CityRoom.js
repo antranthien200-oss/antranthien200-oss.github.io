@@ -604,7 +604,7 @@ killPlayer(p){
    if(!state||state.collapsed)continue;
    const px=clamp(nextX,b.x,b.x+b.w),py=clamp(nextY,b.y,b.y+b.h),dx=nextX-px,dy=nextY-py;
    if(dx*dx+dy*dy>=38*38)continue;
-   if(impactSpeed>=135){
+   if(impactSpeed>=95){
     const key="car:"+p.vehicleId+":"+index,lastHit=this.lastBuildingAt.get(key)||0;
     if(now-lastHit>=720){
      this.lastBuildingAt.set(key,now);
