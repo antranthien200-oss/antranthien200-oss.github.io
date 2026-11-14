@@ -4579,7 +4579,7 @@ function useAttack(f,kind){
  if(kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
  if(['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
  if(kind==='special'&&f.specialCd>0)return;
- if(kind==='dash'){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
+ if(kind==='dash'&&!(onlineMode&&f!==player)){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
  if(onlineMode&&f===player&&onlineRoom){try{const actionTarget=targetOf(f);onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||''})}catch(e){}}
  const c=CHARS[f.char],t=targetOf(f);
  if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;const dashAim=onlineMode&&f!==player?{x:f.x+Math.cos(f.face)*1000,y:f.y+Math.sin(f.face)*1000}:aimedAt(f),dx=dashAim.x-f.x,dy=dashAim.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;if(onlineMode&&f===player)f.onlineDashPredictionUntil=performance.now()+145;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
