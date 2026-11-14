@@ -1993,7 +1993,8 @@ let player,enemy,trainingDummy;
 
 let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
-const ONLINE_REMOTE_INTERPOLATION_DELAY_MS=90,ONLINE_MAX_EXTRAPOLATION_MS=100;
+const ONLINE_REMOTE_INTERPOLATION_MIN_MS=38,ONLINE_REMOTE_INTERPOLATION_MAX_MS=82,ONLINE_MAX_EXTRAPOLATION_MS=120;
+let onlineRemoteInterpolationDelayMs=44,onlineStateArrivalAt=0,onlineStateJitterMs=0;
 let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='READY',onlineConnecting=false;
 let onlineReconnectTimer=null,onlineReconnectAttempt=0,onlineReconnectStartedAt=0,onlineReconnectToken='';
 let onlineActivitySentAt=0;
@@ -2298,6 +2299,16 @@ function drawOnlineFightScene(now){
 }
 function applyOnlineRoomState(state){
  if(!state||!state.players)return;
+ const stateArrivalNow=performance.now();
+ if(onlineStateArrivalAt>0){
+  const arrivalInterval=stateArrivalNow-onlineStateArrivalAt;
+  if(arrivalInterval>=8&&arrivalInterval<=160){
+   const timingDeviation=Math.abs(arrivalInterval-25);
+   onlineStateJitterMs+=(timingDeviation-onlineStateJitterMs)*.12;
+   onlineRemoteInterpolationDelayMs=clamp(ONLINE_REMOTE_INTERPOLATION_MIN_MS+onlineStateJitterMs*1.7,ONLINE_REMOTE_INTERPOLATION_MIN_MS,ONLINE_REMOTE_INTERPOLATION_MAX_MS);
+  }
+ }
+ onlineStateArrivalAt=stateArrivalNow;
  const world=state.world;
  if(world){
   if(world.buildings)world.buildings.forEach((net,id)=>{const b=staticBuildings[Number(id)];if(b){
@@ -2437,7 +2448,7 @@ function applyOnlineRoomState(state){
  const label=$('onlinePlayersCount');if(label)label.textContent=entries.length+' / 16 PLAYERS';
 }
 function updateOnlineRemotePlayers(dt){
- const now=performance.now(),renderTime=now-ONLINE_REMOTE_INTERPOLATION_DELAY_MS;
+ const now=performance.now(),renderTime=now-onlineRemoteInterpolationDelayMs;
  for(const remote of onlineRemotePlayers.values()){
   advanceVehicleTransition(remote,dt);
   if(remote.vehicleTransition)continue;
@@ -2475,8 +2486,8 @@ function updateOnlineNetwork(dt){
  if(!onlineMode||!onlineRoom||!player)return;
  updateOnlineRemotePlayers(dt);
  onlineSendAccumulator+=Math.min(dt,.1);onlinePingAccumulator+=Math.min(dt,.1);
- if(onlinePingAccumulator>=2){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
- const networkSendInterval=1/30;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
+ if(onlinePingAccumulator>=1){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
+ const networkSendInterval=1/40;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
  const motion=player.motion;if(motion&&motion.name)player.onlineLastMove=String(motion.name).slice(0,48);
  if(player.vehicle&&!player.vehicleTransition){
   const mobile=mobileControlsEnabled&&mobileJoyPointer!==null;
@@ -2518,7 +2529,7 @@ function drawOnlineNameplate(remote){
 function startOnlineMatch(){
  stopOnlinePlayerCountPolling();stopOnlineFightAnimation();
  onlineMode=true;updatePauseActionButton();
- resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
+ resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;onlineStateArrivalAt=0;onlineStateJitterMs=0;onlineRemoteInterpolationDelayMs=44;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
  if(onlineRoom&&onlineRoom.state&&onlineRoom.state.players){
   let localState=null;
   if(typeof onlineRoom.state.players.get==='function')localState=onlineRoom.state.players.get(onlineSessionId);
@@ -2613,7 +2624,7 @@ function bindOnlineRoom(client,room){
  room.onError((code,message)=>{console.warn('Online room error',code,message);setOnlineStatus('SERVER ERROR · CHECK CONNECTION')});
  room.onMessage('server:player-count',data=>{const label=$('onlinePlayersCount');if(label&&data)label.textContent=(Number(data.count)||0)+' / 16 PLAYERS'});
  room.onMessage('player:reset',data=>{if(!onlineMode||!player||!data)return;clearHeldInputs();const char=CHARS[String(data.character||'')]?String(data.character):selected;const x=Number.isFinite(Number(data.x))?Number(data.x):player.x,y=Number.isFinite(Number(data.y))?Number(data.y):player.y;player=makeFighter('player',char,x,y);player.invuln=clamp(Number(data.invuln)||1.2,0,2);game.playerDeathNotified=false;game.playerHitStreak=0;game.playerHitTimer=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.shake=0;game.hitStop=0;game.domainClash=null;domainClashFrameCache.last=-Infinity;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');const comboDisplay=$('comboDisplay');if(comboDisplay)comboDisplay.classList.remove('active','pop','hot');game.paused=false;document.body.classList.remove('game-paused');$('pause').style.display='none';syncMobileControls();camera.x=player.x;camera.y=player.y;updateDomainClashHud();updateHud(true);showToast('CHARACTER RESET',900)});
- room.onMessage('network:pong',data=>{const sentAt=Number(data&&data.sentAt);if(!Number.isFinite(sentAt))return;const rtt=Math.max(0,performance.now()-sentAt);onlineLatencyMs=onlineLatencyMs===null?rtt:onlineLatencyMs*.65+rtt*.35;const label=$('onlinePing');if(label){label.textContent='PING '+Math.round(onlineLatencyMs)+' MS';label.dataset.quality=onlineLatencyMs<50?'good':onlineLatencyMs<100?'medium':'high'}});
+ room.onMessage('network:pong',data=>{const sentAt=Number(data&&data.sentAt);if(!Number.isFinite(sentAt))return;const rtt=Math.max(0,performance.now()-sentAt);onlineLatencyMs=onlineLatencyMs===null?rtt:onlineLatencyMs*.8+rtt*.2;const label=$('onlinePing');if(label){label.textContent='PING '+Math.round(onlineLatencyMs)+' MS';label.dataset.quality=onlineLatencyMs<50?'good':onlineLatencyMs<100?'medium':'high'}});
  room.onMessage('combat:action',data=>{
   if(!data||data.sessionId===onlineSessionId)return;
   const remote=onlineRemotePlayers.get(data.sessionId);if(!remote||remote.dead)return;
