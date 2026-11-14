@@ -1413,7 +1413,7 @@ const staticBuildings=[
  {x:625,y:1375,w:365,h:190,c:'#c8b7a2',name:'CLINIC'},
  {x:2740,y:1035,w:330,h:390,c:'#b9c6b6',name:'GYM'}
 ];
-staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});
+staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false;b.respawnTimer=0});
 const destructibles=[
  {x:2785,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
  {x:2860,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
@@ -1421,7 +1421,7 @@ const destructibles=[
  {x:3010,y:1595,w:58,h:58,hp:3,color:'#a58b68'},
  {x:3085,y:1595,w:58,h:58,hp:3,color:'#b8a27c'}
 ].map((o,i)=>({...o,id:i,alive:true}));
-const parkedCars=Array.from({length:11},(_,i)=>({id:i,x:1601+i*108,y:1635,homeX:1601+i*108,homeY:1635,angle:0,vx:0,vy:0,speed:0,maxSpeed:680,maxReverse:210,color:['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'][i%6],highlight:['#d99c8d','#a8c3d0','#dfc891','#a7c7a9','#c0acd0','#e1e5e4'][i%6],occupied:false,destroyed:false,skidTimer:0,hitEnemyCooldown:0,hitDummyCooldown:0,skidMarks:[]}));
+const parkedCars=Array.from({length:11},(_,i)=>({id:i,x:1601+i*108,y:1635,homeX:1601+i*108,homeY:1635,angle:0,vx:0,vy:0,speed:0,maxSpeed:680,maxReverse:210,color:['#b86e61','#7895aa','#c1a66e','#7c9c84','#a58ab1','#b7bfc1'][i%6],highlight:['#d99c8d','#a8c3d0','#dfc891','#a7c7a9','#c0acd0','#e1e5e4'][i%6],occupied:false,destroyed:false,respawnTimer:0,skidTimer:0,hitEnemyCooldown:0,hitDummyCooldown:0,skidMarks:[]}));
 const particles=[],projectiles=[],debris=[],texts=[],doorTraps=[],trailStrokes=[],fireZones=[];
 const nativeProjectilePush=projectiles.push.bind(projectiles);
 let onlineProjectileCounter=0;
@@ -1871,7 +1871,7 @@ function leaveOnlineServer(){
 
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
-function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1860,1190);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay)comboDisplay.classList.remove('active','pop','hot');game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false});mapCacheDirty=true;resetTrashCans();resetCityVehicles();player.vehicle=null;camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
+function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1860,1190);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay)comboDisplay.classList.remove('active','pop','hot');game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false;b.respawnTimer=0});mapCacheDirty=true;resetTrashCans();resetCityVehicles();player.vehicle=null;camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
 function startGame(){updatePauseActionButton();resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
 
@@ -2043,7 +2043,7 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
  hit.skillHits=(hit.skillHits||0)+1;hit.damageStage=Math.min(3,hit.skillHits);hit.lastSkillHit=game.time;
  const cx=hit.x+hit.w/2,cy=hit.y+hit.h/2;
  if(hit.damageStage>=3){
-  hit.collapsed=true;
+  hit.collapsed=true;hit.respawnTimer=25;
   addDebris(cx,cy,hit.c,34);addDebris(cx-hit.w*.2,cy+hit.h*.12,'#73808a',18);
   burst(cx,cy,'#c3cbd0',38,9);game.shake=Math.max(game.shake,9);
   popText(cx,cy-65,hit.name+' · COLLAPSED','#f3e1bd',20);
@@ -2740,7 +2740,7 @@ function updateCityTrainImpact(){
   if(!f||f.dead||Math.abs(f.y-CITY_TRAIN_TRACK_Y)>(f.vehicle?100:54))continue;
   if(!carCenters.some(cx=>Math.abs(f.x-cx)<=(f.vehicle?130:110)))continue;
   if(f===player)dropCarriedTrashCan(f);
-  if(f.vehicle){f.vehicle.occupied=false;f.vehicle.destroyed=true;f.vehicle.speed=0;f.vehicle.vx=0;f.vehicle.vy=0;f.vehicle=null;}
+  if(f.vehicle){f.vehicle.occupied=false;f.vehicle.destroyed=true;f.vehicle.respawnTimer=15;f.vehicle.speed=0;f.vehicle.vx=0;f.vehicle.vy=0;f.vehicle=null;}
   if(f.awakened)endAwakening(f);
   f.hp=0;f.dead=true;f.respawn=2.5;f.stun=0;f.invuln=0;f.block=false;f.vx=0;f.vy=0;f.motion=null;f.attackAnim=0;f.attackType='';
   f.domainTimer=0;f.domainWindup=0;f.domainState='';
@@ -3791,6 +3791,33 @@ function updateProjectiles(dt){
 }
 
 function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){const d=doorTraps[i];d.life-=dt;if(d.life<=0){doorTraps.splice(i,1);continue}const f=d.owner;if(!d.hit&&f&&f.jump<=0&&dist(f,d)<48&&keys.has(' ')){f.jump=1.65;f.jumpV=8.5;d.life=0;burst(d.x,d.y,'#e5c5ff',16,4);popText(d.x,d.y-38,'BOUNCE!','#e9d5ff',14)}}}
+function updateBuildingRespawns(dt){
+ if(onlineMode)return;
+ for(const b of staticBuildings){
+  if(!b.collapsed)continue;
+  b.respawnTimer=Math.max(0,(b.respawnTimer||25)-dt);
+  if(b.respawnTimer===0){
+   b.collapsed=false;b.skillHits=0;b.damageStage=0;
+   mapCacheDirty=true;
+   const cx=b.x+b.w/2,cy=b.y+b.h/2;
+   burst(cx,cy,'#cde6f2',18,4);
+   popText(cx,cy-55,b.name+' REBUILT','#bdeaff',15);
+  }
+ }
+}
+function updateLocalVehicleRespawns(dt){
+ if(onlineMode)return;
+ for(const car of parkedCars){
+  if(!car.destroyed)continue;
+  car.respawnTimer=Math.max(0,(car.respawnTimer||15)-dt);
+  if(car.respawnTimer===0){
+   car.x=car.homeX;car.y=car.homeY;car.angle=0;car.vx=0;car.vy=0;car.speed=0;
+   car.occupied=false;car.destroyed=false;car.skidTimer=0;car.skidMarks.length=0;
+   burst(car.x,car.y,'#cde6f2',14,3);
+   popText(car.x,car.y-48,'VEHICLE RESTORED','#bdeaff',13);
+  }
+ }
+}
 function updateDestructibles(dt){
  if(onlineMode)return;
  for(const o of destructibles){
@@ -3852,7 +3879,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);if(onlineMode){for(const remote of onlineRemotePlayers.values())updateGrab(remote,dt)}updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);if(onlineMode){for(const remote of onlineRemotePlayers.values())updateGrab(remote,dt)}updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();updateBuildingRespawns(dt);updateLocalVehicleRespawns(dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?150:320,debrisLimit=isMobileDevice?70:120,trailLimit=isMobileDevice?130:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
@@ -4211,7 +4238,7 @@ function damageVehicleBuilding(car,b,index,speed){
  hitTimes[index]=now;
  const hits=speed>=370?3:speed>=245?2:1;
  b.skillHits=Math.min(3,(b.skillHits||0)+hits);b.damageStage=b.skillHits;b.lastSkillHit=now;
- const wasCollapsed=!!b.collapsed;if(b.damageStage>=3)b.collapsed=true;
+ const wasCollapsed=!!b.collapsed;if(b.damageStage>=3){b.collapsed=true;if(!wasCollapsed)b.respawnTimer=25}
  showVehicleBuildingDamage(b,b.damageStage,b.collapsed&&!wasCollapsed);
 }
 function smashVehicleProps(car){
@@ -4352,7 +4379,7 @@ function toggleCityVehicle(f){
  return true;
 }
 function resetCityVehicles(){
- for(const car of parkedCars){car.vehicleTransition=null;car.x=car.homeX;car.y=car.homeY;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.occupied=false;car.destroyed=false;car.skidTimer=0;car.hitEnemyCooldown=0;car.hitDummyCooldown=0;car.skidMarks.length=0}
+ for(const car of parkedCars){car.vehicleTransition=null;car.x=car.homeX;car.y=car.homeY;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.occupied=false;car.destroyed=false;car.respawnTimer=0;car.skidTimer=0;car.hitEnemyCooldown=0;car.hitDummyCooldown=0;car.skidMarks.length=0}
 }
 
 function drawLimb(x,y,len,w,angle,color,edge){
