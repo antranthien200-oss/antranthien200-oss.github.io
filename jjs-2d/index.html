@@ -1447,6 +1447,103 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .online-menu-open .online-hero-copy>span{max-width:150px}
 }
 
+
+/* Minimal multiplayer view with a live count and a small animated fight scene. */
+#menuSub.online-menu-open{padding:clamp(10px,2.4vw,22px)}
+#menuSub.online-menu-open .menu-sub-panel{
+ width:min(760px,94vw);max-height:min(90vh,780px);overflow:auto;
+ border:1px solid rgba(255,255,255,.36);border-radius:9px;
+ background:linear-gradient(145deg,rgba(14,22,38,.98),rgba(6,11,21,.98));
+ box-shadow:0 24px 90px #000c;
+}
+#menuSub.online-menu-open .menu-sub-head{margin-bottom:12px}
+#menuSub.online-menu-open .menu-sub-head p{display:none}
+#menuSub.online-menu-open .menu-sub-cards{display:block}
+#menuSub.online-menu-open .menu-sub-footer{display:none}
+.online-menu-open .online-panel-card{
+ width:100%;max-width:620px;min-height:0;box-sizing:border-box;margin:0 auto;
+ padding:clamp(13px,2vw,19px);display:flex;flex-direction:column;gap:11px;
+ border:1px solid rgba(112,223,255,.34);border-radius:6px;
+ background:linear-gradient(145deg,rgba(16,40,58,.72),rgba(7,13,25,.96));
+}
+.online-menu-open .online-simple-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.online-menu-open .online-simple-title{display:flex;align-items:center;gap:10px;min-width:0}
+.online-menu-open .online-simple-signal{
+ width:34px;height:34px;flex:none;display:grid;place-items:center;
+ border:1px solid #75ddff55;border-radius:5px;background:#49cfff12;color:#9cecff;font-size:22px;
+}
+.online-menu-open .online-simple-title strong{color:#f5f8ff;font-size:clamp(12px,2vw,15px);font-weight:1000;letter-spacing:.12em}
+.online-menu-open .online-player-count{
+ display:flex;align-items:center;gap:7px;flex:none;padding:5px 9px;
+ border:1px solid rgba(101,216,255,.34);border-radius:4px;
+ background:rgba(73,207,255,.08);color:#dff9ff;
+}
+.online-menu-open .online-player-count b{min-width:20px;color:#9cecff;font-size:22px;line-height:1;font-weight:1000;text-align:center}
+.online-menu-open .online-player-count span{font-size:7px;line-height:1.35;font-weight:1000;letter-spacing:.1em}
+.online-menu-open .online-player-count[data-state="live"] b{animation:onlineCountPop .28s ease-out}
+.online-menu-open .online-player-count[data-state="offline"] b{color:#9aa8b9}
+@keyframes onlineCountPop{0%{transform:scale(1.16)}100%{transform:scale(1)}}
+.online-menu-open .online-server-field{display:grid;gap:5px;color:#9eb4cd;font-size:7px;font-weight:1000;letter-spacing:.15em}
+.online-menu-open .online-server-field input{
+ box-sizing:border-box;width:100%;min-height:37px;padding:9px 11px;
+ border:1px solid #ffffff2e;border-radius:4px;outline:none;background:#050b16d9;
+ color:#eff7ff;font:700 10px system-ui;letter-spacing:0;
+}
+.online-menu-open .online-server-field input::placeholder{color:#71839d}
+.online-menu-open .online-server-field input:focus{border-color:#75ddff;box-shadow:0 0 0 2px #75ddff20}
+.online-menu-open .online-join{
+ width:100%;min-height:43px;padding:10px 16px;display:flex;align-items:center;justify-content:center;gap:10px;
+ border:1px solid #8ceaff;border-radius:4px;background:linear-gradient(105deg,#17658a,#124666 58%,#173652);
+ color:#effcff;font-size:9px;font-weight:1000;letter-spacing:.18em;cursor:pointer;
+ box-shadow:0 6px 18px rgba(21,139,183,.2),inset 0 1px 0 rgba(255,255,255,.16);
+ transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;
+}
+.online-menu-open .online-join:after{content:"→";font-size:15px;transition:transform .16s ease}
+.online-menu-open .online-join:hover{filter:brightness(1.14);transform:translateY(-1px);box-shadow:0 8px 22px rgba(21,139,183,.3)}
+.online-menu-open .online-join:hover:after{transform:translateX(4px)}
+.online-menu-open .online-join:disabled{opacity:.62;cursor:wait;transform:none}
+.online-menu-open .online-join:disabled:after{display:none}
+.online-menu-open .online-feedback{min-height:11px;color:#aabbd0;font-size:8px;font-weight:900;letter-spacing:.11em;text-align:center}
+.online-menu-open .online-feedback.is-connected{color:#8fffd0}
+.online-menu-open .online-feedback.is-connecting{color:#ffd17e}
+.online-menu-open .online-feedback.is-error{color:#ff9dad}
+.online-menu-open .online-fight-scene{
+ position:relative;isolation:isolate;overflow:hidden;width:100%;
+ height:clamp(145px,25vh,205px);min-height:130px;
+ border-top:1px solid rgba(255,255,255,.12);border-radius:4px;
+ background:linear-gradient(180deg,rgba(6,12,24,.22),rgba(5,10,19,.42));
+}
+.online-menu-open .online-fight-scene:before{
+ content:"";position:absolute;z-index:-1;inset:0;
+ background:
+  radial-gradient(ellipse at 27% 56%,rgba(101,216,255,.14),transparent 34%),
+  radial-gradient(ellipse at 73% 56%,rgba(255,83,103,.12),transparent 34%);
+}
+.online-menu-open .online-fight-scene svg{display:block;width:100%;height:100%;overflow:visible}
+.online-menu-open .online-scene-left{transform-box:fill-box;transform-origin:center;animation:onlineFightLeft 2.4s ease-in-out infinite}
+.online-menu-open .online-scene-right{transform-box:fill-box;transform-origin:center;animation:onlineFightRight 2.4s ease-in-out infinite}
+.online-menu-open .online-scene-impact{transform-box:fill-box;transform-origin:center;animation:onlineImpact .9s ease-in-out infinite alternate}
+@keyframes onlineFightLeft{0%,100%{transform:translate(0,2px) rotate(-2deg)}48%{transform:translate(13px,-5px) rotate(3deg)}}
+@keyframes onlineFightRight{0%,100%{transform:translate(0,-1px) rotate(2deg)}48%{transform:translate(-13px,4px) rotate(-3deg)}}
+@keyframes onlineImpact{0%{opacity:.45;transform:scale(.88)}100%{opacity:1;transform:scale(1.08)}}
+@media(max-width:640px){
+ #menuSub.online-menu-open{padding:9px}
+ #menuSub.online-menu-open .menu-sub-panel{width:100%;max-height:calc(100dvh - 18px);padding:14px;overflow:auto}
+ #menuSub.online-menu-open .menu-sub-head{gap:10px;margin-bottom:10px}
+ #menuSub.online-menu-open .menu-sub-head h2{font-size:clamp(22px,7vw,30px)}
+ .online-menu-open .online-panel-card{padding:11px;gap:9px}
+ .online-menu-open .online-simple-signal{width:30px;height:30px;font-size:19px}
+ .online-menu-open .online-player-count b{font-size:19px}
+ .online-menu-open .online-server-field input{min-height:35px}
+ .online-menu-open .online-join{min-height:39px}
+ .online-menu-open .online-fight-scene{height:clamp(125px,23vh,170px);min-height:116px}
+}
+@media(max-height:540px) and (max-width:900px){
+ #menuSub.online-menu-open .menu-sub-panel{max-height:calc(100dvh - 12px);padding:11px}
+ .online-menu-open .online-fight-scene{height:110px;min-height:95px}
+ .online-menu-open .online-panel-card{gap:7px;padding:9px}
+}
+
 </style>
 </head>
 <body>
@@ -1695,9 +1792,10 @@ function getFighterAccessories(f){return f&&f.accessoryPreview?f.accessoryPrevie
 function findAccessory(slotId,itemId){const slot=ACCESSORY_SLOTS.find(s=>s.id===slotId);return slot&&slot.items.find(item=>item.id===itemId)}
 function getAccessorySummary(char){const loadout=accessoryLoadouts[char]||{};const names=[];for(const slot of ACCESSORY_SLOTS){const item=findAccessory(slot.id,loadout[slot.id]);if(item)names.push(item.name)}return names.length?names.join(' · '):'NONE EQUIPPED'}
 function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentAccessoriesSummary').textContent=getAccessorySummary(selected)}
-function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub()}
+function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub();if(view==='online')startOnlinePlayerCountPolling();else stopOnlinePlayerCountPolling()}
 function closeMenuSub(){
- $('menuSub').hidden=true;$('menuSub').classList.remove('accessory-editor-open');menuView='';accessoryPreviewHoverId=null;
+ stopOnlinePlayerCountPolling();
+ $('menuSub').hidden=true;$('menuSub').classList.remove('accessory-editor-open','online-menu-open');menuView='';accessoryPreviewHoverId=null;
  if(accessoryPreviewFrame){cancelAnimationFrame(accessoryPreviewFrame);accessoryPreviewFrame=0}
 }
 function drawAccessoryPreview(itemId=null,now=0){
@@ -1769,23 +1867,66 @@ function startAccessoryPreviewAnimation(){
 }
 function renderMenuSub(){
  const isCharacter=menuView==='character',isOnline=menuView==='online',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;$('menuSub').classList.toggle('accessory-editor-open',!isCharacter&&!isOnline);
- $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':isOnline?'ONLINE MULTIPLAYER':'CUSTOMIZATION';
- $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':isOnline?'ONE SHARED SERVER':'YOUR AVATAR';
- $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':isOnline?'Join the same city as up to 15 other players.':'Choose an accessory.';
+ $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':isOnline?'ONLINE MODE':'CUSTOMIZATION';
+ $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':isOnline?'MULTIPLAYER':'YOUR AVATAR';
+ $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':isOnline?'':'Choose an accessory.';
+ $('menuSub').classList.toggle('online-menu-open',isOnline);
  $('menuSub').classList.toggle('online-menu-open',isOnline);
  tabWrap.hidden=isCharacter||isOnline;let html='';
  if(isOnline){
   html='<div class="online-panel-card">'+
-   '<div class="online-hero">'+
-    '<div class="online-hero-orbit"><span class="online-hero-icon">◎</span></div>'+
-    '<div class="online-hero-copy"><small>ONLINE MULTIPLAYER</small><strong>MEET IN THE CITY</strong><span>Play together in one shared world.</span></div>'+
-    '<div class="online-capacity-pill"><b>16</b><span>PLAYER<br>LIMIT</span></div>'+
+   '<div class="online-simple-top">'+
+    '<div class="online-simple-title"><span class="online-simple-signal">◎</span><strong>ONE SHARED CITY</strong></div>'+
+    '<div class="online-player-count" title="Players currently connected to the server"><b id="onlinePlayerCount">—</b><span>/ 16<br>PLAYERS</span></div>'+
    '</div>'+
    '<label class="online-server-field" for="onlineServerUrl">SERVER ADDRESS'+
     '<input id="onlineServerUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://your-server.onrender.com">'+
    '</label>'+
    '<button class="online-join" id="onlineJoinBtn" type="button">JOIN CITY</button>'+
-   '<div class="online-status"><span class="online-status-dot"></span><div><small>CONNECTION STATUS</small><strong id="onlineStatusText">SERVER ADDRESS REQUIRED</strong></div></div>'+
+   '<div class="online-feedback" id="onlineStatusText" aria-live="polite">READY</div>'+
+   '<div class="online-fight-scene" role="img" aria-label="Two ball fighters clash with cyan and red cursed energy">'+
+    '<svg viewBox="0 0 640 250" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">'+
+     '<defs>'+
+      '<radialGradient id="onlineSceneGlowC"><stop offset="0" stop-color="#65d8ff" stop-opacity=".3"/><stop offset="1" stop-color="#65d8ff" stop-opacity="0"/></radialGradient>'+
+      '<radialGradient id="onlineSceneGlowR"><stop offset="0" stop-color="#ff5367" stop-opacity=".27"/><stop offset="1" stop-color="#ff5367" stop-opacity="0"/></radialGradient>'+
+      '<linearGradient id="onlineBallC" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#a9efff"/><stop offset=".42" stop-color="#4caed4"/><stop offset="1" stop-color="#1a3e64"/></linearGradient>'+
+      '<linearGradient id="onlineBallR" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#ffc0c8"/><stop offset=".45" stop-color="#f05270"/><stop offset="1" stop-color="#6d234b"/></linearGradient>'+
+     '</defs>'+
+     '<ellipse cx="185" cy="130" rx="145" ry="105" fill="url(#onlineSceneGlowC)"/>'+
+     '<ellipse cx="455" cy="130" rx="145" ry="105" fill="url(#onlineSceneGlowR)"/>'+
+     '<path d="M42 219H598" stroke="#52657c" stroke-opacity=".38" stroke-width="2"/>'+
+     '<path d="M95 219l-25 9m475-9 25 9" stroke="#65d8ff" stroke-opacity=".34" stroke-width="2"/>'+
+     '<g class="online-scene-left">'+
+      '<path d="M138 129L88 161" stroke="#65d8ff" stroke-width="18" stroke-linecap="round"/>'+
+      '<circle cx="82" cy="165" r="18" fill="#183650" stroke="#8ceaff" stroke-width="5"/>'+
+      '<path d="M221 132L277 108" stroke="#65d8ff" stroke-width="18" stroke-linecap="round"/>'+
+      '<circle cx="285" cy="104" r="18" fill="#183650" stroke="#8ceaff" stroke-width="5"/>'+
+      '<circle cx="180" cy="129" r="57" fill="#071626" stroke="#65d8ff" stroke-width="5"/>'+
+      '<circle cx="180" cy="129" r="48" fill="url(#onlineBallC)"/>'+
+      '<path d="M151 125q12-12 24 0m10 0q12-12 24 0" fill="none" stroke="#081525" stroke-width="5" stroke-linecap="round"/>'+
+      '<path d="M166 150q14 9 28 0" fill="none" stroke="#10243a" stroke-width="4" stroke-linecap="round"/>'+
+      '<path d="M147 87l12-13 7 16 15-22 7 22 15-13" fill="none" stroke="#c4f7ff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
+     '</g>'+
+     '<g class="online-scene-right">'+
+      '<path d="M502 129l50 32" stroke="#ff5367" stroke-width="18" stroke-linecap="round"/>'+
+      '<circle cx="558" cy="165" r="18" fill="#401a35" stroke="#ff9aa8" stroke-width="5"/>'+
+      '<path d="M419 132l-56-24" stroke="#ff5367" stroke-width="18" stroke-linecap="round"/>'+
+      '<circle cx="355" cy="104" r="18" fill="#401a35" stroke="#ff9aa8" stroke-width="5"/>'+
+      '<circle cx="460" cy="129" r="57" fill="#1d1024" stroke="#ff5367" stroke-width="5"/>'+
+      '<circle cx="460" cy="129" r="48" fill="url(#onlineBallR)"/>'+
+      '<path d="M431 125q12-12 24 0m10 0q12-12 24 0" fill="none" stroke="#251128" stroke-width="5" stroke-linecap="round"/>'+
+      '<path d="M446 150q14 9 28 0" fill="none" stroke="#35152e" stroke-width="4" stroke-linecap="round"/>'+
+      '<path d="M424 88l10-17 10 14 13-22 8 22 15-14" fill="none" stroke="#ffd0d5" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>'+
+     '</g>'+
+     '<g class="online-scene-impact">'+
+      '<path d="M320 65l-13 40 21-4-18 52 43-61-23 3 16-30" fill="#eafaff" stroke="#65d8ff" stroke-width="4" stroke-linejoin="round"/>'+
+      '<path d="M302 92l-20-11m76 8 19-13m-71 74-18 17m78-20 19 14" stroke="#ff8b9c" stroke-width="4" stroke-linecap="round"/>'+
+      '<circle cx="321" cy="124" r="72" fill="none" stroke="#a8efff" stroke-opacity=".34" stroke-width="2" stroke-dasharray="5 10"/>'+
+     '</g>'+
+     '<path d="M42 75l42-13m450 0 42 13" stroke="#65d8ff" stroke-opacity=".32" stroke-width="3" stroke-linecap="round"/>'+
+     '<circle cx="90" cy="93" r="3" fill="#a8efff"/><circle cx="551" cy="91" r="3" fill="#ff9eac"/>'+
+    '</svg>'+
+   '</div>'+
   '</div>';
  }else if(isCharacter){
   html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('');
@@ -1892,7 +2033,7 @@ let player,enemy,trainingDummy;
 let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
 const ONLINE_REMOTE_INTERPOLATION_DELAY_MS=90,ONLINE_MAX_EXTRAPOLATION_MS=100;
-let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='SERVER ADDRESS SAVED · CLICK CONNECT',onlineConnecting=false;
+let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='READY',onlineConnecting=false;
 let onlineReconnectTimer=null,onlineReconnectAttempt=0,onlineReconnectStartedAt=0,onlineReconnectToken='';
 let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
@@ -1903,12 +2044,9 @@ function setOnlineStatus(message){
  const status=$('onlineStatusText');
  if(status){
   status.textContent=onlineStatusMessage;
-  const panel=status.closest('.online-status');
-  if(panel){
-   panel.classList.remove('is-connected','is-connecting','is-error','is-idle');
-   const value=onlineStatusMessage.toUpperCase();
-   panel.classList.add(/CONNECTED|RECONNECTED/.test(value)?'is-connected':/CONNECTING|JOINING/.test(value)?'is-connecting':/FAILED|FULL|INVALID|DISCONNECTED|LOST|ERROR|REMOVED/.test(value)?'is-error':'is-idle');
-  }
+  status.classList.remove('is-connected','is-connecting','is-error');
+  const value=onlineStatusMessage.toUpperCase();
+  status.classList.add(/CONNECTED|RECONNECTED/.test(value)?'is-connected':/CONNECTING|JOINING/.test(value)?'is-connecting':/FAILED|FULL|INVALID|DISCONNECTED|LOST|ERROR|REMOVED/.test(value)?'is-error':'');
  }
 }
 function normalizeOnlineServerUrl(value){
@@ -1917,6 +2055,39 @@ function normalizeOnlineServerUrl(value){
  if(url.protocol==='ws:')url.protocol='http:';
  if(url.protocol!=='https:'&&url.protocol!=='http:')throw new Error('Use an HTTPS server URL.');
  return url.origin+url.pathname.replace(/\/$/,'');
+}
+let onlinePlayerCountTimer=null,onlinePlayerCountBusy=false;
+async function refreshOnlinePlayerCount(){
+ const count=$('onlinePlayerCount');
+ if(!count||menuView!=='online'||$('menuSub').hidden||onlinePlayerCountBusy)return;
+ onlinePlayerCountBusy=true;
+ try{
+  const base=normalizeOnlineServerUrl(onlineServerUrlSetting||ONLINE_DEFAULT_SERVER_URL);
+  const response=await fetch(base+'/status',{cache:'no-store',mode:'cors'});
+  if(!response.ok)throw new Error('Player count request failed');
+  const data=await response.json();
+  const players=Number(data.players);
+  if(!Number.isFinite(players))throw new Error('Invalid player count');
+  if(menuView==='online'&&!$('menuSub').hidden){
+   count.textContent=String(clamp(Math.floor(players),0,16));
+   count.dataset.state='live';
+   count.title=players+' players currently connected';
+  }
+ }catch(error){
+  if(menuView==='online'&&!$('menuSub').hidden){
+   count.textContent='—';
+   count.dataset.state='offline';
+   count.title='Live player count unavailable';
+  }
+ }finally{onlinePlayerCountBusy=false}
+}
+function stopOnlinePlayerCountPolling(){
+ if(onlinePlayerCountTimer!==null){clearInterval(onlinePlayerCountTimer);onlinePlayerCountTimer=null}
+}
+function startOnlinePlayerCountPolling(){
+ stopOnlinePlayerCountPolling();
+ refreshOnlinePlayerCount();
+ onlinePlayerCountTimer=setInterval(refreshOnlinePlayerCount,5000);
 }
 function applyOnlineRoomState(state){
  if(!state||!state.players)return;
@@ -2138,6 +2309,7 @@ function drawOnlineNameplate(remote){
  ctx.fillStyle='#e7faff';ctx.fillText(name,x,y+.5);ctx.restore();
 }
 function startOnlineMatch(){
+ stopOnlinePlayerCountPolling();
  onlineMode=true;updatePauseActionButton();
  resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
  if(onlineRoom&&onlineRoom.state&&onlineRoom.state.players){
