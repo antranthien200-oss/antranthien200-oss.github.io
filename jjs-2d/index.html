@@ -7476,18 +7476,23 @@ function drawHeadHands(f){
   handAAngle=angle+.28;handBAngle=angle-.28;
  }
  if(f.sideViewPreview){
-  // The far fist sits partly behind the head; the near fist overlaps its edge.
-  // This layered silhouette makes the tiny menu scene read as a side view.
+  // Keep the far fist behind the head and the near fist in front, but let both
+  // fists drive forward during every preview strike instead of leaving one idle.
   const dir=Math.cos(f.face||0)>=0?1:-1;
-  const back={x:x+dir*14,y:headY+2,angle:angle,scale:.94};
-  const front={x:x+dir*19,y:headY+7,angle:angle,scale:1.04};
+  const idlePulse=.5+.5*Math.sin(game.time*4.2+(isPlayer?0:1.5));
+  const back={x:x+dir*(14+2*idlePulse),y:headY+2,angle:angle,scale:.98};
+  const front={x:x+dir*(19+2*idlePulse),y:headY+7,angle:angle,scale:1.04};
   if(combo){
-   const strike=Math.sin(Math.PI*progress),leading={x:x+dir*(27+34*strike),y:headY+7-2*strike,angle:angle,scale:1.13};
-   if(combo===2){handA=leading;handB=back;sideViewFrontHand=leading;sideViewBackHand=back}
-   else{handB=leading;handA=back;sideViewFrontHand=leading;sideViewBackHand=back}
+   const leadStrike=Math.sin(Math.PI*progress);
+   const supportStrike=Math.sin(Math.PI*clamp(progress+.24,0,1));
+   const movingBack={x:x+dir*(14+25*supportStrike),y:headY+2-3*supportStrike,angle:angle,scale:1.02};
+   const movingFront={x:x+dir*(27+34*leadStrike),y:headY+7-2*leadStrike,angle:angle,scale:1.13};
+   handA=movingBack;handB=movingFront;sideViewBackHand=movingBack;sideViewFrontHand=movingFront;
   }else if(name==='yujiBlackFlash'){
-   const leading={x:x+dir*(reach+52),y:headY+7,angle:angle,scale:1.22};
-   handB=leading;handA=back;sideViewFrontHand=leading;sideViewBackHand=back;
+   const strike=Math.sin(Math.PI*progress),follow=Math.sin(Math.PI*clamp(progress+.22,0,1));
+   const movingBack={x:x+dir*(18+24*follow),y:headY+2-2*follow,angle:angle,scale:1.04};
+   const movingFront={x:x+dir*(reach+52*strike),y:headY+7,angle:angle,scale:1.22};
+   handA=movingBack;handB=movingFront;sideViewBackHand=movingBack;sideViewFrontHand=movingFront;
   }else{
    handA=front;handB=back;sideViewFrontHand=front;sideViewBackHand=back;
   }
@@ -7500,7 +7505,11 @@ function drawHeadHands(f){
  if(f.awakened&&f.char!=='vessel'){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':c.accent;ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
- if(combo&&!(f.char==='vessel'&&f.awakened)){
+ if(f.sideViewPreview&&(combo||name==='yujiBlackFlash')){
+  // Both preview fists leave their own trail as they punch in alternating rhythm.
+  drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
+  drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
+ }else if(combo&&!(f.char==='vessel'&&f.awakened)){
   if(combo===4){
    drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
    drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
