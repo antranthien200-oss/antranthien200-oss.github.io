@@ -762,6 +762,32 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .accessory-preview-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
  .accessory-preview-items .menu-option{min-height:120px;padding:10px}
 }
+
+/* Roblox-inspired avatar editor: prominent character viewport beside the accessory catalog. */
+.menu-sub.accessory-editor-open .menu-sub-panel{width:min(1160px,97vw);max-height:min(94vh,920px);padding:clamp(18px,2.4vw,30px)}
+.menu-sub.accessory-editor-open .menu-sub-head{margin-bottom:16px}
+.accessory-preview-layout{grid-template-columns:minmax(340px,.92fr) minmax(0,1.42fr);gap:18px;align-items:stretch}
+.accessory-preview-panel{position:relative;display:flex;flex-direction:column;justify-content:flex-start;min-width:0;padding:16px;background:linear-gradient(155deg,#182a40,#091321);border-color:#80cfff65}
+.accessory-preview-kicker{font-size:9px;letter-spacing:.2em}
+.accessory-preview-name{font-size:16px;margin:8px 0 12px}
+#accessoryPreviewCanvas{width:100%;height:auto;aspect-ratio:8/9;max-height:min(63vh,720px);object-fit:contain;border:1px solid #ffffff28;border-radius:5px;background:#101d2e;box-shadow:0 12px 32px #0006}
+.accessory-preview-label{font-size:10px;min-height:30px;padding-top:12px}
+.accessory-preview-tip{font-size:8px;padding-top:11px}
+.accessory-preview-items{grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:11px}
+.accessory-preview-items .menu-option{min-height:146px;padding:14px}
+.accessory-preview-items .option-icon{font-size:34px;margin-bottom:8px}
+.accessory-preview-items .option-name{font-size:12px}
+.accessory-preview-items .option-desc{font-size:10px}
+@media(max-width:760px){
+ .menu-sub.accessory-editor-open .menu-sub-panel{width:min(620px,96vw);max-height:94vh;padding:14px}
+ .accessory-preview-layout{grid-template-columns:minmax(0,1fr);gap:12px}
+ .accessory-preview-panel{padding:12px}
+ .accessory-preview-name{font-size:14px}
+ #accessoryPreviewCanvas{width:min(100%,360px);max-height:360px;margin:0 auto;aspect-ratio:8/9}
+ .accessory-preview-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .accessory-preview-items .menu-option{min-height:126px;padding:10px}
+ .accessory-preview-items .option-icon{font-size:28px}
+}
 </style>
 </head>
 <body>
@@ -974,7 +1000,7 @@ function getAccessorySummary(char){const loadout=accessoryLoadouts[char]||{};con
 function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentAccessoriesSummary').textContent=getAccessorySummary(selected)}
 function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub()}
 function closeMenuSub(){
- $('menuSub').hidden=true;menuView='';accessoryPreviewHoverId=null;
+ $('menuSub').hidden=true;$('menuSub').classList.remove('accessory-editor-open');menuView='';accessoryPreviewHoverId=null;
  if(accessoryPreviewFrame){cancelAnimationFrame(accessoryPreviewFrame);accessoryPreviewFrame=0}
 }
 function drawAccessoryPreview(itemId=null){
@@ -985,20 +1011,24 @@ function drawAccessoryPreview(itemId=null){
  const previewFighter={char:previewChar,team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:loadout};
  ctx=previewContext;
  try{
-  ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,260,180);ctx.imageSmoothingEnabled=false;
-  ctx.fillStyle='#08111d';ctx.fillRect(0,0,260,180);
-  ctx.strokeStyle='#ffffff0b';ctx.lineWidth=1;
-  for(let x=10;x<260;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,180);ctx.stroke()}
-  for(let y=10;y<180;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(260,y);ctx.stroke()}
-  const cx=130,headY=76,theme=getStunTintedTheme(previewFighter);
-  ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(cx,133,54,11,0,0,Math.PI*2);ctx.fill();
-  drawAccessoryAura(previewFighter,cx,headY,1.12);
-  drawFloatingHand(cx-39,headY+35,-.2,theme,1.2);
-  drawFloatingHand(cx+39,headY+35,.2,theme,1.2);
-  ctx.save();ctx.translate(cx,headY);
+  ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,320,360);ctx.imageSmoothingEnabled=false;
+  const backdrop=ctx.createLinearGradient(0,0,320,360);backdrop.addColorStop(0,'#26354b');backdrop.addColorStop(.55,'#17283d');backdrop.addColorStop(1,'#0b1524');
+  ctx.fillStyle=backdrop;ctx.fillRect(0,0,320,360);
+  ctx.fillStyle='#ffffff08';ctx.fillRect(18,18,284,324);
+  ctx.strokeStyle='#ffffff12';ctx.lineWidth=1;
+  for(let x=20;x<320;x+=24){ctx.beginPath();ctx.moveTo(x,18);ctx.lineTo(x,342);ctx.stroke()}
+  for(let y=18;y<360;y+=24){ctx.beginPath();ctx.moveTo(18,y);ctx.lineTo(302,y);ctx.stroke()}
+  const cx=160,headY=165,theme=getStunTintedTheme(previewFighter);
+  ctx.save();ctx.translate(cx,headY);ctx.scale(2.9,2.9);
+  drawAccessoryAura(previewFighter,0,0,1.12);
+  drawFloatingHand(-39,35,-.2,theme,1.2);
+  drawFloatingHand(39,35,.2,theme,1.2);
   drawCuteHead(previewFighter,CHARS[previewChar],theme);
   drawAccessoryOverlays(previewFighter,0,0);
   ctx.restore();
+  ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(cx,296,100,15,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#ffffff12';ctx.fillRect(18,318,284,24);
+  ctx.fillStyle='#9eb5d2';ctx.font='900 8px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CHARACTER PREVIEW',cx,330);
  }finally{ctx=oldContext}
  const label=$('accessoryPreviewLabel'),item=itemId===null?null:findAccessory(accessorySlot,itemId);
  if(label)label.textContent=item?('PREVIEWING · '+item.name):(accessoryLoadouts[previewChar][accessorySlot]&&accessoryLoadouts[previewChar][accessorySlot]!=='none'?'EQUIPPED · '+(findAccessory(accessorySlot,accessoryLoadouts[previewChar][accessorySlot])?.name||'ACCESSORY'):'NO '+(ACCESSORY_SLOTS.find(slot=>slot.id===accessorySlot)?.label||'ACCESSORY')+' EQUIPPED');
@@ -1014,7 +1044,7 @@ function startAccessoryPreviewAnimation(){
  tick();
 }
 function renderMenuSub(){
- const isCharacter=menuView==='character',isOnline=menuView==='online',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;
+ const isCharacter=menuView==='character',isOnline=menuView==='online',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;$('menuSub').classList.toggle('accessory-editor-open',!isCharacter&&!isOnline);
  $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':isOnline?'ONLINE MULTIPLAYER':'CUSTOMIZATION';
  $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':isOnline?'ONE SHARED SERVER':'EQUIP ACCESSORIES';
  $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':isOnline?'Join the same city as up to 15 other players.':'Pick a slot, then equip or remove an accessory. Each slot can hold one item.';
@@ -1028,7 +1058,7 @@ function renderMenuSub(){
   const slot=ACCESSORY_SLOTS.find(s=>s.id===accessorySlot)||ACCESSORY_SLOTS[0],equipped=accessoryLoadouts[selected][slot.id]||'none';
   const choices=[{id:'none',name:'REMOVE',icon:'✕',desc:'Unequip the current item from this slot.'},...slot.items];
   const itemCards=choices.map(item=>'<button class="menu-option '+(equipped===item.id?'selected':'')+'" data-accessory="'+item.id+'"><span class="option-icon">'+item.icon+'</span><span class="accessory-chip">'+slot.label+'</span><span class="option-name">'+item.name+'</span><span class="option-desc">'+item.desc+'</span></button>').join('');
-  html='<div class="accessory-preview-layout"><aside class="accessory-preview-panel"><div class="accessory-preview-kicker">LIVE CHARACTER PREVIEW</div><div class="accessory-preview-name">'+CHARS[selected].name+'</div><canvas id="accessoryPreviewCanvas" width="520" height="360" aria-label="Character accessory preview"></canvas><div id="accessoryPreviewLabel" class="accessory-preview-label"></div><div class="accessory-preview-tip">HOVER AN ITEM TO TRY IT ON</div></aside><div class="accessory-preview-items">'+itemCards+'</div></div>';
+  html='<div class="accessory-preview-layout"><aside class="accessory-preview-panel"><div class="accessory-preview-kicker">LIVE CHARACTER PREVIEW</div><div class="accessory-preview-name">'+CHARS[selected].name+'</div><canvas id="accessoryPreviewCanvas" width="640" height="720" aria-label="Large character accessory preview"></canvas><div id="accessoryPreviewLabel" class="accessory-preview-label"></div><div class="accessory-preview-tip">HOVER AN ITEM TO TRY IT ON</div></aside><div class="accessory-preview-items">'+itemCards+'</div></div>';
  }
  $('menuSubCards').innerHTML=html;
  if(!isOnline&&!isCharacter){accessoryPreviewHoverId=null;drawAccessoryPreview();startAccessoryPreviewAnimation()}
