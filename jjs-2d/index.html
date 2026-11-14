@@ -1791,6 +1791,7 @@ const CHARS={
 };
 let selected='honored';
 let characterPreviewKey=selected,characterPreviewFrame=0,characterPreviewAwakened=false;
+let characterPreviewEntranceStart=0,characterPreviewIdleNext=0,characterPreviewIdleStart=0,characterPreviewIdleDuration=0,characterPreviewIdleVariation=0;
 const CHAR_ICONS={honored:'🕶️',vessel:'🥊',restless:'🎰',ten:'🐺',perfection:'🧬',todo:'👏',choso:'🩸',yuta:'🗡️',trashman:'🗑️'};
 const YUTA_COPY_OPTIONS=['CURSED SPEECH','DISMANTLE','LAPSE BLUE','PIERCING BLOOD','BOOGIE WOOGIE'];
 const YUTA_RIKA_MOVES=[['RIKA SMASH','A giant downward punch that bounces the target'],['RIKA LAUNCH','Rika boosts Yuta into the air and forward'],['RIKA THROW','Rika grabs and hurls the target'],['RIKA HAYMAKER','A heavy homing punch with strong knockback']];
@@ -1941,7 +1942,7 @@ function startAccessoryPreviewAnimation(){
  };
  accessoryPreviewFrame=requestAnimationFrame(tick);
 }
-function getCharacterIdlePose(charKey,time){
+function getCharacterIdlePose(charKey,time,variation=0,variationStrength=0){
  const wave=(speed,offset=0)=>Math.sin(time*speed+offset);
  const pulse=(speed,offset=0)=>Math.max(0,wave(speed,offset));
  const pose={
@@ -2044,6 +2045,56 @@ function getCharacterIdlePose(charKey,time){
    break;
   }
  }
+ const v=clamp(variationStrength,0,1);
+ if(v>0){
+  switch(charKey){
+   case 'honored':
+    if(variation===1){pose.left.y-=7*v;pose.left.angle-=.22*v;pose.headSway+=.035*v}
+    else if(variation===2){pose.right.y-=5*v;pose.right.x+=3*v;pose.effect=Math.max(pose.effect,v*.85)}
+    else{pose.left.x-=4*v;pose.right.x+=4*v;pose.headBob-=1.2*v}
+    break;
+   case 'vessel':
+    if(variation===1){pose.right.x+=10*v;pose.right.y-=5*v;pose.right.angle+=.34*v;pose.headBob-=.7*v}
+    else if(variation===2){pose.left.x-=7*v;pose.left.y-=5*v;pose.left.angle-=.24*v}
+    else{pose.left.x-=4*v;pose.right.x+=4*v;pose.headBob+=1.4*v}
+    break;
+   case 'restless':
+    if(variation===1){pose.right.y-=8*v;pose.right.angle+=.42*v;pose.effect=Math.max(pose.effect,v)}
+    else if(variation===2){pose.left.x-=5*v;pose.left.y-=4*v;pose.headSway+=.07*v}
+    else{pose.right.x+=5*v;pose.right.y+=3*v;pose.headBob+=1.3*v}
+    break;
+   case 'ten':
+    if(variation===1){pose.left.x+=6*v;pose.right.x-=6*v;pose.left.y-=5*v;pose.right.y-=5*v;pose.effect=Math.max(pose.effect,v)}
+    else if(variation===2){pose.left.x-=4*v;pose.right.x+=4*v;pose.headSway-=.06*v}
+    else{pose.left.angle-=.3*v;pose.right.angle+=.3*v;pose.headBob-=1*v}
+    break;
+   case 'perfection':
+    if(variation===1){pose.right.y-=7*v;pose.right.x+=3*v;pose.right.angle+=.28*v;pose.headSway+=.08*v}
+    else if(variation===2){pose.left.y-=5*v;pose.left.angle-=.28*v;pose.effect=Math.max(pose.effect,v)}
+    else{pose.left.x+=4*v;pose.right.x-=4*v;pose.headBob-=1.2*v}
+    break;
+   case 'todo':
+    if(variation===1){pose.left.x+=7*v;pose.right.x-=7*v;pose.left.y-=4*v;pose.right.y-=4*v;pose.effect=Math.max(pose.effect,v)}
+    else if(variation===2){pose.left.x-=4*v;pose.right.x+=4*v;pose.headBob-=1*v}
+    else{pose.left.angle-=.2*v;pose.right.angle+=.2*v;pose.headSway+=.05*v}
+    break;
+   case 'yuta':
+    if(variation===1){pose.right.y-=8*v;pose.right.x+=3*v;pose.right.angle+=.28*v;pose.effect=Math.max(pose.effect,v)}
+    else if(variation===2){pose.left.y-=5*v;pose.left.angle-=.24*v;pose.headSway-=.06*v}
+    else{pose.left.x-=4*v;pose.right.x+=4*v;pose.headBob-=1*v}
+    break;
+   case 'trashman':
+    if(variation===1){pose.right.y-=7*v;pose.right.angle+=.3*v;pose.headBob+=2*v}
+    else if(variation===2){pose.left.y+=5*v;pose.left.angle-=.22*v;pose.headSway+=.08*v}
+    else{pose.left.x-=4*v;pose.right.x+=4*v;pose.headBob-=1.7*v}
+    break;
+   case 'choso':
+    if(variation===1){pose.left.x+=6*v;pose.right.x-=6*v;pose.left.y-=3*v;pose.right.y-=3*v;pose.effect=Math.max(pose.effect,v)}
+    else if(variation===2){pose.left.y-=6*v;pose.left.angle+=.2*v;pose.right.angle-=.2*v}
+    else{pose.left.x-=4*v;pose.right.x+=4*v;pose.headBob-=1*v}
+    break;
+  }
+ }
  return pose;
 }
 function drawCharacterIdleHand(hand,theme){
@@ -2138,6 +2189,90 @@ function drawCharacterIdleEffects(charKey,time,accent,pose){
  }
  ctx.restore();
 }
+function drawCharacterPreviewBackdrop(charKey,accent,time,width,height,cx,headY,awakened){
+ ctx.save();ctx.lineWidth=1.2;ctx.lineCap='round';ctx.lineJoin='round';
+ const pulse=.5+.5*Math.sin(time*1.35);
+ switch(charKey){
+  case 'honored':{
+   ctx.globalAlpha=.12;ctx.strokeStyle=accent;
+   for(let i=0;i<4;i++){ctx.beginPath();ctx.ellipse(cx-width*.18,headY-height*.02,34+i*19,23+i*13,time*.08,0,Math.PI*2);ctx.stroke()}
+   ctx.globalAlpha=.25;ctx.fillStyle='#dff8ff';ctx.beginPath();ctx.arc(cx-width*.18+Math.cos(time)*31,headY+Math.sin(time)*20,2,0,Math.PI*2);ctx.fill();
+   break;
+  }
+  case 'vessel':{
+   ctx.globalAlpha=.12;ctx.strokeStyle=accent;
+   for(let i=0;i<6;i++){const x=(i%3)*width*.42-width*.36+cx,y=(i<3?height*.18:height*.78);ctx.beginPath();ctx.moveTo(x-26,y+18);ctx.lineTo(x+26,y-18);ctx.stroke()}
+   ctx.globalAlpha=.08;ctx.fillStyle=accent;ctx.fillRect(cx-width*.42,headY+height*.22,width*.84,2);
+   break;
+  }
+  case 'restless':{
+   ctx.strokeStyle=accent;ctx.globalAlpha=.16;
+   for(let i=0;i<5;i++){const x=cx-width*.4+i*width*.2,y=headY+(i%2?height*.29:-height*.26),r=8+(i%3)*4;ctx.save();ctx.translate(x,y);ctx.rotate(time*.35+i);ctx.beginPath();ctx.arc(0,0,r,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.moveTo(-r*.5,0);ctx.lineTo(r*.5,0);ctx.stroke();ctx.restore()}
+   break;
+  }
+  case 'ten':{
+   ctx.strokeStyle='#8290b0';ctx.globalAlpha=.13;
+   for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(cx,headY+height*.12+i*8,width*.18+i*18,10+i*5,-.08,Math.PI*.08,Math.PI*.92);ctx.stroke()}
+   break;
+  }
+  case 'perfection':{
+   ctx.strokeStyle=accent;ctx.globalAlpha=.15;
+   for(let i=0;i<5;i++){ctx.beginPath();ctx.ellipse(cx+width*.29,headY-height*.12,12+i*10,22+i*12,Math.sin(time*.3+i)*.22,0,Math.PI*2);ctx.stroke()}
+   break;
+  }
+  case 'todo':{
+   ctx.fillStyle=accent;ctx.globalAlpha=.07;
+   for(let i=0;i<5;i++){ctx.save();ctx.translate(cx-width*.43+i*width*.22,headY);ctx.rotate(-.52);ctx.fillRect(-4,-height*.42,8,height*.84);ctx.restore()}
+   break;
+  }
+  case 'yuta':{
+   ctx.strokeStyle=accent;ctx.globalAlpha=.15;
+   for(let i=0;i<7;i++){const x=cx-width*.42+((i*73+time*13)%(width*.84)),y=headY+Math.sin(time*.65+i)*height*.3;ctx.save();ctx.translate(x,y);ctx.rotate(time*.45+i);ctx.beginPath();ctx.ellipse(0,0,3,7,0,0,Math.PI*2);ctx.stroke();ctx.restore()}
+   break;
+  }
+  case 'trashman':{
+   ctx.strokeStyle='#c4d0d4';ctx.globalAlpha=.13;
+   for(let i=0;i<4;i++){const x=cx-width*.36+i*width*.24,y=headY-height*.28;ctx.strokeRect(x,y,19,14);ctx.fillStyle='#d6e0e5';ctx.fillRect(x+4,y+4,2,2);ctx.fillRect(x+13,y+4,2,2)}
+   ctx.globalAlpha=.08;ctx.beginPath();ctx.moveTo(cx-width*.46,headY+height*.34);ctx.lineTo(cx+width*.46,headY+height*.34);ctx.stroke();
+   break;
+  }
+  case 'choso':{
+   ctx.strokeStyle=accent;ctx.globalAlpha=.16;
+   for(let i=0;i<5;i++){const a=time*.25+i*Math.PI*2/5,x=cx+Math.cos(a)*width*.39,y=headY+Math.sin(a)*height*.34;ctx.beginPath();ctx.moveTo(x,y-7);ctx.quadraticCurveTo(x+Math.sin(a)*7,y+4,x,y+8);ctx.stroke()}
+   break;
+  }
+ }
+ if(awakened){
+  ctx.globalAlpha=.18+.08*pulse;ctx.strokeStyle=accent;ctx.lineWidth=1.6;
+  ctx.beginPath();ctx.ellipse(cx,headY,width*.42,height*.34,time*.08,0,Math.PI*2);ctx.stroke();
+ }
+ ctx.restore();
+}
+function drawCharacterAwakeningPreview(charKey,accent,time,cx,headY,radius){
+ const pulse=.5+.5*Math.sin(time*4.8);
+ ctx.save();ctx.globalAlpha=.18+.12*pulse;ctx.strokeStyle=accent;ctx.lineWidth=1.5;
+ ctx.beginPath();ctx.ellipse(cx,headY,radius*(1.12+.025*pulse),radius*.76,0,time*.35,time*.35+Math.PI*1.78);ctx.stroke();
+ ctx.globalAlpha=.32+.18*pulse;ctx.lineWidth=1;
+ for(let i=0;i<8;i++){
+  const a=time*.45+i*Math.PI/4,r=radius*(1.06+.025*Math.sin(time*3+i));
+  const x=cx+Math.cos(a)*r,y=headY+Math.sin(a)*r*.72;
+  ctx.beginPath();ctx.moveTo(x-Math.cos(a)*3,y-Math.sin(a)*3);ctx.lineTo(x+Math.cos(a)*5,y+Math.sin(a)*5);ctx.stroke();
+ }
+ if(charKey==='vessel'||charKey==='perfection'){
+  ctx.globalAlpha=.35+.2*pulse;ctx.beginPath();ctx.ellipse(cx,headY,radius*.83,radius*.61,time*.18,0,Math.PI*2);ctx.stroke();
+ }
+ ctx.restore();
+}
+function drawCharacterAccessoryMotion(fighter,time,accent,pose){
+ const loadout=getFighterAccessories(fighter)||{};
+ const hasHeadAccessory=!!(loadout.head&&loadout.head!=='none'||loadout.face&&loadout.face!=='none'||loadout.neck&&loadout.neck!=='none');
+ if(!hasHeadAccessory&&!loadout.aura)return;
+ const sparkle=.5+.5*Math.sin(time*3.1+pose.effect*2);
+ ctx.save();ctx.globalAlpha=.18+.25*sparkle;ctx.strokeStyle=accent;ctx.lineWidth=1;
+ const points=hasHeadAccessory?[[-17,-11],[16,-13],[0,20]]:[[-23,0],[23,0]];
+ points.forEach((p,i)=>{const a=time*(i%2?-.8:1)+i*2;const x=p[0]+Math.cos(a)*1.6,y=p[1]+Math.sin(a)*1.6;ctx.beginPath();ctx.moveTo(x-2,y);ctx.lineTo(x+2,y);ctx.moveTo(x,y-2);ctx.lineTo(x,y+2);ctx.stroke()});
+ ctx.restore();
+}
 function drawCharacterSelectPreview(now=0){
  const canvas=$('characterSelectCanvas');if(!canvas)return;
  const rect=canvas.getBoundingClientRect();if(rect.width<2||rect.height<2)return;
@@ -2147,38 +2282,60 @@ function drawCharacterSelectPreview(now=0){
  const previewCtx=canvas.getContext('2d');if(!previewCtx)return;
  const oldContext=ctx,key=CHARS[characterPreviewKey]?characterPreviewKey:selected,character=CHARS[key];
  const accent=character.accent||character.color||'#65d8ff',time=now*.001;
+ if(!characterPreviewIdleNext)characterPreviewIdleNext=now+2600+Math.random()*1700;
+ if(!characterPreviewIdleStart&&now>=characterPreviewIdleNext){
+  characterPreviewIdleStart=now;characterPreviewIdleDuration=950+Math.random()*600;characterPreviewIdleVariation=1+Math.floor(Math.random()*3);
+  characterPreviewIdleNext=now+5600+Math.random()*4300;
+ }
+ let idleStrength=0;
+ if(characterPreviewIdleStart){
+  const progress=clamp((now-characterPreviewIdleStart)/characterPreviewIdleDuration,0,1);
+  idleStrength=Math.sin(Math.PI*progress);
+  if(progress>=1){characterPreviewIdleStart=0;characterPreviewIdleVariation=0}
+ }
+ const pose=getCharacterIdlePose(key,time,characterPreviewIdleVariation,idleStrength);
  const loadout={...(accessoryLoadouts[key]||{head:'none',face:'none',neck:'none',aura:'none'})};
- const previewFighter={char:key,team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:loadout};
- const pose=getCharacterIdlePose(key,time);
+ const previewFighter={char:key,team:'player',stun:0,flash:0,awakened:characterPreviewAwakened,jackpot:key==='restless'&&characterPreviewAwakened,accessoryPreview:loadout};
  const theme=getStunTintedTheme(previewFighter);
+ const entranceProgress=characterPreviewEntranceStart?clamp((now-characterPreviewEntranceStart)/560,0,1):1;
+ const entranceEase=1-Math.pow(1-entranceProgress,3);
+ const entranceAlpha=.38+.62*entranceEase;
  ctx=previewCtx;
  try{
   ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,rect.width,rect.height);ctx.imageSmoothingEnabled=false;
   const w=rect.width,h=rect.height,cx=w*.5,headY=h*.46;
-  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'rgba(15,27,45,.35)');bg.addColorStop(1,'rgba(2,7,15,.08)');
+  const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'rgba(15,27,45,.42)');bg.addColorStop(1,'rgba(2,7,15,.12)');
   ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
+  drawCharacterPreviewBackdrop(key,accent,time,w,h,cx,headY,characterPreviewAwakened);
   const halo=ctx.createRadialGradient(cx,headY,4,cx,headY,Math.min(w,h)*.48);
-  halo.addColorStop(0,accent+'30');halo.addColorStop(.56,accent+'0c');halo.addColorStop(1,accent+'00');
+  halo.addColorStop(0,accent+(characterPreviewAwakened?'48':'30'));halo.addColorStop(.56,accent+'0c');halo.addColorStop(1,accent+'00');
   ctx.fillStyle=halo;ctx.fillRect(0,0,w,h);
   ctx.save();ctx.strokeStyle=accent+'26';ctx.lineWidth=1;
   for(let i=0;i<4;i++){const radius=45+i*26;ctx.globalAlpha=.4-i*.07;ctx.beginPath();ctx.ellipse(cx,headY,radius,radius*.72,0,0,Math.PI*2);ctx.stroke()}
   ctx.globalAlpha=.18;ctx.beginPath();ctx.moveTo(0,h*.82);ctx.lineTo(w,h*.82);ctx.stroke();ctx.restore();
+  if(characterPreviewAwakened)drawCharacterAwakeningPreview(key,accent,time,cx,headY,Math.min(w,h)*.31);
   const fighterScale=Math.max(2.75,Math.min(4.25,Math.min(w/112,h/72)));
-  ctx.save();ctx.translate(cx,headY);ctx.scale(fighterScale,fighterScale);
-  drawAccessoryAura(previewFighter,0,pose.headBob*.12,1.12);
+  ctx.save();ctx.globalAlpha=entranceAlpha;ctx.translate(cx+(1-entranceEase)*34,headY+(1-entranceEase)*5);ctx.scale(fighterScale*(.9+.1*entranceEase),fighterScale*(.9+.1*entranceEase));
+  if(entranceProgress<1){
+   ctx.save();ctx.globalAlpha=(1-entranceEase)*.28;ctx.strokeStyle=accent;ctx.lineWidth=2;
+   ctx.beginPath();ctx.ellipse(-18,0,25+entranceEase*20,20+entranceEase*12,-.18,Math.PI*.1,Math.PI*1.1);ctx.stroke();ctx.restore();
+  }
+  drawAccessoryAura(previewFighter,0,pose.headBob*.12,1.1+Math.sin(time*3.2)*.035+pose.effect*.025);
   drawCharacterIdleEffects(key,time,accent,pose);
   drawCharacterIdleHand(pose.left,theme);
   drawCharacterIdleHand(pose.right,theme);
   ctx.save();ctx.translate(0,pose.headBob);ctx.rotate(pose.headSway);
   drawCuteHead(previewFighter,character,theme);
-  drawAccessoryOverlays(previewFighter,0,0);
+  ctx.save();ctx.translate(0,Math.sin(time*2.8)*.42);ctx.rotate(Math.sin(time*1.75+pose.effect)*.022);drawAccessoryOverlays(previewFighter,0,0);ctx.restore();
+  drawCharacterAccessoryMotion(previewFighter,time,accent,pose);
   ctx.restore();ctx.restore();
-  ctx.save();ctx.globalAlpha=.46;
-  const shadow=ctx.createRadialGradient(cx,h*.82,2,cx,h*.82,w*.25);
+  ctx.save();ctx.globalAlpha=.46*entranceAlpha;
+  const shadow=ctx.createRadialGradient(cx+(1-entranceEase)*34,h*.82,2,cx+(1-entranceEase)*34,h*.82,w*.25);
   shadow.addColorStop(0,accent+'55');shadow.addColorStop(1,accent+'00');
-  ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(cx,h*.82,w*.25,7,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(cx+(1-entranceEase)*34,h*.82,w*.25,7,0,0,Math.PI*2);ctx.fill();ctx.restore();
  }finally{ctx=oldContext}
 }
+
 function drawCharacterCardArt(canvas,charKey){
  const art=canvas.getContext('2d');if(!art||!CHARS[charKey])return;
  const character=CHARS[charKey],accent=character.accent||character.color||'#65d8ff';
@@ -2199,6 +2356,10 @@ function drawCharacterCardArt(canvas,charKey){
 }
 function updateCharacterShowcase(charKey){
  const key=CHARS[charKey]?charKey:selected,character=CHARS[key];
+ if(key!==characterPreviewKey){
+  characterPreviewEntranceStart=performance.now();characterPreviewIdleStart=0;characterPreviewIdleVariation=0;
+  characterPreviewIdleNext=characterPreviewEntranceStart+2300+Math.random()*1500;
+ }
  characterPreviewKey=key;
  const accent=character.accent||character.color||'#65d8ff';
  const panel=$('characterShowcase');if(panel)panel.style.setProperty('--character-accent',accent);
@@ -2219,7 +2380,7 @@ function updateCharacterShowcase(charKey){
   if(button.dataset.characterKit==='awake')button.disabled=!hasAwakenedKit;
  });
  const kitLabel=$('characterKitLabel');
- if(kitLabel)kitLabel.textContent=characterPreviewAwakened?'AWAKENED MOVESET · '+(character.awakeName||character.awakening||'AWAKENING'):'BASE MOVESET';
+ if(kitLabel)kitLabel.textContent=characterPreviewAwakened?'AWAKENED FORM · '+(character.awakeName||character.awakening||'AWAKENING'):'BASE FORM · BASE MOVESET';
  if(skills){
   const glyphs=['◉','✦','↗','✣'];
   skills.innerHTML=(moves||[]).slice(0,4).map((move,i)=>'<div class="character-skill-tile"><span class="character-skill-mark">'+glyphs[i]+'<small>'+(i+1)+'</small></span><div class="character-skill-copy"><b>'+move[0]+'</b><span>'+move[1]+'</span></div></div>').join('');
@@ -2265,9 +2426,9 @@ function renderMenuSub(){
    '</div>'+
   '</div>';
  }else if(isCharacter){
-  characterPreviewKey=selected;characterPreviewAwakened=false;
+  characterPreviewKey=selected;characterPreviewAwakened=false;characterPreviewEntranceStart=performance.now();characterPreviewIdleStart=0;characterPreviewIdleVariation=0;characterPreviewIdleNext=characterPreviewEntranceStart+2600;
   const roster=Object.keys(CHARS).map(k=>'<button class="menu-option character-select-card '+(selected===k?'selected':'')+'" style="--char-accent:'+CHARS[k].accent+'" data-character="'+k+'" aria-label="Select '+CHARS[k].name+'"><canvas class="character-card-art" data-char-art="'+k+'" width="160" height="100" aria-hidden="true"></canvas><span class="character-card-name">'+CHARS[k].name+'</span><span class="character-card-hp">HP '+CHARS[k].hp+'</span></button>').join('');
-  html='<div class="character-select-layout"><div class="character-select-roster">'+roster+'</div><section class="character-showcase" id="characterShowcase"><div class="character-showcase-top"><span class="character-showcase-kicker">CHARACTER PREVIEW</span><span class="character-preview-state" id="characterPreviewState">CURRENT PICK</span><span class="character-showcase-hp">BASE HP <b id="characterShowcaseHp">100</b></span></div><canvas id="characterSelectCanvas" class="character-showcase-canvas" width="560" height="360" aria-label="Animated character preview"></canvas><div class="character-showcase-title" id="characterShowcaseName"></div><p class="character-showcase-desc" id="characterShowcaseDesc"></p><div class="character-kit-switch" role="group" aria-label="Move set preview"><button type="button" class="character-kit-button active" data-character-kit="base" aria-pressed="true">BASE MOVES</button><button type="button" class="character-kit-button" data-character-kit="awake" aria-pressed="false">AWAKENED MOVES</button></div><div class="character-skill-heading"><span id="characterKitLabel">BASE MOVESET</span><span>KEYS 1 – 4</span></div><div class="character-skill-grid" id="characterSkillGrid"></div><div class="character-awakening"><span>AWAKENING</span><b id="characterAwakeningName"></b></div></section></div>';
+  html='<div class="character-select-layout"><div class="character-select-roster">'+roster+'</div><section class="character-showcase" id="characterShowcase"><div class="character-showcase-top"><span class="character-showcase-kicker">CHARACTER PREVIEW</span><span class="character-preview-state" id="characterPreviewState">CURRENT PICK</span><span class="character-showcase-hp">BASE HP <b id="characterShowcaseHp">100</b></span></div><canvas id="characterSelectCanvas" class="character-showcase-canvas" width="560" height="360" aria-label="Animated character preview"></canvas><div class="character-showcase-title" id="characterShowcaseName"></div><p class="character-showcase-desc" id="characterShowcaseDesc"></p><div class="character-kit-switch" role="group" aria-label="Move set preview"><button type="button" class="character-kit-button active" data-character-kit="base" aria-pressed="true">BASE MOVES</button><button type="button" class="character-kit-button" data-character-kit="awake" aria-pressed="false">AWAKENED FORM</button></div><div class="character-skill-heading"><span id="characterKitLabel">BASE MOVESET</span><span>KEYS 1 – 4</span></div><div class="character-skill-grid" id="characterSkillGrid"></div><div class="character-awakening"><span>AWAKENING</span><b id="characterAwakeningName"></b></div></section></div>';
  }else{
   tabWrap.innerHTML=ACCESSORY_SLOTS.map(s=>'<button class="accessory-tab '+(accessorySlot===s.id?'active':'')+'" data-accessory-slot="'+s.id+'">'+s.label+'</button>').join('');
   const slot=ACCESSORY_SLOTS.find(s=>s.id===accessorySlot)||ACCESSORY_SLOTS[0],equipped=accessoryLoadouts[selected][slot.id]||'none';
