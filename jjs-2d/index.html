@@ -906,40 +906,48 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 }
 
 /* Avatar-only preview: let the character fill the entire former information area. */
-.menu-sub.accessory-editor-open .accessory-preview-layout{
- grid-template-columns:minmax(390px,1.02fr) minmax(0,1.38fr);
-}
+
+/* Keep the avatar at its previous size; let a fixed-scale panel texture fill the freed space. */
 .menu-sub.accessory-editor-open .accessory-preview-panel{
- padding:9px;
- justify-content:stretch;
+ justify-content:center;
+ align-items:center;
+ padding:16px;
+ background-color:#0b1524;
+ background-image:
+  repeating-linear-gradient(0deg,transparent 0 23px,rgba(255,255,255,.045) 23px 24px),
+  repeating-linear-gradient(90deg,transparent 0 23px,rgba(255,255,255,.045) 23px 24px),
+  linear-gradient(155deg,#182a40,#091321);
+ background-size:24px 24px,24px 24px,auto;
 }
 .menu-sub.accessory-editor-open #accessoryPreviewCanvas{
- flex:1 1 auto;
- display:block;
- width:100%;
- height:100%;
+ flex:0 1 auto;
+ width:min(100%,308px);
+ height:auto;
  min-width:0;
  min-height:0;
- max-width:100%;
+ max-width:308px;
  max-height:none;
- margin:0;
- aspect-ratio:auto;
+ aspect-ratio:8/9;
+ margin:auto;
  object-fit:contain;
+ border:0;
+ border-radius:0;
+ background:transparent;
+ box-shadow:none;
 }
 @media(max-width:760px){
- .menu-sub.accessory-editor-open .accessory-preview-layout{gap:8px}
  .menu-sub.accessory-editor-open .accessory-preview-panel{
   flex:0 0 min(44vh,420px);
   padding:8px;
  }
  .menu-sub.accessory-editor-open #accessoryPreviewCanvas{
-  flex:1 1 auto;
-  width:100%;
-  height:100%;
-  min-height:0;
-  max-height:none;
-  aspect-ratio:auto;
-  object-fit:contain;
+  flex:0 1 auto;
+  width:auto;
+  height:min(170px,100%);
+  max-width:100%;
+  max-height:170px;
+  aspect-ratio:8/9;
+  margin:auto;
  }
 }
 /* Image-only square accessory tiles; keep scrolling responsive. */
@@ -1274,14 +1282,8 @@ function drawAccessoryPreview(itemId=null){
  ctx=previewContext;
  try{
   ctx.setTransform(scale,0,0,scale,0,0);ctx.clearRect(0,0,320,360);ctx.imageSmoothingEnabled=false;
-  const backdrop=ctx.createLinearGradient(0,0,320,360);backdrop.addColorStop(0,'#26354b');backdrop.addColorStop(.55,'#17283d');backdrop.addColorStop(1,'#0b1524');
-  ctx.fillStyle=backdrop;ctx.fillRect(0,0,320,360);
-  ctx.fillStyle='#ffffff08';ctx.fillRect(18,18,284,324);
-  ctx.strokeStyle='#ffffff12';ctx.lineWidth=1;
-  for(let x=20;x<320;x+=24){ctx.beginPath();ctx.moveTo(x,18);ctx.lineTo(x,342);ctx.stroke()}
-  for(let y=18;y<360;y+=24){ctx.beginPath();ctx.moveTo(18,y);ctx.lineTo(302,y);ctx.stroke()}
-  const cx=160,headY=155,theme=getStunTintedTheme(previewFighter);
-  ctx.save();ctx.translate(cx,headY);ctx.scale(5.2,5.2);
+  const cx=160,headY=165,theme=getStunTintedTheme(previewFighter);
+  ctx.save();ctx.translate(cx,headY);ctx.scale(2.9,2.9);
   drawAccessoryAura(previewFighter,0,0,1.12);
   drawFloatingHand(-18,16,-.18,theme,1.2);
   drawFloatingHand(18,16,.18,theme,1.2);
