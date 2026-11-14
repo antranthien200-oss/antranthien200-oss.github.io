@@ -1451,7 +1451,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 /* Minimal multiplayer view with a live count and a small animated fight scene. */
 #menuSub.online-menu-open{padding:clamp(10px,2.4vw,22px)}
 #menuSub.online-menu-open .menu-sub-panel{
- width:min(760px,94vw);max-height:min(90vh,780px);overflow:auto;
+ width:min(900px,96vw);max-height:min(94vh,900px);overflow:auto;
  border:1px solid rgba(255,255,255,.36);border-radius:9px;
  background:linear-gradient(145deg,rgba(14,22,38,.98),rgba(6,11,21,.98));
  box-shadow:0 24px 90px #000c;
@@ -1509,7 +1509,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 .online-menu-open .online-feedback.is-error{color:#ff9dad}
 .online-menu-open .online-fight-scene{
  position:relative;isolation:isolate;overflow:hidden;width:100%;
- height:clamp(145px,25vh,205px);min-height:130px;
+ height:clamp(190px,30vh,270px);min-height:170px;
  border-top:1px solid rgba(255,255,255,.12);border-radius:4px;
  background:linear-gradient(180deg,rgba(6,12,24,.22),rgba(5,10,19,.42));
 }
@@ -1537,11 +1537,11 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .online-menu-open .online-player-count b{font-size:19px}
  .online-menu-open .online-server-field input{min-height:35px}
  .online-menu-open .online-join{min-height:39px}
- .online-menu-open .online-fight-scene{height:clamp(125px,23vh,170px);min-height:116px}
+ .online-menu-open .online-fight-scene{height:clamp(155px,27vh,210px);min-height:145px}
 }
 @media(max-height:540px) and (max-width:900px){
  #menuSub.online-menu-open .menu-sub-panel{max-height:calc(100dvh - 12px);padding:11px}
- .online-menu-open .online-fight-scene{height:110px;min-height:95px}
+ .online-menu-open .online-fight-scene{height:130px;min-height:115px}
  .online-menu-open .online-panel-card{gap:7px;padding:9px}
 }
 
@@ -2246,7 +2246,7 @@ function drawOnlineFightScene(now){
   if(blueRush>.1)drawSpeedStreaks(blueX,headY,-1,blue,.42);
   if(redRush>.1)drawSpeedStreaks(redX,headY,1,red,.42);
 
-  const fighterScale=1.06;
+  const fighterScale=1.2;
   const drawMenuFighter=f=>{
    ctx.save();ctx.translate(f.x,headY);ctx.scale(fighterScale,fighterScale);ctx.translate(-f.x,-headY);
    drawHeadHands(f);
