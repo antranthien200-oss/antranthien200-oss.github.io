@@ -2764,7 +2764,7 @@ function drawOnlineFightScene(now){
    dead:false,isTrainingDummy:true,jump:0,stun:0,flash:0,block:false,blockImpact:0,
    awakened:false,jackpot:false,cursedWhiteFlash:0,carryingTrashCan:false,
    pullTimer:0,transfigureMeter:0,convergenceOrbs:0,
-   accessoryPreview:noAccessories,hp:100,maxHp:100,face:0
+   accessoryPreview:noAccessories,sideViewPreview:true,hp:100,maxHp:100,face:0
   };
   const redFighter={
    ...baseFighter,char:'vessel',team:'enemy',x:redX,y:floorY,face:0,jump:redJump,
@@ -7198,6 +7198,7 @@ function drawHeadHands(f){
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
+ let sideViewBackHand=null,sideViewFrontHand=null;
  const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0,yutaCombo=name.startsWith('yutaM1_')?(Number(name.slice(7))||1):0;
  if(name==='carEnter'){
   const reach=smoothstep01(clamp(progress/.48,0,1)),tuck=smoothstep01(clamp((progress-.38)/.62,0,1));
@@ -7495,8 +7496,25 @@ function drawHeadHands(f){
   handA=P(31,19,24);handB=P(31,-19,24);handAScale=1.22;handBScale=1.22;
   handAAngle=angle+.28;handBAngle=angle-.28;
  }
+ if(f.sideViewPreview){
+  // The far fist sits partly behind the head; the near fist overlaps its edge.
+  // This layered silhouette makes the tiny menu scene read as a side view.
+  const dir=Math.cos(f.face||0)>=0?1:-1;
+  const back={x:x+dir*14,y:headY+2,angle:angle,scale:.94};
+  const front={x:x+dir*19,y:headY+7,angle:angle,scale:1.04};
+  if(combo){
+   const strike=Math.sin(Math.PI*progress),leading={x:x+dir*(27+34*strike),y:headY+7-2*strike,angle:angle,scale:1.13};
+   if(combo===2){handA=leading;handB=back;sideViewFrontHand=leading;sideViewBackHand=back}
+   else{handB=leading;handA=back;sideViewFrontHand=leading;sideViewBackHand=back}
+  }else if(name==='yujiBlackFlash'){
+   const leading={x:x+dir*(reach+52),y:headY+7,angle:angle,scale:1.22};
+   handB=leading;handA=back;sideViewFrontHand=leading;sideViewBackHand=back;
+  }else{
+   handA=front;handB=back;sideViewFrontHand=front;sideViewBackHand=back;
+  }
+ }
  // Small idle drift, but active attacks own the hand positions for their complete animation.
- if(!name){handA.x+=px*idle;handA.y+=py*idle;handB.x-=px*idle;handB.y-=py*idle}
+ if(!name&&!f.sideViewPreview){handA.x+=px*idle;handA.y+=py*idle;handB.x-=px*idle;handB.y-=py*idle}
  ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
  if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=10;ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
  if(f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
@@ -7524,7 +7542,7 @@ function drawHeadHands(f){
   }
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
- if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+ if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
@@ -7540,6 +7558,7 @@ function drawHeadHands(f){
   ctx.restore();
  }
  if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
+ if(f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
  drawStunRain(f,x,y);
  
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
