@@ -5518,22 +5518,59 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillStyle='#252e37';ctx.fillRect(0,roadY,WORLD.w,roadH);ctx.fillRect(roadX,0,roadW,WORLD.h);
  ctx.fillStyle='#687680';ctx.fillRect(0,roadY-17,WORLD.w,17);ctx.fillRect(0,roadY+roadH,WORLD.w,17);ctx.fillRect(roadX-17,0,17,WORLD.h);ctx.fillRect(roadX+roadW,0,17,WORLD.h);
  ctx.fillStyle='#95a0a6';ctx.fillRect(0,roadY-4,WORLD.w,4);ctx.fillRect(0,roadY+roadH,WORLD.w,4);ctx.fillRect(roadX-4,0,4,WORLD.h);ctx.fillRect(roadX+roadW,0,4,WORLD.h);
- // Dashed center lines restored to the original road style.
+ // Four matching zebra crossings: broad bars, consistent gaps, and ends aligned to the curb edges.
+ const zebraCount=8,zebraStripe=12,zebraGap=10;
+ const zebraSpan=zebraCount*zebraStripe+(zebraCount-1)*zebraGap;
+ const zebraWestEnd=roadX-17,zebraEastStart=roadX+roadW+17;
+ const zebraNorthEnd=roadY-17,zebraSouthStart=roadY+roadH+17;
+ const zebraWestStart=zebraWestEnd-zebraSpan,zebraEastEnd=zebraEastStart+zebraSpan;
+ const zebraNorthStart=zebraNorthEnd-zebraSpan,zebraSouthEnd=zebraSouthStart+zebraSpan;
+ // Keep the dashed lane markings out of each crossing while preserving them through the junction.
  ctx.strokeStyle='#e8dca7';ctx.lineWidth=4;ctx.setLineDash([42,34]);ctx.beginPath();
- ctx.moveTo(0,roadY+roadH/2);ctx.lineTo(WORLD.w,roadY+roadH/2);
- ctx.moveTo(roadX+roadW/2,0);ctx.lineTo(roadX+roadW/2,WORLD.h);
+ const roadMidY=roadY+roadH/2,roadMidX=roadX+roadW/2;
+ ctx.moveTo(0,roadMidY);ctx.lineTo(zebraWestStart,roadMidY);
+ ctx.moveTo(zebraWestEnd,roadMidY);ctx.lineTo(zebraEastStart,roadMidY);
+ ctx.moveTo(zebraEastEnd,roadMidY);ctx.lineTo(WORLD.w,roadMidY);
+ ctx.moveTo(roadMidX,0);ctx.lineTo(roadMidX,zebraNorthStart);
+ ctx.moveTo(roadMidX,zebraNorthEnd);ctx.lineTo(roadMidX,zebraSouthStart);
+ ctx.moveTo(roadMidX,zebraSouthEnd);ctx.lineTo(roadMidX,WORLD.h);
  ctx.stroke();ctx.setLineDash([]);
- // Zebra bars run across traffic, perpendicular to each road.
  ctx.fillStyle='#e8e5d5';
- for(let i=0;i<8;i++){
-  ctx.fillRect(roadX-124+i*15,roadY+24,9,roadH-48);
-  ctx.fillRect(roadX+roadW+17+i*15,roadY+24,9,roadH-48);
-  ctx.fillRect(roadX+34,roadY-122+i*12,roadW-68,8);
-  ctx.fillRect(roadX+34,roadY+roadH+22+i*12,roadW-68,8);
+ for(let i=0;i<zebraCount;i++){
+  const offset=i*(zebraStripe+zebraGap);
+  // Crossings over the east-west avenue.
+  ctx.fillRect(zebraWestStart+offset,roadY,zebraStripe,roadH);
+  ctx.fillRect(zebraEastStart+offset,roadY,zebraStripe,roadH);
+  // Crossings over the north-south avenue.
+  ctx.fillRect(roadX,zebraNorthStart+offset,roadW,zebraStripe);
+  ctx.fillRect(roadX,zebraSouthStart+offset,roadW,zebraStripe);
  }
- // Original lane arrows and stop lines.
- ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
- ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,575,1],[1250,955,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
+ // Stop lines sit just before the crossings, never on top of the zebra bars.
+ ctx.fillStyle='#d4d8d0';
+ ctx.fillRect(zebraWestStart-10,roadY+8,4,roadH-16);
+ ctx.fillRect(zebraEastEnd+6,roadY+8,4,roadH-16);
+ ctx.fillRect(roadX+8,zebraNorthStart-10,roadW-16,4);
+ ctx.fillRect(roadX+8,zebraSouthEnd+6,roadW-16,4);
+ // Direction arrows now sit on the approach lanes, clear of pedestrian markings.
+ ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;
+ const roadArrows=[[650,765,'right'],[2650,765,'left'],[1250,180,'down'],[1250,1630,'up']];
+ for(const [ax,ay,dir] of roadArrows){
+  ctx.beginPath();
+  if(dir==='right'){
+   ctx.moveTo(ax-11,ay);ctx.lineTo(ax+11,ay);
+   ctx.moveTo(ax+3,ay-7);ctx.lineTo(ax+11,ay);ctx.lineTo(ax+3,ay+7);
+  }else if(dir==='left'){
+   ctx.moveTo(ax+11,ay);ctx.lineTo(ax-11,ay);
+   ctx.moveTo(ax-3,ay-7);ctx.lineTo(ax-11,ay);ctx.lineTo(ax-3,ay+7);
+  }else if(dir==='down'){
+   ctx.moveTo(ax,ay-11);ctx.lineTo(ax,ay+11);
+   ctx.moveTo(ax-7,ay+3);ctx.lineTo(ax,ay+11);ctx.lineTo(ax+7,ay+3);
+  }else{
+   ctx.moveTo(ax,ay+11);ctx.lineTo(ax,ay-11);
+   ctx.moveTo(ax-7,ay-3);ctx.lineTo(ax,ay-11);ctx.lineTo(ax+7,ay-3);
+  }
+  ctx.stroke();
+ }
  // Continuous plain-concrete sidewalks on both sides of both avenues.
  // Each strip stops at the crossing road; the four corners meet without painting over asphalt.
  const sidewalkStrips=[
@@ -5610,7 +5647,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
     ctx.fillRect(gx,gy,28,28);
    }
   }
-  // Wide paved crosswalks connect the park entrances using squared stone slabs.
+  // Wide tiled pedestrian paths connect the park entrances; these are ordinary walkways, not road zebra crossings.
   ctx.fillStyle='#78847e';ctx.fillRect(2263,1182,424,52);ctx.fillRect(2449,1003,52,404);
   ctx.fillStyle='#c6c5ad';ctx.fillRect(2267,1186,416,44);ctx.fillRect(2453,1007,44,396);
   ctx.fillStyle='#d7d2bd';ctx.fillRect(2271,1190,408,36);ctx.fillRect(2457,1011,36,396);
