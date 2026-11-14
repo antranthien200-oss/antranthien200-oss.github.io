@@ -15,7 +15,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),distance=(a,b)=>Math.hypot(a.x-b.
 const pointSegmentDistance=(point,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy||1,t=clamp(((point.x-a.x)*dx+(point.y-a.y)*dy)/length,0,1);return Math.hypot(point.x-(a.x+dx*t),point.y-(a.y+dy*t))};
 const CLASHABLE_DOMAINS=new Set(["void","shrine","hakari","soul","yuta","trash"]);
 export class CityRoom extends Room{
- maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/40;maxMessagesPerSecond=180;
+ maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/30;maxMessagesPerSecond=180;
  onCreate(){
   this.maxClients=MAX_PLAYERS;
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
@@ -25,7 +25,7 @@ export class CityRoom extends Room{
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
   this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:activity",c=>{if(this.state.players.has(c.sessionId))this.lastActivityAt.set(c.sessionId,Date.now())});this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
   this.onMessage("network:ping",(client,payload={})=>{const sentAt=Number(payload.sentAt);if(Number.isFinite(sentAt))client.send("network:pong",{sentAt})});
-  this.setSimulationInterval(ms=>this.tick(ms/1000),25);
+  this.setSimulationInterval(ms=>this.tick(ms/1000),1000/30);
  }
  onJoin(client,options={}){
   if(this.state.players.size>=MAX_PLAYERS){client.leave(4003,"SERVER_FULL");return}
@@ -383,6 +383,10 @@ detonateProjectile(client,payload={}){
     const sx=p.vx*60*dt,sy=p.vy*60*dt;p.x+=sx;p.y+=sy;p.travelled+=Math.hypot(sx,sy);p.life-=dt;
    }
    p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);
+   if(p.kind==="ball"){
+    if(p.x<12||p.x>WORLD_WIDTH-12){p.vx*=-1;p.x=clamp(p.x,12,WORLD_WIDTH-12);p.life-=.25}
+    if(p.y<12||p.y>WORLD_HEIGHT-12){p.vy*=-1;p.y=clamp(p.y,12,WORLD_HEIGHT-12);p.life-=.25}
+   }
    if(p.domainBound){
     if(owner.domainType!=="trash"||owner.domainTimer<=0){end(p);continue}
     const dx=p.x-owner.domainX,dy=p.y-owner.domainY,d=Math.hypot(dx,dy)||1,limit=Math.max(80,(owner.domainRadius||430)-p.r);
@@ -413,7 +417,16 @@ detonateProjectile(client,payload={}){
     }
     if(hitTarget){
      const angle=Math.atan2(p.y-from.y,p.x-from.x);
-     hurt(owner,hitTarget,p.damage*(p.kind==="redmax"?clamp(1-p.travelled/(p.maxDistance||900)*.75,.25,1):1),p.hitStun,p.knockback||p.speed*p.knockbackScale,angle,p.unblockable,p.ignoreInvuln,p.damageType,p.blockedDamage);
+     if(p.kind==="bloodBombProjectile"){
+      let hitAny=false;
+      for(const [candidateId,candidate] of this.state.players){
+       if(candidateId===p.ownerId||candidate.dead||candidate.vehicleId||candidate.invuln>0||distance(candidate,p)>120+23)continue;
+       const blastAngle=Math.atan2(candidate.y-p.y,candidate.x-p.x);
+       hurt(owner,candidate,p.damage,p.hitStun,p.knockback||9,blastAngle,p.unblockable,p.ignoreInvuln,p.damageType,p.blockedDamage);
+       hitAny=true;
+      }
+      if(!hitAny)hurt(owner,hitTarget,p.damage,p.hitStun,p.knockback||9,angle,p.unblockable,p.ignoreInvuln,p.damageType,p.blockedDamage);
+     }else hurt(owner,hitTarget,p.damage*(p.kind==="redmax"?clamp(1-p.travelled/(p.maxDistance||900)*.75,.25,1):1),p.hitStun,p.knockback||p.speed*p.knockbackScale,angle,p.unblockable,p.ignoreInvuln,p.damageType,p.blockedDamage);
      end(p,"combat:projectile-hit",{targetId:hitId});continue;
     }
    }
