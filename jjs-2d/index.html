@@ -2266,7 +2266,7 @@ function drawCharacterAwakeningPreview(charKey,accent,time,cx,headY,radius){
 function drawCharacterAccessoryMotion(fighter,time,accent,pose){
  const loadout=getFighterAccessories(fighter)||{};
  const hasHeadAccessory=!!(loadout.head&&loadout.head!=='none'||loadout.face&&loadout.face!=='none'||loadout.neck&&loadout.neck!=='none');
- if(!hasHeadAccessory&&!loadout.aura)return;
+ if(!hasHeadAccessory&&(!loadout.aura||loadout.aura==='none'))return;
  const sparkle=.5+.5*Math.sin(time*3.1+pose.effect*2);
  ctx.save();ctx.globalAlpha=.18+.25*sparkle;ctx.strokeStyle=accent;ctx.lineWidth=1;
  const points=hasHeadAccessory?[[-17,-11],[16,-13],[0,20]]:[[-23,0],[23,0]];
