@@ -1640,7 +1640,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
   </main>
   <div class="menu-bottomline"><span>WASD MOVE</span><i>·</i><span>MOUSE AIM</span><i>·</i><span>TAP M1</span><i>·</i><span>E PICK UP / THROW</span><i>·</i><span>1–4 SKILLS</span></div>
   <div id="menuSub" class="menu-sub" hidden><section class="menu-sub-panel">
-    <div class="menu-sub-head"><div><div class="menu-kicker" id="menuSubKicker">FIGHTER ROSTER</div><h2 id="menuSubTitle">SWITCH CHARACTER</h2><p id="menuSubHint">Choose your fighter for the next match.</p></div><button id="menuSubClose" class="menu-close" aria-label="Close">×</button></div>
+    <div class="menu-sub-head"><div><div class="menu-kicker" id="menuSubKicker" hidden></div><h2 id="menuSubTitle">SWITCH CHARACTER</h2><p id="menuSubHint" hidden></p></div><button id="menuSubClose" class="menu-close" aria-label="Close">×</button></div>
     <div id="menuSubTabs" class="accessory-slot-tabs" hidden></div><div id="menuSubCards" class="menu-sub-cards"></div><div class="menu-sub-footer"><span id="menuSubSelected">SELECTED: THE HONORED ONE</span><button id="menuSubDone" class="menu-done">DONE <span>→</span></button></div>
   </section></div>
 </div>
@@ -1868,9 +1868,9 @@ function startAccessoryPreviewAnimation(){
 }
 function renderMenuSub(){
  const isCharacter=menuView==='character',isOnline=menuView==='online',tabWrap=$('menuSubTabs');$('menuSubDone').hidden=isCharacter;$('menuSub').classList.toggle('accessory-editor-open',!isCharacter&&!isOnline);
- $('menuSubKicker').textContent=isCharacter?'FIGHTER ROSTER':isOnline?'ONLINE MODE':'CUSTOMIZATION';
+ $('menuSubKicker').textContent=isCharacter?'':isOnline?'ONLINE MODE':'CUSTOMIZATION';$('menuSubKicker').hidden=isCharacter;
  $('menuSubTitle').textContent=isCharacter?'SWITCH CHARACTER':isOnline?'MULTIPLAYER':'YOUR AVATAR';
- $('menuSubHint').textContent=isCharacter?'Choose the fighter you want to use in your next match.':isOnline?'':'Choose an accessory.';
+ $('menuSubHint').textContent=isCharacter?'':isOnline?'':'Choose an accessory.';$('menuSubHint').hidden=isCharacter;
  $('menuSub').classList.toggle('online-menu-open',isOnline);
  $('menuSub').classList.toggle('online-menu-open',isOnline);
  tabWrap.hidden=isCharacter||isOnline;let html='';
