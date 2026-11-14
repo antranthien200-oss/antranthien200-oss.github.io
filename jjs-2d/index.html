@@ -2191,19 +2191,117 @@ function drawOnlineFightScene(now){
   mouse.x=sceneW*.5+(redX-camera.x)/aimScale;
   mouse.y=sceneH*.5+(headY-camera.y)/aimScale;
 
-  // Cinematic ground, moving lane marks and a restrained two-colour atmosphere.
+  // Mini ruined-city arena: distant broken skyline, coloured side-light and a readable floor plane.
   const bg=ctx.createLinearGradient(0,0,0,sceneH);
-  bg.addColorStop(0,'rgba(5,10,19,.04)');bg.addColorStop(.68,'rgba(5,11,22,.12)');bg.addColorStop(1,'rgba(2,5,11,.5)');
+  bg.addColorStop(0,'#080d19');bg.addColorStop(.48,'#111827');bg.addColorStop(1,'#050911');
   ctx.fillStyle=bg;ctx.fillRect(0,0,sceneW,sceneH);
-  const floorLine=sceneH*.84;
-  ctx.strokeStyle='rgba(177,206,233,.15)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(0,floorLine);ctx.lineTo(sceneW,floorLine);ctx.stroke();
-  for(let i=0;i<11;i++){
-   const offset=((t*145+i*61)%(sceneW+90))-45;
-   ctx.globalAlpha=.08+(i%3)*.018;ctx.strokeStyle=i%2?blue:red;ctx.lineWidth=1;
-   ctx.beginPath();ctx.moveTo(offset,floorLine+3);ctx.lineTo(offset-23,floorLine+18+(i%4)*4);ctx.stroke();
+
+  // Soft red/blue arena lights frame the fighters without washing out their silhouettes.
+  const sideWash=(x,color)=>{
+   const g=ctx.createRadialGradient(x,sceneH*.48,2,x,sceneH*.48,sceneW*.42);
+   g.addColorStop(0,color+'20');g.addColorStop(.55,color+'0b');g.addColorStop(1,color+'00');
+   ctx.fillStyle=g;ctx.fillRect(0,0,sceneW,sceneH);
+  };
+  sideWash(sceneW*.12,red);sideWash(sceneW*.88,blue);
+
+  // Broken building silhouettes at the back of the stage.
+  const skylineY=sceneH*.65;
+  const cityBlocks=[
+   [-.025,.17,.43], [.075,.105,.27], [.19,.12,.36],
+   [.70,.13,.31], [.82,.12,.44], [.925,.12,.34]
+  ];
+  cityBlocks.forEach((b,i)=>{
+   const x=b[0]*sceneW,w=b[1]*sceneW,h=b[2]*sceneH,top=skylineY-h;
+   ctx.fillStyle=i%2?'#0a1220':'#0b1423';
+   ctx.beginPath();
+   ctx.moveTo(x,skylineY);
+   ctx.lineTo(x,top+12);
+   ctx.lineTo(x+w*.16,top+8);
+   ctx.lineTo(x+w*.27,top+15);
+   ctx.lineTo(x+w*.42,top);
+   ctx.lineTo(x+w*.58,top+7);
+   ctx.lineTo(x+w*.73,top+3);
+   ctx.lineTo(x+w*.84,top+13);
+   ctx.lineTo(x+w,top+9);
+   ctx.lineTo(x+w,skylineY);
+   ctx.closePath();ctx.fill();
+
+   // Sparse broken windows and facade seams.
+   ctx.save();ctx.globalAlpha=.24;
+   for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+    if((row*5+col*3+i)%4===0)continue;
+    ctx.fillStyle=(i<3?red:blue)+'66';
+    ctx.fillRect(x+w*(.16+col*.25),top+22+row*15,Math.max(2,w*.055),2);
+   }
+   ctx.strokeStyle='#91a4bd';ctx.lineWidth=1;
+   ctx.beginPath();ctx.moveTo(x+w*.58,top+13);ctx.lineTo(x+w*.54,top+29);ctx.lineTo(x+w*.62,top+39);ctx.stroke();
+   ctx.restore();
+  });
+
+  // Low haze joins the skyline to the arena floor.
+  const haze=ctx.createLinearGradient(0,skylineY-12,0,sceneH*.82);
+  haze.addColorStop(0,'rgba(91,129,164,.015)');
+  haze.addColorStop(.55,'rgba(75,119,157,.10)');
+  haze.addColorStop(1,'rgba(7,12,22,0)');
+  ctx.fillStyle=haze;ctx.fillRect(0,skylineY-12,sceneW,sceneH*.25);
+
+  const floorLine=sceneH*.83;
+  const floorGradient=ctx.createLinearGradient(0,skylineY,0,sceneH);
+  floorGradient.addColorStop(0,'#111b2a');
+  floorGradient.addColorStop(.45,'#0a1220');
+  floorGradient.addColorStop(1,'#050911');
+  ctx.fillStyle=floorGradient;
+  ctx.fillRect(0,skylineY,sceneW,sceneH-skylineY);
+
+  // Perspective floor grid converges behind the fighters.
+  const vanishX=sceneW*.5,vanishY=skylineY+4;
+  ctx.save();ctx.lineWidth=1;
+  for(let i=-6;i<=6;i++){
+   ctx.strokeStyle=i%2===0?'rgba(133,171,207,.13)':'rgba(133,171,207,.075)';
+   ctx.beginPath();ctx.moveTo(vanishX,vanishY);ctx.lineTo(vanishX+i*sceneW*.19,sceneH+6);ctx.stroke();
+  }
+  for(let i=1;i<=7;i++){
+   const p=i/7,y=vanishY+(floorLine-vanishY)*Math.pow(p,1.65);
+   ctx.strokeStyle='rgba(145,177,207,'+(.045+i*.009)+')';
+   ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(sceneW,y);ctx.stroke();
+  }
+  ctx.restore();
+
+  // Cracks and scattered concrete make the stage feel used, not decorative.
+  ctx.save();ctx.strokeStyle='rgba(167,190,215,.19)';ctx.lineWidth=1;
+  for(const crack of [[.13,.91,.19,.87,.22,.94],[.78,.89,.74,.92,.81,.97],[.43,.96,.47,.91,.45,.88]]){
+   ctx.beginPath();ctx.moveTo(crack[0]*sceneW,crack[1]*sceneH);
+   ctx.lineTo(crack[2]*sceneW,crack[3]*sceneH);ctx.lineTo(crack[4]*sceneW,crack[5]*sceneH);ctx.stroke();
+  }
+  for(let i=0;i<16;i++){
+   const x=((i*83+17)%Math.max(1,Math.floor(sceneW)));
+   const y=floorLine+((i*11)%Math.max(1,Math.floor(sceneH-floorLine)));
+   const size=1+(i%3);
+   ctx.fillStyle=i%2?'rgba(160,184,211,.25)':'rgba(91,125,158,.24)';
+   ctx.fillRect(x,y,size*2,size);
+  }
+  ctx.restore();
+
+  // A few slow drifting embers/dust motes add depth without filling the frame.
+  for(let i=0;i<18;i++){
+   const drift=(t*(8+(i%4)*3)+i*79)%(sceneW+24);
+   const x=drift-12,y=sceneH*(.22+((i*37)%53)/100)+Math.sin(t*1.1+i)*3;
+   ctx.globalAlpha=.12+((i*7)%5)*.025;
+   ctx.fillStyle=i%2?blue:red;
+   ctx.fillRect(x,y,i%4===0?2:1,i%4===0?2:1);
   }
   ctx.globalAlpha=1;
+
+  // Glowing contact shadows anchor each fighter to the stage.
+  for(const [x,color] of [[redX,red],[blueX,blue]]){
+   ctx.save();ctx.globalAlpha=.38;
+   const shadow=ctx.createRadialGradient(x,floorLine-3,1,x,floorLine-3,27);
+   shadow.addColorStop(0,color+'55');shadow.addColorStop(1,color+'00');
+   ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(x,floorLine-3,27,5,0,0,Math.PI*2);ctx.fill();
+   ctx.restore();
+  }
+  ctx.strokeStyle='rgba(177,206,233,.2)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,floorLine);ctx.lineTo(sceneW,floorLine);ctx.stroke();
 
   // Small hit-stop shakes make each clean impact read without distorting the fighters.
   // Keep impact feedback in the effects, not in the camera: only a tiny tap on heavy hits.
@@ -2274,11 +2372,25 @@ function drawOnlineFightScene(now){
    }
    ctx.restore();
   };
+  const drawArenaShockwave=(color,power,seed)=>{
+   const x=(redX+blueX)*.5,y=floorLine-3;
+   const travel=1-power,radius=9+travel*36;
+   ctx.save();ctx.globalAlpha=.42*power;ctx.lineWidth=1.2;
+   ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=7;
+   ctx.beginPath();ctx.ellipse(x,y,radius,radius*.2,0,Math.PI,Math.PI*2);ctx.stroke();
+   ctx.globalAlpha=.52*power;ctx.lineWidth=1;
+   for(let i=0;i<7;i++){
+    const side=i-3,sx=x+side*(5+travel*13),sy=y+Math.abs(side)*.45;
+    ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+side*(4+seed%3),sy-2-(i%3)*2);ctx.stroke();
+   }
+   ctx.restore();
+  };
   const impactAt=(at,color,seed)=>{
    let dt=phase-at;if(dt<0)dt+=CYCLE;
    if(dt>=.12)return 0;
    const power=clamp01(1-dt/.12);
    drawImpact((redX+blueX)*.5,headY+Math.sin(seed*2+t*10)*3,color,power,seed);
+   drawArenaShockwave(color,power,seed);
    return power;
   };
   let strongest=0;
