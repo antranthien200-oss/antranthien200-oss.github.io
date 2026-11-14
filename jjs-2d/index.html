@@ -5543,16 +5543,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillRect(roadX+roadW,sideCrossingY,17,zebraSpan);
  ctx.fillRect(endCrossingX,roadY-17,endCrossingSpan,17);
  ctx.fillRect(endCrossingX,roadY+roadH,endCrossingSpan,17);
- // Thin inner road edging follows the same openings instead of crossing through the zebra bars.
- ctx.fillStyle='#95a0a6';
- ctx.fillRect(0,roadY-4,endCrossingX,4);
- ctx.fillRect(endCrossingEndX,roadY-4,WORLD.w-endCrossingEndX,4);
- ctx.fillRect(0,roadY+roadH,endCrossingX,4);
- ctx.fillRect(endCrossingEndX,roadY+roadH,WORLD.w-endCrossingEndX,4);
- ctx.fillRect(roadX-4,0,4,sideCrossingY);
- ctx.fillRect(roadX-4,sideCrossingEndY,4,WORLD.h-sideCrossingEndY);
- ctx.fillRect(roadX+roadW,0,4,sideCrossingY);
- ctx.fillRect(roadX+roadW,sideCrossingEndY,4,WORLD.h-sideCrossingEndY);
+ // The thin grey inner-edge strokes were removed; the sidewalk and curb bands already define the road edge.
  // Dashed lane markings stop at the crossing openings.
  ctx.strokeStyle='#e8dca7';ctx.lineWidth=4;ctx.setLineDash([42,34]);ctx.beginPath();
  const roadMidY=roadY+roadH/2,roadMidX=roadX+roadW/2;
