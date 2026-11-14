@@ -763,45 +763,17 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .accessory-preview-items .menu-option{min-height:120px;padding:10px}
 }
 
-/* Roblox-inspired avatar editor: prominent character viewport beside the accessory catalog. */
-.menu-sub.accessory-editor-open .menu-sub-panel{width:min(1160px,97vw);max-height:min(94vh,920px);padding:clamp(18px,2.4vw,30px)}
-.menu-sub.accessory-editor-open .menu-sub-head{margin-bottom:16px}
-.accessory-preview-layout{grid-template-columns:minmax(340px,.92fr) minmax(0,1.42fr);gap:18px;align-items:stretch}
-.accessory-preview-panel{position:relative;display:flex;flex-direction:column;justify-content:flex-start;min-width:0;padding:16px;background:linear-gradient(155deg,#182a40,#091321);border-color:#80cfff65}
-.accessory-preview-kicker{font-size:9px;letter-spacing:.2em}
-.accessory-preview-name{font-size:16px;margin:8px 0 12px}
-#accessoryPreviewCanvas{width:100%;height:auto;aspect-ratio:8/9;max-height:min(63vh,720px);object-fit:contain;border:1px solid #ffffff28;border-radius:5px;background:#101d2e;box-shadow:0 12px 32px #0006}
-.accessory-preview-label{font-size:10px;min-height:30px;padding-top:12px}
-.accessory-preview-tip{font-size:8px;padding-top:11px}
-.accessory-preview-items{grid-template-columns:repeat(2,minmax(0,1fr));align-content:start;gap:11px}
-.accessory-preview-items .menu-option{min-height:146px;padding:14px}
-.accessory-preview-items .option-icon{font-size:34px;margin-bottom:8px}
-.accessory-preview-items .option-name{font-size:12px}
-.accessory-preview-items .option-desc{font-size:10px}
-@media(max-width:760px){
- .menu-sub.accessory-editor-open .menu-sub-panel{width:min(620px,96vw);max-height:94vh;padding:14px}
- .accessory-preview-layout{grid-template-columns:minmax(0,1fr);gap:12px}
- .accessory-preview-panel{padding:12px}
- .accessory-preview-name{font-size:14px}
- #accessoryPreviewCanvas{width:min(100%,360px);max-height:360px;margin:0 auto;aspect-ratio:8/9}
- .accessory-preview-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
- .accessory-preview-items .menu-option{min-height:126px;padding:10px}
- .accessory-preview-items .option-icon{font-size:28px}
-}
-
-
-
-/* Compact accessory editor: keep the window fixed and scroll only the item catalogue. */
+/* Restore the original compact accessory editor; only the item list scrolls. */
 .menu-sub.accessory-editor-open .menu-sub-panel{
  width:min(780px,94vw);
- height:min(88vh,760px);
- max-height:min(88vh,760px);
+ height:min(630px,88vh);
+ max-height:min(630px,88vh);
  display:flex;
  flex-direction:column;
  overflow:hidden;
  padding:clamp(18px,3vw,28px);
 }
-.menu-sub.accessory-editor-open .menu-sub-head{flex:0 0 auto;margin-bottom:16px}
+.menu-sub.accessory-editor-open .menu-sub-head{flex:0 0 auto;margin-bottom:19px}
 .menu-sub.accessory-editor-open .accessory-slot-tabs{flex:0 0 auto}
 .menu-sub.accessory-editor-open #menuSubCards{
  display:flex;
@@ -817,30 +789,42 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  width:100%;
  height:100%;
  min-height:0;
- flex:1 1 auto;
 }
 .menu-sub.accessory-editor-open .accessory-preview-panel{
  position:relative;
+ display:flex;
+ flex-direction:column;
+ justify-content:flex-start;
+ min-width:0;
  min-height:0;
  padding:12px;
  overflow:hidden;
 }
+.menu-sub.accessory-editor-open .accessory-preview-name{font-size:12px;margin:5px 0 8px}
 .menu-sub.accessory-editor-open #accessoryPreviewCanvas{
+ display:block;
  width:100%;
  height:auto;
- max-height:100%;
+ max-height:none;
  aspect-ratio:13/9;
  object-fit:contain;
+ border:1px solid #ffffff20;
+ border-radius:4px;
+ background:#08111d;
+ box-shadow:none;
 }
+.menu-sub.accessory-editor-open .accessory-preview-label{font-size:8px;min-height:24px;padding-top:9px}
+.menu-sub.accessory-editor-open .accessory-preview-tip{font-size:7px;padding-top:8px}
 .menu-sub.accessory-editor-open .accessory-preview-items{
  display:grid;
  grid-template-columns:repeat(2,minmax(0,1fr));
  align-content:start;
  align-items:start;
  gap:9px;
+ width:100%;
+ height:100%;
  min-width:0;
  min-height:0;
- height:100%;
  overflow-x:hidden;
  overflow-y:auto;
  overscroll-behavior:contain;
@@ -850,11 +834,12 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 }
 .menu-sub.accessory-editor-open .accessory-preview-items .menu-option{min-height:132px;padding:11px}
 .menu-sub.accessory-editor-open .accessory-preview-items .option-icon{font-size:29px;margin-bottom:5px}
+.menu-sub.accessory-editor-open .menu-sub-footer{flex:0 0 auto}
 
 @media(max-width:760px){
  .menu-sub.accessory-editor-open .menu-sub-panel{
   width:min(620px,96vw);
-  height:min(94vh,900px);
+  height:min(720px,94vh);
   max-height:94vh;
   padding:14px;
  }
@@ -869,7 +854,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
   overflow:hidden;
  }
  .menu-sub.accessory-editor-open .accessory-preview-panel{flex:0 0 auto;padding:10px}
- .menu-sub.accessory-editor-open .accessory-preview-name{margin:5px 0 8px;font-size:12px}
+ .menu-sub.accessory-editor-open .accessory-preview-name{font-size:12px;margin:5px 0 8px}
  .menu-sub.accessory-editor-open #accessoryPreviewCanvas{
   display:block;
   width:auto;
@@ -884,8 +869,8 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .menu-sub.accessory-editor-open .accessory-preview-items{
   flex:1 1 0;
   width:100%;
-  min-height:0;
   height:auto;
+  min-height:0;
   grid-template-columns:repeat(2,minmax(0,1fr));
   grid-auto-rows:minmax(120px,auto);
   gap:8px;
