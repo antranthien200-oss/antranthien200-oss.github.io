@@ -568,11 +568,10 @@ killPlayer(p){
  hitProp(client,payload={}){
   const p=this.state.players.get(client.sessionId),id=Number(payload.propId),state=this.state.world.props.get(String(id)),source=PROP_SPAWNS.find(x=>x.id===id);
   if(!p||p.dead||p.vehicleId||!state||!state.alive||!source)return;
-  const now=Date.now(),recentDash=p.lastActionKind==="dash"&&now-(p.lastActionAt||0)<=500;
+  const now=Date.now();
   const center={x:source.x+source.w/2,y:source.y+source.h/2};
   const dx=center.x-p.x,dy=center.y-p.y,angle=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(angle-p.face),Math.cos(angle-p.face));
-  const inDashPath=recentDash&&rayHitsRect(p,p.face,source,260);
-  if(!inDashPath&&(p.attackAnim<=0||Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2))return;
+  if(p.attackAnim<=0||Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)return;
   const key=client.sessionId+":"+id;
   if(now-(this.lastPropHitAt.get(key)||0)<240)return;
   this.lastPropHitAt.set(key,now);state.hp=Math.max(0,state.hp-1);
