@@ -1619,6 +1619,46 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .character-select-card{min-height:86px}
  .character-card-art{height:48px}
 }
+
+/* Character roster repair: preserve the artwork's native 8:5 canvas ratio
+   and prevent the grid from compressing individual character tiles. */
+#menuSub.character-select-open .character-select-roster{
+  align-content:start!important;
+  align-items:start!important;
+  grid-auto-rows:max-content!important;
+}
+#menuSub.character-select-open .character-select-card{
+  box-sizing:border-box!important;
+  align-self:start!important;
+  height:auto!important;
+  min-height:124px!important;
+  max-height:none!important;
+  aspect-ratio:auto!important;
+  flex:none!important;
+}
+#menuSub.character-select-open .character-card-art{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  max-height:none!important;
+  aspect-ratio:8 / 5!important;
+  object-fit:contain!important;
+  flex:0 0 auto!important;
+}
+@media(max-width:720px){
+  #menuSub.character-select-open .character-select-card{min-height:116px!important}
+  #menuSub.character-select-open .character-card-art{height:auto!important}
+}
+@media(max-width:380px){
+  #menuSub.character-select-open .character-select-card{min-height:108px!important}
+  #menuSub.character-select-open .character-card-art{height:auto!important}
+}
+@media(orientation:landscape) and (max-height:520px){
+  #menuSub.character-select-open .menu-sub-panel{overflow:auto!important}
+  #menuSub.character-select-open .character-select-card{min-height:116px!important}
+  #menuSub.character-select-open .character-card-art{height:auto!important}
+}
 </style>
 </head>
 <body>
