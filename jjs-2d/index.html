@@ -1021,8 +1021,8 @@ function drawAccessoryPreview(itemId=null){
   const cx=160,headY=165,theme=getStunTintedTheme(previewFighter);
   ctx.save();ctx.translate(cx,headY);ctx.scale(2.9,2.9);
   drawAccessoryAura(previewFighter,0,0,1.12);
-  drawFloatingHand(-39,35,-.2,theme,1.2);
-  drawFloatingHand(39,35,.2,theme,1.2);
+  drawFloatingHand(-27,25,-.18,theme,1.2);
+  drawFloatingHand(27,25,.18,theme,1.2);
   drawCuteHead(previewFighter,CHARS[previewChar],theme);
   drawAccessoryOverlays(previewFighter,0,0);
   ctx.restore();
