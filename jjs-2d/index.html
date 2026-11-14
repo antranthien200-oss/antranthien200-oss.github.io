@@ -96,8 +96,8 @@
 .menu-subtitle{margin-top:13px;font-size:clamp(10px,1.3vw,15px);font-weight:950;letter-spacing:.38em;color:#fff;text-shadow:0 3px 10px #000}
 .menu-title-rule{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:10px;color:#c7d3e7;font-size:8px;letter-spacing:.25em;font-weight:900}.menu-title-rule span{height:1px;width:42px;background:linear-gradient(90deg,transparent,#fff)}.menu-title-rule span:last-child{transform:scaleX(-1)}
 .menu-actions{display:grid;gap:8px;width:min(330px,78vw)}
-.menu-button{appearance:none;position:relative;display:grid;grid-template-columns:34px 1fr;grid-template-rows:1fr 12px;align-items:center;text-align:left;min-height:55px;padding:8px 16px;border:1px solid #dbe8ff62;border-radius:4px;background:linear-gradient(110deg,rgba(7,13,25,.94),rgba(18,25,42,.82));color:#f6f8ff;box-shadow:0 8px 24px #0006,inset 0 0 18px #ffffff08;cursor:pointer;transition:transform .16s,border-color .16s,filter .16s;backdrop-filter:blur(7px)}
-.menu-button:hover{transform:translateY(-2px) scale(1.015);border-color:#fff;filter:brightness(1.2)}.menu-button .button-icon{grid-row:1/3;grid-column:1;font-size:23px;text-align:center;color:#c6d9ff;text-shadow:0 0 12px #6eaaff}.menu-button>span:nth-child(2){font-weight:1000;font-size:12px;letter-spacing:.16em}.menu-button small{font-size:7px;font-weight:800;letter-spacing:.19em;color:#9baac2}
+.menu-button{appearance:none;position:relative;display:grid;grid-template-columns:34px 1fr;grid-template-rows:1fr;align-items:center;text-align:left;min-height:55px;padding:8px 16px;border:1px solid #dbe8ff62;border-radius:4px;background:linear-gradient(110deg,rgba(7,13,25,.94),rgba(18,25,42,.82));color:#f6f8ff;box-shadow:0 8px 24px #0006,inset 0 0 18px #ffffff08;cursor:pointer;transition:transform .16s,border-color .16s,filter .16s;backdrop-filter:blur(7px)}
+.menu-button:hover{transform:translateY(-2px) scale(1.015);border-color:#fff;filter:brightness(1.2)}.menu-button .button-icon{grid-row:1;grid-column:1;align-self:center;font-size:23px;text-align:center;color:#c6d9ff;text-shadow:0 0 12px #6eaaff}.menu-button>span:nth-child(2){grid-row:1;grid-column:2;align-self:center;font-weight:1000;font-size:12px;letter-spacing:.16em}.menu-button small{font-size:7px;font-weight:800;letter-spacing:.19em;color:#9baac2}
 .menu-button.play{border-color:#ff7b91;background:linear-gradient(105deg,rgba(120,24,54,.96),rgba(40,19,58,.94));box-shadow:0 0 24px #e832663f,inset 0 0 19px #ffb0c01a}.menu-button.play .button-icon{color:#fff}
 .menu-selected{width:min(330px,78vw);padding:10px 14px 9px;border:1px solid #ffffff42;border-radius:4px;background:rgba(5,10,20,.72);box-shadow:0 7px 20px #0006;backdrop-filter:blur(8px)}
 .selected-caption{font-size:7px;color:#8fa4c2;letter-spacing:.26em;font-weight:900}.selected-main{display:flex;align-items:center;gap:9px;margin-top:4px;font-size:11px;font-weight:1000;letter-spacing:.1em}.selected-icon{font-size:19px}
@@ -1024,10 +1024,10 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
   <main class="menu-main">
     <div class="menu-logo"><div class="menu-kicker">THE PIXEL BRAWL</div><div class="menu-title">BALLS</div><div class="menu-subtitle">SHENANIGAN</div><div class="menu-title-rule"><span></span><b>2D FIGHTING GAME</b><span></span></div></div>
     <div class="menu-actions">
-      <button class="menu-button play" id="startBtn"><span class="button-icon">▶</span><span>PLAY</span><small>ENTER THE BATTLE</small></button>
-      <button class="menu-button online" id="onlineBtn" type="button"><span class="button-icon">◎</span><span>ONLINE</span><small>ONE SHARED SERVER · MAX 16 PLAYERS</small></button>
-      <button class="menu-button" id="switchCharBtn"><span class="button-icon">⇄</span><span>SWITCH CHARACTER</span><small>CHOOSE YOUR FIGHTER</small></button>
-      <button class="menu-button" id="switchAccessoriesBtn"><span class="button-icon">✦</span><span>ACCESSORIES</span><small>EQUIP YOUR OWN LOADOUT</small></button>
+      <button class="menu-button play" id="startBtn"><span class="button-icon">▶</span><span>PLAY</span></button>
+      <button class="menu-button online" id="onlineBtn" type="button"><span class="button-icon">◎</span><span>ONLINE</span></button>
+      <button class="menu-button" id="switchCharBtn"><span class="button-icon">⇄</span><span>SWITCH CHARACTER</span></button>
+      <button class="menu-button" id="switchAccessoriesBtn"><span class="button-icon">✦</span><span>ACCESSORIES</span></button>
     </div>
 
     <div class="mobile-setup-wrap">
