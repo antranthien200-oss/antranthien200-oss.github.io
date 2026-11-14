@@ -2061,7 +2061,7 @@ function startOnlineFightAnimation(){
  const tick=now=>{
   onlineFightAnimationFrame=0;
   if(menuView!=='online'||$('menuSub').hidden)return;
-  if(now-onlineFightLastDraw>=32){
+  if(now-onlineFightLastDraw>=16){
    drawOnlineFightScene(now);
    onlineFightLastDraw=now;
   }
@@ -2082,7 +2082,13 @@ function drawOnlineFightScene(now){
  const oldContext=ctx,oldGameTime=game.time,oldW=W,oldH=H;
  const oldCameraX=camera.x,oldCameraY=camera.y,oldPlayer=player,oldMouse={...mouse};
  const oldVesselPalette=JJS_HEAD_PALETTE.vessel,oldHonoredPalette=JJS_HEAD_PALETTE.honored;
- const sceneW=rect.width,sceneH=rect.height,t=now*.001;
+ const sceneW=rect.width,sceneH=rect.height,t=now*.001,CYCLE=3.55;
+ const phase=((t%CYCLE)+CYCLE)%CYCLE;
+ const clamp01=v=>Math.max(0,Math.min(1,v));
+ const ease=v=>{v=clamp01(v);return v*v*(3-2*v)};
+ const between=(a,b)=>ease((phase-a)/(b-a));
+ const lerpScene=(a,b,p)=>a+(b-a)*p;
+ const blue='#65d8ff',red='#ff5367',white='#f5fbff';
  try{
   sceneCtx.setTransform(1,0,0,1,0,0);
   sceneCtx.clearRect(0,0,width,height);
@@ -2091,58 +2097,169 @@ function drawOnlineFightScene(now){
   ctx=sceneCtx;game.time=t;W=sceneW;H=sceneH;
   camera.x=sceneW*.5;camera.y=sceneH*.5;
 
-  const red='#ff5367',blue='#65d8ff';
+  // A complete, tightly edited exchange: four blue hits, a red Black Flash counter,
+  // a second blue combo, then a final clash and reset.
+  let redU=.34,blueU=.66,redJump=0,blueJump=0;
+  if(phase<.22){
+   const p=between(0,.22);
+   redU=lerpScene(.32,.35,p);blueU=lerpScene(.68,.65,p);
+  }else if(phase<1.04){
+   const p=between(.22,1.04);
+   redU=lerpScene(.35,.37,p);blueU=lerpScene(.65,.535,p);
+   redJump=Math.sin(p*Math.PI)*.7;
+   blueJump=Math.sin(p*Math.PI*2)*.25;
+  }else if(phase<1.18){
+   const p=between(1.04,1.18);
+   redU=lerpScene(.37,.405,p);blueU=lerpScene(.535,.57,p);
+   redJump=Math.sin(p*Math.PI)*1.1;
+  }else if(phase<1.53){
+   const p=between(1.18,1.53);
+   redU=lerpScene(.405,.49,ease(p));blueU=lerpScene(.57,.65,ease(p));
+   redJump=Math.sin(p*Math.PI)*1.8;blueJump=Math.sin(p*Math.PI)*1.25;
+  }else if(phase<1.80){
+   const p=between(1.53,1.80);
+   redU=lerpScene(.49,.42,ease(p));blueU=lerpScene(.65,.72,ease(p));
+   blueJump=4.3*Math.sin(p*Math.PI*.82);
+  }else if(phase<2.46){
+   const p=between(1.80,2.46);
+   redU=lerpScene(.42,.40,ease(p));blueU=lerpScene(.72,.56,ease(p));
+   blueJump=Math.sin(p*Math.PI*2)*.55;
+  }else if(phase<2.76){
+   const p=between(2.46,2.76);
+   redU=lerpScene(.40,.49,ease(p));blueU=lerpScene(.56,.61,ease(p));
+   redJump=Math.sin(p*Math.PI)*1.8;blueJump=Math.sin(p*Math.PI)*1.35;
+  }else if(phase<3.08){
+   const p=between(2.76,3.08);
+   redU=lerpScene(.49,.40,ease(p));blueU=lerpScene(.61,.71,ease(p));
+   redJump=2.1*Math.sin(p*Math.PI);blueJump=3.2*Math.sin(p*Math.PI);
+  }else{
+   const p=between(3.08,3.55);
+   redU=lerpScene(.40,.34,p);blueU=lerpScene(.71,.66,p);
+   redJump=Math.sin(p*Math.PI)*.6;blueJump=Math.sin(p*Math.PI)*.6;
+  }
+
+  const redX=sceneW*redU,blueX=sceneW*blueU;
+  const headY=sceneH*.49+Math.sin(t*8.5)*.7;
+  const floorY=headY+23;
   const noAccessories={head:'none',face:'none',neck:'none',aura:'none'};
-  // Reuse the same palette and drawing functions as the live game:
-  // black character cores, with each fighter's own color on the pixel rim and effects.
   JJS_HEAD_PALETTE.vessel={main:'#030405',accent:red,shadow:red};
   JJS_HEAD_PALETTE.honored={main:'#030405',accent:blue,shadow:blue};
 
-  const redX=sceneW*.34+Math.sin(t*1.1)*2;
-  const blueX=sceneW*.66-Math.sin(t*1.1)*2;
-  const headY=sceneH*.49+Math.sin(t*2.1)*1.25;
-  const redProgress=.38+.42*(.5+.5*Math.sin(t*2.85-1.1));
-  const blueProgress=(t*1.35)%1;
   const baseFighter={
    dead:false,isTrainingDummy:true,jump:0,stun:0,flash:0,block:false,blockImpact:0,
    awakened:false,jackpot:false,cursedWhiteFlash:0,carryingTrashCan:false,
    pullTimer:0,transfigureMeter:0,convergenceOrbs:0,
-   accessoryPreview:noAccessories,hp:100,maxHp:100
+   accessoryPreview:noAccessories,hp:100,maxHp:100,face:0
   };
   const redFighter={
-   ...baseFighter,char:'vessel',team:'enemy',x:redX,y:headY+23,face:0,
-   motion:{name:'yujiBlackFlash',angle:0,t:redProgress*.72,duration:.72,activeDuration:.72},
+   ...baseFighter,char:'vessel',team:'enemy',x:redX,y:floorY,face:0,jump:redJump,
    m1HandTrailState:{name:'',a:[],b:[]}
   };
   const blueFighter={
-   ...baseFighter,char:'honored',team:'player',x:blueX,y:headY+23,face:Math.PI,
-   motion:{name:'m1_1',angle:Math.PI,t:blueProgress*.42,duration:.42,activeDuration:.42},
-   m1HandTrailState:{name:'m1_1',a:[],b:[]}
+   ...baseFighter,char:'honored',team:'player',x:blueX,y:floorY,face:Math.PI,jump:blueJump,
+   m1HandTrailState:{name:'',a:[],b:[]}
   };
+  const blueAttacks=[
+   {start:.22,end:.42,name:'m1_1'},
+   {start:.42,end:.62,name:'m1_2'},
+   {start:.62,end:.82,name:'m1_3'},
+   {start:.82,end:1.04,name:'m1_4'},
+   {start:1.80,end:2.02,name:'m1_1'},
+   {start:2.02,end:2.24,name:'m1_2'},
+   {start:2.24,end:2.46,name:'m1_3'},
+   {start:2.46,end:2.76,name:'m1_4'}
+  ];
+  const blueAction=blueAttacks.find(a=>phase>=a.start&&phase<a.end);
+  if(blueAction){
+   const duration=blueAction.end-blueAction.start,p=clamp01((phase-blueAction.start)/duration);
+   blueFighter.motion={name:blueAction.name,t:p*duration,duration,activeDuration:duration,angle:Math.PI};
+  }
+  const redAction=phase>=1.18&&phase<1.53?{start:1.18,end:1.53}:
+                  phase>=2.46&&phase<2.76?{start:2.46,end:2.76}:null;
+  if(redAction){
+   const duration=redAction.end-redAction.start,p=clamp01((phase-redAction.start)/duration);
+   redFighter.motion={name:'yujiBlackFlash',t:p*duration,duration,activeDuration:duration,angle:0};
+  }else if((phase>=1.04&&phase<1.18)||(phase>=2.40&&phase<2.46)){
+   redFighter.motion={name:'dashGesture',t:.5,duration:.14,activeDuration:.14,angle:0};
+  }
+
   player=blueFighter;
   const aimScale=cameraViewScale()||1;
   mouse.x=sceneW*.5+(redX-camera.x)/aimScale;
   mouse.y=sceneH*.5+(headY-camera.y)/aimScale;
 
-  // Minimal floor line; the fighters' own in-game shadows are drawn by drawHeadHands().
-  ctx.fillStyle='rgba(4,9,18,.10)';ctx.fillRect(0,0,sceneW,sceneH);
-  ctx.strokeStyle='rgba(160,183,207,.18)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(16,sceneH*.84);ctx.lineTo(sceneW-16,sceneH*.84);ctx.stroke();
+  // Cinematic ground, moving lane marks and a restrained two-colour atmosphere.
+  const bg=ctx.createLinearGradient(0,0,0,sceneH);
+  bg.addColorStop(0,'rgba(5,10,19,.04)');bg.addColorStop(.68,'rgba(5,11,22,.12)');bg.addColorStop(1,'rgba(2,5,11,.5)');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,sceneW,sceneH);
+  const floorLine=sceneH*.84;
+  ctx.strokeStyle='rgba(177,206,233,.15)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,floorLine);ctx.lineTo(sceneW,floorLine);ctx.stroke();
+  for(let i=0;i<11;i++){
+   const offset=((t*145+i*61)%(sceneW+90))-45;
+   ctx.globalAlpha=.08+(i%3)*.018;ctx.strokeStyle=i%2?blue:red;ctx.lineWidth=1;
+   ctx.beginPath();ctx.moveTo(offset,floorLine+3);ctx.lineTo(offset-23,floorLine+18+(i%4)*4);ctx.stroke();
+  }
+  ctx.globalAlpha=1;
 
-  // Soft glows stay behind the characters and always match their own accent color.
-  const drawFighterGlow=(x,color)=>{
-   ctx.save();
-   const radius=Math.max(24,sceneH*.25);
-   const glow=ctx.createRadialGradient(x,headY,2,x,headY,radius);
-   glow.addColorStop(0,color+'38');glow.addColorStop(.48,color+'16');glow.addColorStop(1,color+'00');
-   ctx.fillStyle=glow;ctx.beginPath();ctx.ellipse(x,headY,radius,radius*.82,0,0,Math.PI*2);ctx.fill();
+  // Small hit-stop shakes make each clean impact read without distorting the fighters.
+  const hitTimes=[.39,.59,.79,1.00,1.46,1.94,2.16,2.38,2.65,2.70];
+  let shake=0;
+  for(const at of hitTimes){
+   let dt=phase-at;
+   if(dt<0)dt+=CYCLE;
+   const power=clamp01(1-dt/.105);
+   shake=Math.max(shake,power*(at===1.46||at===2.65||at===2.70?3.1:1.45));
+  }
+  const shakeX=shake?Math.sin(t*118)*shake:0,shakeY=shake?Math.cos(t*97)*shake*.52:0;
+  ctx.translate(shakeX,shakeY);
+
+  const glow=(x,y,color,power=1)=>{
+   ctx.save();ctx.globalAlpha=.68*power;
+   const radius=34+sceneH*.1;
+   const g=ctx.createRadialGradient(x,y,2,x,y,radius);
+   g.addColorStop(0,color+'42');g.addColorStop(.5,color+'19');g.addColorStop(1,color+'00');
+   ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,radius,radius*.8,0,0,Math.PI*2);ctx.fill();
    ctx.restore();
   };
-  drawFighterGlow(redX,red);
-  drawFighterGlow(blueX,blue);
+  const blueRush=blueAction?1:phase>=1.8&&phase<2.76?1:0;
+  const redRush=redAction?1:phase>=1.04&&phase<1.18?1:0;
+  glow(redX,headY,red,1+redRush*.7);
+  glow(blueX,headY,blue,1+blueRush*.65);
 
-  // Keep the exact in-game proportions, only applying a restrained uniform menu scale.
-  const fighterScale=Math.min(1.22,Math.max(1.02,sceneH/160));
+  const drawSpeedStreaks=(x,y,dir,color,power)=>{
+   if(power<=.02)return;
+   ctx.save();ctx.globalAlpha=.16+.2*power;ctx.lineCap='round';ctx.strokeStyle=color;ctx.shadowColor=color;ctx.shadowBlur=9;
+   for(let i=0;i<7;i++){
+    const yy=y+(i-3)*9+Math.sin(t*19+i*1.7)*2;
+    const back=17+i*5+power*17;
+    ctx.lineWidth=i%3===0?2.8:1.35;
+    ctx.beginPath();ctx.moveTo(x-dir*back,yy);ctx.lineTo(x-dir*(back+20+power*23),yy+(i-3)*.6);ctx.stroke();
+   }
+   ctx.restore();
+  };
+  const drawEcho=(fighter,x,y,dir,alpha)=>{
+   ctx.save();ctx.globalAlpha=alpha;ctx.translate(x,y);
+   const theme=getStunTintedTheme(fighter);
+   drawFloatingHand(dir*16,10,.12*dir,theme,.94);
+   drawFloatingHand(dir*15,-10,-.12*dir,theme,.94);
+   drawCuteHead(fighter,CHARS[fighter.char],theme);
+   ctx.restore();
+  };
+  if(blueRush>.1){
+   const p=phase<1.04?between(.22,1.04):between(1.80,2.76);
+   drawSpeedStreaks(blueX,headY,-1,blue,blueRush);
+   drawEcho(blueFighter,blueX+17,headY+2,1,.12+.08*p);
+   drawEcho(blueFighter,blueX+31,headY+3,1,.075+.05*p);
+  }
+  if(redRush>.1){
+   const p=redAction?clamp01((phase-redAction.start)/(redAction.end-redAction.start)):between(1.04,1.18);
+   drawSpeedStreaks(redX,headY,1,red,redRush);
+   drawEcho(redFighter,redX-17,headY+2,-1,.13+.08*p);
+   drawEcho(redFighter,redX-31,headY+3,-1,.075+.05*p);
+  }
+
+  const fighterScale=1.06;
   const drawMenuFighter=f=>{
    ctx.save();ctx.translate(f.x,headY);ctx.scale(fighterScale,fighterScale);ctx.translate(-f.x,-headY);
    drawHeadHands(f);
@@ -2150,6 +2267,40 @@ function drawOnlineFightScene(now){
   };
   drawMenuFighter(redFighter);
   drawMenuFighter(blueFighter);
+
+  // Crisp impact rings and directional sparks, tinted to the fighter landing the hit.
+  const drawImpact=(x,y,color,power,seed)=>{
+   if(power<=.01)return;
+   ctx.save();ctx.translate(x,y);ctx.globalAlpha=power;ctx.lineCap='round';
+   const radius=5+power*13;
+   ctx.strokeStyle=white;ctx.lineWidth=1.6;ctx.shadowColor=color;ctx.shadowBlur=13;
+   ctx.beginPath();ctx.arc(0,0,radius,-.95,1.2);ctx.stroke();
+   ctx.strokeStyle=color;ctx.lineWidth=2.4;ctx.shadowBlur=16;
+   ctx.beginPath();ctx.arc(0,0,radius+4,-2.35,-.25);ctx.stroke();
+   for(let i=0;i<8;i++){
+    const a=i*Math.PI/4+seed*.31+t*1.8,inner=radius+2,outer=inner+5+power*(7+(i%3)*3);
+    ctx.globalAlpha=power*(.55+(i%2)*.2);ctx.strokeStyle=i%3===0?white:color;ctx.lineWidth=i%3===0?1.8:1.25;
+    ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner);ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer);ctx.stroke();
+    if(i%2===0){ctx.fillStyle=color;ctx.fillRect(Math.cos(a)*(outer+3)-1.5,Math.sin(a)*(outer+3)-1.5,3,3)}
+   }
+   ctx.restore();
+  };
+  const impactAt=(at,color,seed)=>{
+   let dt=phase-at;if(dt<0)dt+=CYCLE;
+   if(dt>=.12)return 0;
+   const power=clamp01(1-dt/.12);
+   drawImpact((redX+blueX)*.5,headY+Math.sin(seed*2+t*10)*3,color,power,seed);
+   return power;
+  };
+  let strongest=0;
+  for(const [at,color,seed] of [
+   [.39,blue,1],[.59,blue,2],[.79,blue,3],[1.00,blue,4],[1.46,red,5],
+   [1.94,blue,6],[2.16,blue,7],[2.38,blue,8],[2.65,red,9],[2.70,blue,10]
+  ])strongest=Math.max(strongest,impactAt(at,color,seed));
+  if(strongest>.01){
+   ctx.save();ctx.globalAlpha=.045*strongest;ctx.fillStyle=strongest>.65?white:(phase>1.35&&phase<1.6||phase>2.58&&phase<2.78?red:blue);
+   ctx.fillRect(0,0,sceneW,sceneH);ctx.restore();
+  }
  }finally{
   JJS_HEAD_PALETTE.vessel=oldVesselPalette;JJS_HEAD_PALETTE.honored=oldHonoredPalette;
   ctx=oldContext;game.time=oldGameTime;W=oldW;H=oldH;
