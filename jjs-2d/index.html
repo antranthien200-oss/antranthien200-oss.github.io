@@ -5535,11 +5535,16 @@ function drawMap(){if(isFullScreenDomainActive())return;
  ctx.fillRect(roadX-17,sideCrossingEndY,17,WORLD.h-sideCrossingEndY);
  ctx.fillRect(roadX+roadW,0,17,sideCrossingY);
  ctx.fillRect(roadX+roadW,sideCrossingEndY,17,WORLD.h-sideCrossingEndY);
+ // Road asphalt runs through the four curb openings so each crossing connects cleanly to the street.
+ ctx.fillStyle='#252e37';
+ ctx.fillRect(roadX-17,sideCrossingY,17,zebraSpan);
+ ctx.fillRect(roadX+roadW,sideCrossingY,17,zebraSpan);
+ ctx.fillRect(endCrossingX,roadY-17,zebraSpan,17);
+ ctx.fillRect(endCrossingX,roadY+roadH,zebraSpan,17);
  // Thin inner road edging follows the same openings instead of crossing through the zebra bars.
  ctx.fillStyle='#95a0a6';
  ctx.fillRect(0,roadY-4,endCrossingX,4);
  ctx.fillRect(endCrossingEndX,roadY-4,WORLD.w-endCrossingEndX,4);
- ctx.fillRect(0,roadY+roadH,WORLD.w,4);
  ctx.fillRect(0,roadY+roadH,endCrossingX,4);
  ctx.fillRect(endCrossingEndX,roadY+roadH,WORLD.w-endCrossingEndX,4);
  ctx.fillRect(roadX-4,0,4,sideCrossingY);
