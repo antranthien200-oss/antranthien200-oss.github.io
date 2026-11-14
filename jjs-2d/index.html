@@ -5561,26 +5561,38 @@ function drawMap(){if(isFullScreenDomainActive())return;
  // Original lane arrows and stop lines.
  ctx.fillStyle='#d4d8d0';ctx.fillRect(roadX+24,roadY+roadH-34,roadW-48,4);ctx.fillRect(roadX+24,roadY+30,roadW-48,4);
  ctx.strokeStyle='#d8d6c8';ctx.lineWidth=3;for(const [ax,ay,dir] of [[990,765,1],[1510,765,-1],[1250,500,1],[1250,1030,-1]]){ctx.beginPath();if(dir===1){ctx.moveTo(ax-12,ay+9);ctx.lineTo(ax,ay-9);ctx.lineTo(ax+12,ay+9)}else{ctx.moveTo(ax-12,ay-9);ctx.lineTo(ax,ay+9);ctx.lineTo(ax+12,ay-9)}ctx.stroke()}
- // Continuous plain-concrete sidewalks on both sides of both avenues.
- // Keep the grey sidewalk fill and internal paving joints, but omit the pale outer border.
+ // Sidewalks meet the road edges directly; the former 17px gap is now covered by pavement.
+ // Non-overlapping 77px strips keep the paving aligned while preserving the original road layout.
  const sidewalkStrips=[
-  {x:0,y:roadY-77,w:roadX-17,h:60,horizontal:true},
-  {x:roadX+roadW+17,y:roadY-77,w:WORLD.w-roadX-roadW-17,h:60,horizontal:true},
-  {x:0,y:roadY+roadH+17,w:roadX-17,h:60,horizontal:true},
-  {x:roadX+roadW+17,y:roadY+roadH+17,w:WORLD.w-roadX-roadW-17,h:60,horizontal:true},
-  {x:roadX-77,y:0,w:60,h:roadY-17,horizontal:false},
-  {x:roadX+roadW+17,y:0,w:60,h:roadY-17,horizontal:false},
-  {x:roadX-77,y:roadY+roadH+17,w:60,h:WORLD.h-roadY-roadH-17,horizontal:false},
-  {x:roadX+roadW+17,y:roadY+roadH+17,w:60,h:WORLD.h-roadY-roadH-17,horizontal:false}
+  {x:0,y:roadY-77,w:roadX,h:77,horizontal:true},
+  {x:roadX+roadW,y:roadY-77,w:WORLD.w-roadX-roadW,h:77,horizontal:true},
+  {x:0,y:roadY+roadH,w:roadX,h:77,horizontal:true},
+  {x:roadX+roadW,y:roadY+roadH,w:WORLD.w-roadX-roadW,h:77,horizontal:true},
+  {x:roadX-77,y:0,w:77,h:roadY-77,horizontal:false},
+  {x:roadX+roadW,y:0,w:77,h:roadY-77,horizontal:false},
+  {x:roadX-77,y:roadY+roadH+77,w:77,h:WORLD.h-roadY-roadH-77,horizontal:false},
+  {x:roadX+roadW,y:roadY+roadH+77,w:77,h:WORLD.h-roadY-roadH-77,horizontal:false}
  ];
+ // One outline per L-shaped corner avoids doubled borders where the strips meet.
+ const sidewalkCorners=[
+  [[0,roadY-77],[roadX-77,roadY-77],[roadX-77,0],[roadX,0],[roadX,roadY],[0,roadY]],
+  [[roadX+roadW,0],[roadX+roadW+77,0],[roadX+roadW+77,roadY-77],[WORLD.w,roadY-77],[WORLD.w,roadY],[roadX+roadW,roadY]],
+  [[0,roadY+roadH],[roadX,roadY+roadH],[roadX,WORLD.h],[roadX-77,WORLD.h],[roadX-77,roadY+roadH+77],[0,roadY+roadH+77]],
+  [[roadX+roadW,roadY+roadH],[WORLD.w,roadY+roadH],[WORLD.w,roadY+roadH+77],[roadX+roadW+77,roadY+roadH+77],[roadX+roadW+77,WORLD.h],[roadX+roadW,WORLD.h]]
+ ];
+ for(const corner of sidewalkCorners){
+  ctx.beginPath();ctx.moveTo(corner[0][0],corner[0][1]);
+  for(let i=1;i<corner.length;i++)ctx.lineTo(corner[i][0],corner[i][1]);
+  ctx.closePath();ctx.fillStyle='#858f8a';ctx.fill();
+  ctx.strokeStyle='#aeb9b0';ctx.lineWidth=2;ctx.stroke();
+ }
+ // Keep the subtle paving joints inside the expanded sidewalk surface.
+ ctx.strokeStyle='#727e79';ctx.lineWidth=1;ctx.beginPath();
  for(const s of sidewalkStrips){
-  ctx.fillStyle='#858f8a';ctx.fillRect(s.x,s.y,s.w,s.h);
-  ctx.strokeStyle='#aeb9b0';ctx.lineWidth=2;ctx.strokeRect(s.x+1,s.y+1,s.w-2,s.h-2);
-  ctx.strokeStyle='#727e79';ctx.lineWidth=1;ctx.beginPath();
   if(s.horizontal){for(let x=s.x+90;x<s.x+s.w;x+=96){ctx.moveTo(x,s.y+5);ctx.lineTo(x,s.y+s.h-5)}}
   else{for(let y=s.y+90;y<s.y+s.h;y+=96){ctx.moveTo(s.x+5,y);ctx.lineTo(s.x+s.w-5,y)}}
-  ctx.stroke();
  }
+ ctx.stroke();
  // Dedicated southeast training courtyard: no roadway or house overlaps.
  ctx.fillStyle='#778a89';ctx.fillRect(1510,990,700,430);
  ctx.fillStyle='#aab6b1';ctx.fillRect(1520,1000,680,410);
