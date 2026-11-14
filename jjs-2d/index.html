@@ -2079,18 +2079,15 @@ function drawOnlineFightScene(now){
  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
  const sceneCtx=canvas.getContext('2d');
  if(!sceneCtx)return;
- const oldContext=ctx,oldGameTime=game.time,t=now*.001,scale=Math.min(rect.width/640,rect.height/250);
- const offsetX=(rect.width-640*scale)*.5,offsetY=(rect.height-250*scale)*.5;
+ const oldContext=ctx,oldGameTime=game.time,t=now*.001;
+ const sceneW=rect.width,sceneH=rect.height;
  try{
   sceneCtx.setTransform(1,0,0,1,0,0);
   sceneCtx.clearRect(0,0,width,height);
-  sceneCtx.setTransform(dpr*scale,0,0,dpr*scale,dpr*offsetX,dpr*offsetY);
+  // Draw in CSS pixels so the fighters keep their exact in-game head/fist dimensions.
+  sceneCtx.setTransform(dpr,0,0,dpr,0,0);
   sceneCtx.imageSmoothingEnabled=false;
   ctx=sceneCtx;game.time=t;
-
-  ctx.fillStyle='rgba(4,9,18,.18)';ctx.fillRect(0,0,640,250);
-  ctx.strokeStyle='rgba(125,151,180,.17)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(42,190);ctx.lineTo(598,190);ctx.stroke();
 
   const red='#ff5367',blue='#65d8ff',black='#030405';
   const redTheme={main:black,accent:red,shadow:red};
@@ -2098,52 +2095,67 @@ function drawOnlineFightScene(now){
   const noAccessories={head:'none',face:'none',neck:'none',aura:'none'};
   const redFighter={char:'vessel',team:'enemy',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:noAccessories,motion:{name:'yujiBlackFlash',angle:0}};
   const blueFighter={char:'honored',team:'player',stun:0,flash:0,awakened:false,jackpot:false,accessoryPreview:noAccessories,motion:{name:'m1_1',angle:Math.PI},m1HandTrailState:{name:'m1_1',a:[],b:[]}};
-  const pulse=.5+.5*Math.sin(t*2.5);
-  const redX=180+Math.sin(t*1.5)*3,blueX=460-Math.sin(t*1.5)*3;
-  const headY=112+Math.sin(t*2.3)*2;
+
+  // Character positions scale with the panel; the character sprites themselves stay 1:1 with gameplay.
+  const redX=sceneW*.29+Math.sin(t*1.25)*2.5;
+  const blueX=sceneW*.71-Math.sin(t*1.25)*2.5;
+  const headY=sceneH*.48+Math.sin(t*2.1)*1.5;
   const distance=blueX-redX,reach=clamp(distance*.56,23,76);
   const project=(x,y,angle,forward,side,vertical=0)=>({
    x:x+Math.cos(angle)*forward-Math.sin(angle)*side,
    y:y+Math.sin(angle)*forward+Math.cos(angle)*side+vertical
   });
 
-  const redLead=project(redX,headY,0,reach+58,-17,-3);
+  const redBeat=.5+.5*Math.sin(t*2.85-1.1);
+  const redPunch=smoothstep01(redBeat);
+  const redLead=project(redX,headY,0,reach+20+42*redPunch,-17,-3);
   const redSupport=project(redX,headY,0,7,19,4);
-  const blueCycle=(t*1.12)%1;
-  const blueAttack=blueCycle<.32?smoothstep01(blueCycle/.32):blueCycle<.58?1-smoothstep01((blueCycle-.32)/.26):0;
-  const blueAlt=Math.floor(t*1.12)%2;
+
+  // Alternate left/right blue punches. The lead fist travels forward, then snaps back.
+  const bluePhase=t*1.25,blueCycle=bluePhase%1,blueAlt=Math.floor(bluePhase)%2;
+  const blueAttack=blueCycle<.34?smoothstep01(blueCycle/.34):blueCycle<.58?1-smoothstep01((blueCycle-.34)/.24):0;
   const blueForward=reach+10+30*blueAttack;
   const blueA=project(blueX,headY,Math.PI,blueAlt===0?blueForward:reach-13+Math.sin(t*5)*1.4,blueAlt===0?15:-18,blueAlt===0?-2:0);
   const blueB=project(blueX,headY,Math.PI,blueAlt===1?blueForward:reach-13+Math.sin(t*5+1)*1.4,blueAlt===1?-15:18,blueAlt===1?-2:0);
 
-  ctx.fillStyle='rgba(0,0,0,.34)';
-  ctx.beginPath();ctx.ellipse(redX,headY+39,24,5,0,0,Math.PI*2);ctx.fill();
-  ctx.beginPath();ctx.ellipse(blueX,headY+39,24,5,0,0,Math.PI*2);ctx.fill();
+  // Subtle arena base and ground shadows.
+  ctx.fillStyle='rgba(4,9,18,.12)';ctx.fillRect(0,0,sceneW,sceneH);
+  ctx.strokeStyle='rgba(125,151,180,.23)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(18,sceneH*.84);ctx.lineTo(sceneW-18,sceneH*.84);ctx.stroke();
+  ctx.fillStyle='rgba(0,0,0,.38)';
+  ctx.beginPath();ctx.ellipse(redX,headY+38,24,5,0,0,Math.PI*2);ctx.fill();
+  ctx.beginPath();ctx.ellipse(blueX,headY+38,24,5,0,0,Math.PI*2);ctx.fill();
 
-  // The actual Yuji Black Flash skill effect: black core with the game's red lightning contour.
-  ctx.save();ctx.translate(redX,headY);drawVesselBaseSmoothSkillVfx(redFighter,'yujiBlackFlash',.52+.18*Math.sin(t*2.8));ctx.restore();
+  // Red fighter's Black Flash. Use the actual in-game VFX and let the arm drive into it.
+  ctx.save();ctx.translate(redX+48,headY);
+  ctx.scale(1.18,1.18);
+  drawVesselBaseSmoothSkillVfx(redFighter,'yujiBlackFlash',.38+.42*redPunch);
+  ctx.restore();
 
-  // Blue alternates punches and reuses the same fading hand-trail renderer as gameplay.
+  // Blue fighter's hand trails use the actual in-game M1 trail renderer and fade timing.
   const trailColor=brightenM1TrailColor(blue);
   drawM1HandTrail(blueFighter,blueA,'a',blueX,headY,blueAlt===0,trailColor);
   drawM1HandTrail(blueFighter,blueB,'b',blueX,headY,blueAlt===1,trailColor);
 
-  // In-game proportions: head radius 14.8px; floating fists radius 7.6px at M1/Black Flash scales.
-  drawFloatingHand(redSupport.x-redX,redSupport.y-headY,.1,redTheme,.92);
-  drawFloatingHand(redLead.x-redX,redLead.y-headY,-.08,redTheme,1.32);
-  drawCuteHead(redFighter,CHARS.vessel,redTheme);
+  // Match drawHeadHands() layering: floating fists first, then the pixel-circle head on top.
+  drawFloatingHand(redSupport.x,redSupport.y,.1,redTheme,.92);
+  drawFloatingHand(redLead.x,redLead.y,-.08,redTheme,1.32);
+  ctx.save();ctx.translate(redX,headY);drawCuteHead(redFighter,CHARS.vessel,redTheme);ctx.restore();
 
-  drawFloatingHand(blueA.x-blueX,blueA.y-headY,.08,blueTheme,blueAlt===0?1.12:.94);
-  drawFloatingHand(blueB.x-blueX,blueB.y-headY,-.08,blueTheme,blueAlt===1?1.12:.94);
-  drawCuteHead(blueFighter,CHARS.honored,blueTheme);
+  drawFloatingHand(blueA.x,blueA.y,.08,blueTheme,blueAlt===0?1.12:.94);
+  drawFloatingHand(blueB.x,blueB.y,-.08,blueTheme,blueAlt===1?1.12:.94);
+  ctx.save();ctx.translate(blueX,headY);drawCuteHead(blueFighter,CHARS.honored,blueTheme);ctx.restore();
 
+  // A brief, sharp impact flash joins the two colored attacks.
   const clashX=(redLead.x+blueA.x)*.5,clashY=(redLead.y+blueA.y)*.5;
-  ctx.globalAlpha=.35+.55*pulse;
-  for(let i=0;i<6;i++){
-   const a=t*2.4+i*Math.PI/3,r=7+(i%3)*4;
+  const impact=.25+.75*redPunch;
+  ctx.save();ctx.globalAlpha=impact;ctx.shadowColor='#ffffff';ctx.shadowBlur=8;
+  for(let i=0;i<8;i++){
+   const a=t*2.3+i*Math.PI/4,r=5+(i%3)*4;
    ctx.fillStyle=i%2?red:blue;
    ctx.fillRect(Math.round(clashX+Math.cos(a)*r),Math.round(clashY+Math.sin(a)*r),2,2);
   }
+  ctx.restore();
  }finally{ctx=oldContext;game.time=oldGameTime}
 }
 function applyOnlineRoomState(state){
