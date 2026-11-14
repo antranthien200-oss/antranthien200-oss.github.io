@@ -5631,7 +5631,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
  // Manholes and drains only on asphalt.
  for(const [mx,my] of [[700,765],[1250,280],[1900,765],[1250,1220],[2600,765]]){ctx.fillStyle='#26313a';ctx.beginPath();ctx.arc(mx,my,18,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#87949a';ctx.lineWidth=3;ctx.beginPath();ctx.arc(mx,my,14,0,Math.PI*2);ctx.stroke();ctx.strokeStyle='#64727a';ctx.lineWidth=1;for(let k=-9;k<=9;k+=6){ctx.beginPath();ctx.moveTo(mx-9,my+k);ctx.lineTo(mx+9,my+k);ctx.stroke()}}
  // Original traffic-light design, with a red lamp added above the original yellow and green lamps.
- for(const [sx0,sy0] of [[1075,620],[1420,620],[1075,895],[1420,895]]){
+ for(const [sx0,sy0] of [[980,586],[1508,586],[980,913],[1508,913]]){
   ctx.fillStyle='#25313a';ctx.fillRect(sx0,sy0,12,31);
   ctx.fillStyle='#ef4650';ctx.fillRect(sx0+3,sy0+2,6,6);
   ctx.fillStyle='#e6ca75';ctx.fillRect(sx0+3,sy0+12,6,6);
