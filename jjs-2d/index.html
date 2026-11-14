@@ -2046,7 +2046,8 @@ function setOnlineStatus(message){
   status.textContent=onlineStatusMessage;
   status.classList.remove('is-connected','is-connecting','is-error');
   const value=onlineStatusMessage.toUpperCase();
-  status.classList.add(/CONNECTED|RECONNECTED/.test(value)?'is-connected':/CONNECTING|JOINING/.test(value)?'is-connecting':/FAILED|FULL|INVALID|DISCONNECTED|LOST|ERROR|REMOVED/.test(value)?'is-error':'');
+  const state=/CONNECTED|RECONNECTED/.test(value)?'is-connected':/CONNECTING|JOINING/.test(value)?'is-connecting':/FAILED|FULL|INVALID|DISCONNECTED|LOST|ERROR|REMOVED/.test(value)?'is-error':'';
+  if(state)status.classList.add(state);
  }
 }
 function normalizeOnlineServerUrl(value){
