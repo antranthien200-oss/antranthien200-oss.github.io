@@ -1583,6 +1583,15 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 .character-awakening{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:9px;padding-top:8px;border-top:1px solid #ffffff17}
 .character-awakening span{color:#8fa5c0;font-size:7px;font-weight:1000;letter-spacing:.16em}
 .character-awakening b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--character-accent);font-size:8px;font-weight:1000;letter-spacing:.1em}
+.character-preview-state{padding:5px 8px;border:1px solid color-mix(in srgb,var(--character-accent) 38%,transparent);border-radius:4px;background:color-mix(in srgb,var(--character-accent) 10%,transparent);color:var(--character-accent);font-size:7px;font-weight:1000;letter-spacing:.12em;white-space:nowrap}
+.character-kit-switch{position:relative;z-index:1;display:flex;gap:5px;margin:1px 0 9px;padding:3px;border:1px solid #ffffff17;border-radius:5px;background:#02071180}
+.character-kit-button{flex:1;min-width:0;padding:8px 7px;border:1px solid transparent;border-radius:3px;background:transparent;color:#8fa3bc;font-size:7px;font-weight:1000;letter-spacing:.12em;cursor:pointer;transition:background .16s,border-color .16s,color .16s}
+.character-kit-button:hover{color:#fff;background:#ffffff0a}
+.character-kit-button.active{border-color:color-mix(in srgb,var(--character-accent) 60%,transparent);background:color-mix(in srgb,var(--character-accent) 15%,transparent);color:#fff;box-shadow:inset 0 0 12px color-mix(in srgb,var(--character-accent) 8%,transparent)}
+.character-kit-button:disabled{opacity:.35;cursor:not-allowed}
+.character-skill-heading{margin-bottom:6px}
+.character-select-card.previewing{outline:1px solid var(--char-accent);outline-offset:1px;background:color-mix(in srgb,var(--char-accent) 12%,transparent)}
+.character-select-card.previewing:not(.selected):after{content:"VIEWING";position:absolute;right:5px;top:5px;padding:3px 4px;border-radius:2px;background:#07111dcc;color:var(--char-accent);font-size:6px;font-weight:1000;letter-spacing:.08em}
 @media(max-width:720px){
  #menuSub.character-select-open{align-items:flex-start;overflow-y:auto}
  #menuSub.character-select-open .menu-sub-panel{width:100%;max-height:none;overflow:visible;padding:12px}
@@ -1781,7 +1790,7 @@ const CHARS={
   special:'CONVERGENCE',specialDesc:'Condense four blood orbs to empower your techniques.',awakeSpecial:'CONVERGENCE',awakeSpecialDesc:'Command your stored blood orbs.',awakening:'DUTY AS A BROTHER',awakeName:'DUTY AS A BROTHER'}
 };
 let selected='honored';
-let characterPreviewKey=selected,characterPreviewFrame=0;
+let characterPreviewKey=selected,characterPreviewFrame=0,characterPreviewAwakened=false;
 const CHAR_ICONS={honored:'🕶️',vessel:'🥊',restless:'🎰',ten:'🐺',perfection:'🧬',todo:'👏',choso:'🩸',yuta:'🗡️',trashman:'🗑️'};
 const YUTA_COPY_OPTIONS=['CURSED SPEECH','DISMANTLE','LAPSE BLUE','PIERCING BLOOD','BOOGIE WOOGIE'];
 const YUTA_RIKA_MOVES=[['RIKA SMASH','A giant downward punch that bounces the target'],['RIKA LAUNCH','Rika boosts Yuta into the air and forward'],['RIKA THROW','Rika grabs and hurls the target'],['RIKA HAYMAKER','A heavy homing punch with strong knockback']];
@@ -1994,16 +2003,31 @@ function drawCharacterCardArt(canvas,charKey){
 function updateCharacterShowcase(charKey){
  const key=CHARS[charKey]?charKey:selected,character=CHARS[key];
  characterPreviewKey=key;
- const panel=$('characterShowcase');if(panel)panel.style.setProperty('--character-accent',character.accent||character.color||'#65d8ff');
+ const accent=character.accent||character.color||'#65d8ff';
+ const panel=$('characterShowcase');if(panel)panel.style.setProperty('--character-accent',accent);
  const name=$('characterShowcaseName'),desc=$('characterShowcaseDesc'),hp=$('characterShowcaseHp'),awakening=$('characterAwakeningName'),skills=$('characterSkillGrid');
+ const previewState=$('characterPreviewState');
+ if(previewState)previewState.textContent=key===selected?'CURRENT PICK':'PREVIEWING';
  if(name)name.textContent=character.name;
  if(desc)desc.textContent=character.desc;
  if(hp)hp.textContent=String(character.hp||100);
  if(awakening)awakening.textContent=character.awakening||character.awakeName||'AWAKENING';
+ const hasAwakenedKit=Array.isArray(character.awakeMoves)&&character.awakeMoves.length>0;
+ if(characterPreviewAwakened&&!hasAwakenedKit)characterPreviewAwakened=false;
+ const moves=characterPreviewAwakened?character.awakeMoves:character.moves;
+ document.querySelectorAll('[data-character-kit]').forEach(button=>{
+  const active=(button.dataset.characterKit==='awake')===characterPreviewAwakened;
+  button.classList.toggle('active',active);
+  button.setAttribute('aria-pressed',active?'true':'false');
+  if(button.dataset.characterKit==='awake')button.disabled=!hasAwakenedKit;
+ });
+ const kitLabel=$('characterKitLabel');
+ if(kitLabel)kitLabel.textContent=characterPreviewAwakened?'AWAKENED MOVESET · '+(character.awakeName||character.awakening||'AWAKENING'):'BASE MOVESET';
  if(skills){
   const glyphs=['◉','✦','↗','✣'];
-  skills.innerHTML=(character.moves||[]).slice(0,4).map((move,i)=>'<div class="character-skill-tile"><span class="character-skill-mark">'+glyphs[i]+'<small>'+(i+1)+'</small></span><div class="character-skill-copy"><b>'+move[0]+'</b><span>'+move[1]+'</span></div></div>').join('');
+  skills.innerHTML=(moves||[]).slice(0,4).map((move,i)=>'<div class="character-skill-tile"><span class="character-skill-mark">'+glyphs[i]+'<small>'+(i+1)+'</small></span><div class="character-skill-copy"><b>'+move[0]+'</b><span>'+move[1]+'</span></div></div>').join('');
  }
+ document.querySelectorAll('[data-character]').forEach(button=>button.classList.toggle('previewing',button.dataset.character===key));
  const preview=$('characterSelectCanvas');if(preview)drawCharacterSelectPreview(performance.now());
 }
 function stopCharacterPreviewAnimation(){
@@ -2044,9 +2068,9 @@ function renderMenuSub(){
    '</div>'+
   '</div>';
  }else if(isCharacter){
-  characterPreviewKey=selected;
+  characterPreviewKey=selected;characterPreviewAwakened=false;
   const roster=Object.keys(CHARS).map(k=>'<button class="menu-option character-select-card '+(selected===k?'selected':'')+'" style="--char-accent:'+CHARS[k].accent+'" data-character="'+k+'" aria-label="Select '+CHARS[k].name+'"><canvas class="character-card-art" data-char-art="'+k+'" width="160" height="100" aria-hidden="true"></canvas><span class="character-card-name">'+CHARS[k].name+'</span><span class="character-card-hp">HP '+CHARS[k].hp+'</span></button>').join('');
-  html='<div class="character-select-layout"><div class="character-select-roster">'+roster+'</div><section class="character-showcase" id="characterShowcase"><div class="character-showcase-top"><span class="character-showcase-kicker">CHARACTER PREVIEW</span><span class="character-showcase-hp">BASE HP <b id="characterShowcaseHp">100</b></span></div><canvas id="characterSelectCanvas" class="character-showcase-canvas" width="560" height="360" aria-label="Animated character preview"></canvas><div class="character-showcase-title" id="characterShowcaseName"></div><p class="character-showcase-desc" id="characterShowcaseDesc"></p><div class="character-skill-heading">SKILLS <span>1 – 4</span></div><div class="character-skill-grid" id="characterSkillGrid"></div><div class="character-awakening"><span>AWAKENING</span><b id="characterAwakeningName"></b></div></section></div>';
+  html='<div class="character-select-layout"><div class="character-select-roster">'+roster+'</div><section class="character-showcase" id="characterShowcase"><div class="character-showcase-top"><span class="character-showcase-kicker">CHARACTER PREVIEW</span><span class="character-preview-state" id="characterPreviewState">CURRENT PICK</span><span class="character-showcase-hp">BASE HP <b id="characterShowcaseHp">100</b></span></div><canvas id="characterSelectCanvas" class="character-showcase-canvas" width="560" height="360" aria-label="Animated character preview"></canvas><div class="character-showcase-title" id="characterShowcaseName"></div><p class="character-showcase-desc" id="characterShowcaseDesc"></p><div class="character-kit-switch" role="group" aria-label="Move set preview"><button type="button" class="character-kit-button active" data-character-kit="base" aria-pressed="true">BASE MOVES</button><button type="button" class="character-kit-button" data-character-kit="awake" aria-pressed="false">AWAKENED MOVES</button></div><div class="character-skill-heading"><span id="characterKitLabel">BASE MOVESET</span><span>KEYS 1 – 4</span></div><div class="character-skill-grid" id="characterSkillGrid"></div><div class="character-awakening"><span>AWAKENING</span><b id="characterAwakeningName"></b></div></section></div>';
  }else{
   tabWrap.innerHTML=ACCESSORY_SLOTS.map(s=>'<button class="accessory-tab '+(accessorySlot===s.id?'active':'')+'" data-accessory-slot="'+s.id+'">'+s.label+'</button>').join('');
   const slot=ACCESSORY_SLOTS.find(s=>s.id===accessorySlot)||ACCESSORY_SLOTS[0],equipped=accessoryLoadouts[selected][slot.id]||'none';
@@ -2056,7 +2080,16 @@ function renderMenuSub(){
  }
  $('menuSubCards').innerHTML=html;
  if(isOnline)startOnlineFightAnimation();else stopOnlineFightAnimation();
- if(isCharacter){document.querySelectorAll('[data-char-art]').forEach(canvas=>drawCharacterCardArt(canvas,canvas.dataset.charArt));updateCharacterShowcase(selected);startCharacterPreviewAnimation()}else stopCharacterPreviewAnimation();
+ if(isCharacter){
+  document.querySelectorAll('[data-char-art]').forEach(canvas=>drawCharacterCardArt(canvas,canvas.dataset.charArt));
+  updateCharacterShowcase(selected);
+  document.querySelectorAll('[data-character-kit]').forEach(button=>button.addEventListener('click',()=>{
+   if(button.disabled)return;
+   characterPreviewAwakened=button.dataset.characterKit==='awake';
+   updateCharacterShowcase(characterPreviewKey);
+  }));
+  startCharacterPreviewAnimation();
+ }else stopCharacterPreviewAnimation();
  if(!isOnline&&!isCharacter){
   accessoryPreviewHoverId=null;
   document.querySelectorAll('.accessory-art').forEach(canvas=>drawAccessoryTileArt(canvas,accessorySlot,canvas.parentElement.dataset.accessory));
@@ -2078,8 +2111,6 @@ function renderMenuSub(){
  document.querySelectorAll('[data-character]').forEach(btn=>{
   btn.addEventListener('mouseenter',()=>{if(menuView==='character')updateCharacterShowcase(btn.dataset.character)});
   btn.addEventListener('focus',()=>{if(menuView==='character')updateCharacterShowcase(btn.dataset.character)});
-  btn.addEventListener('mouseleave',()=>{if(menuView==='character')updateCharacterShowcase(selected)});
-  btn.addEventListener('blur',()=>{if(menuView==='character')updateCharacterShowcase(selected)});
   btn.addEventListener('click',()=>{selected=btn.dataset.character;updateMenuSummary();closeMenuSub()});
  });
  document.querySelectorAll('[data-accessory-slot]').forEach(btn=>btn.addEventListener('click',()=>{accessorySlot=btn.dataset.accessorySlot;renderMenuSub()}));
