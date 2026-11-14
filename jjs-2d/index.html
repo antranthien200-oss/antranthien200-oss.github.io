@@ -1321,6 +1321,132 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
  .online-menu-open .online-stat b{font-size:9px}
 }
 
+
+/* Cleaner, more lively multiplayer landing panel. The established cyan accent is intentionally preserved. */
+#menuSub.online-menu-open{padding:clamp(10px,2.4vw,22px)}
+#menuSub.online-menu-open .menu-sub-panel{
+ width:min(700px,94vw);max-height:min(88vh,760px);
+ border:1px solid rgba(255,255,255,.36);border-radius:9px;
+ background:linear-gradient(145deg,rgba(14,22,38,.98),rgba(6,11,21,.98));
+ box-shadow:0 24px 90px #000c;
+}
+#menuSub.online-menu-open .menu-sub-head{margin-bottom:18px}
+#menuSub.online-menu-open .menu-sub-head p{max-width:380px;line-height:1.5}
+#menuSub.online-menu-open .menu-sub-cards{display:block}
+#menuSub.online-menu-open .menu-sub-footer{display:none}
+.online-menu-open .online-panel-card{
+ position:relative;isolation:isolate;overflow:hidden;
+ width:100%;max-width:560px;box-sizing:border-box;margin:0 auto;
+ padding:clamp(17px,3vw,25px);display:flex;flex-direction:column;gap:17px;
+ border:1px solid rgba(112,223,255,.42);border-radius:7px;
+ background:linear-gradient(145deg,rgba(17,49,69,.74),rgba(7,15,29,.96) 72%);
+ box-shadow:0 14px 36px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06);
+}
+.online-menu-open .online-panel-card:before{
+ content:"";position:absolute;z-index:-1;inset:-1px;pointer-events:none;
+ background:radial-gradient(ellipse at 12% 0%,rgba(78,207,255,.18),transparent 48%);
+}
+.online-menu-open .online-hero{display:flex;align-items:center;gap:15px;min-width:0}
+.online-menu-open .online-hero-orbit{
+ position:relative;width:62px;height:62px;flex:none;display:grid;place-items:center;
+ border:1px solid rgba(117,221,255,.52);border-radius:50%;
+ background:radial-gradient(circle,rgba(73,207,255,.2),rgba(73,207,255,.035) 68%);
+ box-shadow:0 0 24px rgba(50,188,229,.15),inset 0 0 16px rgba(139,232,255,.1);
+}
+.online-menu-open .online-hero-orbit:before,.online-menu-open .online-hero-orbit:after{
+ content:"";position:absolute;inset:-6px;border:1px solid rgba(117,221,255,.26);border-radius:50%;
+ animation:onlineOrbitPulse 2.8s ease-out infinite;
+}
+.online-menu-open .online-hero-orbit:after{animation-delay:1.4s}
+.online-menu-open .online-hero-icon{color:#a6efff;font-size:34px;line-height:1;text-shadow:0 0 16px rgba(57,201,255,.8)}
+.online-menu-open .online-hero-copy{display:grid;gap:5px;min-width:0}
+.online-menu-open .online-hero-copy small{color:#8ceaff;font-size:8px;font-weight:1000;letter-spacing:.2em}
+.online-menu-open .online-hero-copy strong{color:#f5fbff;font-size:clamp(17px,3vw,23px);font-weight:1000;letter-spacing:.07em;line-height:1.08}
+.online-menu-open .online-hero-copy>span{color:#b4c5d8;font-size:10px;line-height:1.35}
+.online-menu-open .online-capacity-pill{
+ margin-left:auto;flex:none;display:flex;align-items:center;gap:7px;
+ padding:7px 9px;border:1px solid rgba(117,221,255,.38);border-radius:4px;
+ background:rgba(73,207,255,.09);color:#dff9ff;
+}
+.online-menu-open .online-capacity-pill b{font-size:23px;line-height:1;font-weight:1000}
+.online-menu-open .online-capacity-pill span{font-size:7px;line-height:1.35;font-weight:1000;letter-spacing:.12em}
+.online-menu-open .online-server-field{display:grid;gap:7px;color:#a9bdd5;font-size:8px;font-weight:1000;letter-spacing:.17em}
+.online-menu-open .online-server-field input{
+ box-sizing:border-box;width:100%;min-height:44px;padding:11px 13px;
+ border:1px solid rgba(255,255,255,.25);border-radius:4px;outline:none;
+ background:rgba(3,9,19,.82);color:#eff7ff;font:700 11px system-ui;letter-spacing:0;
+ transition:border-color .16s ease,box-shadow .16s ease,background .16s ease;
+}
+.online-menu-open .online-server-field input::placeholder{color:#71839d}
+.online-menu-open .online-server-field input:focus{border-color:#75ddff;background:rgba(3,12,22,.98);box-shadow:0 0 0 3px rgba(117,221,255,.13)}
+.online-menu-open .online-join{
+ position:relative;overflow:hidden;width:100%;min-height:48px;padding:12px 18px;
+ display:flex;align-items:center;justify-content:center;gap:12px;
+ border:1px solid #8ceaff;border-radius:4px;
+ background:linear-gradient(105deg,#17658a,#124666 58%,#173652);
+ color:#effcff;font-size:10px;font-weight:1000;letter-spacing:.19em;
+ cursor:pointer;box-shadow:0 7px 20px rgba(21,139,183,.22),inset 0 1px 0 rgba(255,255,255,.18);
+ transition:transform .16s ease,filter .16s ease,box-shadow .16s ease;
+}
+.online-menu-open .online-join:after{content:"→";font-size:17px;line-height:10px;transition:transform .16s ease}
+.online-menu-open .online-join:before{
+ content:"";position:absolute;top:0;bottom:0;left:-35%;width:24%;
+ background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+ transform:skewX(-20deg);transition:left .55s ease;
+}
+.online-menu-open .online-join:hover{filter:brightness(1.13);transform:translateY(-2px);box-shadow:0 10px 24px rgba(21,139,183,.32),inset 0 1px 0 rgba(255,255,255,.2)}
+.online-menu-open .online-join:hover:before{left:120%}
+.online-menu-open .online-join:hover:after{transform:translateX(4px)}
+.online-menu-open .online-join:active{transform:translateY(0)}
+.online-menu-open .online-join:disabled{opacity:.64;cursor:wait;transform:none}
+.online-menu-open .online-join:disabled:after,.online-menu-open .online-join:disabled:before{display:none}
+.online-menu-open .online-status{
+ display:flex;align-items:center;gap:10px;min-height:36px;padding:8px 11px;
+ border:1px solid rgba(255,255,255,.13);border-radius:4px;
+ background:rgba(3,9,19,.52);color:#c4d6e8;
+}
+.online-menu-open .online-status>div{display:grid;gap:3px;min-width:0}
+.online-menu-open .online-status small{color:#8196ad;font-size:7px;font-weight:900;letter-spacing:.16em}
+.online-menu-open .online-status strong{overflow-wrap:anywhere;color:#bdd0e2;font-size:9px;font-weight:950;letter-spacing:.09em}
+.online-menu-open .online-status-dot{
+ position:relative;width:8px;height:8px;flex:none;border-radius:50%;
+ background:#8bb5cf;box-shadow:0 0 10px rgba(139,181,207,.5);
+}
+.online-menu-open .online-status.is-connected{border-color:rgba(93,232,177,.28);background:rgba(18,73,58,.22)}
+.online-menu-open .online-status.is-connected strong{color:#8fffd0}
+.online-menu-open .online-status.is-connected .online-status-dot{background:#5de8b1;box-shadow:0 0 12px #5de8b1}
+.online-menu-open .online-status.is-connecting .online-status-dot{background:#ffd17e;box-shadow:0 0 12px #ffd17e;animation:onlineStatusBlink .8s ease-in-out infinite alternate}
+.online-menu-open .online-status.is-error{border-color:rgba(255,132,151,.32);background:rgba(95,24,44,.2)}
+.online-menu-open .online-status.is-error strong{color:#ff9dad}
+.online-menu-open .online-status.is-error .online-status-dot{background:#ff8296;box-shadow:0 0 12px #ff8296}
+@keyframes onlineOrbitPulse{0%{transform:scale(.92);opacity:.7}100%{transform:scale(1.23);opacity:0}}
+@keyframes onlineStatusBlink{from{opacity:.45;transform:scale(.86)}to{opacity:1;transform:scale(1.12)}}
+@media(max-width:640px){
+ #menuSub.online-menu-open{padding:9px}
+ #menuSub.online-menu-open .menu-sub-panel{width:100%;max-height:calc(100dvh - 18px);padding:16px;overflow:auto}
+ #menuSub.online-menu-open .menu-sub-head{gap:10px;margin-bottom:14px}
+ #menuSub.online-menu-open .menu-sub-head h2{font-size:clamp(22px,7vw,30px)}
+ .online-menu-open .online-panel-card{padding:15px;gap:14px}
+ .online-menu-open .online-hero{gap:11px}
+ .online-menu-open .online-hero-orbit{width:48px;height:48px}
+ .online-menu-open .online-hero-icon{font-size:27px}
+ .online-menu-open .online-hero-copy small{font-size:7px}
+ .online-menu-open .online-hero-copy strong{font-size:clamp(15px,4.7vw,20px)}
+ .online-menu-open .online-hero-copy>span{font-size:9px}
+ .online-menu-open .online-capacity-pill{padding:6px;gap:5px}
+ .online-menu-open .online-capacity-pill b{font-size:19px}
+ .online-menu-open .online-capacity-pill span{font-size:6px}
+ .online-menu-open .online-server-field{font-size:7px}
+ .online-menu-open .online-server-field input{min-height:43px;font-size:11px}
+ .online-menu-open .online-join{min-height:46px;font-size:9px}
+}
+@media(max-width:360px){
+ .online-menu-open .online-hero-orbit{width:42px;height:42px}
+ .online-menu-open .online-capacity-pill{padding:5px}
+ .online-menu-open .online-capacity-pill b{font-size:17px}
+ .online-menu-open .online-hero-copy>span{max-width:150px}
+}
+
 </style>
 </head>
 <body>
@@ -1650,18 +1776,16 @@ function renderMenuSub(){
  tabWrap.hidden=isCharacter||isOnline;let html='';
  if(isOnline){
   html='<div class="online-panel-card">'+
-   '<div class="online-panel-heading"><span class="online-panel-icon">◎</span><div><strong>BALLS SHENANIGAN ONLINE</strong><small>ONE SHARED CITY · UP TO 16 PLAYERS</small></div><span class="online-mode-tag">ONLINE MODE</span></div>'+
-   '<div class="online-stat-grid">'+
-    '<div class="online-stat"><span>SERVER TYPE</span><b>SHARED CITY</b></div>'+
-    '<div class="online-stat"><span>MAXIMUM CAPACITY</span><b>16 PLAYERS</b></div>'+
+   '<div class="online-hero">'+
+    '<div class="online-hero-orbit"><span class="online-hero-icon">◎</span></div>'+
+    '<div class="online-hero-copy"><small>ONLINE MULTIPLAYER</small><strong>MEET IN THE CITY</strong><span>Play together in one shared world.</span></div>'+
+    '<div class="online-capacity-pill"><b>16</b><span>PLAYER<br>LIMIT</span></div>'+
    '</div>'+
    '<label class="online-server-field" for="onlineServerUrl">SERVER ADDRESS'+
     '<input id="onlineServerUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://your-server.onrender.com">'+
    '</label>'+
+   '<button class="online-join" id="onlineJoinBtn" type="button">JOIN CITY</button>'+
    '<div class="online-status"><span class="online-status-dot"></span><div><small>CONNECTION STATUS</small><strong id="onlineStatusText">SERVER ADDRESS REQUIRED</strong></div></div>'+
-   '<p>Everyone shares one city. Player positions, character choices and animations are synchronized. Combat damage and destructible-world synchronization are still being integrated.</p>'+
-   '<div class="online-panel-actions"><div class="online-fighter"><span class="online-fighter-icon">'+CHAR_ICONS[selected]+'</span><span><small>YOUR FIGHTER</small><b>'+CHARS[selected].name+'</b></span></div>'+
-    '<button class="online-join" id="onlineJoinBtn" type="button">CONNECT TO THE ONE SERVER <span aria-hidden="true">→</span></button></div>'+
   '</div>';
  }else if(isCharacter){
   html=Object.keys(CHARS).map(k=>'<button class="menu-option '+(selected===k?'selected':'')+'" data-character="'+k+'"><span class="option-icon">'+CHAR_ICONS[k]+'</span><span class="option-name">'+CHARS[k].name+'</span><span class="option-desc">'+CHARS[k].desc+'</span></button>').join('');
@@ -1776,7 +1900,16 @@ const onlineRemotePlayers=new Map();
 try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL}catch(e){}
 function setOnlineStatus(message){
  onlineStatusMessage=String(message||'');
- const status=$('onlineStatusText');if(status)status.textContent=onlineStatusMessage;
+ const status=$('onlineStatusText');
+ if(status){
+  status.textContent=onlineStatusMessage;
+  const panel=status.closest('.online-status');
+  if(panel){
+   panel.classList.remove('is-connected','is-connecting','is-error','is-idle');
+   const value=onlineStatusMessage.toUpperCase();
+   panel.classList.add(/CONNECTED|RECONNECTED/.test(value)?'is-connected':/CONNECTING|JOINING/.test(value)?'is-connecting':/FAILED|FULL|INVALID|DISCONNECTED|LOST|ERROR|REMOVED/.test(value)?'is-error':'is-idle');
+  }
+ }
 }
 function normalizeOnlineServerUrl(value){
  const url=new URL(String(value||'').trim());
