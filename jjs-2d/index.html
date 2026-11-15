@@ -3979,7 +3979,7 @@ function detonateGojoRed(p,x=p.x,y=p.y,applyDamage=true){
    const dx=target.x-x,dy=target.y-y,d=Math.hypot(dx,dy);
    if(d>(p.blastRadius||203)+18)continue;
    const angle=Math.atan2(dy,dx);
-   damage(target,12.5,p.owner,{stun:.38,kx:Math.cos(angle)*(p.knockback||18),ky:Math.sin(angle)*(p.knockback||18),blockedDamage:6.25,color:'#ff405b',damageType:'explosion'});
+   damage(target,12.5,p.owner,{stun:.38,kx:Math.cos(angle)*(p.knockback||18),ky:Math.sin(angle)*(p.knockback||18),blockedDamage:6.25,nonlethalBlock:true,color:'#ff405b',damageType:'explosion'});
   }
  }
  spawnGojoRedExplosionFx(x,y);
@@ -4108,7 +4108,7 @@ function damage(target,amount,source,opts={}){
   // A held guard only covers the direction the fighter is facing. It chips a little HP,
   // builds meter, and completely suppresses hit-stun and knockback on a successful guard.
   const chip=Math.max(0,opts.blockedDamage??amount*.12);
-  if(!(jackpotProtected&&target.jackpot)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-chip);if(target.hp<hpBefore)target.hpRegenWait=4.5;}
+  if(!(jackpotProtected&&target.jackpot)){const hpBefore=target.hp,hpAfter=Math.max(0,target.hp-chip);target.hp=opts.nonlethalBlock?Math.max(1,hpAfter):hpAfter;if(target.hp<hpBefore)target.hpRegenWait=4.5;}
   if(!target.awakened)target.meter=clamp(target.meter+amount*.12,0,100);
   target.blockImpact=.16;target.flash=.08;
   burst(target.x+Math.cos(target.face)*20,target.y-12+Math.sin(target.face)*20,'#d8eeff',9,3);
