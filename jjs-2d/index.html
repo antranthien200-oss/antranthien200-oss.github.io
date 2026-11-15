@@ -8053,7 +8053,12 @@ function drawHeadHands(f,deferMotionVfx=false){
   }
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
- if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+ const deferHands=!!(deferMotionVfx&&m&&name&&name!=='carEnter'&&name!=='carExit'&&!m.skipMotionVfx);
+ if(deferHands)f.motionHandPose={a:{x:handA.x,y:handA.y,angle:handAAngle,scale:handAScale},b:{x:handB.x,y:handB.y,angle:handBAngle,scale:handBScale},theme:stunTheme};
+ else f.motionHandPose=null;
+ if(!deferHands){
+  if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+ }
  drawAccessoryAura(f,x,headY+gojoBlueHeadBob);ctx.save();ctx.translate(x,headY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
@@ -8069,7 +8074,7 @@ function drawHeadHands(f,deferMotionVfx=false){
   ctx.restore();
  }
  if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
- if(f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
+ if(!deferHands&&f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
  drawStunRain(f,x,y);
  
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
@@ -8207,6 +8212,13 @@ function drawFighterMotionOverlays(f){
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
  drawMotionVfx(f,name,progress,getFighterLook(f),vfxFade);
  ctx.restore();
+}
+function drawFighterHandsForeground(f){
+ if(!f||f.dead||!f.motionHandPose)return;
+ const pose=f.motionHandPose;
+ // Render the character's own hands after every skill effect, keeping them in the foreground.
+ drawFloatingHand(pose.b.x,pose.b.y,pose.b.angle,pose.theme,pose.b.scale);
+ drawFloatingHand(pose.a.x,pose.a.y,pose.a.angle,pose.theme,pose.a.scale);
 }
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
@@ -9330,6 +9342,8 @@ function draw(){
  drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();
  // Foreground combat pass keeps skill effects and Gojo's hand trails visible over opponents.
  if(player)drawFighterMotionOverlays(player);if(enemy)drawFighterMotionOverlays(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighterMotionOverlays(remote)}
+ // Character hands are the top combat layer, above the skill VFX and the opponent.
+ if(player)drawFighterHandsForeground(player);if(enemy)drawFighterHandsForeground(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighterHandsForeground(remote)}
  if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
  positionVesselAwakeningDialogue();
