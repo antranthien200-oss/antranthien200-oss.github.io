@@ -4951,9 +4951,24 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
        schedule(()=>{
         if(f.dead||t.dead||!game.started||game.over)return;
         if(dist(f,t)<190){
-         damage(t,7.5,f,{stun:.78,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13-1,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
+         // Knockback follows the striking hand's final sweep, not Gojo's facing vector.
+         const windupEnd=.24,swingEnd=.68,contactP=slapContactProgress;
+         const targetDx=t.x-f.x,targetDy=t.y-(f.y-23);
+         const targetForward=targetDx*Math.cos(angle)+targetDy*Math.sin(angle);
+         const targetSide=-targetDx*Math.sin(angle)+targetDy*Math.cos(angle);
+         const contact=clamp(targetForward-5,42,86),readySide=targetSide-30,followSide=targetSide+16,strikeForward=contact+5;
+         const slapHandAt=p=>{
+          const raw=clamp((p-windupEnd)/(swingEnd-windupEnd),0,1),swing=smoothstep01(raw);
+          const forward=lerp(-53,strikeForward,swing)+Math.sin(swing*Math.PI)*3;
+          const side=lerp(readySide,followSide,swing);
+          return{x:f.x+Math.cos(angle)*forward-Math.sin(angle)*side,y:f.y-23+Math.sin(angle)*forward+Math.cos(angle)*side};
+         };
+         const before=slapHandAt(Math.max(0,contactP-.012)),after=slapHandAt(Math.min(1,contactP+.012));
+         const sweepX=after.x-before.x,sweepY=after.y-before.y,sweepLength=Math.hypot(sweepX,sweepY)||1;
+         const knockX=sweepX/sweepLength,knockY=sweepY/sweepLength;
+         damage(t,7.5,f,{stun:.78,kx:knockX*16,ky:knockY*16,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
          burst(t.x,t.y-23,'#b9efff',30,5.8);burst(t.x,t.y-23,'#4bbfff',22,4.8);spawnGojoBlueSparks(f,t.x,t.y-23,20);
-         game.hitStop=Math.max(game.hitStop,.072);game.shake=Math.max(game.shake,8);
+         game.hitStop=Math.max(game.hitStop,.095);game.shake=Math.max(game.shake,14);
          popText(t.x,t.y-61,'BLUE SLAP','#e2f8ff',16);
         }else popText(f.x+Math.cos(angle)*100,f.y+Math.sin(angle)*100-48,'BLUE · MISS','#8ce5ff',11);
        },Math.round(slapDuration*slapContactProgress*1000));
@@ -7607,7 +7622,8 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
 }
 function drawGojoBlueHandTrail(f,hand,side,baseX,baseY){
  let state=f.gojoBlueSharpTrailState;
- if(!state||state.name!=='gojoBlue')state=f.gojoBlueSharpTrailState={name:'gojoBlue',a:[],b:[]};
+ const motionName=f.motion&&f.motion.name||'gojoBlue';
+ if(!state||state.name!==motionName)state=f.gojoBlueSharpTrailState={name:motionName,a:[],b:[]};
  const points=state[side],now=game.time,dx=hand.x-baseX,dy=hand.y-baseY,last=points[points.length-1];
  if(!last||Math.hypot(dx-last.x,dy-last.y)>.8||now-last.time>.022)points.push({x:dx,y:dy,time:now});
  while(points.length>18||(points.length&&now-points[0].time>.17))points.shift();
@@ -7658,7 +7674,8 @@ function emitGojoBlueSkillSparks(f,name){
  }
  const pose=f.gojoBlueTrailPose;if(!pose)return;
  const zoom=camera.zoom||1,baseX=sx(f.x),baseY=sy(f.y)-f.jump*3-23,worldBaseY=f.y-(23+f.jump*3)/zoom;
- for(const side of ['a','b']){
+ const activeHands=name==='gojoBlueSlap'?['b']:['a','b'];
+ for(const side of activeHands){
   const hand=pose[side],worldX=f.x+(hand.x-baseX)/zoom,worldY=worldBaseY+(hand.y-baseY)/zoom;
   spawnGojoBlueSparks(f,worldX,worldY,name==='gojoBlueSlap'?3:2);
  }
@@ -8103,10 +8120,11 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
  if(name==='gojoBlueSpin'||name==='gojoBlueSlap'){
-  // Preserve both animated hand positions for a sharp, tapered foreground wake.
+  // During the spin both hands trail; during the slap only the striking hand (B) trails.
   f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
   if(!deferMotionVfx){
-   drawGojoBlueHandTrail(f,handA,'a',x,headY);
+   if(name==='gojoBlueSpin')drawGojoBlueHandTrail(f,handA,'a',x,headY);
+   else if(f.gojoBlueSharpTrailState)f.gojoBlueSharpTrailState.a.length=0;
    drawGojoBlueHandTrail(f,handB,'b',x,headY);
   }
  }else if(f.sideViewPreview&&(combo||name==='yujiBlackFlash')){
@@ -8292,7 +8310,8 @@ function drawFighterMotionOverlays(f){
  const combo=name.startsWith('m1_');
  const angle=Number.isFinite(m.angle)?m.angle:f.face;
  if((name==='gojoBlueSpin'||name==='gojoBlueSlap')&&f.gojoBlueTrailPose){
-  drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
+  if(name==='gojoBlueSpin')drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
+  else if(f.gojoBlueSharpTrailState)f.gojoBlueSharpTrailState.a.length=0;
   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
  }
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
