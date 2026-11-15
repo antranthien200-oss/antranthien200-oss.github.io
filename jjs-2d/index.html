@@ -1268,6 +1268,62 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 }
 
 
+/* Hard-size each accessory grid track so additional items can never collapse or overlap tiles. */
+#menu .menu-sub.accessory-editor-open .accessory-preview-items{
+ box-sizing:border-box!important;
+ display:grid!important;
+ container-type:inline-size;
+ grid-auto-flow:row!important;
+ grid-auto-rows:clamp(72px,22cqi,170px)!important;
+ align-content:start!important;
+ align-items:stretch!important;
+ justify-items:stretch!important;
+ min-height:0!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+}
+#menu .menu-sub.accessory-editor-open .accessory-preview-items .menu-option,
+#menu .menu-sub.accessory-editor-open .accessory-preview-items .menu-option:hover{
+ box-sizing:border-box!important;
+ display:grid!important;
+ position:relative!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ max-width:none!important;
+ max-height:none!important;
+ aspect-ratio:auto!important;
+ align-self:stretch!important;
+ justify-self:stretch!important;
+ overflow:hidden!important;
+ padding:4px!important;
+ transform:none!important;
+}
+#menu .menu-sub.accessory-editor-open .accessory-preview-items .accessory-art{
+ width:88%!important;
+ height:88%!important;
+ max-width:100%!important;
+ max-height:100%!important;
+ object-fit:contain!important;
+ margin:auto!important;
+}
+@media(max-width:760px){
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:clamp(68px,31cqi,140px)!important;
+  gap:6px!important;
+ }
+}
+@media(max-height:520px){
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-rows:clamp(48px,17cqi,112px)!important;
+  gap:5px!important;
+ }
+}
+
+
 /* Multiplayer layout: same compact dark panel, crisp borders and uppercase labels as the other menu screens.
    Keep the existing cyan online accent. */
 #menuSub.online-menu-open{padding:clamp(10px,2.4vw,22px)}
