@@ -3737,7 +3737,7 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
  hit.skillHits=(hit.skillHits||0)+1;hit.damageStage=Math.min(3,hit.skillHits);hit.lastSkillHit=game.time;
  const cx=hit.x+hit.w/2,cy=hit.y+hit.h/2;
  if(hit.damageStage>=3){
-  hit.collapsed=true;hit.respawnTimer=25;
+  hit.collapsed=true;hit.respawnTimer=60;
   addDebris(cx,cy,hit.c,34);addDebris(cx-hit.w*.2,cy+hit.h*.12,'#73808a',18);
   burst(cx,cy,'#c3cbd0',38,9);game.shake=Math.max(game.shake,9);
   popText(cx,cy-65,hit.name+' · COLLAPSED','#f3e1bd',20);
@@ -5541,7 +5541,7 @@ function updateBuildingRespawns(dt){
  if(onlineMode)return;
  for(const b of staticBuildings){
   if(!b.collapsed)continue;
-  b.respawnTimer=Math.max(0,(b.respawnTimer||25)-dt);
+  b.respawnTimer=Math.max(0,(b.respawnTimer||60)-dt);
   if(b.respawnTimer===0){
    b.collapsed=false;b.skillHits=0;b.damageStage=0;
    mapCacheDirty=true;
@@ -6025,7 +6025,7 @@ function damageVehicleBuilding(car,b,index,speed){
  hitTimes[index]=now;
  const hits=speed>=370?3:speed>=245?2:1;
  b.skillHits=Math.min(3,(b.skillHits||0)+hits);b.damageStage=b.skillHits;b.lastSkillHit=now;
- const wasCollapsed=!!b.collapsed;if(b.damageStage>=3){b.collapsed=true;if(!wasCollapsed)b.respawnTimer=25}
+ const wasCollapsed=!!b.collapsed;if(b.damageStage>=3){b.collapsed=true;if(!wasCollapsed)b.respawnTimer=60}
  showVehicleBuildingDamage(b,b.damageStage,b.collapsed&&!wasCollapsed);
 }
 function smashVehicleProps(car){
