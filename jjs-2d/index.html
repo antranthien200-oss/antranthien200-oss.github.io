@@ -6413,7 +6413,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   ctx.shadowBlur=0;
 
   // Dark inner vortex and a small upper-left specular highlight give the sphere depth.
-  drawPixelatedCircle(x+2,y+2,6.2,{main:'#185ca8',shadow:'#0b2e66'},2);
+  drawPixelatedCircle(x,y,6.2,{main:'#185ca8',shadow:'#0b2e66'},2);
   ctx.fillStyle='#c9f5ff';ctx.globalAlpha=.96*fade;
   ctx.fillRect(x-6,y-7,4,3);
   ctx.fillRect(x-3,y-9,2,2);
@@ -7517,24 +7517,10 @@ function drawSukunaSmileFace(alpha=1){
  ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
  ctx.restore();
 }
-function drawFloatingHand(x,y,angle,theme,scale=1,pose='fist'){
+function drawFloatingHand(x,y,angle,theme,scale=1){
+ // Original small floating pixel-circle fist used by every character.
  ctx.save();
  ctx.translate(Math.round(x),Math.round(y));
- if(pose==='blueSpin'||pose==='blueSlap'){
-  // Only Gojo's Blue combo uses a visible palm; all other characters retain the round floating fists.
-  ctx.rotate(Number.isFinite(angle)?angle:0);
-  ctx.scale(scale,scale);
-  const edge=theme.shadow||'#14334e',main=theme.main||'#4c9fd0',light=theme.accent||'#bdeaff';
-  const blocks=pose==='blueSlap'
-   ?[[-10,-4,6,8],[-5,-7,9,14],[1,-9,9,3],[2,-5,11,3],[2,-1,11,3],[1,3,9,3],[-2,6,7,3]]
-   :[[-9,-4,6,8],[-5,-6,9,12],[1,-8,8,3],[2,-4,9,3],[2,0,8,3],[1,4,7,3],[-2,5,6,3]];
-  for(const [bx,by,bw,bh] of blocks){
-   ctx.fillStyle=edge;ctx.fillRect(bx-1,by-1,bw+2,bh+2);
-   ctx.fillStyle=main;ctx.fillRect(bx,by,bw,bh);
-  }
-  ctx.fillStyle=light;ctx.fillRect(-3,-3,3,2);ctx.fillRect(3,-7,3,1.5);
-  ctx.restore();return;
- }
  ctx.scale(scale,scale);
  drawPixelatedCircle(0,0,7.6,theme,2.0);
  ctx.restore();
@@ -7727,15 +7713,15 @@ function drawHeadHands(f){
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
     const spin=progress*Math.PI*2;
-    // The open palm travels a full circle around the Blue position, not around Gojo's torso.
+    // The original round hand travels a complete circle around the Blue sphere.
     handA=P(17,-18,8);
-    handB=P(64+Math.cos(spin)*28,Math.sin(spin)*28,-6+Math.sin(spin*2)*2);
-    handAScale=.9;handBScale=1.34;handBAngle=angle+spin+Math.PI/2;
+    handB=P(64+Math.cos(spin)*26,Math.sin(spin)*26,-3);
+    handAScale=.9;handBScale=1.15;
    }else if(name==='gojoBlueSlap'){
     const load=smoothstep01(clamp(progress/.22,0,1)),slap=smoothstep01(clamp((progress-.18)/.48,0,1)),recover=smoothstep01(clamp((progress-.76)/.24,0,1));
     handA=P(10,18,-5);
     handB=P(lerp(13,87,slap)-recover*23,lerp(-19,-5,slap),-7+Math.sin(slap*Math.PI)*5);
-    handBScale=1.48;handAScale=.9;handBAngle=angle;
+    handBScale=1.15;handAScale=.9;handBAngle=angle;
    }else if(name==='gojoBlue'||name==='gojoBlueMax'){
     const spread=name==='gojoBlueMax'?20-12*pulse:18-11*pulse,forward=20+26*smooth;
     handA=P(forward,spread,-8-5*pulse);handB=P(forward,-spread,-8-5*pulse);handAScale=1.15;handBScale=1.15;
@@ -7992,7 +7978,7 @@ function drawHeadHands(f){
   }
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
- if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale,name==='gojoBlueSpin'?'blueSpin':name==='gojoBlueSlap'?'blueSlap':'fist');drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+ if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
