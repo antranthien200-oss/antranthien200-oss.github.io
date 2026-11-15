@@ -6523,11 +6523,11 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    ctx.globalAlpha=(.34+.32*whirl)*(i===0?1:.72)*vfxFade;
    ctx.strokeStyle=i===1?'#dffaff':'#62d3ff';ctx.shadowColor='#3cbcff';ctx.shadowBlur=i===0?11:7;
    ctx.lineWidth=i===0?2.7:1.65;
-   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.66,Math.sin(phase*.5)*.18,phase,phase+1.72);ctx.stroke();
+   ctx.beginPath();ctx.arc(0,0,radius,phase,phase+1.72);ctx.stroke();
   }
-  // A bright leading arc tracks the completed 360-degree hand rotation.
+  // A bright circular leading arc tracks the three full hand rotations.
   ctx.globalAlpha=(.3+.36*whirl)*vfxFade;ctx.strokeStyle='#f0fdff';ctx.shadowColor='#55caff';ctx.shadowBlur=9;ctx.lineWidth=2;
-  ctx.beginPath();ctx.arc(5,0,35,-Math.PI*.5+turn,-Math.PI*.5+turn+.72);ctx.stroke();
+  ctx.beginPath();ctx.arc(0,0,35,-Math.PI*.5+turn,-Math.PI*.5+turn+.72);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
@@ -7839,10 +7839,11 @@ function drawHeadHands(f,deferMotionVfx=false){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*6,orbit=43;
-    // Original opposite-side circular orbit, centered exactly on Gojo.
-    handA=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
-    handB=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
+    const spin=progress*Math.PI*6,orbit=43,centerX=x,centerY=headY+gojoBlueHeadBob;
+    // Use a true screen-space circle centered on Gojo's visible head/player center.
+    // Keeping this independent of aim axes prevents the orbit looking skewed or offset.
+    handA={x:centerX+Math.cos(spin)*orbit,y:centerY+Math.sin(spin)*orbit};
+    handB={x:centerX+Math.cos(spin+Math.PI)*orbit,y:centerY+Math.sin(spin+Math.PI)*orbit};
     handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
     const windupEnd=.24,swingEnd=.68;
