@@ -4944,8 +4944,9 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
       f.gojoBlueOrb=null;setMotion(f,'gojoBlueSpin',.58,angle,t);f.attackAnim=.58;f.invuln=.22;
       schedule(()=>{
        if(f.dead||t.dead||!game.started||game.over)return;
-       setMotion(f,'gojoBlueSlap',.46,angle,t);f.attackAnim=.46;f.invuln=.18;
-       // Register damage at the end of the palm sweep so the hit and animation line up.
+       const slapDuration=.46,slapContactProgress=.652;
+       setMotion(f,'gojoBlueSlap',slapDuration,angle,t);f.attackAnim=slapDuration;f.invuln=.18;
+       // Apply the hit on the exact frame where the hand, crescent and shockwave meet.
        schedule(()=>{
         if(f.dead||t.dead||!game.started||game.over)return;
         if(dist(f,t)<190){
@@ -4954,7 +4955,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
          game.hitStop=Math.max(game.hitStop,.072);game.shake=Math.max(game.shake,8);
          popText(t.x,t.y-61,'BLUE SLAP','#e2f8ff',16);
         }else popText(f.x+Math.cos(angle)*100,f.y+Math.sin(angle)*100-48,'BLUE · MISS','#8ce5ff',11);
-       },300);
+       },Math.round(slapDuration*slapContactProgress*1000));
       },580);
      },850);
     }else{
@@ -6445,37 +6446,37 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m==='gojoBlueSpin')return;
  if(m==='gojoBlueSlap'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const strike=smoothstep01(clamp((p-.24)/.46,0,1));
+  const strike=smoothstep01(clamp((p-.24)/.44,0,1));
   const fade=(1-.72*smoothstep01(clamp((p-.76)/.24,0,1)))*vfxFade;
   const target=f.motion&&f.motion.target;
   const dx=target&&Number.isFinite(target.x)?target.x-f.x:Math.cos(angle)*64;
   const dy=target&&Number.isFinite(target.y)?target.y-(f.y-23):Math.sin(angle)*64;
   const targetForward=dx*Math.cos(angle)+dy*Math.sin(angle);
   const targetSide=-dx*Math.sin(angle)+dy*Math.cos(angle);
-  const contact=clamp(targetForward-6,42,86);
+  const contact=clamp(targetForward-5,42,86);
   const centerX=clamp(targetForward,42,104),centerY=clamp(targetSide,-25,25);
-  const steps=18;
-  const pointAt=t=>{const u=1-t;return{x:u*u*contact+2*u*t*(contact+14)+t*t*contact,y:u*u*(-42)+t*t*42}};
+  const startY=centerY-30,endY=centerY+16,steps=18;
+  const pointAt=t=>{const u=1-t;return{x:u*u*contact+2*u*t*(contact+5)+t*t*(centerX+5),y:u*u*startY+2*u*t*(centerY-5)+t*t*endY}};
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // A broad curved trail follows the palm across the opponent.
+  // Keep the broad blue and white hand-sweep layers, following the real slap path.
   for(const layer of [{color:'#299fe3',width:13,alpha:.48,blur:8},{color:'#c7f4ff',width:4.2,alpha:.9,blur:3}]){
    ctx.globalAlpha=layer.alpha*fade;ctx.strokeStyle=layer.color;ctx.lineWidth=layer.width;ctx.shadowColor='#55caff';ctx.shadowBlur=layer.blur;
-   ctx.beginPath();ctx.moveTo(contact,-42);
-   for(let i=1;i<=steps;i++){const point=pointAt(strike*i/steps);ctx.lineTo(point.x,point.y)}
+   ctx.beginPath();
+   for(let i=0;i<=steps;i++){const point=pointAt(strike*i/steps);if(i===0)ctx.moveTo(point.x,point.y);else ctx.lineTo(point.x,point.y)}
    ctx.stroke();
   }
 
-  // A compact crescent flashes at the actual target position as the palm lands.
-  const impact=smoothstep01(clamp((p-.50)/.15,0,1))*(1-smoothstep01(clamp((p-.82)/.16,0,1)));
+  // Peak the existing crescent exactly when the palm reaches contact.
+  const impact=1-smoothstep01(clamp(Math.abs(p-.652)/.22,0,1));
   if(impact>.01){
    ctx.globalAlpha=.78*impact*fade;ctx.strokeStyle='#46bfff';ctx.lineWidth=5.2;ctx.shadowColor='#55caff';ctx.shadowBlur=8;
    ctx.beginPath();ctx.moveTo(centerX-12,centerY+11);ctx.quadraticCurveTo(centerX+5,centerY+23,centerX+20,centerY-10);ctx.stroke();
    ctx.globalAlpha=.95*impact*fade;ctx.strokeStyle='#e1faff';ctx.lineWidth=1.7;ctx.shadowBlur=3;
    ctx.beginPath();ctx.moveTo(centerX-7,centerY+8);ctx.quadraticCurveTo(centerX+6,centerY+15,centerX+15,centerY-7);ctx.stroke();
 
-   // Small expanding shockwave, restrained to the same blue palette as the skill.
-   const shock=smoothstep01(clamp((p-.56)/.24,0,1));
+   // The shockwave starts at contact and expands after the palm lands.
+   const shock=smoothstep01(clamp((p-.652)/.20,0,1));
    ctx.globalAlpha=.56*impact*fade;ctx.strokeStyle='#b9efff';ctx.lineWidth=1.5;ctx.shadowBlur=4;
    ctx.beginPath();ctx.ellipse(centerX+3,centerY,7+shock*13,4+shock*8,0,0,Math.PI*2);ctx.stroke();
   }
@@ -7627,6 +7628,11 @@ function drawHeadHands(f){
  const awakenSurge=name==='sukunaAwaken'?smoothstep01(clamp((progress-.48)/.30,0,1)):0;
  const awakenHeadDrop=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*10-awakenSurge*2:0;
  const awakenHeadTilt=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*.16-awakenSurge*.035:0;
+ const gojoBlueSpinPrep=name==='gojoBlueSpin'?1-smoothstep01(clamp(progress/.18,0,1)):0;
+ const gojoBlueSpinPhase=name==='gojoBlueSpin'?progress*Math.PI*2:0;
+ const gojoBlueSlapRecoil=name==='gojoBlueSlap'?Math.max(0,1-Math.abs(progress-.652)/.18):0;
+ const gojoBlueHeadBob=-1.8*gojoBlueSpinPrep+(name==='gojoBlueSpin'?Math.sin(gojoBlueSpinPhase)*.9:0)-1.35*gojoBlueSlapRecoil;
+ const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep+(name==='gojoBlueSpin'?Math.sin(gojoBlueSpinPhase)*.028:0)-.04*gojoBlueSlapRecoil;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
@@ -7728,33 +7734,47 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const easedSpin=smoothstep01(progress),spin=easedSpin*Math.PI*2,orbit=43;
-    // Ease into and out of the wider circular orbit, keeping the player exactly at its center.
-    handA=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
-    handB=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
+    const spinLead=smoothstep01(clamp((progress-.10)/.90,0,1)),spin=spinLead*Math.PI*2,orbit=43;
+    // Hold a brief anticipation, then complete one clean circle around the player.
+    // The end positions are deliberately aligned with the following slap wind-up.
+    handA=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
+    handB=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
     handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
-    // The finish is a sideways open-palm sweep across the target, not a straight punch.
-    const windup=smoothstep01(clamp(progress/.24,0,1));
-    const swing=smoothstep01(clamp((progress-.24)/.46,0,1));
-    const recover=smoothstep01(clamp((progress-.70)/.30,0,1));
+    const windupEnd=.24,swingEnd=.68;
+    const windup=smoothstep01(clamp(progress/windupEnd,0,1));
+    const swingRaw=clamp((progress-windupEnd)/(swingEnd-windupEnd),0,1);
+    const swing=smoothstep01(swingRaw);
+    const recover=smoothstep01(clamp((progress-swingEnd)/(1-swingEnd),0,1));
     const targetForward=m&&m.target&&Number.isFinite(m.target.x)
      ?(m.target.x-f.x)*nx+(m.target.y-(f.y-23))*ny
      :reach+6;
-    const contact=clamp(targetForward-6,42,86);
-    const forward=progress<.24?lerp(22,contact,windup)
-     :progress<.70?contact+Math.sin(swing*Math.PI)*7
-     :lerp(contact,26,recover);
-    const side=progress<.24?lerp(-22,-42,windup)
-     :progress<.70?lerp(-42,42,swing)
-     :lerp(42,18,recover);
-    const lift=progress<.24?lerp(-4,-11,windup)
-     :progress<.70?-11+Math.sin(swing*Math.PI)*7
-     :lerp(-4,-2,recover);
-    // The support hand pulls back as the striking hand loads, then follows through and settles.
-    const supportForward=progress<.24?lerp(8,-11,windup):progress<.70?lerp(-11,8,swing):lerp(8,8,recover);
-    const supportSide=progress<.24?lerp(20,26,windup):progress<.70?lerp(26,18,swing):18;
-    handA=P(supportForward,supportSide,-5-4*windup+2*recover);
+    const targetSide=m&&m.target&&Number.isFinite(m.target.x)
+     ?(m.target.x-f.x)*px+(m.target.y-(f.y-23))*py
+     :0;
+    const contact=clamp(targetForward-5,42,86);
+    const readyForward=clamp(contact-14,20,68),strikeForward=contact+5;
+    const readySide=targetSide-30,followSide=targetSide+16;
+    const forward=progress<windupEnd?lerp(43,readyForward,windup)
+     :progress<swingEnd?lerp(readyForward,strikeForward,swing)+Math.sin(swing*Math.PI)*3
+     :lerp(strikeForward,22,recover);
+    const side=progress<windupEnd?lerp(0,readySide,windup)
+     :progress<swingEnd?lerp(readySide,followSide,swing)
+     :lerp(followSide,targetSide+8,recover);
+    const lift=progress<windupEnd?lerp(-3,-12,windup)
+     :progress<swingEnd?lerp(-12,-1,swing)+Math.sin(swing*Math.PI)*2
+     :lerp(-1,4,recover);
+    // Keep the supporting hand tucked close to Gojo while the striking hand accelerates.
+    const supportForward=progress<windupEnd?lerp(-43,4,windup)
+     :progress<swingEnd?lerp(4,5,swing)
+     :lerp(5,7,recover);
+    const supportSide=progress<windupEnd?lerp(0,17,windup)
+     :progress<swingEnd?17
+     :lerp(17,14,recover);
+    const supportLift=progress<windupEnd?lerp(-3,-4,windup)
+     :progress<swingEnd?lerp(-4,1,swing)
+     :lerp(1,2,recover);
+    handA=P(supportForward,supportSide,supportLift);
     handB=P(forward,side,lift);
     handBScale=1.18;handAScale=.96;handBAngle=angle;
    }else if(name==='gojoBlue'||name==='gojoBlueMax'){
@@ -8022,7 +8042,7 @@ function drawHeadHands(f){
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
  if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
- drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
+ drawAccessoryAura(f,x,headY+gojoBlueHeadBob);ctx.save();ctx.translate(x,headY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
