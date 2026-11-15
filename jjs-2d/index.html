@@ -6404,84 +6404,65 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const orb=f.gojoBlueOrb;
   if(orb&&orb.target&&Math.hypot(orb.target.x-orb.x,orb.target.y-orb.y)<24)return;
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const x=54,y=-3+Math.sin(game.time*1.35)*1.1,fade=(.98-.04*clamp(p,0,1))*vfxFade;
-  ctx.save();ctx.rotate(angle);
-  ctx.globalAlpha=.98*fade;ctx.shadowColor='#3daeff';ctx.shadowBlur=13;
+  const x=64,y=-3,fade=(.98-.05*clamp(p,0,1))*vfxFade;
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=fade;
 
-  // Compact adaptation of JJS Six Eyes' Lapse Blue MAX: a blue vortex with a flame-like edge.
-  // The jagged silhouette keeps the awakening orb's identity, while the dark center reads as suction.
-  drawPixelSpriteGrid(
-   [".......B.B.......","......BBMMB......",".....BMMMMMB.....","....BBMMMMMBB....","...BMMMMHHMMMB...","..BBMMHHHHHMMBB..",".BBMMHHCCCHHMMBB.","BMMHHCCDDDCCHHMMB","BMMHHCDDDDDCHHMMB","BMMHHCCDDDCCHHMMB",".BBMMHHCCCHHMMBB.","..BBMMHHHHHMMBB..","...BMMMMHHMMMB...","....BBMMMMMBB....",".....BMMMMMB.....","......BBMMB......",".......B.B......."],
-   x,y,2.4,
-   {B:'#123f83',M:'#247bd0',H:'#49bdf4',C:'#9ae8ff',D:'#0e3977'}
-  );
+  // A true round Blue sphere, shaded with the same pixel-circle renderer used by the fighters.
+  ctx.shadowColor='#3daeff';ctx.shadowBlur=11;
+  drawPixelatedCircle(x,y,14,{main:'#318fe0',shadow:'#123e82'},2);
+  ctx.shadowBlur=0;
 
-  // A restrained inner highlight makes the vortex easy to read at this smaller scale.
-  ctx.shadowBlur=0;ctx.globalAlpha=.92*fade;ctx.fillStyle='#dff9ff';
-  ctx.fillRect(Math.round(x-7),Math.round(y-8),2.4,2.4);
-  ctx.fillStyle='#64d2ff';ctx.globalAlpha=.82*fade;
-  ctx.fillRect(Math.round(x+6),Math.round(y+3),2.4,2.4);
+  // Dark inner vortex and a small upper-left specular highlight give the sphere depth.
+  drawPixelatedCircle(x+2,y+2,6.2,{main:'#185ca8',shadow:'#0b2e66'},2);
+  ctx.fillStyle='#c9f5ff';ctx.globalAlpha=.96*fade;
+  ctx.fillRect(x-6,y-7,4,3);
+  ctx.fillRect(x-3,y-9,2,2);
+  ctx.fillStyle='#72dfff';ctx.globalAlpha=.9*fade;
+  ctx.fillRect(x+5,y-2,2,3);
   ctx.restore();return;
  }
  if(m==='gojoBlueSucked'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,phase=game.time*1.15;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
+  // Target is pulled backward; short smooth streaks trail behind it without wrapping around it.
   for(let i=0;i<3;i++){
-   const lane=i-1,wave=Math.sin(phase+i*1.3)*2.3,y=lane*15+wave;
-   const curve=()=>{ctx.beginPath();ctx.moveTo(49,y);ctx.bezierCurveTo(28,y+wave*.45,13,lane*7-4,-12,lane*2)};
-   ctx.globalAlpha=(.38-Math.abs(lane)*.05)*vfxFade;ctx.strokeStyle='#247fbd';ctx.lineWidth=i===1?4.5:3.1;ctx.shadowColor='#57caff';ctx.shadowBlur=6;curve();ctx.stroke();
-   ctx.globalAlpha=.7*vfxFade;ctx.strokeStyle='#91e5ff';ctx.lineWidth=1.45;ctx.shadowBlur=2;curve();ctx.stroke();
-  }
-  for(let i=0;i<4;i++){
-   const travel=(game.time*7+i*18)%70,x=46-travel,y=Math.sin(game.time*.9+i*1.8)*8;
-   ctx.globalAlpha=(.28+.38*(1-travel/70))*vfxFade;ctx.fillStyle=i%2?'#e9fbff':'#64d2ff';
-   ctx.beginPath();ctx.arc(x,y,1.55,0,Math.PI*2);ctx.fill();
+   const y=(i-1)*7;
+   ctx.globalAlpha=(.34-Math.abs(i-1)*.06)*vfxFade;
+   ctx.strokeStyle=i===1?'#58caff':'#3a9ddd';ctx.lineWidth=i===1?2.6:1.6;ctx.shadowColor='#53caff';ctx.shadowBlur=3;
+   ctx.beginPath();ctx.moveTo(39,y+1);ctx.quadraticCurveTo(19,y+2,-3,y);ctx.stroke();
   }
   ctx.restore();return;
  }
  if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const turn=smoothstep01(clamp(p,0,1))*Math.PI*2,whirl=Math.sin(p*Math.PI);
+  const turn=clamp(p,0,1)*Math.PI*2,fade=(.46+.28*Math.sin(p*Math.PI))*vfxFade;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
-  for(let i=0;i<3;i++){
-   const radius=29+i*8,phase=turn*(i%2?-1:1)+i*2.05;
-   ctx.globalAlpha=(.28+.24*whirl)*(i===0?1:.72)*vfxFade;
-   ctx.strokeStyle=i===1?'#dffaff':'#50c5f5';ctx.shadowColor='#42baff';ctx.shadowBlur=7;ctx.lineWidth=i===0?3.1:2;
-   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.66,0,phase,phase+1.62);ctx.stroke();
-  }
-  ctx.globalAlpha=(.38+.26*whirl)*vfxFade;ctx.strokeStyle='#bcefff';ctx.shadowBlur=8;ctx.lineWidth=1.7;
-  ctx.beginPath();ctx.arc(5,0,35,-Math.PI*.5+turn,-Math.PI*.5+turn+.82);ctx.stroke();
+
+  // One clean orbit line follows the open hand's 360° path around the former orb position.
+  ctx.globalAlpha=fade;ctx.strokeStyle='#2789d0';ctx.lineWidth=3.2;ctx.shadowColor='#53caff';ctx.shadowBlur=5;
+  ctx.beginPath();ctx.arc(64,-3,28,turn-.78,turn);ctx.stroke();
+  ctx.globalAlpha=fade*.75;ctx.strokeStyle='#c4f2ff';ctx.lineWidth=1.35;ctx.shadowBlur=2;
+  ctx.beginPath();ctx.arc(64,-3,28,turn-.62,turn-.12);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const impact=1-smoothstep01(clamp(p/.42,0,1)),fade=(1-.72*smoothstep01(clamp((p-.72)/.28,0,1)))*vfxFade;
+  const strike=smoothstep01(clamp((p-.18)/.52,0,1));
+  const fade=(1-.75*smoothstep01(clamp((p-.72)/.28,0,1)))*vfxFade;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // A rounded, blue-white impact arc—stronger than a basic punch but in the same line style as Red.
-  ctx.globalAlpha=.34*fade;ctx.strokeStyle='#45bfff';ctx.lineWidth=19;ctx.shadowColor='#43bdff';ctx.shadowBlur=15;
-  ctx.beginPath();ctx.moveTo(15,-16);ctx.quadraticCurveTo(58,-43,97,1);ctx.stroke();
+  // A wide, flat sweep follows the open palm across the target.
+  ctx.globalAlpha=(.36+.2*strike)*fade;ctx.strokeStyle='#3aa7ea';ctx.lineWidth=17;ctx.shadowColor='#45bfff';ctx.shadowBlur=9;
+  ctx.beginPath();ctx.moveTo(26,7);ctx.quadraticCurveTo(62,-21,100,-4);ctx.stroke();
+  ctx.globalAlpha=.92*fade;ctx.strokeStyle='#8ee5ff';ctx.lineWidth=6.5;ctx.shadowBlur=4;
+  ctx.beginPath();ctx.moveTo(31,5);ctx.quadraticCurveTo(66,-15,99,-4);ctx.stroke();
 
-  const slash=ctx.createLinearGradient(18,-16,97,1);
-  slash.addColorStop(0,'rgba(71,177,255,0)');
-  slash.addColorStop(.42,'#3faeea');
-  slash.addColorStop(.8,'#9de9ff');
-  slash.addColorStop(1,'#ffffff');
-  ctx.globalAlpha=.88*fade;ctx.strokeStyle=slash;ctx.lineWidth=9+impact*2;ctx.shadowBlur=6;
-  ctx.beginPath();ctx.moveTo(18,-14);ctx.quadraticCurveTo(60,-38,95,0);ctx.stroke();
-
-  ctx.globalAlpha=.82*fade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.7;ctx.shadowColor='#c8f4ff';ctx.shadowBlur=4;
-  ctx.beginPath();ctx.moveTo(28,-19);ctx.quadraticCurveTo(69,-32,101,-1);ctx.stroke();
-
-  ctx.globalAlpha=.58*impact*fade;ctx.strokeStyle='#d8f7ff';ctx.lineWidth=1.7;ctx.shadowBlur=5;
-  for(let i=0;i<6;i++){
-   const a=-1.1+i*.36;
-   ctx.beginPath();ctx.moveTo(87+Math.cos(a)*5,1+Math.sin(a)*5);
-   ctx.lineTo(87+Math.cos(a)*(13+(i%2)*4),1+Math.sin(a)*(13+(i%2)*4));ctx.stroke();
+  // Four short parallel finger trails make the open-hand slap read clearly.
+  ctx.globalAlpha=(.45+.45*strike)*fade;ctx.strokeStyle='#e6faff';ctx.lineWidth=1.7;ctx.shadowBlur=2;
+  for(let i=0;i<4;i++){
+   const y=-10+i*4.5;
+   ctx.beginPath();ctx.moveTo(79,y);ctx.lineTo(101,y-2);ctx.stroke();
   }
-  const ring=9+(1-impact)*15;
-  ctx.globalAlpha=.42*fade;ctx.strokeStyle='#6ed8ff';ctx.lineWidth=1.9;ctx.shadowBlur=7;
-  ctx.beginPath();ctx.arc(88,1,ring,-1.15,1.1);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSpin'){
@@ -7536,9 +7517,24 @@ function drawSukunaSmileFace(alpha=1){
  ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
  ctx.restore();
 }
-function drawFloatingHand(x,y,angle,theme,scale=1){
- // Small floating pixel-circle fist: no fingers, glove, shine, or extra details.
+function drawFloatingHand(x,y,angle,theme,scale=1,pose='fist'){
  ctx.save();
+ ctx.translate(Math.round(x),Math.round(y));
+ if(pose==='blueSpin'||pose==='blueSlap'){
+  // Only Gojo's Blue combo uses a visible palm; all other characters retain the round floating fists.
+  ctx.rotate(Number.isFinite(angle)?angle:0);
+  ctx.scale(scale,scale);
+  const edge=theme.shadow||'#14334e',main=theme.main||'#4c9fd0',light=theme.accent||'#bdeaff';
+  const blocks=pose==='blueSlap'
+   ?[[-10,-4,6,8],[-5,-7,9,14],[1,-9,9,3],[2,-5,11,3],[2,-1,11,3],[1,3,9,3],[-2,6,7,3]]
+   :[[-9,-4,6,8],[-5,-6,9,12],[1,-8,8,3],[2,-4,9,3],[2,0,8,3],[1,4,7,3],[-2,5,6,3]];
+  for(const [bx,by,bw,bh] of blocks){
+   ctx.fillStyle=edge;ctx.fillRect(bx-1,by-1,bw+2,bh+2);
+   ctx.fillStyle=main;ctx.fillRect(bx,by,bw,bh);
+  }
+  ctx.fillStyle=light;ctx.fillRect(-3,-3,3,2);ctx.fillRect(3,-7,3,1.5);
+  ctx.restore();return;
+ }
  ctx.translate(Math.round(x),Math.round(y));
  ctx.scale(scale,scale);
  drawPixelatedCircle(0,0,7.6,theme,2.0);
@@ -7731,13 +7727,16 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*2,arc=Math.sin(spin),reachArc=Math.cos(spin);
-    handA=P(5,-18,8);handB=P(22+reachArc*23,arc*31,-9+Math.sin(spin*2)*4);
-    handAScale=.9;handBScale=1.3;handBAngle=angle+spin+.42;
+    const spin=progress*Math.PI*2;
+    // The open palm travels a full circle around the Blue position, not around Gojo's torso.
+    handA=P(17,-18,8);
+    handB=P(64+Math.cos(spin)*28,Math.sin(spin)*28,-6+Math.sin(spin*2)*2);
+    handAScale=.9;handBScale=1.34;handBAngle=angle+spin+Math.PI/2;
    }else if(name==='gojoBlueSlap'){
-    const load=smoothstep01(clamp(progress/.3,0,1)),slap=smoothstep01(clamp((progress-.3)/.38,0,1)),recover=smoothstep01(clamp((progress-.78)/.22,0,1));
-    handA=P(10,18,-5);handB=P(lerp(-12,88,slap)-recover*30,lerp(-21,-7,slap),-8+Math.sin(slap*Math.PI)*9);
-    handBScale=1.42;handAScale=.9;handBAngle=angle-.24+slap*.5;
+    const load=smoothstep01(clamp(progress/.22,0,1)),slap=smoothstep01(clamp((progress-.18)/.48,0,1)),recover=smoothstep01(clamp((progress-.76)/.24,0,1));
+    handA=P(10,18,-5);
+    handB=P(lerp(13,87,slap)-recover*23,lerp(-19,-5,slap),-7+Math.sin(slap*Math.PI)*5);
+    handBScale=1.48;handAScale=.9;handBAngle=angle;
    }else if(name==='gojoBlue'||name==='gojoBlueMax'){
     const spread=name==='gojoBlueMax'?20-12*pulse:18-11*pulse,forward=20+26*smooth;
     handA=P(forward,spread,-8-5*pulse);handB=P(forward,-spread,-8-5*pulse);handAScale=1.15;handBScale=1.15;
@@ -7994,7 +7993,7 @@ function drawHeadHands(f){
   }
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
- if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+ if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale,name==='gojoBlueSpin'?'blueSpin':name==='gojoBlueSlap'?'blueSlap':'fist');drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  drawAccessoryAura(f,x,headY);ctx.save();ctx.translate(x,headY+awakenHeadDrop);ctx.rotate(awakenHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
