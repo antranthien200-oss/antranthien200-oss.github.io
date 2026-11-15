@@ -674,7 +674,13 @@ killPlayer(p){
   }
   target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;target.block=false;target.stun=Math.max(target.stun,.12);
   target.blueSuctionRemaining=Math.max(0,target.blueSuctionRemaining-dt);
-  target.motionName="gojoBlueSucked";target.motionProgress=clamp(1-target.blueSuctionRemaining/1.95,0,1);target.motionDuration=1.95;
+  const suctionElapsed=1.95-target.blueSuctionRemaining;
+  if(suctionElapsed<.85){
+   target.motionName="gojoBlueSucked";target.motionProgress=clamp(suctionElapsed/.85,0,1);target.motionDuration=.85;
+  }else{
+   // Keep the grab lock active through the spin/slap without extending the suction animation.
+   target.motionName="";target.motionProgress=0;target.motionDuration=1;
+  }
   if(target.blueSuctionRemaining<=0){
    target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,.62);
    target.motionName="gojoBlueSuckedEnd";target.motionProgress=0;target.motionDuration=.22;target.motionStartedAt=Date.now();
