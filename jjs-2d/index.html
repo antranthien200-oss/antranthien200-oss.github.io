@@ -6486,11 +6486,12 @@ function drawPixelSkillVfx(f,m,p,c){
 
 function drawRedGradientSphere(x,y,r,opacity=1){
  ctx.save();ctx.globalAlpha*=opacity;
- const gradient=ctx.createRadialGradient(x-r*.1,y-r*.1,0,x,y,r);
- gradient.addColorStop(0,"#ffb5c2");
- gradient.addColorStop(.2,"#ff9bab");
- gradient.addColorStop(.43,"#f45f7b");
- gradient.addColorStop(.72,"#ed4563");
+ const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
+ // Keep the fill even through the outlined center so the ring has no separate-looking disk.
+ gradient.addColorStop(0,"#ff9bab");
+ gradient.addColorStop(.48,"#ff9bab");
+ gradient.addColorStop(.58,"#ff9bab");
+ gradient.addColorStop(.78,"#ed4563");
  gradient.addColorStop(1,"#b52b49");
  ctx.globalAlpha=1;
  ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
