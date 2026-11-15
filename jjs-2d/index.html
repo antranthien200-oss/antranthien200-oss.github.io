@@ -6486,15 +6486,17 @@ function drawPixelSkillVfx(f,m,p,c){
 
 function drawRedGradientSphere(x,y,r,opacity=1){
  ctx.save();ctx.globalAlpha*=opacity;
- const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
- gradient.addColorStop(0,"#ff9eaf");
- gradient.addColorStop(.34,"#f45b75");
- gradient.addColorStop(.72,"#ce304f");
- gradient.addColorStop(1,"#70152d");
+ const gradient=ctx.createRadialGradient(x-r*.1,y-r*.1,0,x,y,r);
+ gradient.addColorStop(0,"#fffafa");
+ gradient.addColorStop(.2,"#fff0f2");
+ gradient.addColorStop(.43,"#ff9bab");
+ gradient.addColorStop(.72,"#b5092d");
+ gradient.addColorStop(1,"#26000a");
+ ctx.globalAlpha=1;
  ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
- // A separate hollow circle sits inside the sphere; only its white outline is drawn.
+ // A separate hollow circle sits inside the opaque sphere; only its white outline is drawn.
  ctx.beginPath();ctx.arc(x,y,r*.48,0,Math.PI*2);
- ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.15,r*.075);ctx.stroke();
+ ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
 function drawMotionVfx(f,m,p,c,vfxFade=1){
