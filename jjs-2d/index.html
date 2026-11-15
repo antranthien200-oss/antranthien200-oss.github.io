@@ -6404,80 +6404,71 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const orb=f.gojoBlueOrb;
   if(orb&&orb.target&&Math.hypot(orb.target.x-orb.x,orb.target.y-orb.y)<24)return;
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const x=72,y=-3,fade=(.98-.08*clamp(p,0,1))*vfxFade,spin=game.time*.28;
+  const x=72,y=-3,fade=(.98-.08*clamp(p,0,1))*vfxFade;
+  const turn=game.time*.62;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // Three thick, outlined pressure streams converge on the core.
+  // Rounded pull trails follow the clean, soft-edged style used by Gojo's Red.
   for(let i=0;i<3;i++){
-   const lane=i-1,wave=Math.sin(game.time*.72+i*1.7)*1.8;
-   const sy=lane*15+wave,ey=y+lane*2;
-   ctx.globalAlpha=(.62-Math.abs(lane)*.08)*fade;
-   ctx.strokeStyle='#071a2b';ctx.lineWidth=i===1?9:7;
-   ctx.beginPath();ctx.moveTo(27,sy);ctx.quadraticCurveTo(49,sy+lane*2,69,ey);ctx.stroke();
-   ctx.strokeStyle=i===1?'#176fbb':'#14568f';ctx.lineWidth=i===1?5.2:3.8;
-   ctx.beginPath();ctx.moveTo(27,sy);ctx.quadraticCurveTo(49,sy+lane*2,69,ey);ctx.stroke();
-   ctx.globalAlpha=.9*fade;ctx.strokeStyle='#76dcff';ctx.lineWidth=1.35;
-   ctx.beginPath();ctx.moveTo(43,sy+lane);ctx.quadraticCurveTo(56,sy+lane*1.2,69,ey);ctx.stroke();
+   const lane=i-1,wave=Math.sin(game.time*1.1+i*1.5)*1.7;
+   const sy=lane*14+wave,ey=y+lane*2;
+   ctx.globalAlpha=(.26-Math.abs(lane)*.035)*fade;
+   ctx.strokeStyle='#247fbd';ctx.lineWidth=i===1?4.2:2.8;
+   ctx.shadowColor='#55caff';ctx.shadowBlur=5;
+   ctx.beginPath();ctx.moveTo(31,sy);ctx.quadraticCurveTo(50,sy+lane*2,69,ey);ctx.stroke();
+   ctx.globalAlpha=(.52-Math.abs(lane)*.06)*fade;
+   ctx.strokeStyle='#8de5ff';ctx.lineWidth=i===1?1.8:1.25;ctx.shadowBlur=2;
+   ctx.beginPath();ctx.moveTo(44,sy+lane);ctx.quadraticCurveTo(57,sy+lane*1.2,69,ey);ctx.stroke();
   }
 
-  // Replace the glossy marble with a compact, hard-edged cursed-energy sphere.
-  ctx.save();ctx.translate(x,y);
-  ctx.rotate(spin*.18);
-  ctx.beginPath();
-  for(let i=0;i<12;i++){
-   const a=-Math.PI/2+i*Math.PI/6,rad=15.2+(i%2?1.1:0);
-   const px=Math.round(Math.cos(a)*rad/2)*2,py=Math.round(Math.sin(a)*rad/2)*2;
-   if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
-  }
-  ctx.closePath();ctx.fillStyle='#174d86';ctx.strokeStyle='#071522';ctx.lineWidth=5;ctx.fill();ctx.stroke();
+  // Compact blue core: round, softly shaded and outlined like the game's other skill orbs.
+  const halo=ctx.createRadialGradient(x,y,2,x,y,20);
+  halo.addColorStop(0,'rgba(83,205,255,.3)');
+  halo.addColorStop(.58,'rgba(50,158,226,.2)');
+  halo.addColorStop(1,'rgba(50,158,226,0)');
+  ctx.globalAlpha=fade;ctx.fillStyle=halo;ctx.beginPath();ctx.arc(x,y,20,0,Math.PI*2);ctx.fill();
 
-  // Broken cyan rim segments give the sphere its rotating pull without a glassy halo.
-  ctx.globalAlpha=.96*fade;ctx.strokeStyle='#56cfff';ctx.lineWidth=3.2;ctx.shadowBlur=0;
-  ctx.beginPath();ctx.arc(0,0,15.5,spin,spin+1.8);ctx.stroke();
-  ctx.beginPath();ctx.arc(0,0,15.5,spin+Math.PI,spin+Math.PI+1.05);ctx.stroke();
+  const r=10.5,core=ctx.createRadialGradient(x-3,y-3,1,x,y,r*1.45);
+  core.addColorStop(0,'#eafaff');
+  core.addColorStop(.22,'#9ce9ff');
+  core.addColorStop(.62,'#42b9ed');
+  core.addColorStop(1,'#17669f');
+  ctx.globalAlpha=fade;ctx.fillStyle=core;ctx.shadowColor='#54d9ff';ctx.shadowBlur=10;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
 
-  ctx.fillStyle='#0b2b52';ctx.strokeStyle='#071a30';ctx.lineWidth=2.5;
-  ctx.beginPath();ctx.arc(0,0,10.8,0,Math.PI*2);ctx.fill();ctx.stroke();
-  ctx.fillStyle='#247fca';ctx.beginPath();ctx.arc(1.4,-.5,7.1,0,Math.PI*2);ctx.fill();
-  ctx.strokeStyle='#83e3ff';ctx.lineWidth=1.8;
-  ctx.beginPath();ctx.arc(1.4,-.5,7.1,-.9,1.75);ctx.stroke();
-  ctx.fillStyle='#09274b';ctx.beginPath();ctx.arc(2.5,.8,4.1,0,Math.PI*2);ctx.fill();
-  ctx.fillStyle='#e7fbff';ctx.beginPath();ctx.arc(-2.4,-2.4,2.2,0,Math.PI*2);ctx.fill();
-  ctx.restore();
+  ctx.shadowBlur=0;ctx.globalAlpha=.94*fade;ctx.strokeStyle='#bcefff';ctx.lineWidth=1.7;
+  ctx.beginPath();ctx.arc(x,y,r+.1,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=.68*fade;ctx.strokeStyle='#17669f';ctx.lineWidth=1.35;
+  ctx.beginPath();ctx.arc(x,y,r-2.1,.28,Math.PI*1.65);ctx.stroke();
 
-  // A few square-edged motes keep the surrounding energy readable and restrained.
+  // Slow thin orbital arcs add depth without turning Blue into a glass marble.
+  ctx.globalAlpha=.64*fade;ctx.strokeStyle='#58cfff';ctx.lineWidth=1.8;ctx.shadowColor='#50caff';ctx.shadowBlur=4;
+  ctx.beginPath();ctx.ellipse(x,y,16.5,11.4,-.22,turn,turn+2.25);ctx.stroke();
+  ctx.globalAlpha=.5*fade;ctx.strokeStyle='#c4f4ff';ctx.lineWidth=1.15;ctx.shadowBlur=1;
+  ctx.beginPath();ctx.ellipse(x,y,14,8.8,.32,-turn*.65,-turn*.65+1.45);ctx.stroke();
+
+  ctx.shadowBlur=0;ctx.globalAlpha=.88*fade;ctx.fillStyle='#effcff';
+  ctx.beginPath();ctx.ellipse(x-3,y-3,2.6,1.8,-.48,0,Math.PI*2);ctx.fill();
   for(let i=0;i<3;i++){
-   const a=spin*.55+i*Math.PI*2/3,rr=20;
-   ctx.globalAlpha=.8*fade;ctx.fillStyle=i===1?'#e7fbff':'#62d4ff';
-   const px=x+Math.cos(a)*rr,py=y+Math.sin(a)*rr*.66;
-   ctx.fillRect(Math.round(px)-1.5,Math.round(py)-1.5,3,3);
+   const q=turn*.42+i*Math.PI*2/3;
+   ctx.globalAlpha=.52*fade;ctx.fillStyle=i===1?'#effcff':'#7cddff';
+   ctx.beginPath();ctx.arc(x+Math.cos(q)*17,y+Math.sin(q)*11,1.35,0,Math.PI*2);ctx.fill();
   }
   ctx.restore();return;
  }
  if(m==='gojoBlueSucked'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,phase=game.time*.82;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,phase=game.time*1.15;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
-
-  // Heavy outlined streams bend toward the Blue core at a slower, steadier pace.
   for(let i=0;i<3;i++){
-   const lane=i-1,wave=Math.sin(phase+i*1.35)*2.4,y=lane*16+wave;
-   ctx.globalAlpha=(.72-Math.abs(lane)*.1)*vfxFade;
-   ctx.strokeStyle='#071a2b';ctx.lineWidth=i===1?9:7;
-   ctx.beginPath();ctx.moveTo(49,y);ctx.bezierCurveTo(28,y+wave*.45,13,lane*7-4,-12,lane*2);ctx.stroke();
-   ctx.strokeStyle=i===1?'#1977c5':'#155a98';ctx.lineWidth=i===1?5.2:4;
-   ctx.beginPath();ctx.moveTo(49,y);ctx.bezierCurveTo(28,y+wave*.45,13,lane*7-4,-12,lane*2);ctx.stroke();
-   ctx.globalAlpha=.9*vfxFade;ctx.strokeStyle='#82e2ff';ctx.lineWidth=1.35;
-   ctx.beginPath();ctx.moveTo(35,y-1);ctx.quadraticCurveTo(12,lane*6-3,-10,lane*2);ctx.stroke();
+   const lane=i-1,wave=Math.sin(phase+i*1.3)*2.3,y=lane*15+wave;
+   const curve=()=>{ctx.beginPath();ctx.moveTo(49,y);ctx.bezierCurveTo(28,y+wave*.45,13,lane*7-4,-12,lane*2)};
+   ctx.globalAlpha=(.38-Math.abs(lane)*.05)*vfxFade;ctx.strokeStyle='#247fbd';ctx.lineWidth=i===1?4.5:3.1;ctx.shadowColor='#57caff';ctx.shadowBlur=6;curve();ctx.stroke();
+   ctx.globalAlpha=.7*vfxFade;ctx.strokeStyle='#91e5ff';ctx.lineWidth=1.45;ctx.shadowBlur=2;curve();ctx.stroke();
   }
-
-  // Larger square motes drift inward instead of racing along the ribbons.
   for(let i=0;i<4;i++){
-   const travel=(game.time*6+i*18)%72,x=47-travel,y=Math.sin(game.time*.85+i*1.8)*8;
-   ctx.globalAlpha=(.38+.48*(1-travel/72))*vfxFade;
-   ctx.fillStyle=i%2?'#e8fbff':'#5fcfff';
-   ctx.strokeStyle='#071a2b';ctx.lineWidth=1;
-   ctx.fillRect(Math.round(x)-2,Math.round(y)-2,4,4);
-   ctx.strokeRect(Math.round(x)-2,Math.round(y)-2,4,4);
+   const travel=(game.time*7+i*18)%70,x=46-travel,y=Math.sin(game.time*.9+i*1.8)*8;
+   ctx.globalAlpha=(.28+.38*(1-travel/70))*vfxFade;ctx.fillStyle=i%2?'#e9fbff':'#64d2ff';
+   ctx.beginPath();ctx.arc(x,y,1.55,0,Math.PI*2);ctx.fill();
   }
   ctx.restore();return;
  }
@@ -6485,22 +6476,14 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   const turn=smoothstep01(clamp(p,0,1))*Math.PI*2,whirl=Math.sin(p*Math.PI);
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
-
-  // The hand sweep now completes a full, slower 360-degree rotation.
   for(let i=0;i<3;i++){
-   const radius=31+i*8,phase=turn*(i%2?-1:1)+i*2.05;
-   ctx.globalAlpha=(.58+.22*whirl)*(i===0?1:.72)*vfxFade;
-   ctx.strokeStyle='#071a2b';ctx.lineWidth=i===0?9:7;
-   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.66,0,phase,phase+1.58);ctx.stroke();
-   ctx.strokeStyle=i===1?'#dffaff':'#278dce';ctx.lineWidth=i===0?4.6:3.5;
-   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.66,0,phase,phase+1.58);ctx.stroke();
-   ctx.strokeStyle='#8ae4ff';ctx.lineWidth=1.25;
-   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.66,0,phase+.18,phase+.82);ctx.stroke();
+   const radius=29+i*8,phase=turn*(i%2?-1:1)+i*2.05;
+   ctx.globalAlpha=(.28+.24*whirl)*(i===0?1:.72)*vfxFade;
+   ctx.strokeStyle=i===1?'#dffaff':'#50c5f5';ctx.shadowColor='#42baff';ctx.shadowBlur=7;ctx.lineWidth=i===0?3.1:2;
+   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.66,0,phase,phase+1.62);ctx.stroke();
   }
-  ctx.globalAlpha=(.72+.18*whirl)*vfxFade;ctx.strokeStyle='#071a2b';ctx.lineWidth=9;
-  ctx.beginPath();ctx.arc(5,0,38,-Math.PI*.5+turn,-Math.PI*.5+turn+.88);ctx.stroke();
-  ctx.strokeStyle='#54caff';ctx.lineWidth=4.2;
-  ctx.beginPath();ctx.arc(5,0,38,-Math.PI*.5+turn,-Math.PI*.5+turn+.88);ctx.stroke();
+  ctx.globalAlpha=(.38+.26*whirl)*vfxFade;ctx.strokeStyle='#bcefff';ctx.shadowBlur=8;ctx.lineWidth=1.7;
+  ctx.beginPath();ctx.arc(5,0,35,-Math.PI*.5+turn,-Math.PI*.5+turn+.82);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
@@ -6508,33 +6491,29 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const impact=1-smoothstep01(clamp(p/.42,0,1)),fade=(1-.72*smoothstep01(clamp((p-.72)/.28,0,1)))*vfxFade;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // A bold, flat-colored crescent matches the game's dark-outlined hit effects.
-  ctx.globalAlpha=.96*fade;ctx.strokeStyle='#071a2b';ctx.lineWidth=25;
-  ctx.beginPath();ctx.moveTo(12,-17);ctx.quadraticCurveTo(60,-47,101,1);ctx.stroke();
-  ctx.strokeStyle='#176fba';ctx.lineWidth=17;
-  ctx.beginPath();ctx.moveTo(13,-17);ctx.quadraticCurveTo(60,-44,99,1);ctx.stroke();
-  ctx.strokeStyle='#63d2ff';ctx.lineWidth=7;
-  ctx.beginPath();ctx.moveTo(25,-23);ctx.quadraticCurveTo(67,-39,97,-2);ctx.stroke();
-  ctx.strokeStyle='#e8fbff';ctx.lineWidth=2.2;
-  ctx.beginPath();ctx.moveTo(42,-29);ctx.quadraticCurveTo(76,-31,101,0);ctx.stroke();
+  // A rounded, blue-white impact arc—stronger than a basic punch but in the same line style as Red.
+  ctx.globalAlpha=.34*fade;ctx.strokeStyle='#45bfff';ctx.lineWidth=19;ctx.shadowColor='#43bdff';ctx.shadowBlur=15;
+  ctx.beginPath();ctx.moveTo(15,-16);ctx.quadraticCurveTo(58,-43,97,1);ctx.stroke();
 
-  // Hard-edged impact rays and a thick pressure ring anchor the slap.
-  ctx.globalAlpha=.88*impact*fade;ctx.strokeStyle='#071a2b';ctx.lineWidth=6;
-  for(let i=0;i<7;i++){
-   const a=-1.12+i*.34;
+  const slash=ctx.createLinearGradient(18,-16,97,1);
+  slash.addColorStop(0,'rgba(71,177,255,0)');
+  slash.addColorStop(.42,'#3faeea');
+  slash.addColorStop(.8,'#9de9ff');
+  slash.addColorStop(1,'#ffffff');
+  ctx.globalAlpha=.88*fade;ctx.strokeStyle=slash;ctx.lineWidth=9+impact*2;ctx.shadowBlur=6;
+  ctx.beginPath();ctx.moveTo(18,-14);ctx.quadraticCurveTo(60,-38,95,0);ctx.stroke();
+
+  ctx.globalAlpha=.82*fade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.7;ctx.shadowColor='#c8f4ff';ctx.shadowBlur=4;
+  ctx.beginPath();ctx.moveTo(28,-19);ctx.quadraticCurveTo(69,-32,101,-1);ctx.stroke();
+
+  ctx.globalAlpha=.58*impact*fade;ctx.strokeStyle='#d8f7ff';ctx.lineWidth=1.7;ctx.shadowBlur=5;
+  for(let i=0;i<6;i++){
+   const a=-1.1+i*.36;
    ctx.beginPath();ctx.moveTo(87+Math.cos(a)*5,1+Math.sin(a)*5);
-   ctx.lineTo(87+Math.cos(a)*(17+(i%2)*5),1+Math.sin(a)*(17+(i%2)*5));ctx.stroke();
+   ctx.lineTo(87+Math.cos(a)*(13+(i%2)*4),1+Math.sin(a)*(13+(i%2)*4));ctx.stroke();
   }
-  ctx.strokeStyle='#9aeaff';ctx.lineWidth=2.6;
-  for(let i=0;i<5;i++){
-   const a=-.98+i*.44;
-   ctx.beginPath();ctx.moveTo(87+Math.cos(a)*7,1+Math.sin(a)*7);
-   ctx.lineTo(87+Math.cos(a)*14,1+Math.sin(a)*14);ctx.stroke();
-  }
-  const ring=11+(1-impact)*15;
-  ctx.globalAlpha=.86*fade;ctx.strokeStyle='#071a2b';ctx.lineWidth=6;
-  ctx.beginPath();ctx.arc(88,1,ring,-1.15,1.1);ctx.stroke();
-  ctx.strokeStyle='#66d3ff';ctx.lineWidth=3;
+  const ring=9+(1-impact)*15;
+  ctx.globalAlpha=.42*fade;ctx.strokeStyle='#6ed8ff';ctx.lineWidth=1.9;ctx.shadowBlur=7;
   ctx.beginPath();ctx.arc(88,1,ring,-1.15,1.1);ctx.stroke();
   ctx.restore();return;
  }
