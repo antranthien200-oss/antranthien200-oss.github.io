@@ -358,6 +358,15 @@ modifyProjectile(client,payload={}){
    this.broadcast(event,{sessionId:p.ownerId,id:p.clientId,x:p.x,y:p.y,...extra});
   };
   const hurt=(owner,target,damage,stun,push,angle,unblockable=false,ignoreInvuln=false,incomingType="projectile",blockedDamage=null)=>this.applyProjectileDamage(owner,target,damage,stun,push,angle,unblockable,ignoreInvuln,incomingType,blockedDamage);
+  const explodeRed=(p,x=p.x,y=p.y)=>{
+   const owner=this.state.players.get(p.ownerId);if(!owner)return;
+   const radius=203;
+   for(const [targetId,target] of this.state.players){
+    if(targetId===p.ownerId||target.dead||target.vehicleId||Math.hypot(target.x-x,target.y-y)>radius+23)continue;
+    const angle=Math.atan2(target.y-y,target.x-x);
+    hurt(owner,target,12.5,.38,18,angle,false,false,"explosion",6.25);
+   }
+  };
   for(const [id,p] of this.projectiles){
    const owner=this.state.players.get(p.ownerId);
    if(!owner||owner.dead){end(p);continue}
@@ -416,7 +425,10 @@ modifyProjectile(client,payload={}){
     }
    }
    const activeBuildings=BUILDING_LAYOUT.filter((building,index)=>!this.state.world.buildings.get(String(index))?.collapsed);
-   if(p.kind!=="sukunaFireArrow"&&isBlockedByBuilding(p,activeBuildings,Math.max(7,p.r*.65))){end(p);continue}
+   if(p.kind!=="sukunaFireArrow"&&isBlockedByBuilding(p,activeBuildings,Math.max(7,p.r*.65))){
+    if(p.kind==="red"){explodeRed(p);end(p,"combat:projectile-explode")}else end(p);
+    continue;
+   }
    if(p.kind==="sukunaFireArrow"){
     let hitTarget=null,hitTargetId="";
     for(const [targetId,candidate] of this.state.players){
@@ -432,11 +444,16 @@ modifyProjectile(client,payload={}){
    }else if(p.kind!=="blueMax"&&p.kind!=="bloodBomb"){
     let hitTarget=null,hitId="";
     for(const [targetId,candidate] of this.state.players){
-     if(targetId===p.ownerId||candidate.dead||candidate.vehicleId||candidate.invuln>0)continue;
+     if(targetId===p.ownerId||candidate.dead||candidate.vehicleId||(candidate.invuln>0&&p.kind!=="red"))continue;
      if(pointSegmentDistance(candidate,from,p)<=p.r+23){hitTarget=candidate;hitId=targetId;break}
     }
     if(hitTarget){
      const angle=Math.atan2(p.y-from.y,p.x-from.x);
+     if(p.kind==="red"){
+      explodeRed(p,p.x,p.y);
+      end(p,"combat:projectile-explode",{targetId:hitId});
+      continue;
+     }
      if(p.kind==="bloodBombProjectile"){
       let hitAny=false;
       for(const [candidateId,candidate] of this.state.players){
@@ -457,7 +474,11 @@ modifyProjectile(client,payload={}){
      end(p,"combat:projectile-hit",{targetId:hitId});continue;
     }
    }
-   if(p.life<=0||p.travelled>=p.maxDistance||p.x<20||p.y<20||p.x>WORLD_WIDTH-20||p.y>WORLD_HEIGHT-20){end(p);continue}
+   if(p.life<=0||p.travelled>=p.maxDistance||p.x<20||p.y<20||p.x>WORLD_WIDTH-20||p.y>WORLD_HEIGHT-20){
+    if(p.kind==="red"){p.x=clamp(p.x,25,WORLD_WIDTH-25);p.y=clamp(p.y,25,WORLD_HEIGHT-25);explodeRed(p);end(p,"combat:projectile-explode")}
+    else end(p);
+    continue;
+   }
   }
   if(now-this.projectileBatchAt>=33){
    this.projectileBatchAt=now;
