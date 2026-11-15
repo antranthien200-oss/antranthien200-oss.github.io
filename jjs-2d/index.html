@@ -4936,7 +4936,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     const caught=targetInAim(f,t,320,.82,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
     f.skillCd[idx]=15;f.attackAnim=.85;f.invuln=.12;setMotion(f,'gojoBlue',.85,angle,t);
     f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:caught?t:null,startDistance:caught?Math.hypot(t.x-orbX,t.y-orbY):0};
-    burst(orbX,orbY,'#65d9ff',12,2.8);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
+    burst(orbX,orbY,'#65d9ff',22,3.6);burst(orbX,orbY,'#d9f8ff',9,2.2);spawnGojoBlueSparks(f,orbX,orbY,12);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
     if(caught){
      damage(t,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',unblockable:true,ignoreInvuln:true});
      if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:1.95,elapsed:0,suctionDuration:.85};setMotion(t,'gojoBlueSucked',.85,angle,f)}
@@ -4952,7 +4952,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
         if(f.dead||t.dead||!game.started||game.over)return;
         if(dist(f,t)<190){
          damage(t,7.5,f,{stun:.78,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13-1,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
-         burst(t.x,t.y-23,'#b9efff',24,5.5);burst(t.x,t.y-23,'#4bbfff',16,4.5);
+         burst(t.x,t.y-23,'#b9efff',30,5.8);burst(t.x,t.y-23,'#4bbfff',22,4.8);spawnGojoBlueSparks(f,t.x,t.y-23,20);
          game.hitStop=Math.max(game.hitStop,.072);game.shake=Math.max(game.shake,8);
          popText(t.x,t.y-61,'BLUE SLAP','#e2f8ff',16);
         }else popText(f.x+Math.cos(angle)*100,f.y+Math.sin(angle)*100-48,'BLUE · MISS','#8ce5ff',11);
@@ -7596,6 +7596,79 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
  ctx.stroke();
  ctx.restore();
 }
+function drawGojoBlueHandTrail(f,hand,side,baseX,baseY){
+ let state=f.gojoBlueSharpTrailState;
+ if(!state||state.name!=='gojoBlue')state=f.gojoBlueSharpTrailState={name:'gojoBlue',a:[],b:[]};
+ const points=state[side],now=game.time,dx=hand.x-baseX,dy=hand.y-baseY,last=points[points.length-1];
+ if(!last||Math.hypot(dx-last.x,dy-last.y)>.8||now-last.time>.022)points.push({x:dx,y:dy,time:now});
+ while(points.length>18||(points.length&&now-points[0].time>.17))points.shift();
+ if(points.length<2)return;
+ const fade=clamp(1-(now-points[points.length-1].time)/.16,0,1);
+ const ribbon=(widthScale,color,alpha,blur)=>{
+  const left=[],right=[],n=points.length;
+  for(let i=0;i<n;i++){
+   const before=points[Math.max(0,i-1)],after=points[Math.min(n-1,i+1)];
+   const tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx=-ty/len,ny=tx/len,u=i/(n-1);
+   // A needle-thin tail widens toward the hand, like Vessel's dash wake.
+   const width=(.22+7.2*Math.pow(u,.92))*widthScale;
+   left.push([baseX+points[i].x+nx*width,baseY+points[i].y+ny*width]);
+   right.push([baseX+points[i].x-nx*width,baseY+points[i].y-ny*width]);
+  }
+  ctx.globalAlpha=alpha*fade;ctx.fillStyle=color;ctx.shadowColor=color;ctx.shadowBlur=blur;
+  ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);
+  for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);
+  for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);
+  ctx.closePath();ctx.fill();
+ };
+ ctx.save();ctx.lineJoin='round';
+ ribbon(1,'#126eb8',.72,11);
+ ribbon(.53,'#39bfff',.88,6);
+ ribbon(.19,'#ddfaff',.8,2);
+ ctx.restore();
+}
+function spawnGojoBlueSparks(f,x,y,count=2){
+ if(!f.gojoBlueSparks)f.gojoBlueSparks=[];
+ const sparks=f.gojoBlueSparks;
+ for(let i=0;i<count;i++){
+  const a=rnd(0,Math.PI*2),speed=rnd(.8,2.8),bright=Math.random()<.34;
+  sparks.push({x:x+rnd(-3,3),y:y+rnd(-3,3),vx:Math.cos(a)*speed,vy:Math.sin(a)*speed,life:rnd(.16,.34),max:.34,size:rnd(1.7,3.6),rot:rnd(0,Math.PI),spin:rnd(-.12,.12),color:bright?'#e4fbff':(Math.random()<.5?'#55caff':'#238bd8')});
+ }
+ const limit=isMobileDevice?36:64;
+ if(sparks.length>limit)sparks.splice(0,sparks.length-limit);
+}
+function emitGojoBlueSkillSparks(f,name){
+ const now=game.time,interval=name==='gojoBlue'?.085:name==='gojoBlueSpin'?.065:.075;
+ if(now<(f.gojoBlueSparkNext||0))return;
+ f.gojoBlueSparkNext=now+interval;
+ if(name==='gojoBlue'){
+  const orb=f.gojoBlueOrb;if(!orb)return;
+  const a=now*12.5,r=7+Math.sin(now*19)*2;
+  spawnGojoBlueSparks(f,orb.x+Math.cos(a)*r,orb.y+Math.sin(a)*r,2);
+  spawnGojoBlueSparks(f,orb.x-Math.cos(a)*r,orb.y-Math.sin(a)*r,1);
+  return;
+ }
+ const pose=f.gojoBlueTrailPose;if(!pose)return;
+ const zoom=camera.zoom||1,baseX=sx(f.x),baseY=sy(f.y)-f.jump*3-23,worldBaseY=f.y-(23+f.jump*3)/zoom;
+ for(const side of ['a','b']){
+  const hand=pose[side],worldX=f.x+(hand.x-baseX)/zoom,worldY=worldBaseY+(hand.y-baseY)/zoom;
+  spawnGojoBlueSparks(f,worldX,worldY,name==='gojoBlueSlap'?3:2);
+ }
+}
+function drawGojoBlueSparks(f){
+ const sparks=f.gojoBlueSparks;if(!sparks||!sparks.length)return;
+ const now=game.time,last=Number.isFinite(f.gojoBlueSparkUpdateAt)?f.gojoBlueSparkUpdateAt:now,dt=clamp(now-last,0,.05);
+ f.gojoBlueSparkUpdateAt=now;
+ ctx.save();
+ for(let i=sparks.length-1;i>=0;i--){
+  const p=sparks[i];p.life-=dt;
+  if(p.life<=0){sparks.splice(i,1);continue}
+  p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=Math.pow(.91,dt*60);p.vy*=Math.pow(.91,dt*60);p.rot+=p.spin*60*dt;
+  const alpha=clamp(p.life/p.max,0,1),size=p.size*(.55+.45*alpha),x=sx(p.x),y=sy(p.y);
+  ctx.save();ctx.translate(x,y);ctx.rotate(p.rot);ctx.globalAlpha=alpha*.92;ctx.fillStyle=p.color;ctx.shadowColor=p.color;ctx.shadowBlur=5;
+  ctx.beginPath();ctx.moveTo(0,-size);ctx.lineTo(size*.62,0);ctx.lineTo(0,size);ctx.lineTo(-size*.62,0);ctx.closePath();ctx.fill();ctx.restore();
+ }
+ ctx.restore();
+}
 function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
 function drawStunRain(f,x,y){
  if(!f)return;
@@ -8021,11 +8094,11 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
  if(name==='gojoBlueSpin'||name==='gojoBlueSlap'){
-  // Store the current hand positions; render their M1 trails after every fighter is drawn.
+  // Preserve both animated hand positions for a sharp, tapered foreground wake.
   f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
   if(!deferMotionVfx){
-   drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
-   drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
+   drawGojoBlueHandTrail(f,handA,'a',x,headY);
+   drawGojoBlueHandTrail(f,handB,'b',x,headY);
   }
  }else if(f.sideViewPreview&&(combo||name==='yujiBlackFlash')){
   // Both preview fists leave their own trail as they punch in alternating rhythm.
@@ -8045,6 +8118,10 @@ function drawHeadHands(f,deferMotionVfx=false){
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
  if(name!=='gojoBlueSpin'&&name!=='gojoBlueSlap')f.gojoBlueTrailPose=null;
+ if(name!=='gojoBlue'&&name!=='gojoBlueSpin'&&name!=='gojoBlueSlap'){
+  if(f.gojoBlueSharpTrailState){f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0}
+  f.gojoBlueSparkNext=0;
+ }
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);if(!deferMotionVfx&&name!=='carEnter'&&name!=='carExit'&&!(m&&m.skipMotionVfx))drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(name==='trashCanPickup'||f.carryingTrashCan){
   const hold=P(31,0,24);let canX=hold.x,canY=hold.y;
@@ -8195,23 +8272,25 @@ function drawFighter(f){
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
 }
 function drawFighterMotionOverlays(f){
- if(!f||f.dead||f.vehicleTransition||!f.motion)return;
- const m=f.motion,name=m.name||'';
- if(name==='carEnter'||name==='carExit'||m.skipMotionVfx)return;
+ if(!f||f.dead||f.vehicleTransition)return;
+ const m=f.motion;
+ if(!m){drawGojoBlueSparks(f);return}
+ const name=m.name||'';
+ if(name==='carEnter'||name==='carExit'||m.skipMotionVfx){drawGojoBlueSparks(f);return}
  const progress=clamp(m.t/(m.activeDuration||m.duration||1),0,1);
  const vfxFade=m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const x=sx(f.x),y=sy(f.y)-f.jump*3,headY=y-23;
  const combo=name.startsWith('m1_');
  const angle=Number.isFinite(m.angle)?m.angle:f.face;
  if((name==='gojoBlueSpin'||name==='gojoBlueSlap')&&f.gojoBlueTrailPose){
-  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
-  const trailColor=brightenM1TrailColor(palette.accent||palette.main);
-  drawM1HandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY,true,trailColor);
-  drawM1HandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY,true,trailColor);
+  drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
+  drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
  }
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
  drawMotionVfx(f,name,progress,getFighterLook(f),vfxFade);
  ctx.restore();
+ if(name==='gojoBlue'||name==='gojoBlueSpin'||name==='gojoBlueSlap')emitGojoBlueSkillSparks(f,name,progress);
+ drawGojoBlueSparks(f);
 }
 function drawFighterHandsForeground(f){
  if(!f||f.dead||!f.motionHandPose)return;
