@@ -6404,95 +6404,145 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const orb=f.gojoBlueOrb;
   if(orb&&orb.target&&Math.hypot(orb.target.x-orb.x,orb.target.y-orb.y)<24)return;
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const x=72,y=-3,pulse=.94+.06*Math.sin(game.time*19),fade=(.96-.12*clamp(p,0,1))*vfxFade;
-  const spin=game.time*2.6;
+  const x=72,y=-3,pulse=.98+.02*Math.sin(game.time*2.8),fade=(.98-.08*clamp(p,0,1))*vfxFade;
+  const spin=game.time*.58;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // Fine pressure streams bend into the center instead of reading as a flat beam.
-  for(let i=0;i<5;i++){
-   const lane=i-2,wave=Math.sin(game.time*7+i*1.35)*2.2;
-   const sy=lane*10+wave,ey=y+lane*1.15;
-   const stream=ctx.createLinearGradient(35,sy,70,ey);
-   stream.addColorStop(0,'rgba(45,155,255,0)');
-   stream.addColorStop(.52,'rgba(67,184,255,.34)');
-   stream.addColorStop(1,'rgba(206,247,255,.8)');
-   ctx.globalAlpha=(.46-Math.abs(lane)*.055)*fade;
-   ctx.strokeStyle=stream;ctx.lineWidth=i===2?2.15:1.25;
-   ctx.beginPath();ctx.moveTo(34,sy);
-   ctx.bezierCurveTo(48,sy+lane*2.5,57,ey+wave*.65,69,ey);ctx.stroke();
+  // Broad inward-flowing bands use the same chunky outlined language as the game's hit effects.
+  for(let i=0;i<3;i++){
+   const lane=i-1,wave=Math.sin(game.time*2.1+i*1.6)*2.4;
+   const sy=lane*15+wave,ey=y+lane*2;
+   ctx.globalAlpha=(.48-Math.abs(lane)*.08)*fade;
+   ctx.strokeStyle='#145fae';ctx.lineWidth=i===1?6:4.5;
+   ctx.beginPath();ctx.moveTo(30,sy);ctx.quadraticCurveTo(49,sy+lane*3,69,ey);ctx.stroke();
+   ctx.strokeStyle=i===1?'#6bd8ff':'#399eea';ctx.lineWidth=i===1?3.2:2.1;
+   ctx.beginPath();ctx.moveTo(30,sy);ctx.quadraticCurveTo(49,sy+lane*3,69,ey);ctx.stroke();
+   ctx.globalAlpha=.74*fade;ctx.strokeStyle='#dff9ff';ctx.lineWidth=.9;
+   ctx.beginPath();ctx.moveTo(42,sy+lane);ctx.quadraticCurveTo(55,sy+lane*1.5,68,ey);ctx.stroke();
   }
 
-  // A restrained pair of orbiting arcs gives the compact orb a gravitational shell.
-  ctx.globalAlpha=.62*fade;ctx.strokeStyle='#58caff';ctx.shadowColor='#39baff';ctx.shadowBlur=9;ctx.lineWidth=1.55;
-  ctx.beginPath();ctx.ellipse(x,y,14.2*pulse,8.6*pulse,-.28+Math.sin(spin)*.08,spin,spin+2.28);ctx.stroke();
-  ctx.globalAlpha=.54*fade;ctx.strokeStyle='#d8f8ff';ctx.shadowBlur=5;ctx.lineWidth=1.05;
-  ctx.beginPath();ctx.ellipse(x,y,11.4*pulse,6.5*pulse,.34,-spin*.82,-spin*.82+1.48);ctx.stroke();
+  // A slow pair of orbit rings frames a dense, compact Blue core.
+  ctx.globalAlpha=.78*fade;ctx.strokeStyle='#104f9b';ctx.lineWidth=4.2;ctx.shadowColor='#36b9ff';ctx.shadowBlur=8;
+  ctx.beginPath();ctx.ellipse(x,y,17.5,11.2,-.24,spin,spin+2.18);ctx.stroke();
+  ctx.globalAlpha=.9*fade;ctx.strokeStyle='#55caff';ctx.lineWidth=2.1;ctx.shadowBlur=4;
+  ctx.beginPath();ctx.ellipse(x,y,17.5,11.2,-.24,spin,spin+2.18);ctx.stroke();
+  ctx.globalAlpha=.76*fade;ctx.strokeStyle='#e4fbff';ctx.lineWidth=1.1;ctx.shadowBlur=0;
+  ctx.beginPath();ctx.ellipse(x,y,13.4,8.5,.3,-spin*.72,-spin*.72+1.28);ctx.stroke();
 
-  // Soft blue pressure halo; the core stays compact and readable.
-  const halo=ctx.createRadialGradient(x,y,1.2,x,y,15.8);
-  halo.addColorStop(0,'rgba(105,212,255,.34)');
-  halo.addColorStop(.42,'rgba(46,155,255,.22)');
-  halo.addColorStop(1,'rgba(25,91,195,0)');
-  ctx.globalAlpha=fade;ctx.fillStyle=halo;ctx.shadowColor='#32baff';ctx.shadowBlur=15;
-  ctx.beginPath();ctx.arc(x,y,15.8,0,Math.PI*2);ctx.fill();
+  const halo=ctx.createRadialGradient(x,y,2,x,y,19);
+  halo.addColorStop(0,'rgba(89,198,255,.38)');
+  halo.addColorStop(.64,'rgba(28,126,226,.22)');
+  halo.addColorStop(1,'rgba(10,63,150,0)');
+  ctx.globalAlpha=fade;ctx.fillStyle=halo;ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.fill();
 
-  const r=6.9*pulse,core=ctx.createRadialGradient(x-2.2,y-2.5,.35,x,y,r*1.72);
+  const r=8.2*pulse,core=ctx.createRadialGradient(x-2,y-2.5,.4,x,y,r*1.55);
   core.addColorStop(0,'#ffffff');
-  core.addColorStop(.22,'#e1fbff');
-  core.addColorStop(.48,'#83e3ff');
-  core.addColorStop(.76,'#269fff');
-  core.addColorStop(1,'rgba(18,91,206,0)');
-  ctx.globalAlpha=fade;ctx.fillStyle=core;ctx.shadowColor='#69dfff';ctx.shadowBlur=14;
-  ctx.beginPath();ctx.arc(x,y,r*1.72,0,Math.PI*2);ctx.fill();
+  core.addColorStop(.2,'#d9f8ff');
+  core.addColorStop(.47,'#78dfff');
+  core.addColorStop(.78,'#258ce9');
+  core.addColorStop(1,'#0753ad');
+  ctx.globalAlpha=fade;ctx.fillStyle=core;ctx.shadowColor='#38baff';ctx.shadowBlur=8;
+  ctx.beginPath();ctx.arc(x,y,r*1.35,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;ctx.strokeStyle='#e2faff';ctx.lineWidth=2;ctx.globalAlpha=.92*fade;
+  ctx.beginPath();ctx.arc(x,y,r*1.35,0,Math.PI*2);ctx.stroke();
+  ctx.strokeStyle='#0b4e9d';ctx.lineWidth=1.6;ctx.globalAlpha=.88*fade;
+  ctx.beginPath();ctx.arc(x,y,r*1.05,.25,Math.PI*1.72);ctx.stroke();
+  ctx.fillStyle='#ffffff';ctx.globalAlpha=.94*fade;
+  ctx.beginPath();ctx.ellipse(x-2.8,y-3,2.1,1.3,-.48,0,Math.PI*2);ctx.fill();
 
-  // A darker center and a crisp specular glint make it feel like a dense point of pull.
-  const well=ctx.createRadialGradient(x+1.2,y+1.4,.2,x+1.2,y+1.4,4.8);
-  well.addColorStop(0,'rgba(18,80,170,.5)');
-  well.addColorStop(.65,'rgba(22,111,205,.25)');
-  well.addColorStop(1,'rgba(22,111,205,0)');
-  ctx.shadowBlur=0;ctx.fillStyle=well;ctx.beginPath();ctx.arc(x+1.2,y+1.4,4.8,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=.94*fade;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.ellipse(x-2.4,y-2.7,1.8,1.05,-.5,0,Math.PI*2);ctx.fill();
-
-  // Tiny motes orbit the shell, never turning into square/pixel particles.
-  for(let i=0;i<4;i++){
-   const a=spin*1.25+i*Math.PI*.5,rr=12.7+Math.sin(game.time*8+i)*.7;
-   ctx.globalAlpha=(.46+.22*Math.sin(game.time*10+i))*fade;
-   ctx.fillStyle=i%2?'#eafcff':'#63d4ff';
-   ctx.beginPath();ctx.arc(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.62,1.05,0,Math.PI*2);ctx.fill();
+  // A few larger motes drift slowly around the shell instead of flickering rapidly.
+  for(let i=0;i<3;i++){
+   const a=spin*.8+i*Math.PI*2/3,rr=17+Math.sin(game.time*2+i)*.8;
+   ctx.globalAlpha=(.62+.12*Math.sin(game.time*2.5+i))*fade;
+   ctx.fillStyle=i===1?'#eaffff':'#69d7ff';
+   ctx.beginPath();ctx.arc(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.6,1.7,0,Math.PI*2);ctx.fill();
   }
   ctx.restore();return;
  }
  if(m==='gojoBlueSucked'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,phase=game.time*8.5;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,phase=game.time*2.35;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // Flow lines trail behind the captured fighter and stream toward the caster.
-  for(let i=0;i<4;i++){
-   const lane=i-1.5,wave=Math.sin(phase+i*1.7)*3.2;
-   const y=lane*12+wave,flow=ctx.createLinearGradient(47,y,-9,lane*2);
-   flow.addColorStop(0,'rgba(70,177,255,0)');
-   flow.addColorStop(.42,'rgba(66,185,255,.4)');
-   flow.addColorStop(1,'rgba(213,249,255,.86)');
-   ctx.globalAlpha=(.55-Math.abs(lane)*.07)*vfxFade;
-   ctx.strokeStyle=flow;ctx.lineWidth=i===1||i===2?2.1:1.35;
-   ctx.beginPath();ctx.moveTo(47,y);
-   ctx.bezierCurveTo(27,y+wave*.45,14,lane*5-4,-9,lane*2);ctx.stroke();
+  // Three heavy curved ribbons visibly bend toward the Blue core.
+  for(let i=0;i<3;i++){
+   const lane=i-1,wave=Math.sin(phase+i*1.4)*3.5;
+   const y=lane*17+wave;
+   ctx.globalAlpha=(.62-Math.abs(lane)*.1)*vfxFade;
+   ctx.strokeStyle='#124e94';ctx.lineWidth=i===1?7:5.5;
+   ctx.beginPath();ctx.moveTo(48,y);ctx.bezierCurveTo(26,y+wave*.5,14,lane*8-5,-12,lane*2);ctx.stroke();
+   ctx.strokeStyle=i===1?'#59caff':'#348fe0';ctx.lineWidth=i===1?3.6:2.7;
+   ctx.beginPath();ctx.moveTo(48,y);ctx.bezierCurveTo(26,y+wave*.5,14,lane*8-5,-12,lane*2);ctx.stroke();
+   ctx.globalAlpha=.72*vfxFade;ctx.strokeStyle='#d8f8ff';ctx.lineWidth=1;
+   ctx.beginPath();ctx.moveTo(34,y-1);ctx.quadraticCurveTo(12,lane*7-4,-10,lane*2);ctx.stroke();
   }
-  // A couple of curved eddies show the target being compressed into the pull.
-  ctx.globalAlpha=.28*vfxFade;ctx.strokeStyle='#7cdeff';ctx.shadowColor='#4bbfff';ctx.shadowBlur=7;ctx.lineWidth=1.5;
-  const turn=phase*.34;
-  ctx.beginPath();ctx.ellipse(1,0,25,31,0,turn,turn+1.48);ctx.stroke();
-  ctx.globalAlpha=.2*vfxFade;ctx.strokeStyle='#e5fbff';ctx.lineWidth=1;
-  ctx.beginPath();ctx.ellipse(1,0,20,26,0,-turn*.8,-turn*.8+1.05);ctx.stroke();
 
-  for(let i=0;i<5;i++){
-   const travel=(game.time*46+i*13)%58,x=43-travel,y=Math.sin(game.time*9+i*1.8)*7;
-   ctx.globalAlpha=(.22+.5*(1-travel/58))*vfxFade;ctx.fillStyle=i%2?'#effcff':'#69d7ff';
-   ctx.beginPath();ctx.arc(x,y,1.1+(i%2)*.25,0,Math.PI*2);ctx.fill();
+  // Large motes move slowly along the pull to make its direction immediately readable.
+  for(let i=0;i<4;i++){
+   const travel=(game.time*13+i*15)%62,x=45-travel,y=Math.sin(game.time*2+i*1.8)*9;
+   ctx.globalAlpha=(.3+.5*(1-travel/62))*vfxFade;
+   ctx.fillStyle=i%2?'#e8fbff':'#54caff';
+   ctx.strokeStyle='#145a9d';ctx.lineWidth=.8;
+   ctx.beginPath();ctx.arc(x,y,2.1,0,Math.PI*2);ctx.fill();ctx.stroke();
   }
   ctx.restore();return;
  }
- if(m==='gojoBlueSuckedEnd')return;
+ if(m==='gojoBlueSpin'){
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
+  const eased=p*p*(3-2*p),turn=game.time*.66+eased*Math.PI*.72,whirl=Math.sin(p*Math.PI);
+  ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
+
+  // Thick blue bands circle the arm slowly; dark rims keep them consistent with the game's bold effects.
+  for(let i=0;i<3;i++){
+   const radius=31+i*9,phase=turn*(i%2?-1:1)+i*2.05;
+   ctx.globalAlpha=(.5+.24*whirl)*(i===0?1:.72)*vfxFade;
+   ctx.strokeStyle='#124e94';ctx.shadowColor='#2aaeff';ctx.shadowBlur=7;ctx.lineWidth=i===0?6.2:4.6;
+   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.65,0,phase,phase+1.62);ctx.stroke();
+   ctx.strokeStyle=i===1?'#e4faff':'#55caff';ctx.shadowBlur=2;ctx.lineWidth=i===0?2.8:2.0;
+   ctx.beginPath();ctx.ellipse(5,0,radius,radius*.65,0,phase,phase+1.62);ctx.stroke();
+  }
+  // A slower bright leading arc emphasizes the weight of the turn.
+  ctx.globalAlpha=(.56+.2*whirl)*vfxFade;ctx.strokeStyle='#12539b';ctx.lineWidth=5.8;ctx.shadowBlur=6;
+  ctx.beginPath();ctx.arc(5,0,37,-Math.PI*.5+turn,-Math.PI*.5+turn+.88);ctx.stroke();
+  ctx.strokeStyle='#ddf9ff';ctx.lineWidth=1.8;ctx.shadowBlur=2;
+  ctx.beginPath();ctx.arc(5,0,37,-Math.PI*.5+turn,-Math.PI*.5+turn+.88);ctx.stroke();
+  ctx.restore();return;
+ }
+ if(m==='gojoBlueSlap'){
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
+  const impact=1-smoothstep01(clamp(p/.38,0,1)),fade=(1-.72*smoothstep01(clamp((p-.72)/.28,0,1)))*vfxFade;
+  ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
+
+  // Thick, clean game-style crescent with a dark rim, blue body and white striking edge.
+  ctx.globalAlpha=.76*fade;ctx.strokeStyle='#0b4d96';ctx.lineWidth=21;ctx.shadowColor='#2caeff';ctx.shadowBlur=9;
+  ctx.beginPath();ctx.moveTo(13,-17);ctx.quadraticCurveTo(61,-45,98,1);ctx.stroke();
+  const slash=ctx.createLinearGradient(17,-17,98,1);
+  slash.addColorStop(0,'#176fca');slash.addColorStop(.48,'#45bfff');slash.addColorStop(.83,'#9ceaff');slash.addColorStop(1,'#ffffff');
+  ctx.globalAlpha=.96*fade;ctx.strokeStyle=slash;ctx.lineWidth=14+impact*2;ctx.shadowBlur=4;
+  ctx.beginPath();ctx.moveTo(15,-16);ctx.quadraticCurveTo(61,-42,97,0);ctx.stroke();
+  ctx.globalAlpha=.95*fade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=2.2;ctx.shadowColor='#c8f4ff';ctx.shadowBlur=3;
+  ctx.beginPath();ctx.moveTo(25,-20);ctx.quadraticCurveTo(69,-35,103,-2);ctx.stroke();
+
+  // Short blocky pressure strokes add weight without turning the impact into noisy sparks.
+  ctx.globalAlpha=.84*impact*fade;ctx.strokeStyle='#13549b';ctx.lineWidth=4.6;ctx.shadowBlur=4;
+  for(let i=0;i<7;i++){
+   const a=-1.12+i*.34,inner=7,outer=18+(i%2)*5;
+   ctx.beginPath();ctx.moveTo(88+Math.cos(a)*inner,1+Math.sin(a)*inner);
+   ctx.lineTo(88+Math.cos(a)*outer,1+Math.sin(a)*outer);ctx.stroke();
+  }
+  ctx.globalAlpha=.9*impact*fade;ctx.strokeStyle='#dffaff';ctx.lineWidth=1.5;
+  for(let i=0;i<5;i++){
+   const a=-.98+i*.44;
+   ctx.beginPath();ctx.moveTo(88+Math.cos(a)*8,1+Math.sin(a)*8);
+   ctx.lineTo(88+Math.cos(a)*15,1+Math.sin(a)*15);ctx.stroke();
+  }
+  // A compact expanding ring gives the strike a decisive point of contact.
+  const ring=12+Math.sin(game.time*1.4)*1.5;
+  ctx.globalAlpha=.72*fade;ctx.strokeStyle='#10519a';ctx.lineWidth=4.5;ctx.shadowBlur=6;
+  ctx.beginPath();ctx.arc(88,1,ring,-1.15,1.1);ctx.stroke();
+  ctx.globalAlpha=.9*fade;ctx.strokeStyle='#dffaff';ctx.lineWidth=1.7;ctx.shadowBlur=0;
+  ctx.beginPath();ctx.arc(88,1,ring,-1.15,1.1);ctx.stroke();
+  ctx.restore();return;
+ }
  if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   const turn=clamp(p,0,1)*Math.PI*2,whirl=Math.sin(p*Math.PI);
