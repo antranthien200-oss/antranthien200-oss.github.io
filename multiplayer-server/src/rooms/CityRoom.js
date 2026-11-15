@@ -563,7 +563,7 @@ killPlayer(p){
   if(now-(this.lastBuildingAt.get(key)||0)<350)return;
   this.lastBuildingAt.set(key,now);
   state.stage=Math.min(3,state.stage+1);
-  if(state.stage>=3){state.collapsed=true;state.respawnTimer=25}
+  if(state.stage>=3){state.collapsed=true;state.respawnTimer=60}
  }
  hitProp(client,payload={}){
   const p=this.state.players.get(client.sessionId),id=Number(payload.propId),state=this.state.world.props.get(String(id)),source=PROP_SPAWNS.find(x=>x.id===id);
@@ -609,7 +609,7 @@ killPlayer(p){
      this.lastBuildingAt.set(key,now);
      const stages=impactSpeed>=370?3:impactSpeed>=245?2:1;
      state.stage=Math.min(3,state.stage+stages);
-     if(state.stage>=3){state.collapsed=true;state.respawnTimer=25;}
+     if(state.stage>=3){state.collapsed=true;state.respawnTimer=60;}
     }
    }
    if(!state.collapsed){hitBuilding=true;break}
