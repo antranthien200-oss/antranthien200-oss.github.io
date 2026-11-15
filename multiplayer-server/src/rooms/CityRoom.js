@@ -117,7 +117,7 @@ export class CityRoom extends Room{
   p.motionName=n.motionName;p.motionProgress=n.motionProgress;p.motionDuration=n.motionDuration;
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
-  if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.60;return}
+  if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.85;return}
   if(p.grabbedBy||p.activeGrabTarget){p.moveX=0;p.moveY=0;return}
   if(p.stun>0){p.moveX=0;p.moveY=0}
   if(p.vehicleId){
