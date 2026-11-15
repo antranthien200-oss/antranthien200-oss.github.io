@@ -92,6 +92,7 @@ export function isMoveAuthorizedForAction(character,moveName,actionKind){
 export function isProjectileMoveAllowed(character,moveName){
  const move=String(moveName||"").slice(0,48);
  if(/^trashCanThrow$/i.test(move)||/^(chosoSupernova|trashManEruption)$/i.test(move))return true;
+ if(/^gojoRed$/i.test(move))return character==="honored";
  if(!isMoveAllowed(character,move)||/domain|shrine|void/i.test(move))return false;
  return combatProfile(character,move).range>=650;
 }
