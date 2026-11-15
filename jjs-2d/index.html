@@ -6736,6 +6736,13 @@ function drawAccessoryOverlays(f,x,y,scale=1){
   ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.closePath();
   ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lineWidth;ctx.stroke()}
  };
+ // These helpers must live in this renderer as well as the detail renderer:
+ // accessory tiles call drawAccessoryOverlays directly.
+ const poly=polygon;
+ const path=(points,color,lineWidth=1,dash=[])=>{
+  ctx.beginPath();points.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));
+  ctx.strokeStyle=color;ctx.lineWidth=lineWidth;ctx.setLineDash(dash);ctx.stroke();ctx.setLineDash([]);
+ };
 
  // Neck and back pieces sit along the lower rim of the floating head.
  if(a.neck==='red-scarf'||a.neck==='black-scarf'){
