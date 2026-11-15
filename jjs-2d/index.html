@@ -6374,6 +6374,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
  // Sukuna Flurry's captured target uses the shared red stun streaks.
  if(m==='captured_sukunaFlurry')return;
+ if(m==='sukunaHeadCarryMiss')return;
  if(m==='sukunaAwaken'){
   const slump=1-smoothstep01(clamp(p/.42,0,1));
   const takeover=Math.sin(Math.PI*clamp((p-.43)/.52,0,1));
@@ -7402,9 +7403,10 @@ function drawStunRain(f,x,y){
  if(!f)return;
  const motionName=f.motion&&typeof f.motion.name==='string'?f.motion.name:'';
  const vesselSkillOne=f.char==='vessel'&&!f.awakened&&(motionName==='yujiCursedDrag'||motionName==='yujiCursedDragEnd');
- if(f.stun<=.04&&!vesselSkillOne)return;
- const strength=vesselSkillOne?1:clamp(f.stun/.28,.35,1);
- const captured=vesselSkillOne||motionName.startsWith('captured_');
+ const sukunaRushMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaHeadCarryMiss';
+ if(f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss)return;
+ const strength=vesselSkillOne||sukunaRushMiss?1:clamp(f.stun/.28,.35,1);
+ const captured=vesselSkillOne||sukunaRushMiss||motionName.startsWith('captured_');
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=0;
  for(let i=0;i<9;i++){
   const phase=(game.time*31+i*13)%48;
