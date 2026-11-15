@@ -6436,21 +6436,30 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(m==='gojoBlueSpin')return;
  if(m==='gojoBlueSlap'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const strike=smoothstep01(clamp((p-.18)/.52,0,1));
-  const fade=(1-.75*smoothstep01(clamp((p-.72)/.28,0,1)))*vfxFade;
+  const strike=smoothstep01(clamp((p-.24)/.46,0,1));
+  const fade=(1-.72*smoothstep01(clamp((p-.76)/.24,0,1)))*vfxFade;
+  const target=f.motion&&f.motion.target;
+  const targetForward=target&&Number.isFinite(target.x)
+   ?(target.x-f.x)*Math.cos(angle)+(target.y-(f.y-23))*Math.sin(angle)
+   :64;
+  const contact=clamp(targetForward-6,42,86);
+  const endX=contact,endY=42,controlX=contact+14,steps=16;
+  const pointAt=t=>{const u=1-t;return{x:u*u*contact+2*u*t*controlX+t*t*endX,y:u*u*(-42)+2*u*t*0+t*t*endY}};
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // A wide, flat sweep follows the open palm across the target.
-  ctx.globalAlpha=(.36+.2*strike)*fade;ctx.strokeStyle='#3aa7ea';ctx.lineWidth=17;ctx.shadowColor='#45bfff';ctx.shadowBlur=9;
-  ctx.beginPath();ctx.moveTo(26,7);ctx.quadraticCurveTo(62,-21,100,-4);ctx.stroke();
-  ctx.globalAlpha=.92*fade;ctx.strokeStyle='#8ee5ff';ctx.lineWidth=6.5;ctx.shadowBlur=4;
-  ctx.beginPath();ctx.moveTo(31,5);ctx.quadraticCurveTo(66,-15,99,-4);ctx.stroke();
+  // A single broad curved sweep tracks the hand as it slaps across the opponent.
+  for(const layer of [{color:'#299fe3',width:13,alpha:.48,blur:8},{color:'#c7f4ff',width:4.2,alpha:.9,blur:3}]){
+   ctx.globalAlpha=layer.alpha*fade;ctx.strokeStyle=layer.color;ctx.lineWidth=layer.width;ctx.shadowColor='#55caff';ctx.shadowBlur=layer.blur;
+   ctx.beginPath();ctx.moveTo(contact,-42);
+   for(let i=1;i<=steps;i++){const point=pointAt(strike*i/steps);ctx.lineTo(point.x,point.y)}
+   ctx.stroke();
+  }
 
-  // Four short parallel finger trails make the open-hand slap read clearly.
-  ctx.globalAlpha=(.45+.45*strike)*fade;ctx.strokeStyle='#e6faff';ctx.lineWidth=1.7;ctx.shadowBlur=2;
-  for(let i=0;i<4;i++){
-   const y=-10+i*4.5;
-   ctx.beginPath();ctx.moveTo(79,y);ctx.lineTo(101,y-2);ctx.stroke();
+  // A brief, restrained impact flash marks the palm landing without a punch-shaped burst.
+  const impact=smoothstep01(clamp((p-.48)/.12,0,1))*(1-smoothstep01(clamp((p-.78)/.18,0,1)));
+  if(impact>.01){
+   ctx.globalAlpha=.62*impact*fade;ctx.strokeStyle='#e5faff';ctx.lineWidth=2;ctx.shadowBlur=5;
+   ctx.beginPath();ctx.ellipse(contact+13,0,12+7*impact,9+4*impact,0,0,Math.PI*2);ctx.stroke();
   }
   ctx.restore();return;
  }
@@ -7701,16 +7710,32 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*2,orbit=27;
-    // Both original round hands travel on one true circle centered on the player's head/body origin.
+    const spin=progress*Math.PI*2,orbit=43;
+    // Both original round hands travel on a wider true circle centered on the player's head/body origin.
     handA=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
     handB=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
     handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
-    const load=smoothstep01(clamp(progress/.22,0,1)),slap=smoothstep01(clamp((progress-.18)/.48,0,1)),recover=smoothstep01(clamp((progress-.76)/.24,0,1));
-    handA=P(10,18,-5);
-    handB=P(lerp(13,87,slap)-recover*23,lerp(-19,-5,slap),-7+Math.sin(slap*Math.PI)*5);
-    handBScale=1.15;handAScale=.9;handBAngle=angle;
+    // The finish is a sideways open-palm sweep across the target, not a straight punch.
+    const windup=smoothstep01(clamp(progress/.24,0,1));
+    const swing=smoothstep01(clamp((progress-.24)/.46,0,1));
+    const recover=smoothstep01(clamp((progress-.70)/.30,0,1));
+    const targetForward=m&&m.target&&Number.isFinite(m.target.x)
+     ?(m.target.x-f.x)*nx+(m.target.y-(f.y-23))*ny
+     :reach+6;
+    const contact=clamp(targetForward-6,42,86);
+    const forward=progress<.24?lerp(22,contact,windup)
+     :progress<.70?contact+Math.sin(swing*Math.PI)*7
+     :lerp(contact,26,recover);
+    const side=progress<.24?lerp(-22,-42,windup)
+     :progress<.70?lerp(-42,42,swing)
+     :lerp(42,18,recover);
+    const lift=progress<.24?lerp(-4,-11,windup)
+     :progress<.70?-11+Math.sin(swing*Math.PI)*7
+     :lerp(-4,-2,recover);
+    handA=P(8,20,-5);
+    handB=P(forward,side,lift);
+    handBScale=1.18;handAScale=.92;handBAngle=angle;
    }else if(name==='gojoBlue'||name==='gojoBlueMax'){
     const spread=name==='gojoBlueMax'?20-12*pulse:18-11*pulse,forward=20+26*smooth;
     handA=P(forward,spread,-8-5*pulse);handB=P(forward,-spread,-8-5*pulse);handAScale=1.15;handBScale=1.15;
@@ -7945,6 +7970,10 @@ function drawHeadHands(f){
  if(name==='gojoBlueSpin'){
   // Reuse the exact M1 hand-trail renderer for both hands throughout the 360-degree spin.
   drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
+  drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
+ }else if(name==='gojoBlueSlap'){
+  // The striking hand leaves the same clean M1 trail as it sweeps across the target.
+  drawM1HandTrail(f,handA,'a',x,headY,false,trailColor);
   drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
  }else if(f.sideViewPreview&&(combo||name==='yujiBlackFlash')){
   // Both preview fists leave their own trail as they punch in alternating rhythm.
