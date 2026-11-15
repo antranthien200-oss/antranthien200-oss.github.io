@@ -2,7 +2,7 @@ import { Room } from "colyseus";
 import { schema,t } from "@colyseus/schema";
 import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
 const PlayerCombatState=schema({lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickInterval:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerCombatState");
-const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),sukunaFireCast:t.number().default(0),tenDogActive:t.boolean().default(false),tenDogCharges:t.number().default(0),tenDogTimer:t.number().default(0),tenGardenTimer:t.number().default(0),soulMode:t.number().default(0),convergenceOrbs:t.number().default(0),tenBase:t.boolean().default(false),shadowTimer:t.number().default(0),rikaSummoned:t.boolean().default(false),rikaMode:t.boolean().default(false),reserveBallWindow:t.number().default(0),yutaCopyIndex:t.number().default(0),combat:PlayerCombatState},"PlayerState");
+const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),sukunaFireCast:t.number().default(0),tenDogActive:t.boolean().default(false),tenDogCharges:t.number().default(0),tenDogTimer:t.number().default(0),tenGardenTimer:t.number().default(0),soulMode:t.number().default(0),convergenceOrbs:t.number().default(0),tenBase:t.boolean().default(false),shadowTimer:t.number().default(0),rikaSummoned:t.boolean().default(false),rikaMode:t.boolean().default(false),reserveBallWindow:t.number().default(0),yutaCopyIndex:t.number().default(0),combat:PlayerCombatState},"PlayerState");
 for(const field of ["lastActionKind","lastActionAt","counterKind","counterWindow","grabbedBy","activeGrabTarget","grabKind","grabRemaining","grabDuration","grabTick","grabTickInterval","grabTickDamage","grabFinishDamage","grabKnockback"]){
  Object.defineProperty(PlayerState.prototype,field,{configurable:true,enumerable:false,get(){return this.combat[field]},set(value){this.combat[field]=value}});
 }
@@ -117,6 +117,7 @@ export class CityRoom extends Room{
   p.motionName=n.motionName;p.motionProgress=n.motionProgress;p.motionDuration=n.motionDuration;
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
+  if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.82;return}
   if(p.grabbedBy||p.activeGrabTarget){p.moveX=0;p.moveY=0;return}
   if(p.stun>0){p.moveX=0;p.moveY=0}
   if(p.vehicleId){
@@ -163,6 +164,20 @@ combatAction(client,payload={}){
   if(now-(times.get(kind)||0)<cooldown*1000)return;
   if(kind==="dash"&&p.stun>0){p.stun=0;p.invuln=Math.max(p.invuln,.24)}
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
+  let blueSuction=null;
+  if(kind==="1"&&p.character==="honored"&&!p.awakened){
+   const targetId=String(payload.targetId||""),target=this.state.players.get(targetId);
+   if(target&&target!==p&&!target.dead&&!target.vehicleId&&!target.grabbedBy&&!target.blueSuckedBy){
+    const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy)||1,angle=Math.atan2(dy,dx),facing=Math.atan2(Math.sin(angle-p.face),Math.cos(angle-p.face));
+    if(d<=390&&Math.abs(facing)<=.82){
+     const orbX=clamp(p.x+Math.cos(p.face)*104,45,WORLD_WIDTH-45),orbY=clamp(p.y+Math.sin(p.face)*104,45,WORLD_HEIGHT-45);
+     target.blueSuckedBy=id;target.blueSuctionX=orbX;target.blueSuctionY=orbY;target.blueSuctionRemaining=.82;
+     target.stun=.12;target.invuln=0;target.block=false;target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;
+     target.motionName="gojoBlueSucked";target.motionProgress=0;target.motionDuration=.82;target.motionStartedAt=now;
+     blueSuction={blueTargetId:targetId,blueOrbX:orbX,blueOrbY:orbY};
+    }
+   }
+  }
   if(kind==="awaken"&&!modeToggle){if(p.awakened||p.meter<100)return;this.awakenPlayer(client)}
   if(kind==="domain02"){
    if(!p.awakened)p.meter=0;
@@ -176,7 +191,7 @@ combatAction(client,payload={}){
   }
   times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
-  this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,serverTime:now,face:p.face});
+  this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,serverTime:now,face:p.face,...(blueSuction||{})});
  }
  tryStartDomainClash(sessionId,player,now=Date.now()){
   if(!player||!CLASHABLE_DOMAINS.has(player.domainType)||player.domainClashId)return false;
@@ -550,7 +565,7 @@ killPlayer(p){
   if(p.dead)return;
   if(p.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}
   if(p.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.3)}}
-  p.grabbedBy="";p.activeGrabTarget="";p.grabKind="";p.grabRemaining=0;p.counterKind="";p.counterWindow=0;
+  p.grabbedBy="";p.activeGrabTarget="";p.grabKind="";p.grabRemaining=0;p.blueSuckedBy="";p.blueSuctionRemaining=0;p.counterKind="";p.counterWindow=0;
   p.hp=0;p.hpRegenWait=0;p.dead=true;p.respawnTimer=2.5;p.stun=0;p.invuln=0;p.block=false;p.domainType="";p.domainTimer=0;p.domainWindup=0;p.domainRadius=0;
   if(p.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}p.vehicleId=""}
  }
@@ -647,6 +662,25 @@ killPlayer(p){
  }
 
  tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const [playerId,lastActive] of this.lastActivityAt){const inactivePlayer=this.state.players.get(playerId);if(!inactivePlayer){this.lastActivityAt.delete(playerId);continue}if(!inactivePlayer.connected||now-lastActive<300000)continue;const inactiveClient=this.clients.find(c=>c.sessionId===playerId);if(inactiveClient){this.lastActivityAt.set(playerId,now);inactiveClient.leave(4008,"AFK_TIMEOUT")}}for(const [id,building] of this.state.world.buildings){if(building.collapsed){building.respawnTimer=Math.max(0,building.respawnTimer-dt);if(building.respawnTimer===0){building.stage=0;building.collapsed=false}}}for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);p.hpRegenWait=Math.max(0,p.hpRegenWait-dt);if(!p.dead&&!p.jackpot&&!p.domainClashId&&p.hp<p.maxHp&&p.hpRegenWait<=0)p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.012*dt);if(p.jackpot&&!p.dead&&!p.domainClashId)p.hp=Math.min(p.maxHp,p.hp+4*dt);if(p.domainWindup>0){if(p.stun>0){p.domainType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainStunGuaranteed=false}else{p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0){p.domainTimer=p.domainDuration||0;if(p.character==="restless"&&p.domainType==="hakari"&&p.domainStunGuaranteed){let nearest=null,best=Infinity;for(const [otherId,other] of this.state.players){if(otherId===id||other.dead)continue;const d=distance(p,other);if(d<best){best=d;nearest=other}}if(nearest&&best<600){nearest.stun=Math.max(nearest.stun,.7);nearest.invuln=0}p.domainStunGuaranteed=false}}}}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainWindupStart=0;p.domainRadius=0;p.domainCastAt=0;p.domainStunGuaranteed=false}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.hpRegenWait=0;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.domainStunGuaranteed=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
+  if(!target.blueSuckedBy)continue;
+  const owner=this.state.players.get(target.blueSuckedBy);
+  if(!owner||owner.dead||target.dead){
+   target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.min(target.stun,.22);continue;
+  }
+  const dx=target.blueSuctionX-target.x,dy=target.blueSuctionY-target.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,760*dt);
+  if(d>7){
+   const nx=clamp(target.x+dx/d*step,45,WORLD_WIDTH-45),ny=clamp(target.y+dy/d*step,45,WORLD_HEIGHT-45);
+   if(!isBlockedByBuilding({x:nx,y:ny},BUILDING_LAYOUT.filter((b,index)=>!this.state.world.buildings.get(String(index))?.collapsed),29)){target.x=nx;target.y=ny}
+  }
+  target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;target.block=false;target.stun=.12;
+  target.blueSuctionRemaining=Math.max(0,target.blueSuctionRemaining-dt);
+  target.motionName="gojoBlueSucked";target.motionProgress=clamp(1-target.blueSuctionRemaining/.82,0,1);target.motionDuration=.82;
+  if(d<=7||target.blueSuctionRemaining<=0){
+   target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,.22);
+   target.motionName="gojoBlueSuckedEnd";target.motionProgress=0;target.motionDuration=.22;target.motionStartedAt=Date.now();
+  }
+ }
+ for(const [targetId,target] of this.state.players){
   if(!target.grabbedBy)continue;
   const owner=this.state.players.get(target.grabbedBy);
   if(!owner||owner.dead||owner.activeGrabTarget!==targetId){if(owner)owner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.24);continue}
