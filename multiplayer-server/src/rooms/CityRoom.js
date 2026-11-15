@@ -300,7 +300,7 @@ modifyProjectile(client,payload={}){
   const key=client.sessionId+":"+String(payload.id||"").replace(/[^a-zA-Z0-9_-]/g,"").slice(0,32),projectile=this.projectiles.get(key);
   if(projectile&&projectile.ownerId===client.sessionId&&projectile.kind==="bloodBomb")projectile.detonate=true;
  }
- applyProjectileDamage(owner,target,damage,stun,push,angle,unblockable=false,ignoreInvuln=false,incomingType="projectile",blockedDamage=null){
+ applyProjectileDamage(owner,target,damage,stun,push,angle,unblockable=false,ignoreInvuln=false,incomingType="projectile",blockedDamage=null,nonlethalBlock=false){
   if(!owner||!target||target.dead)return false;
   if(!ignoreInvuln&&target.invuln>0)return false;
   if(this.resolveCounter(owner,target,incomingType))return false;
@@ -311,7 +311,7 @@ modifyProjectile(client,payload={}){
   const incoming=Math.atan2(owner.y-target.y,owner.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
   const blocked=!unblockable&&target.block&&Math.abs(guard)<=1.18;
   if(blocked){
-   const chip=Number.isFinite(Number(blockedDamage))?clamp(Number(blockedDamage),0,250):damage*.12;if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-chip);if(target.hp<hpBefore)target.hpRegenWait=4.5}
+   const chip=Number.isFinite(Number(blockedDamage))?clamp(Number(blockedDamage),0,250):damage*.12;if(!jackpotProtected){const hpBefore=target.hp,hpAfter=Math.max(0,target.hp-chip);target.hp=nonlethalBlock?Math.max(1,hpAfter):hpAfter;if(target.hp<hpBefore)target.hpRegenWait=4.5}
    if(!target.awakened)target.meter=clamp(target.meter+damage*.12,0,100);
    target.stun=Math.max(target.stun,.0);target.invuln=.08;
   }else{
@@ -364,7 +364,7 @@ modifyProjectile(client,payload={}){
    for(const [targetId,target] of this.state.players){
     if(targetId===p.ownerId||target.dead||target.vehicleId||Math.hypot(target.x-x,target.y-y)>radius+23)continue;
     const angle=Math.atan2(target.y-y,target.x-x);
-    hurt(owner,target,12.5,.38,18,angle,false,false,"explosion",6.25);
+    this.applyProjectileDamage(owner,target,12.5,.38,18,angle,false,false,"explosion",6.25,true);
    }
   };
   for(const [id,p] of this.projectiles){
