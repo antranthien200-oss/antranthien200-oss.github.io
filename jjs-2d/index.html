@@ -6189,15 +6189,7 @@ function drawVesselBaseSmoothSkillVfx(f,m,p){
  const glow=(color,blur)=>{ctx.shadowColor=color;ctx.shadowBlur=blur};
  const stroke=(color,width,path)=>{ctx.strokeStyle=color;ctx.lineWidth=width;path();ctx.stroke()};
  const orb=(x,y,r,inner,outer)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,inner);g.addColorStop(.38,inner);g.addColorStop(1,outer);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()};
- if(m==='yujiCursedDrag'||m==='yujiCursedDragEnd'){
-  const end=m==='yujiCursedDragEnd',reach=end?52:20+ease*24;
-  ctx.globalAlpha=(end?.55:.32)+beat*.48;glow('#ef405a',20);
-  const red=ctx.createLinearGradient(-62,0,reach+20,0);red.addColorStop(0,'rgba(120,20,44,0)');red.addColorStop(.42,'#e3344e');red.addColorStop(1,'#ffd0d8');
-  stroke(red,11,()=>{ctx.beginPath();ctx.moveTo(-62,15);ctx.bezierCurveTo(-37,-15,-5,29,reach+20,-9)});
-  ctx.globalAlpha=.5+beat*.35;stroke('#ff8b9c',3,()=>{ctx.beginPath();ctx.moveTo(-52,19);ctx.quadraticCurveTo(-8,-3,reach+16,-5)});
-  ctx.globalAlpha=.35+beat*.4;stroke('#9c203d',5,()=>{ctx.beginPath();ctx.moveTo(-49,-5);ctx.quadraticCurveTo(-5,23,reach+10,8)});
-  orb(reach+15,-8,13+beat*5,'rgba(255,205,214,.95)','rgba(227,52,78,0)');
- }else if(m==='yujiCrush'){
+ if(m==='yujiCrush'){
   // A broad directional pressure wake: several tapered ribbons converge ahead of Yuji.
   const dash=clamp(t/.34,0,1),impact=clamp((t-.34)/.25,0,1),fade=1-clamp((t-.77)/.23,0,1);
   const lead=dash*42;
@@ -6344,6 +6336,8 @@ function drawPixelSkillVfx(f,m,p,c){
 
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
+ // Sukuna Flurry's captured target uses the shared red stun streaks.
+ if(m==='captured_sukunaFlurry')return;
  if(m==='sukunaAwaken'){
   const slump=1-smoothstep01(clamp(p/.42,0,1));
   const takeover=Math.sin(Math.PI*clamp((p-.43)/.52,0,1));
@@ -7404,9 +7398,12 @@ function drawM1HandTrail(f,hand,side,baseX,baseY,active,color){
 }
 function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
 function drawStunRain(f,x,y){
- if(!f||f.stun<=.04)return;
- const strength=clamp(f.stun/.28,.35,1);
- const captured=!!(f.motion&&typeof f.motion.name==='string'&&f.motion.name.startsWith('captured_'));
+ if(!f)return;
+ const motionName=f.motion&&typeof f.motion.name==='string'?f.motion.name:'';
+ const vesselSkillOne=f.char==='vessel'&&!f.awakened&&(motionName==='yujiCursedDrag'||motionName==='yujiCursedDragEnd');
+ if(f.stun<=.04&&!vesselSkillOne)return;
+ const strength=vesselSkillOne?1:clamp(f.stun/.28,.35,1);
+ const captured=vesselSkillOne||motionName.startsWith('captured_');
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=0;
  for(let i=0;i<9;i++){
   const phase=(game.time*31+i*13)%48;
