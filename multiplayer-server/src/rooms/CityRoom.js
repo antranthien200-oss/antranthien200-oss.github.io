@@ -169,7 +169,7 @@ combatAction(client,payload={}){
    const targetId=String(payload.targetId||""),target=this.state.players.get(targetId);
    if(target&&target!==p&&!target.dead&&!target.vehicleId&&!target.grabbedBy&&!target.blueSuckedBy){
     const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy)||1,angle=Math.atan2(dy,dx),facing=Math.atan2(Math.sin(angle-p.face),Math.cos(angle-p.face));
-    if(d<=390&&Math.abs(facing)<=.82){
+    if(d<=480&&Math.abs(facing)<=1.12){
      const orbX=clamp(p.x+Math.cos(p.face)*64,45,WORLD_WIDTH-45),orbY=clamp(p.y+Math.sin(p.face)*64,45,WORLD_HEIGHT-45);
      target.blueSuckedBy=id;target.blueSuctionX=orbX;target.blueSuctionY=orbY;target.blueSuctionRemaining=1.95;
      target.stun=Math.max(target.stun,.28);target.invuln=0;target.block=false;target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;
@@ -286,7 +286,7 @@ finishDomainClash(clash,winnerId=null,reason="TIME"){
    targetId="";let best=Infinity;
    for(const [otherId,other] of this.state.players){if(otherId===ownerId||other.dead)continue;const d=Math.hypot(other.x-aimX,other.y-aimY);if(d<best){best=d;targetId=otherId}}
   }
-  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed:Math.hypot(vx,vy),r:clamp(Number(payload.r)||18,5,38),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,attachDoors:false,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,damage:clamp(Number(payload.damage)||profile.damage,0,250),hitStun:Number.isFinite(Number(payload.hitStun))?clamp(Number(payload.hitStun),0,8):profile.stun,knockbackScale:Number.isFinite(Number(payload.knockbackScale))?clamp(Number(payload.knockbackScale),0,5):1,knockback:Number.isFinite(Number(payload.knockback))?clamp(Number(payload.knockback),0,60):0,unblockable:payload.unblockable===true,ignoreInvuln:payload.ignoreInvuln===true,damageType:/^(melee|bullet|projectile|explosion|domain)$/.test(String(payload.damageType||""))?String(payload.damageType):"projectile",blockedDamage:Number.isFinite(Number(payload.blockedDamage))?clamp(Number(payload.blockedDamage),0,250):clamp(Number(payload.damage)||profile.damage,0,250)*.12,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:Date.now()+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
+  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed:Math.hypot(vx,vy),r:clamp(Number(payload.r)||18,5,38),hitRadius:clamp(Number(payload.hitRadius)||clamp(Number(payload.r)||18,5,38),5,70),life:clamp(Number(payload.life)||1.2,.08,5),travelled:0,attachDoors:false,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,damage:clamp(Number(payload.damage)||profile.damage,0,250),hitStun:Number.isFinite(Number(payload.hitStun))?clamp(Number(payload.hitStun),0,8):profile.stun,knockbackScale:Number.isFinite(Number(payload.knockbackScale))?clamp(Number(payload.knockbackScale),0,5):1,knockback:Number.isFinite(Number(payload.knockback))?clamp(Number(payload.knockback),0,60):0,unblockable:payload.unblockable===true,ignoreInvuln:payload.ignoreInvuln===true,damageType:/^(melee|bullet|projectile|explosion|domain)$/.test(String(payload.damageType||""))?String(payload.damageType):"projectile",blockedDamage:Number.isFinite(Number(payload.blockedDamage))?clamp(Number(payload.blockedDamage),0,250):clamp(Number(payload.damage)||profile.damage,0,250)*.12,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",aimX,aimY,targetId,nextTickAt:Date.now()+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
   if(rideVariant){owner.moveX=0;owner.moveY=0;owner.vx=0;owner.vy=0}
   this.projectiles.set(id,projectile);
   this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,move,golden,domainBound,rideVariant});
@@ -445,7 +445,7 @@ modifyProjectile(client,payload={}){
     let hitTarget=null,hitId="";
     for(const [targetId,candidate] of this.state.players){
      if(targetId===p.ownerId||candidate.dead||candidate.vehicleId||(candidate.invuln>0&&p.kind!=="red"))continue;
-     if(pointSegmentDistance(candidate,from,p)<=p.r+23){hitTarget=candidate;hitId=targetId;break}
+     if(pointSegmentDistance(candidate,from,p)<=(p.kind==="red"?(p.hitRadius||p.r):p.r)+23){hitTarget=candidate;hitId=targetId;break}
     }
     if(hitTarget){
      const angle=Math.atan2(p.y-from.y,p.x-from.x);
