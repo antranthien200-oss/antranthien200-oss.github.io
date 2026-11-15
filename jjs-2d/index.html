@@ -7535,7 +7535,6 @@ function drawFloatingHand(x,y,angle,theme,scale=1,pose='fist'){
   ctx.fillStyle=light;ctx.fillRect(-3,-3,3,2);ctx.fillRect(3,-7,3,1.5);
   ctx.restore();return;
  }
- ctx.translate(Math.round(x),Math.round(y));
  ctx.scale(scale,scale);
  drawPixelatedCircle(0,0,7.6,theme,2.0);
  ctx.restore();
