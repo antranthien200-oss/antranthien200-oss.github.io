@@ -4250,7 +4250,7 @@ function updateVesselAwakenSequence(f,dt){
    t.motion={name:'captured_sukunaHeadCarry',t:0,duration:seq.carryDuration,angle:a,target:f};
    setMotion(f,'sukunaHeadCarryRun',seq.carryDuration,a,t);f.motion.t=0;
    burst(t.x,t.y-23,'#ff526b',30,6);burst(t.x,t.y-23,'#ffe8ec',14,4.2);
-   game.hitStop=Math.max(game.hitStop,.055);game.shake=Math.max(game.shake,7);
+   game.hitStop=Math.max(game.hitStop,.075);game.shake=Math.max(game.shake,9);
    popText(t.x,t.y-58,'CAUGHT · NO ESCAPE','#ff8194',13);
    return;
   }
@@ -4932,28 +4932,29 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
-    const caught=targetInAim(f,t,390,.82,angle),orbX=f.x+Math.cos(angle)*104,orbY=f.y+Math.sin(angle)*104;
-    f.skillCd[idx]=17;f.attackAnim=.82;f.invuln=.12;setMotion(f,'gojoBlue',.82,angle,t);
-    f.gojoBlueOrb={x:orbX,y:orbY,life:.82,max:.82};
+    const caught=targetInAim(f,t,320,.82,angle),orbX=f.x+Math.cos(angle)*82,orbY=f.y+Math.sin(angle)*82;
+    f.skillCd[idx]=15;f.attackAnim=.34;f.invuln=.12;setMotion(f,'gojoBlue',.34,angle,t);
+    f.gojoBlueOrb={x:orbX,y:orbY,life:.34,max:.34,target:caught?t:null};
     burst(orbX,orbY,'#65d9ff',12,2.8);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
     if(caught){
-     if(!onlineMode)t.gojoBluePull={owner:f,x:orbX,y:orbY,life:1.34};
+     damage(t,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',ignoreInvuln:true});
+     if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:.60};setMotion(t,'gojoBlueSucked',.60,angle,f)}
      schedule(()=>{
       if(f.dead||t.dead||!game.started||game.over)return;
-      setMotion(f,'gojoBlueSpin',.62,angle,t);f.attackAnim=.62;f.invuln=.62;
+      f.gojoBlueOrb=null;setMotion(f,'gojoBlueSpin',.22,angle,t);f.attackAnim=.22;f.invuln=.22;
       schedule(()=>{
        if(f.dead||t.dead||!game.started||game.over)return;
-       setMotion(f,'gojoBlueSlap',.38,angle,t);f.attackAnim=.38;f.invuln=.18;
+       setMotion(f,'gojoBlueSlap',.24,angle,t);f.attackAnim=.24;f.invuln=.18;
        if(dist(f,t)<190){
-        damage(t,18,f,{stun:.86,kx:Math.cos(angle)*15,ky:Math.sin(angle)*15-1.5,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
+        damage(t,7.5,f,{stun:.72,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13-1,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
         burst(t.x,t.y-23,'#b9efff',26,6);burst(t.x,t.y-23,'#4bbfff',18,5);
         game.hitStop=Math.max(game.hitStop,.055);game.shake=Math.max(game.shake,7);
         popText(t.x,t.y-61,'BLUE SLAP','#e2f8ff',16);
        }else popText(f.x+Math.cos(angle)*100,f.y+Math.sin(angle)*100-48,'BLUE · MISS','#8ce5ff',11);
-      },620);
-     },820);
+      },220);
+     },340);
     }else{
-     schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoBlue'){f.gojoBlueOrb=null;popText(f.x+Math.cos(angle)*95,f.y+Math.sin(angle)*95-45,'BLUE · MISS','#8ce5ff',11)}},820);
+     schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoBlue'){f.gojoBlueOrb=null;popText(f.x+Math.cos(angle)*76,f.y+Math.sin(angle)*76-42,'BLUE · MISS','#8ce5ff',11)}},340);
     }
    }
    if(idx===1){
@@ -5408,7 +5409,7 @@ function updateFighter(f,dt){if(f.dead)return;
   const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,720*dt);
   if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
   f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;
-  if(pull.life<=0){f.gojoBluePull=null;f.stun=Math.max(f.stun,.5);f.motion=null}
+  if(pull.life<=0){pull.owner.gojoBlueOrb=null;f.gojoBluePull=null;f.stun=Math.max(f.stun,.34);f.motion=null}
   updateDomainContainment(f);return;
  }
  if(onlineMode&&f.blueSuckedBy){f.vx=0;f.vy=0;return}
@@ -6400,30 +6401,43 @@ function drawPixelSkillVfx(f,m,p,c){
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
  if(m==='gojoBlue'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,life=1-clamp(p,0,1),pulse=.88+.12*Math.sin(game.time*23);
-  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.82+.18*life)*vfxFade;
-  const x=88,y=-3,r=10+1.4*pulse,g=ctx.createRadialGradient(x-3,y-4,1,x,y,r*1.8);
-  g.addColorStop(0,'#f5ffff');g.addColorStop(.18,'#a9f1ff');g.addColorStop(.48,'#39b9ff');g.addColorStop(.78,'#1769d2');g.addColorStop(1,'rgba(9,35,105,0)');
-  ctx.fillStyle=g;ctx.shadowColor='#4fcaff';ctx.shadowBlur=22;ctx.beginPath();ctx.arc(x,y,r*1.8,0,Math.PI*2);ctx.fill();
-  ctx.globalAlpha=.7*vfxFade;ctx.strokeStyle='#d9f8ff';ctx.lineWidth=1.8;ctx.beginPath();ctx.arc(x,y,r+5,game.time*4,game.time*4+Math.PI*1.35);ctx.stroke();
-  ctx.strokeStyle='#58cfff';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(x,y,r+9,-game.time*3.2,-game.time*3.2+Math.PI*1.1);ctx.stroke();
-  for(let i=0;i<5;i++){const a=game.time*2.8+i*Math.PI*2/5,rr=r+13+Math.sin(game.time*7+i)*2;ctx.globalAlpha=(.35+.35*pulse)*vfxFade;ctx.fillStyle=i%2?'#e6fbff':'#50c9ff';ctx.beginPath();ctx.arc(x+Math.cos(a)*rr,y+Math.sin(a)*rr*.72,1.4,0,Math.PI*2);ctx.fill()}
+  const orb=f.gojoBlueOrb;
+  if(orb&&orb.target&&Math.hypot(orb.target.x-orb.x,orb.target.y-orb.y)<24)return;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,pulse=.9+.1*Math.sin(game.time*24);
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.88-.16*clamp(p,0,1))*vfxFade;
+  const x=72,y=-3,r=4.1*pulse,g=ctx.createRadialGradient(x-1.3,y-1.5,.3,x,y,r*1.9);
+  g.addColorStop(0,'#ffffff');g.addColorStop(.28,'#b7f4ff');g.addColorStop(.66,'#48c8ff');g.addColorStop(1,'rgba(32,126,238,0)');
+  ctx.fillStyle=g;ctx.shadowColor='#56cfff';ctx.shadowBlur=8;ctx.beginPath();ctx.arc(x,y,r*1.9,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;ctx.globalAlpha=.9*vfxFade;ctx.strokeStyle='#e5fbff';ctx.lineWidth=1.15;ctx.beginPath();ctx.arc(x,y,r+1.8,-.65,1.8);ctx.stroke();
+  ctx.globalAlpha=.48*vfxFade;ctx.strokeStyle='#52caff';ctx.lineWidth=1.1;ctx.beginPath();ctx.arc(x,y,r+3.1,2.5,5.1);ctx.stroke();
+  ctx.restore();return;
+ }
+ if(m==='gojoBlueSucked'){
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=.42*vfxFade;ctx.strokeStyle='#73d9ff';ctx.lineWidth=1.5;ctx.lineCap='round';
+  for(let i=0;i<3;i++){const y=-25+i*18,shift=(1-p)*18;ctx.beginPath();ctx.moveTo(-24-shift,y);ctx.quadraticCurveTo(-8,y-5,12,y);ctx.stroke()}
   ctx.restore();return;
  }
  if(m==='gojoBlueSuckedEnd')return;
  if(m==='gojoBlueSpin'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.3+.22*Math.sin(p*Math.PI))*vfxFade;ctx.strokeStyle='#8be5ff';ctx.shadowColor='#42bfff';ctx.shadowBlur=13;ctx.lineWidth=2.4;
-  for(let i=0;i<3;i++){const start=game.time*9+i*Math.PI*.72;ctx.beginPath();ctx.arc(0,0,27+i*7,start,start+Math.PI*1.28);ctx.stroke()}
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,whirl=Math.sin(p*Math.PI);
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.36+.36*whirl)*vfxFade;ctx.lineCap='round';ctx.strokeStyle='#72d8ff';ctx.shadowColor='#35baff';ctx.shadowBlur=8;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(4,0,31,-.55+p*Math.PI*2,-.55+p*Math.PI*2+1.08);ctx.stroke();
+  ctx.globalAlpha=(.22+.26*whirl)*vfxFade;ctx.lineWidth=1.1;ctx.strokeStyle='#e4fbff';ctx.beginPath();ctx.arc(4,0,37,.5+p*Math.PI*2,.5+p*Math.PI*2+.52);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,hit=smoothstep01(clamp((p-.3)/.34,0,1)),fade=1-clamp((p-.72)/.28,0,1);
-  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.72+.22*hit)*fade*vfxFade;ctx.lineCap='round';ctx.shadowColor='#54caff';ctx.shadowBlur=17;
-  const grad=ctx.createLinearGradient(10,-20,92,18);grad.addColorStop(0,'rgba(70,177,255,0)');grad.addColorStop(.56,'#67d8ff');grad.addColorStop(1,'#f0fdff');
-  ctx.strokeStyle=grad;ctx.lineWidth=13*(1-.35*hit);ctx.beginPath();ctx.moveTo(12,-18);ctx.quadraticCurveTo(62,-34,86,4);ctx.stroke();
-  ctx.strokeStyle='#eaffff';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(23,-23);ctx.quadraticCurveTo(72,-27,96,2);ctx.stroke();
-  if(p>.28){ctx.globalAlpha=(1-hit*.5)*fade*vfxFade;ctx.strokeStyle='#b8f1ff';ctx.lineWidth=2.2;ctx.beginPath();ctx.arc(84,2,15+hit*12,-1.25,1.1);ctx.stroke()}
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,impact=1-smoothstep01(clamp(p/.28,0,1)),fade=1-clamp((p-.64)/.36,0,1);
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=fade*vfxFade;ctx.lineCap='round';
+  const grad=ctx.createLinearGradient(13,-11,88,9);grad.addColorStop(0,'rgba(77,185,255,0)');grad.addColorStop(.58,'#4fc5ff');grad.addColorStop(1,'#f5feff');
+  ctx.strokeStyle=grad;ctx.lineWidth=7+impact*3;ctx.shadowColor='#54caff';ctx.shadowBlur=7;
+  ctx.beginPath();ctx.moveTo(18,-12);ctx.quadraticCurveTo(58,-31,88,1);ctx.stroke();
+  ctx.strokeStyle='#eaffff';ctx.lineWidth=1.8;ctx.shadowBlur=2;ctx.beginPath();ctx.moveTo(25,-15);ctx.quadraticCurveTo(68,-25,96,0);ctx.stroke();
+  if(impact>.05){
+   ctx.globalAlpha=impact*fade*.9*vfxFade;ctx.strokeStyle='#dffaff';ctx.lineWidth=1.7;ctx.shadowBlur=3;
+   for(let i=0;i<7;i++){const a=-1.05+i*.35,inner=11,outer=22+(i%2)*7;ctx.beginPath();ctx.moveTo(83+Math.cos(a)*inner,Math.sin(a)*inner);ctx.lineTo(83+Math.cos(a)*outer,Math.sin(a)*outer);ctx.stroke()}
+   ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(83,0,3+impact*3,0,Math.PI*2);ctx.fill();
+  }
   ctx.restore();return;
  }
  // Sukuna Flurry's captured target uses the shared red stun streaks.
@@ -7591,10 +7605,9 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*2,orbit=28+4*Math.sin(progress*Math.PI);
-    handA=P(18+Math.cos(spin)*orbit,Math.sin(spin)*orbit,-8+Math.sin(spin*2)*7);
-    handB=P(18+Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-8-Math.sin(spin*2)*7);
-    handAScale=1.2;handBScale=1.16;handAAngle=angle+spin+.35;handBAngle=angle+spin-Math.PI+.35;
+    const spin=progress*Math.PI*2,arc=Math.sin(spin),reachArc=Math.cos(spin);
+    handA=P(5,-18,8);handB=P(22+reachArc*23,arc*31,-9+Math.sin(spin*2)*4);
+    handAScale=.9;handBScale=1.3;handBAngle=angle+spin+.42;
    }else if(name==='gojoBlueSlap'){
     const load=smoothstep01(clamp(progress/.3,0,1)),slap=smoothstep01(clamp((progress-.3)/.38,0,1)),recover=smoothstep01(clamp((progress-.78)/.22,0,1));
     handA=P(10,18,-5);handB=P(lerp(-12,88,slap)-recover*30,lerp(-21,-7,slap),-8+Math.sin(slap*Math.PI)*9);
@@ -7824,8 +7837,6 @@ function drawHeadHands(f){
  }
  // Small idle drift, but active attacks own the hand positions for their complete animation.
  if(!name&&!f.sideViewPreview){handA.x+=px*idle;handA.y+=py*idle;handB.x-=px*idle;handB.y-=py*idle}
- const blueSpinRotation=name==='gojoBlueSpin'?progress*Math.PI*2:0;
- if(blueSpinRotation){ctx.save();ctx.translate(x,headY);ctx.rotate(blueSpinRotation);ctx.translate(-x,-headY)}
  ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();
  if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=10;ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
  if(f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
@@ -7874,7 +7885,6 @@ function drawHeadHands(f){
  }
  if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
  if(f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
- if(blueSpinRotation)ctx.restore();
  drawStunRain(f,x,y);
  
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
