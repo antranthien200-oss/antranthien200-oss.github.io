@@ -6418,8 +6418,8 @@ function drawPixelSkillVfx(f,m,p,c){
   drawPixelSpriteGrid(orb,34,-17,3.4,blue);
   for(let i=0;i<4;i++){const yy=-31+Math.floor(i/2)*27;cell(55+((i*7)%9),yy,6,6,'#d9fbff');cell(7,yy+4,6,6,'#39b9e8')}
  }else if(m.startsWith('gojoRed')){
-  drawPixelSpriteGrid(['...B...','..BMB..','.BMMMB.','BMMMMMB','.BMMMB.','..BMB..','...B...'],35,-15,4,{B:'#8a233a',M:'#f14b68'});
-  for(let i=0;i<8;i++){const a=i*Math.PI/4;line(35+Math.cos(a)*20,-15+Math.sin(a)*20,35+Math.cos(a)*37,-15+Math.sin(a)*37,'#ffb1bd',3)}
+  // Reversal Red's main sphere and orbiting trails are drawn in drawMotionVfx.
+  // Skip this duplicate sprite/spoke layer so the wind-up stays compact and readable.
  }else if(m==='gojoPurple'||m==='gojoAwaken'||m==='gojoLimitless'||m==='gojoDomain02'){
   drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],41,-16,4,{B:'#433b85',M:'#8c78ed',H:'#f1eaff'});
   for(let i=0;i<6;i++){const x=14+i*10;cell(x,-38+(i%2)*8,3,12,'#c4b7ff')}
@@ -6487,33 +6487,29 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const orbX=40,orbY=-17,trailFade=(1-.24*smoothstep01(clamp((p-.58)/.32,0,1)))*vfxFade;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // Four crossing positive-energy ribbons curl around the forming Red sphere.
-  // They orbit the body rather than stretching into a projectile trail.
-  for(let i=0;i<4;i++){
-   const direction=i%2===0?1:-1;
-   const spin=game.time*(2.1+i*.22)*direction+i*1.47+p*2.4;
-   const rx=18+(i%2)*4,ry=8+Math.floor(i/2)*4;
-   const rotation=i*.71+Math.sin(game.time*2+i)*.12;
-   const start=spin,end=spin+4.35;
-   ctx.globalAlpha=(.42+.12*pulse)*trailFade;
-   ctx.strokeStyle='#5e0b20';ctx.shadowColor='#fa234b';ctx.shadowBlur=7;ctx.lineWidth=4.4;
-   ctx.beginPath();ctx.ellipse(orbX,orbY,rx+2,ry+1,rotation,start,end);ctx.stroke();
-   ctx.globalAlpha=(.72+.2*pulse)*trailFade;
-   ctx.strokeStyle=i%2===0?'#ff3659':'#ff7187';ctx.shadowColor='#ff3459';ctx.shadowBlur=9;ctx.lineWidth=2.25;
-   ctx.beginPath();ctx.ellipse(orbX,orbY,rx,ry,rotation,start,end);ctx.stroke();
-   ctx.globalAlpha=.8*trailFade;ctx.strokeStyle='#ffdbe1';ctx.shadowColor='#ff8195';ctx.shadowBlur=5;ctx.lineWidth=1;
-   ctx.beginPath();ctx.ellipse(orbX,orbY,rx,ry,rotation,start+.22,start+.86);ctx.stroke();
-  }
-  // Small sparks are shed by the rotating ribbons as the orb gathers energy.
-  for(let i=0;i<7;i++){
-   const a=game.time*(i%2?2.8:-2.2)+i*Math.PI*2/7;
-   const rr=19+(i%3)*4,px=orbX+Math.cos(a)*rr,py=orbY+Math.sin(a)*rr*.58;
-   ctx.globalAlpha=(.42+.45*pulse)*trailFade;ctx.fillStyle=i%3===0?'#fff0f3':'#ff5974';ctx.shadowColor='#ff3459';ctx.shadowBlur=7;
-   ctx.fillRect(px-1.1,py-1.1,2.2,2.2);
-  }
+  // Tight, tapered energy ribbons orbit the orb itself instead of forming large crossed rings.
+  const drawRedTrail=(index,front=false)=>{
+   const phase=game.time*(2.55+index*.16)+index*2.08+p*1.9+(front?Math.PI*.72:0);
+   const rx=12+index*1.35,ry=7+index*.85;
+   const start=phase,end=phase+1.12;
+   ctx.globalAlpha=(front?.72:.48)*(1-index*.11)*trailFade;
+   ctx.strokeStyle=front?'#ffb5c2':(index===1?'#ff3659':'#b91e3c');
+   ctx.shadowColor='#ff3459';ctx.shadowBlur=front?5:3.5;
+   ctx.lineWidth=front?1.55:(index===1?2.15:1.45);
+   ctx.beginPath();
+   ctx.moveTo(orbX+Math.cos(start)*rx,orbY+Math.sin(start)*ry);
+   ctx.quadraticCurveTo(
+    orbX+Math.cos(start+.58)*(rx+4),
+    orbY+Math.sin(start+.58)*(ry+3),
+    orbX+Math.cos(end)*rx,
+    orbY+Math.sin(end)*ry
+   );
+   ctx.stroke();
+  };
+  // A few short arcs give the impression of energy flowing around the sphere's surface.
+  for(let i=0;i<3;i++)drawRedTrail(i,false);
 
-  // Reuse Lapse Blue's chunky, pixelated sphere silhouette and inner-core construction,
-  // recoloured as positive cursed energy.
+  // Reuse Lapse Blue's exact sphere construction, recoloured as positive cursed energy.
   ctx.globalAlpha=vfxFade;
   ctx.shadowColor='#ff3157';ctx.shadowBlur=13;
   drawPixelatedCircle(orbX,orbY,radius,{main:'#ef3153',shadow:'#74132d'},2);
@@ -6525,6 +6521,9 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   ctx.fillRect(orbX-3*radius/14,orbY-9*radius/14,2*radius/14,2*radius/14);
   ctx.fillStyle='#ff94a6';
   ctx.fillRect(orbX+5*radius/14,orbY-2*radius/14,2*radius/14,3*radius/14);
+
+  // Two fine highlights pass in front, so the trails visibly wrap around the orb.
+  drawRedTrail(0,true);drawRedTrail(1,true);
   ctx.restore();return;
  }
  if(m==='gojoBlue'){
