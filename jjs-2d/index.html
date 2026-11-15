@@ -6484,6 +6484,8 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   }
   ctx.restore();return;
  }
+ // Captured victims already receive the stun streak effect; avoid the generic pixel-dot fallback.
+ if(m.startsWith('captured_')&&m!=='captured_sukunaFlurry')return;
  if(drawPixelSkillVfx(f,m,p,c))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
@@ -7404,6 +7406,7 @@ function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
 function drawStunRain(f,x,y){
  if(!f||f.stun<=.04)return;
  const strength=clamp(f.stun/.28,.35,1);
+ const captured=!!(f.motion&&typeof f.motion.name==='string'&&f.motion.name.startsWith('captured_'));
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=0;
  for(let i=0;i<9;i++){
   const phase=(game.time*31+i*13)%48;
@@ -7412,7 +7415,7 @@ function drawStunRain(f,x,y){
   const endY=Math.min(y-16,startY+length);
   if(endY<=startY)continue;
   const lineX=Math.round(x+(i-4)*7+Math.sin(game.time*2+i)*1.1)+.5;
-  ctx.strokeStyle=i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)';
+  ctx.strokeStyle=captured?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
   ctx.lineWidth=i%3===0?1.25:1;
   ctx.beginPath();ctx.moveTo(lineX,startY);ctx.lineTo(lineX,endY);ctx.stroke();
  }
