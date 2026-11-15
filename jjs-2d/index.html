@@ -1269,12 +1269,14 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 
 
 /* Hard-size each accessory grid track so additional items can never collapse or overlap tiles. */
+#menu .menu-sub.accessory-editor-open .accessory-preview-layout{
+ container-type:inline-size;
+}
 #menu .menu-sub.accessory-editor-open .accessory-preview-items{
  box-sizing:border-box!important;
  display:grid!important;
- container-type:inline-size;
  grid-auto-flow:row!important;
- grid-auto-rows:clamp(72px,22cqi,170px)!important;
+ grid-auto-rows:clamp(72px,14cqi,170px)!important;
  align-content:start!important;
  align-items:stretch!important;
  justify-items:stretch!important;
