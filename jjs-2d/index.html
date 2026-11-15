@@ -7701,10 +7701,10 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*2,orbit=27,center=14;
-    // Both original round hands rotate together around Gojo through the full 360-degree turn.
-    handA=P(center+Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
-    handB=P(center+Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
+    const spin=progress*Math.PI*2,orbit=27;
+    // Both original round hands travel on one true circle centered on the player's head/body origin.
+    handA=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
+    handB=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
     handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
     const load=smoothstep01(clamp(progress/.22,0,1)),slap=smoothstep01(clamp((progress-.18)/.48,0,1)),recover=smoothstep01(clamp((progress-.76)/.24,0,1));
