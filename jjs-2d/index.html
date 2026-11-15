@@ -6479,44 +6479,55 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const strike=smoothstep01(clamp((p-.24)/.44,0,1));
-  const fade=(1-.72*smoothstep01(clamp((p-.76)/.24,0,1)))*vfxFade;
   const target=f.motion&&f.motion.target;
-  const dx=target&&Number.isFinite(target.x)?target.x-f.x:Math.cos(angle)*64;
-  const dy=target&&Number.isFinite(target.y)?target.y-(f.y-23):Math.sin(angle)*64;
+  if(!target||!Number.isFinite(target.x)||!Number.isFinite(target.y))return;
+  const dx=target.x-f.x,dy=target.y-(f.y-23),distance=Math.hypot(dx,dy);
+  if(distance>190)return;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   const targetForward=dx*Math.cos(angle)+dy*Math.sin(angle);
   const targetSide=-dx*Math.sin(angle)+dy*Math.cos(angle);
-  const contact=clamp(targetForward-5,42,86);
-  const centerX=clamp(targetForward,42,104),centerY=clamp(targetSide,-25,25);
-  const startY=centerY-30,endY=centerY+16,steps=18;
-  const pointAt=t=>{const u=1-t;return{x:u*u*contact+2*u*t*(contact+5)+t*t*(centerX+5),y:u*u*startY+2*u*t*(centerY-5)+t*t*endY}};
-  ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
+  if(p<.652)return;
+  const age=clamp((p-.652)/.34,0,1),fade=(1-smoothstep01(age))*vfxFade,expand=smoothstep01(age);
+  const radius=13+expand*17,cx=clamp(targetForward,42,104),cy=clamp(targetSide,-25,25);
+  ctx.save();ctx.rotate(angle);ctx.translate(cx,cy);ctx.globalAlpha=fade;ctx.lineJoin='round';ctx.lineCap='round';
 
-  // Keep the broad blue and white hand-sweep layers, following the real slap path.
-  for(const layer of [{color:'#299fe3',width:13,alpha:.48,blur:8},{color:'#c7f4ff',width:4.2,alpha:.9,blur:3}]){
-   ctx.globalAlpha=layer.alpha*fade;ctx.strokeStyle=layer.color;ctx.lineWidth=layer.width;ctx.shadowColor='#55caff';ctx.shadowBlur=layer.blur;
+  // A compact, game-style palm impact: a bright jagged flash instead of a hand-following trail.
+  const burstPath=(outer,inner,points,offset=0)=>{
    ctx.beginPath();
-   for(let i=0;i<=steps;i++){const point=pointAt(strike*i/steps);if(i===0)ctx.moveTo(point.x,point.y);else ctx.lineTo(point.x,point.y)}
-   ctx.stroke();
-  }
+   for(let i=0;i<points*2;i++){
+    const a=offset+i*Math.PI/points,r=i%2===0?outer:inner,px=Math.cos(a)*r,py=Math.sin(a)*r*.78;
+    if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+   }
+   ctx.closePath();
+  };
+  const outerGlow=ctx.createRadialGradient(0,0,2,0,0,radius+10);
+  outerGlow.addColorStop(0,'rgba(230,251,255,.96)');outerGlow.addColorStop(.28,'rgba(83,199,255,.82)');outerGlow.addColorStop(1,'rgba(38,151,235,0)');
+  ctx.globalAlpha=.72*fade;ctx.fillStyle=outerGlow;ctx.shadowColor='#56caff';ctx.shadowBlur=18;
+  ctx.beginPath();ctx.ellipse(0,0,radius+10,(radius+10)*.72,0,0,Math.PI*2);ctx.fill();
 
-  // Peak the existing crescent exactly when the palm reaches contact.
-  const impact=1-smoothstep01(clamp(Math.abs(p-.652)/.22,0,1));
-  if(impact>.01){
-   ctx.globalAlpha=.78*impact*fade;ctx.strokeStyle='#46bfff';ctx.lineWidth=5.2;ctx.shadowColor='#55caff';ctx.shadowBlur=8;
-   ctx.beginPath();ctx.moveTo(centerX-12,centerY+11);ctx.quadraticCurveTo(centerX+5,centerY+23,centerX+20,centerY-10);ctx.stroke();
-   ctx.globalAlpha=.95*impact*fade;ctx.strokeStyle='#e1faff';ctx.lineWidth=1.7;ctx.shadowBlur=3;
-   ctx.beginPath();ctx.moveTo(centerX-7,centerY+8);ctx.quadraticCurveTo(centerX+6,centerY+15,centerX+15,centerY-7);ctx.stroke();
+  ctx.globalAlpha=.9*fade;ctx.fillStyle='#42baff';ctx.shadowColor='#43bfff';ctx.shadowBlur=12;
+  burstPath(radius,6+expand*3,9,-.12);ctx.fill();
+  ctx.globalAlpha=.98*fade;ctx.fillStyle='#e9fbff';ctx.shadowColor='#e4fbff';ctx.shadowBlur=7;
+  burstPath(radius*.62,3.5,8,.04);ctx.fill();
 
-   // The shockwave starts at contact and expands after the palm lands.
-   const shock=smoothstep01(clamp((p-.652)/.20,0,1));
-   ctx.globalAlpha=.56*impact*fade;ctx.strokeStyle='#b9efff';ctx.lineWidth=1.5;ctx.shadowBlur=4;
-   ctx.beginPath();ctx.ellipse(centerX+3,centerY,7+shock*13,4+shock*8,0,0,Math.PI*2);ctx.stroke();
+  // Expanding pressure rings give the hit a strong, readable game-impact cue.
+  ctx.globalAlpha=.9*(1-expand*.72)*fade;ctx.strokeStyle='#e9fbff';ctx.lineWidth=2.1;ctx.shadowBlur=7;
+  ctx.beginPath();ctx.ellipse(0,0,7+expand*28,4+expand*17,-.08,0,Math.PI*2);ctx.stroke();
+  ctx.globalAlpha=.68*(1-expand*.78)*fade;ctx.strokeStyle='#3dbaff';ctx.lineWidth=3.2;ctx.shadowColor='#36baff';ctx.shadowBlur=11;
+  ctx.beginPath();ctx.ellipse(0,0,11+expand*34,6+expand*21,-.08,0,Math.PI*2);ctx.stroke();
+
+  // Short angular impact rays radiate from the palm contact point.
+  ctx.globalAlpha=.9*fade;ctx.strokeStyle='#f5fdff';ctx.lineWidth=2;ctx.shadowColor='#83dcff';ctx.shadowBlur=6;
+  for(let i=0;i<10;i++){
+   const a=i*Math.PI/5+.12,inner=radius*.72,outer=radius+8+(i%3)*5;
+   ctx.beginPath();ctx.moveTo(Math.cos(a)*inner,Math.sin(a)*inner*.78);
+   ctx.lineTo(Math.cos(a)*outer,Math.sin(a)*outer*.78);ctx.stroke();
   }
+  ctx.globalAlpha=.96*fade;ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=10;
+  ctx.beginPath();ctx.arc(0,0,3.2+expand*1.8,0,Math.PI*2);ctx.fill();
   ctx.restore();return;
  }
- if(m==='gojoBlueSpin'){
+if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   const turn=clamp(p,0,1)*Math.PI*6,whirl=Math.abs(Math.sin(clamp(p,0,1)*Math.PI*3));
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
@@ -7682,10 +7693,10 @@ function emitGojoBlueSkillSparks(f,name){
  }
  const pose=f.gojoBlueTrailPose;if(!pose)return;
  const zoom=camera.zoom||1,baseX=sx(f.x),baseY=sy(f.y)-f.jump*3-23,worldBaseY=f.y-(23+f.jump*3)/zoom;
- const activeHands=name==='gojoBlueSlap'?['b']:['a','b'];
- for(const side of activeHands){
+ if(name==='gojoBlueSlap')return;
+ for(const side of ['a','b']){
   const hand=pose[side],worldX=f.x+(hand.x-baseX)/zoom,worldY=worldBaseY+(hand.y-baseY)/zoom;
-  spawnGojoBlueSparks(f,worldX,worldY,name==='gojoBlueSlap'?3:2);
+  spawnGojoBlueSparks(f,worldX,worldY,2);
  }
 }
 function drawGojoBlueSparks(f){
@@ -8142,9 +8153,12 @@ function drawHeadHands(f,deferMotionVfx=false){
   // During the spin both hands trail; during the slap only the striking hand (B) trails.
   f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
   if(!deferMotionVfx){
-   if(name==='gojoBlueSpin')drawGojoBlueHandTrail(f,handA,'a',x,headY);
-   else if(f.gojoBlueSharpTrailState)f.gojoBlueSharpTrailState.a.length=0;
-   drawGojoBlueHandTrail(f,handB,'b',x,headY);
+   if(name==='gojoBlueSpin'){
+    drawGojoBlueHandTrail(f,handA,'a',x,headY);
+    drawGojoBlueHandTrail(f,handB,'b',x,headY);
+   }else if(f.gojoBlueSharpTrailState){
+    f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0;
+   }
   }
  }else if(f.sideViewPreview&&(combo||name==='yujiBlackFlash')){
   // Both preview fists leave their own trail as they punch in alternating rhythm.
@@ -8163,7 +8177,8 @@ function drawHeadHands(f,deferMotionVfx=false){
   drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
- if(name!=='gojoBlueSpin'&&name!=='gojoBlueSlap')f.gojoBlueTrailPose=null;
+ if(name==='gojoBlueSlap'&&f.gojoBlueSharpTrailState){f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0}
+ if(name!=='gojoBlueSpin')f.gojoBlueTrailPose=null;
  if(name!=='gojoBlue'&&name!=='gojoBlueSpin'&&name!=='gojoBlueSlap'){
   if(f.gojoBlueSharpTrailState){f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0}
   f.gojoBlueSparkNext=0;
@@ -8328,15 +8343,14 @@ function drawFighterMotionOverlays(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,headY=y-23;
  const combo=name.startsWith('m1_');
  const angle=Number.isFinite(m.angle)?m.angle:f.face;
- if((name==='gojoBlueSpin'||name==='gojoBlueSlap')&&f.gojoBlueTrailPose){
-  if(name==='gojoBlueSpin')drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
-  else if(f.gojoBlueSharpTrailState)f.gojoBlueSharpTrailState.a.length=0;
+ if(name==='gojoBlueSpin'&&f.gojoBlueTrailPose){
+  drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
  }
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
  drawMotionVfx(f,name,progress,getFighterLook(f),vfxFade);
  ctx.restore();
- if(name==='gojoBlue'||name==='gojoBlueSpin'||name==='gojoBlueSlap')emitGojoBlueSkillSparks(f,name,progress);
+ if(name==='gojoBlue'||name==='gojoBlueSpin')emitGojoBlueSkillSparks(f,name);
  drawGojoBlueSparks(f);
 }
 function drawFighterHandsForeground(f){
