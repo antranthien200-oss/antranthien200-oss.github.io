@@ -296,11 +296,11 @@ modifyProjectile(client,payload={}){
   const incoming=Math.atan2(owner.y-target.y,owner.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
   const blocked=!unblockable&&target.block&&Math.abs(guard)<=1.18;
   if(blocked){
-   const chip=Number.isFinite(Number(blockedDamage))?clamp(Number(blockedDamage),0,250):damage*.12;if(!jackpotProtected){target.hp=Math.max(0,target.hp-chip);target.hpRegenWait=4.5}
+   const chip=Number.isFinite(Number(blockedDamage))?clamp(Number(blockedDamage),0,250):damage*.12;if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-chip);if(target.hp<hpBefore)target.hpRegenWait=4.5}
    if(!target.awakened)target.meter=clamp(target.meter+damage*.12,0,100);
    target.stun=Math.max(target.stun,.0);target.invuln=.08;
   }else{
-   if(!jackpotProtected){target.hp=Math.max(0,target.hp-damage);target.hpRegenWait=4.5}if(!fireArmor)target.stun=Math.max(target.stun,stun);target.invuln=.12;
+   if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-damage);if(target.hp<hpBefore)target.hpRegenWait=4.5}if(!fireArmor)target.stun=Math.max(target.stun,stun);target.invuln=.12;
    if(!fireArmor&&push>0){target.vx=clamp((Number(target.vx)||0)+Math.cos(angle)*push,-60,60);target.vy=clamp((Number(target.vy)||0)+Math.sin(angle)*push,-60,60)}
    if(!target.awakened)target.meter=clamp(target.meter+damage*.42,0,100);
    if(!owner.awakened)owner.meter=clamp(owner.meter+damage*.58,0,100);
@@ -480,7 +480,7 @@ modifyProjectile(client,payload={}){
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
   if(Math.abs(facing)>1.18)return false;
   const projectile=["bullet","projectile"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-  const hurt=(target,amount,stun,push)=>{if(!this.consumeJackpotFuel(target,amount)){target.hp=Math.max(0,target.hp-amount);target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+nx*push,-60,60);target.vy=clamp((Number(target.vy)||0)+ny*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
+  const hurt=(target,amount,stun,push)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+nx*push,-60,60);target.vy=clamp((Number(target.vy)||0)+ny*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
   defender.counterKind="";defender.counterWindow=0;
   if(kind==="sukunaCleaveCounter"&&(projectile||incomingType==="domain"||d>220))return false;
   if(kind==="yutaOutburst"){defender.invuln=Math.max(defender.invuln,.5);if(!projectile){attacker.stun=Math.max(attacker.stun,.48);attacker.vx=clamp((Number(attacker.vx)||0)-nx*11,-60,60);attacker.vy=clamp((Number(attacker.vy)||0)-ny*11,-60,60)}return true}
@@ -532,13 +532,13 @@ modifyProjectile(client,payload={}){
   const incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
   const frontGuard=target.block&&Math.abs(guard)<=1.18;
   if((frontGuard||blockAllSides)&&!unblockable){
-   if(!jackpotProtected){target.hp=Math.max(0,target.hp-blockedDamage);target.hpRegenWait=4.5}
+   if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-blockedDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}
    if(!target.awakened)target.meter=clamp(target.meter+amount*.12,0,100);
    target.invuln=.08;
    if(target.hp<=0)this.killPlayer(target);
    return;
   }
-  if(!jackpotProtected){target.hp=Math.max(0,target.hp-amount);target.hpRegenWait=4.5}
+  if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}
   if(!fireArmor)target.stun=Math.max(target.stun,stun);
   target.invuln=invuln;
   if(!fireArmor){target.vx=clamp((Number(target.vx)||0)+kx,-60,60);target.vy=clamp((Number(target.vy)||0)+ky,-60,60)}
@@ -635,7 +635,7 @@ killPlayer(p){
     if(now-(this.lastHitAt.get(key)||0)<680)continue;
     this.lastHitAt.set(key,now);
     if(this.resolveCounter(p,target,"vehicle"))continue;
-    if(!this.consumeJackpotFuel(target,hitDamage)){target.hp=Math.max(0,target.hp-hitDamage);target.hpRegenWait=4.5}
+    if(!this.consumeJackpotFuel(target,hitDamage)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-hitDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}
     target.stun=Math.max(target.stun,.5+speedRatio*.45);target.invuln=.12;
     target.vx=clamp((Number(target.vx)||0)+hx*push,-60,60);
     target.vy=clamp((Number(target.vy)||0)+hy*push,-60,60);
@@ -664,11 +664,11 @@ killPlayer(p){
   else{const offset=target.grabKind==="yujiDrag"?46:target.grabKind==="gojoFaceGrater"?48:target.grabKind==="sukunaCleave"?47:target.grabKind==="mahitoTransfigure"?43:target.grabKind==="bloodEdge"?42:52;target.x=clamp(owner.x+fx*offset,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*offset,45,WORLD_HEIGHT-45)}
   target.face=angle+Math.PI;target.block=false;target.stun=Math.max(target.stun,.08);
   target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
-  if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabTickInterval||.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage)){target.hp=Math.max(0,target.hp-target.grabTickDamage);target.hpRegenWait=4.5}target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
+  if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabTickInterval||.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-target.grabTickDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
   if(target.hp<=0){this.killPlayer(target);continue}
   if(target.grabRemaining<=0){
    const finish=target.grabKind==="sukunaCleave"?Math.max(10,target.hp*.4):target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
-   target.hp=Math.max(0,target.hp-finish);target.hpRegenWait=4.5;target.stun=Math.max(target.stun,.82);target.invuln=Math.max(target.invuln,.16);
+   const hpBefore=target.hp;target.hp=Math.max(0,target.hp-finish);if(target.hp<hpBefore)target.hpRegenWait=4.5;target.stun=Math.max(target.stun,.82);target.invuln=Math.max(target.invuln,.16);
    target.x=clamp(target.x+fx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+fy*push,45,WORLD_HEIGHT-45);
    target.motionName="grabRelease";target.motionProgress=1;target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
    if(target.hp<=0)this.killPlayer(target);
