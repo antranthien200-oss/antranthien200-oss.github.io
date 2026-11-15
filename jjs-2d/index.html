@@ -1218,6 +1218,56 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 }
 
 
+/* Keep accessory tiles in separate square grid rows as the catalogue grows. */
+.menu-sub.accessory-editor-open #menuSubCards{
+ flex:1 1 0;
+ min-height:0;
+ overflow:hidden;
+}
+.menu-sub.accessory-editor-open .accessory-preview-layout{
+ min-width:0;
+ min-height:0;
+}
+.menu-sub.accessory-editor-open .accessory-preview-items{
+ box-sizing:border-box;
+ grid-auto-flow:row;
+ grid-auto-rows:auto!important;
+ align-content:start!important;
+ align-items:start!important;
+ min-height:0;
+ overflow-x:hidden;
+ overflow-y:auto;
+}
+.menu-sub.accessory-editor-open .accessory-preview-items .menu-option,
+.menu-sub.accessory-editor-open .accessory-preview-items .menu-option:hover{
+ box-sizing:border-box;
+ position:relative;
+ width:100%;
+ height:auto!important;
+ min-height:0!important;
+ aspect-ratio:1 / 1;
+ align-self:start;
+ transform:none!important;
+}
+.menu-sub.accessory-editor-open .menu-sub-footer{
+ position:relative;
+ z-index:2;
+ flex:0 0 auto;
+}
+@media(max-width:760px){
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items{
+  grid-auto-rows:auto!important;
+  align-content:start!important;
+  align-items:start!important;
+ }
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items .menu-option,
+ #menu .menu-sub.accessory-editor-open .accessory-preview-items .menu-option:hover{
+  height:auto!important;
+  aspect-ratio:1 / 1!important;
+ }
+}
+
+
 /* Multiplayer layout: same compact dark panel, crisp borders and uppercase labels as the other menu screens.
    Keep the existing cyan online accent. */
 #menuSub.online-menu-open{padding:clamp(10px,2.4vw,22px)}
