@@ -117,7 +117,7 @@ export class CityRoom extends Room{
   p.motionName=n.motionName;p.motionProgress=n.motionProgress;p.motionDuration=n.motionDuration;
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
-  if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.82;return}
+  if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=1.34;return}
   if(p.grabbedBy||p.activeGrabTarget){p.moveX=0;p.moveY=0;return}
   if(p.stun>0){p.moveX=0;p.moveY=0}
   if(p.vehicleId){
@@ -171,9 +171,9 @@ combatAction(client,payload={}){
     const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy)||1,angle=Math.atan2(dy,dx),facing=Math.atan2(Math.sin(angle-p.face),Math.cos(angle-p.face));
     if(d<=390&&Math.abs(facing)<=.82){
      const orbX=clamp(p.x+Math.cos(p.face)*104,45,WORLD_WIDTH-45),orbY=clamp(p.y+Math.sin(p.face)*104,45,WORLD_HEIGHT-45);
-     target.blueSuckedBy=id;target.blueSuctionX=orbX;target.blueSuctionY=orbY;target.blueSuctionRemaining=.82;
+     target.blueSuckedBy=id;target.blueSuctionX=orbX;target.blueSuctionY=orbY;target.blueSuctionRemaining=1.34;
      target.stun=.12;target.invuln=0;target.block=false;target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;
-     target.motionName="gojoBlueSucked";target.motionProgress=0;target.motionDuration=.82;target.motionStartedAt=now;
+     target.motionName="gojoBlueSucked";target.motionProgress=0;target.motionDuration=1.34;target.motionStartedAt=now;
      blueSuction={blueTargetId:targetId,blueOrbX:orbX,blueOrbY:orbY};
     }
    }
@@ -674,9 +674,9 @@ killPlayer(p){
   }
   target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;target.block=false;target.stun=.12;
   target.blueSuctionRemaining=Math.max(0,target.blueSuctionRemaining-dt);
-  target.motionName="gojoBlueSucked";target.motionProgress=clamp(1-target.blueSuctionRemaining/.82,0,1);target.motionDuration=.82;
+  target.motionName="gojoBlueSucked";target.motionProgress=clamp(1-target.blueSuctionRemaining/1.34,0,1);target.motionDuration=1.34;
   if(d<=7||target.blueSuctionRemaining<=0){
-   target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,.22);
+   target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,.5);
    target.motionName="gojoBlueSuckedEnd";target.motionProgress=0;target.motionDuration=.22;target.motionStartedAt=Date.now();
   }
  }
