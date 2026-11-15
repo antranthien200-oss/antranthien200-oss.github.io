@@ -4939,7 +4939,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     burst(orbX,orbY,'#65d9ff',12,2.8);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
     if(caught){
      damage(t,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',unblockable:true,ignoreInvuln:true});
-     if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:1.95};setMotion(t,'gojoBlueSucked',1.95,angle,f)}
+     if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:1.95,elapsed:0,suctionDuration:.85};setMotion(t,'gojoBlueSucked',.85,angle,f)}
      schedule(()=>{
       if(f.dead||t.dead||!game.started||game.over)return;
       f.gojoBlueOrb=null;setMotion(f,'gojoBlueSpin',.58,angle,t);f.attackAnim=.58;f.invuln=.22;
@@ -5414,7 +5414,12 @@ function updateFighter(f,dt){if(f.dead)return;
  if(f.gojoBluePull&&!onlineMode){
   const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
   if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
-  f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;
+  f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;pull.elapsed=(pull.elapsed||0)+dt;
+  // Finish the pull motion at the same moment the owner transitions into the spin.
+  if(f.motion&&f.motion.name==='gojoBlueSucked'){
+   f.motion.t=Math.min(pull.suctionDuration||.85,pull.elapsed);
+   if(pull.elapsed>=(pull.suctionDuration||.85))f.motion=null;
+  }
   if(pull.life<=0){pull.owner.gojoBlueOrb=null;f.gojoBluePull=null;f.stun=Math.max(f.stun,.62);f.motion=null}
   updateDomainContainment(f);return;
  }
@@ -7735,11 +7740,10 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spinLead=smoothstep01(clamp((progress-.10)/.90,0,1)),spin=spinLead*Math.PI*2,orbit=43;
-    // Hold a brief anticipation, then complete one clean circle around the player.
-    // The end positions are deliberately aligned with the following slap wind-up.
-    handA=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
-    handB=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
+    const spin=smoothstep01(progress)*Math.PI*2,orbit=Math.hypot(46,18),startAngle=Math.atan2(18,46);
+    // Start exactly where the suction pose leaves both hands, then orbit continuously.
+    handA=P(Math.cos(startAngle+spin)*orbit,Math.sin(startAngle+spin)*orbit,-8);
+    handB=P(Math.cos(-startAngle-spin)*orbit,Math.sin(-startAngle-spin)*orbit,-8);
     handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
     const windupEnd=.24,swingEnd=.68;
@@ -7756,23 +7760,23 @@ function drawHeadHands(f){
     const contact=clamp(targetForward-5,42,86);
     const readyForward=clamp(contact-14,20,68),strikeForward=contact+5;
     const readySide=targetSide-30,followSide=targetSide+16;
-    const forward=progress<windupEnd?lerp(43,readyForward,windup)
+    const forward=progress<windupEnd?lerp(46,readyForward,windup)
      :progress<swingEnd?lerp(readyForward,strikeForward,swing)+Math.sin(swing*Math.PI)*3
      :lerp(strikeForward,22,recover);
-    const side=progress<windupEnd?lerp(0,readySide,windup)
+    const side=progress<windupEnd?lerp(-18,readySide,windup)
      :progress<swingEnd?lerp(readySide,followSide,swing)
      :lerp(followSide,targetSide+8,recover);
-    const lift=progress<windupEnd?lerp(-3,-12,windup)
+    const lift=progress<windupEnd?lerp(-8,-12,windup)
      :progress<swingEnd?lerp(-12,-1,swing)+Math.sin(swing*Math.PI)*2
      :lerp(-1,4,recover);
-    // Keep the supporting hand tucked close to Gojo while the striking hand accelerates.
-    const supportForward=progress<windupEnd?lerp(-43,4,windup)
+    // Keep the supporting hand's opening pose continuous with the orbit, then tuck it close.
+    const supportForward=progress<windupEnd?lerp(46,4,windup)
      :progress<swingEnd?lerp(4,5,swing)
      :lerp(5,7,recover);
-    const supportSide=progress<windupEnd?lerp(0,17,windup)
+    const supportSide=progress<windupEnd?lerp(18,17,windup)
      :progress<swingEnd?17
      :lerp(17,14,recover);
-    const supportLift=progress<windupEnd?lerp(-3,-4,windup)
+    const supportLift=progress<windupEnd?lerp(-8,-4,windup)
      :progress<swingEnd?lerp(-4,1,swing)
      :lerp(1,2,recover);
     handA=P(supportForward,supportSide,supportLift);
