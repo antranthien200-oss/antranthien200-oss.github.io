@@ -170,7 +170,7 @@ combatAction(client,payload={}){
    if(target&&target!==p&&!target.dead&&!target.vehicleId&&!target.grabbedBy&&!target.blueSuckedBy){
     const dx=target.x-p.x,dy=target.y-p.y,d=Math.hypot(dx,dy)||1,angle=Math.atan2(dy,dx),facing=Math.atan2(Math.sin(angle-p.face),Math.cos(angle-p.face));
     if(d<=390&&Math.abs(facing)<=.82){
-     const orbX=clamp(p.x+Math.cos(p.face)*82,45,WORLD_WIDTH-45),orbY=clamp(p.y+Math.sin(p.face)*82,45,WORLD_HEIGHT-45);
+     const orbX=clamp(p.x+Math.cos(p.face)*64,45,WORLD_WIDTH-45),orbY=clamp(p.y+Math.sin(p.face)*64,45,WORLD_HEIGHT-45);
      target.blueSuckedBy=id;target.blueSuctionX=orbX;target.blueSuctionY=orbY;target.blueSuctionRemaining=.85;
      target.stun=.12;target.invuln=0;target.block=false;target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;
      target.motionName="gojoBlueSucked";target.motionProgress=0;target.motionDuration=.85;target.motionStartedAt=now;
@@ -667,7 +667,7 @@ killPlayer(p){
   if(!owner||owner.dead||target.dead){
    target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.min(target.stun,.22);continue;
   }
-  const dx=target.blueSuctionX-target.x,dy=target.blueSuctionY-target.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,440*dt);
+  const dx=target.blueSuctionX-target.x,dy=target.blueSuctionY-target.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
   if(d>7){
    const nx=clamp(target.x+dx/d*step,45,WORLD_WIDTH-45),ny=clamp(target.y+dy/d*step,45,WORLD_HEIGHT-45);
    if(!isBlockedByBuilding({x:nx,y:ny},BUILDING_LAYOUT.filter((b,index)=>!this.state.world.buildings.get(String(index))?.collapsed),29)){target.x=nx;target.y=ny}
