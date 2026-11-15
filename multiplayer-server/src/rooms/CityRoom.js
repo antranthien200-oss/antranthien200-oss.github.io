@@ -675,7 +675,7 @@ killPlayer(p){
   target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;target.block=false;target.stun=.12;
   target.blueSuctionRemaining=Math.max(0,target.blueSuctionRemaining-dt);
   target.motionName="gojoBlueSucked";target.motionProgress=clamp(1-target.blueSuctionRemaining/1.34,0,1);target.motionDuration=1.34;
-  if(d<=7||target.blueSuctionRemaining<=0){
+  if(target.blueSuctionRemaining<=0){
    target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,.5);
    target.motionName="gojoBlueSuckedEnd";target.motionProgress=0;target.motionDuration=.22;target.motionStartedAt=Date.now();
   }
