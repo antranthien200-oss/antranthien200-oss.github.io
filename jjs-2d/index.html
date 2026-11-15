@@ -4763,7 +4763,7 @@ function useAttack(f,kind){
  if(['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
  if(kind==='special'&&f.specialCd>0)return;
  if(kind==='dash'&&!(onlineMode&&f!==player)){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
- if(onlineMode&&f===player&&onlineRoom){try{const actionTarget=targetOf(f);onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||''})}catch(e){}}
+ if(onlineMode&&f===player&&onlineRoom){try{if(f.char==='honored'&&!f.awakened&&(kind==='1'||kind==='2')){const skillAim=aimedAt(f);f.face=Math.atan2(skillAim.y-f.y,skillAim.x-f.x)}const actionTarget=targetOf(f);onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||''})}catch(e){}}
  const c=CHARS[f.char],t=targetOf(f);
  if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;const dashAim=onlineMode&&f!==player?{x:f.x+Math.cos(f.face)*1000,y:f.y+Math.sin(f.face)*1000}:aimedAt(f),dx=dashAim.x-f.x,dy=dashAim.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;if(onlineMode&&f===player)f.onlineDashPredictionUntil=performance.now()+145;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0)return;
@@ -4953,7 +4953,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
-    const caught=targetInAim(f,t,320,.82,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
+    const caught=targetInAim(f,t,390,.96,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
     f.skillCd[idx]=15;f.attackAnim=.85;f.invuln=.12;setMotion(f,'gojoBlue',.85,angle,t);
     f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:caught?t:null,startDistance:caught?Math.hypot(t.x-orbX,t.y-orbY):0};
     burst(orbX,orbY,'#65d9ff',22,3.6);burst(orbX,orbY,'#d9f8ff',9,2.2);spawnGojoBlueSparks(f,orbX,orbY,12);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
@@ -5005,7 +5005,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    }
    if(idx===1){
     setMotion(f,'gojoRed',.72,angle,t);f.attackAnim=.72;burst(f.x,f.y,'#ff5262',14,2.8);
-    schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y-18+Math.sin(angle)*28,vx:Math.cos(angle)*15,vy:Math.sin(angle)*15,r:9,life:1.55,maxDistance:540,travelled:0,owner:f,kind:'red',damage:12.5,blockedDamage:6.25,blastRadius:203,knockback:18,hitStun:.38,damageType:'explosion',color:'#ff405b'})},430);
+    schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y-18+Math.sin(angle)*28,vx:Math.cos(angle)*15,vy:Math.sin(angle)*15,r:9,hitRadius:18,life:1.55,maxDistance:540,travelled:0,owner:f,kind:'red',damage:12.5,blockedDamage:6.25,blastRadius:203,knockback:18,hitStun:.38,damageType:'explosion',color:'#ff405b'})},430);
     f.skillCd[idx]=20;
    }
    if(idx===2){
@@ -5561,7 +5561,12 @@ function updateProjectiles(dt){
    p.travelled=(p.travelled||0)+Math.hypot(p.x-oldX,p.y-oldY);p.life-=dt;
    p.vx*=projectileDamping;p.vy*=projectileDamping;
    let contact=false;
-   for(const target of tenTargets(p.owner)){if(Math.hypot(target.x-p.x,target.y-p.y)<p.r+23){contact=true;break}}
+   const stepX=p.x-oldX,stepY=p.y-oldY,stepLengthSq=stepX*stepX+stepY*stepY;
+   for(const target of tenTargets(p.owner)){
+    const along=stepLengthSq>0?clamp(((target.x-oldX)*stepX+(target.y-oldY)*stepY)/stepLengthSq,0,1):0;
+    const closestX=oldX+stepX*along,closestY=oldY+stepY*along;
+    if(Math.hypot(target.x-closestX,target.y-closestY)<(p.hitRadius||p.r)+23){contact=true;break}
+   }
    if(!contact){
     for(const b of staticBuildings){
      if(b.collapsed)continue;
