@@ -665,12 +665,12 @@ body.mobile-controls-enabled.game-active .ult-track{
 }
 
 /* Compact main-menu screen orientation control. */
-#screenRotateBtn{position:absolute;z-index:9;left:clamp(8px,1.5vw,20px);right:auto;top:auto;bottom:clamp(12px,2.7vh,28px);width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+#screenRotateBtn{position:absolute;z-index:9;right:clamp(8px,1.5vw,20px);left:auto;top:auto;bottom:clamp(12px,2.7vh,28px);width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
 #screenRotateBtn:hover,#screenRotateBtn:focus-visible{background:transparent!important;box-shadow:none!important;color:#dcecff}
 #screenRotateBtn .rotate-glyph{display:block;line-height:1;text-shadow:1px 2px 4px rgba(0,0,0,.9);transform:rotate(0deg);transition:transform .32s ease}
 #screenRotateBtn.is-rotated .rotate-glyph{transform:rotate(90deg)}
-#screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;left:44px;right:auto;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
-@media(max-width:520px){#screenRotateBtn{left:5px;right:auto;top:auto;bottom:calc(10px + env(safe-area-inset-bottom));width:40px;height:40px;font-size:36px}}
+#screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;left:auto;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
+@media(max-width:520px){#screenRotateBtn{right:5px;left:auto;top:auto;bottom:calc(10px + env(safe-area-inset-bottom));width:40px;height:40px;font-size:36px}}
 
 
 /* Manual 90-degree game rotation: swap the logical viewport, then rotate the whole UI.
@@ -694,7 +694,7 @@ html.manual-screen-rotated .fighter-card{width:clamp(160px,calc(var(--manual-scr
 html.manual-screen-rotated body.mobile-controls-enabled.game-active .bottom{
  bottom:calc(165px + env(safe-area-inset-bottom))!important;
 }
-html.manual-screen-rotated #screenRotateBtn{left:14px!important;right:auto!important;top:auto!important;bottom:14px!important}
+html.manual-screen-rotated #screenRotateBtn{right:14px!important;left:auto!important;top:auto!important;bottom:14px!important}
 html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 @media(max-height:420px){
  html.manual-screen-rotated #menu .menu-main{max-height:calc(100vw - 12px)!important;width:min(360px,84vh)!important}
