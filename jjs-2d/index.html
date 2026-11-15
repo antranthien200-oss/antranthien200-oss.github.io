@@ -6484,6 +6484,19 @@ function drawPixelSkillVfx(f,m,p,c){
  return true;
 }
 
+function drawRedGradientSphere(x,y,r,opacity=1){
+ ctx.save();ctx.globalAlpha*=opacity;
+ const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
+ gradient.addColorStop(0,"#ff9eaf");
+ gradient.addColorStop(.34,"#f45b75");
+ gradient.addColorStop(.72,"#ce304f");
+ gradient.addColorStop(1,"#70152d");
+ ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ // A separate hollow circle sits inside the sphere; only its white outline is drawn.
+ ctx.beginPath();ctx.arc(x,y,r*.48,0,Math.PI*2);
+ ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.15,r*.075);ctx.stroke();
+ ctx.restore();
+}
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
  if(m==='gojoRed'){
@@ -6514,18 +6527,8 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   // A few short arcs give the impression of energy flowing around the sphere's surface.
   for(let i=0;i<3;i++)drawRedTrail(i,false);
 
-  // Reuse Lapse Blue's exact sphere construction, recoloured as positive cursed energy.
-  ctx.globalAlpha=vfxFade;
-  ctx.shadowColor='#ff3157';ctx.shadowBlur=13;
-  drawPixelatedCircle(orbX,orbY,radius,{main:'#ef3153',shadow:'#74132d'},2);
-  ctx.shadowBlur=0;
-  drawPixelatedCircle(orbX-1,orbY+1,6.2*radius/14,{main:'#a91939',shadow:'#530e25'},2);
-  ctx.globalAlpha=.98*vfxFade;
-  ctx.fillStyle='#fff0f3';
-  ctx.fillRect(orbX-6*radius/14,orbY-7*radius/14,4*radius/14,3*radius/14);
-  ctx.fillRect(orbX-3*radius/14,orbY-9*radius/14,2*radius/14,2*radius/14);
-  ctx.fillStyle='#ff94a6';
-  ctx.fillRect(orbX+5*radius/14,orbY-2*radius/14,2*radius/14,3*radius/14);
+  // Smooth dark-to-light radial sphere with a hollow white inner circle.
+  drawRedGradientSphere(orbX,orbY,radius,vfxFade);
 
   // Two fine highlights pass in front, so the trails visibly wrap around the orb.
   drawRedTrail(0,true);drawRedTrail(1,true);
@@ -9257,18 +9260,7 @@ function drawEffects(){
   ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore();
  }
  drawYutaDomainKatanas();for(const p of projectiles){if(activeDomainView&&!domainViewMatches(p.owner,activeDomainView))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);if(!effectsViewportContains(x,y,Math.max(88,p.r||0)+28))continue;ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=p.kind==='blueMax'?30:22;ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='sukunaFireArrow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.shadowColor='#ff6524';ctx.shadowBlur=10;drawSukunaFlameArrowGlyph(0,0,1,1);}else if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Number.isFinite(p.rotation)?p.rotation:Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='red'){
-   ctx.save();ctx.translate(x,y);const r=13,pulse=1+Math.sin(game.time*25)*.035;ctx.scale(pulse,pulse);
-   ctx.globalAlpha=.24;ctx.fillStyle='#ff405f';ctx.beginPath();ctx.arc(0,0,r*1.9,0,Math.PI*2);ctx.fill();
-   ctx.globalAlpha=.9;ctx.shadowColor='#ff3157';ctx.shadowBlur=13;
-   drawPixelatedCircle(0,0,r,{main:'#ef3153',shadow:'#74132d'},2);
-   ctx.shadowBlur=0;
-   drawPixelatedCircle(-1,1,5.8,{main:'#a91939',shadow:'#530e25'},2);
-   ctx.globalAlpha=.98;ctx.fillStyle='#fff0f3';
-   ctx.fillRect(-6,-7,4,3);ctx.fillRect(-3,-9,2,2);
-   ctx.fillStyle='#ff94a6';ctx.fillRect(5,-2,2,3);
-   ctx.globalAlpha=.8;ctx.strokeStyle='#ffdbe1';ctx.lineWidth=1;
-   ctx.beginPath();ctx.arc(0,0,r+2,-.8,1.05);ctx.stroke();
-   ctx.restore();
+   ctx.save();ctx.translate(x,y);drawRedGradientSphere(0,0,13,.96);ctx.restore();
   }else if(p.kind==='blueMax'){drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],x,y,6,{B:'#174f78',M:'#39b9e8',H:'#e6fcff'});ctx.fillStyle='#fff';ctx.fillRect(x-3,y-27,6,6);ctx.fillRect(x+21,y+9,6,6)}else if(p.kind==='hollow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['...BBBBBBBB...','..BMMMMMMMMB..','.BMMHHHHHHMMB.','BMMHHHHHHHHMMB','BMMMMMMMMMMMMB','.BMMMMMMMMMMB.','..BMMMMMMMMB..','...BBBBBBBB...'],0,0,5,{B:'#413c78',M:'#9488e8',H:'#f5f2ff'})}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#7e1f36';ctx.fillRect(-39,-6,78,12);ctx.fillStyle=p.color||'#f14b60';ctx.fillRect(-34,-3,68,6);ctx.fillStyle='#fff0f2';ctx.fillRect(-24,-6,38,3)}else{const size=Math.max(3,Math.round(p.r*.32));ctx.fillRect(Math.round((x-size*2)/3)*3,Math.round((y-size*2)/3)*3,size*4,size*4);ctx.fillStyle='#fff';ctx.fillRect(Math.round((x-size*.5)/3)*3,Math.round((y-size*.5)/3)*3,size,size)}ctx.restore()}
  ctx.save();
  for(const p of particles){
