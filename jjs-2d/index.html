@@ -6435,14 +6435,14 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  }
  if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const turn=clamp(p,0,1)*Math.PI*2,fade=(.46+.28*Math.sin(p*Math.PI))*vfxFade;
+  const turn=clamp(p,0,1)*Math.PI*2,fade=(.34+.18*Math.sin(p*Math.PI))*vfxFade;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // One clean orbit line follows the open hand's 360° path around the former orb position.
-  ctx.globalAlpha=fade;ctx.strokeStyle='#2789d0';ctx.lineWidth=3.2;ctx.shadowColor='#53caff';ctx.shadowBlur=5;
-  ctx.beginPath();ctx.arc(64,-3,28,turn-.78,turn);ctx.stroke();
-  ctx.globalAlpha=fade*.75;ctx.strokeStyle='#c4f2ff';ctx.lineWidth=1.35;ctx.shadowBlur=2;
-  ctx.beginPath();ctx.arc(64,-3,28,turn-.62,turn-.12);ctx.stroke();
+  // A faint circular motion trace sits around Gojo, matching the two hands' orbit.
+  ctx.globalAlpha=fade;ctx.strokeStyle='#2789d0';ctx.lineWidth=2.4;ctx.shadowColor='#53caff';ctx.shadowBlur=4;
+  ctx.beginPath();ctx.arc(0,0,34,turn-.62,turn);ctx.stroke();
+  ctx.globalAlpha=fade*.62;ctx.strokeStyle='#c4f2ff';ctx.lineWidth=1.1;ctx.shadowBlur=1;
+  ctx.beginPath();ctx.arc(0,0,34,turn-.42,turn-.12);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
@@ -7712,11 +7712,11 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*2;
-    // The original round hand travels a complete circle around the Blue sphere.
-    handA=P(17,-18,8);
-    handB=P(64+Math.cos(spin)*26,Math.sin(spin)*26,-3);
-    handAScale=.9;handBScale=1.15;
+    const spin=progress*Math.PI*2,orbit=27,center=14;
+    // Both original round hands rotate together around Gojo through the full 360-degree turn.
+    handA=P(center+Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
+    handB=P(center+Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
+    handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
     const load=smoothstep01(clamp(progress/.22,0,1)),slap=smoothstep01(clamp((progress-.18)/.48,0,1)),recover=smoothstep01(clamp((progress-.76)/.24,0,1));
     handA=P(10,18,-5);
