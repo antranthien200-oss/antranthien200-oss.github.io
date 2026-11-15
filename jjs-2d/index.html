@@ -6496,7 +6496,7 @@ function drawRedGradientSphere(x,y,r,opacity=1){
  ctx.globalAlpha=1;
  ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
  // A separate hollow circle sits inside the opaque sphere; only its white outline is drawn.
- ctx.beginPath();ctx.arc(x,y,r*.48,0,Math.PI*2);
+ ctx.beginPath();ctx.arc(x,y,r*.62,0,Math.PI*2);
  ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
@@ -6512,7 +6512,7 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.globalAlpha=1;
  ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
  // Outline only: the inner circle has no separate fill or color break.
- ctx.beginPath();ctx.arc(x,y,r*.48,0,Math.PI*2);
+ ctx.beginPath();ctx.arc(x,y,r*.62,0,Math.PI*2);
  ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
