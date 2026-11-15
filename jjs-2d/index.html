@@ -4953,7 +4953,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
-    const caught=targetInAim(f,t,390,.96,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
+    const mobileAimAssist=mobileControlsEnabled&&f===player,caught=targetInAim(f,t,mobileAimAssist?480/1.22:480,mobileAimAssist?.96:1.12,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
     f.skillCd[idx]=15;f.attackAnim=.85;f.invuln=.12;setMotion(f,'gojoBlue',.85,angle,t);
     f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:caught?t:null,startDistance:caught?Math.hypot(t.x-orbX,t.y-orbY):0};
     burst(orbX,orbY,'#65d9ff',22,3.6);burst(orbX,orbY,'#d9f8ff',9,2.2);spawnGojoBlueSparks(f,orbX,orbY,12);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
