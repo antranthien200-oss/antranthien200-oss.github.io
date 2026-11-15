@@ -4730,6 +4730,7 @@ function updateTrashManEffects(f,dt){
 function useAttack(f,kind){
  if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||f.vehicle||game.cutsceneTimer>0)return;
+ if(f.blueSuckedBy||f.gojoBluePull)return;
  if(f.vesselAwakenSequence)return;
  if(f.sukunaFireCast>0)return;
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
@@ -4937,8 +4938,8 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:caught?t:null,startDistance:caught?Math.hypot(t.x-orbX,t.y-orbY):0};
     burst(orbX,orbY,'#65d9ff',12,2.8);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
     if(caught){
-     damage(t,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',ignoreInvuln:true});
-     if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:.85};setMotion(t,'gojoBlueSucked',.85,angle,f)}
+     damage(t,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',unblockable:true,ignoreInvuln:true});
+     if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:1.95};setMotion(t,'gojoBlueSucked',1.95,angle,f)}
      schedule(()=>{
       if(f.dead||t.dead||!game.started||game.over)return;
       f.gojoBlueOrb=null;setMotion(f,'gojoBlueSpin',.58,angle,t);f.attackAnim=.58;f.invuln=.22;
