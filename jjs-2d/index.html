@@ -6492,7 +6492,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
    const phase=game.time*(2.55+index*.16)+index*2.08+p*1.9+(front?Math.PI*.72:0);
    const rx=12+index*1.35,ry=7+index*.85;
    const start=phase,end=phase+1.12;
-   ctx.globalAlpha=(front?.72:.48)*(1-index*.11)*trailFade;
+   ctx.globalAlpha=(front ? 0.72 : 0.48)*(1-index*.11)*trailFade;
    ctx.strokeStyle=front?'#ffb5c2':(index===1?'#ff3659':'#b91e3c');
    ctx.shadowColor='#ff3459';ctx.shadowBlur=front?5:3.5;
    ctx.lineWidth=front?1.55:(index===1?2.15:1.45);
