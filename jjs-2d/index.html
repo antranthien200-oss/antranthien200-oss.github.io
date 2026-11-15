@@ -5409,7 +5409,7 @@ function updateFighter(f,dt){if(f.dead)return;
   const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,440*dt);
   if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
   f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;
-  if(pull.life<=0){pull.owner.gojoBlueOrb=null;f.gojoBluePull=null;f.stun=Math.max(f.stun,.34);f.motion=null}
+  if(pull.life<=0){pull.owner.gojoBlueOrb=null;f.gojoBluePull=null;f.stun=Math.max(f.stun,.62);f.motion=null}
   updateDomainContainment(f);return;
  }
  if(onlineMode&&f.blueSuckedBy){f.vx=0;f.vy=0;return}
