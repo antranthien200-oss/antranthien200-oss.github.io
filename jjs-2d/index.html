@@ -7619,7 +7619,7 @@ function drawStunRain(f,x,y){
  }
  ctx.restore();
 }
-function drawHeadHands(f){
+function drawHeadHands(f,deferMotionVfx=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
@@ -7740,10 +7740,10 @@ function drawHeadHands(f){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoBlueSpin'){
-    const spin=smoothstep01(progress)*Math.PI*2,orbit=Math.hypot(46,18),startAngle=Math.atan2(18,46);
-    // Start exactly where the suction pose leaves both hands, then orbit continuously.
-    handA=P(Math.cos(startAngle+spin)*orbit,Math.sin(startAngle+spin)*orbit,-8);
-    handB=P(Math.cos(-startAngle-spin)*orbit,Math.sin(-startAngle-spin)*orbit,-8);
+    const spin=progress*Math.PI*2,orbit=43;
+    // Original opposite-side circular orbit, centered exactly on Gojo.
+    handA=P(Math.cos(spin)*orbit,Math.sin(spin)*orbit,-3);
+    handB=P(Math.cos(spin+Math.PI)*orbit,Math.sin(spin+Math.PI)*orbit,-3);
     handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
     const windupEnd=.24,swingEnd=.68;
@@ -7760,23 +7760,23 @@ function drawHeadHands(f){
     const contact=clamp(targetForward-5,42,86);
     const readyForward=clamp(contact-14,20,68),strikeForward=contact+5;
     const readySide=targetSide-30,followSide=targetSide+16;
-    const forward=progress<windupEnd?lerp(46,readyForward,windup)
-     :progress<swingEnd?lerp(readyForward,strikeForward,swing)+Math.sin(swing*Math.PI)*3
+    const forward=progress<windupEnd?lerp(-43,-53,windup)
+     :progress<swingEnd?lerp(-53,strikeForward,swing)+Math.sin(swing*Math.PI)*3
      :lerp(strikeForward,22,recover);
-    const side=progress<windupEnd?lerp(-18,readySide,windup)
+    const side=progress<windupEnd?lerp(0,readySide,windup)
      :progress<swingEnd?lerp(readySide,followSide,swing)
      :lerp(followSide,targetSide+8,recover);
-    const lift=progress<windupEnd?lerp(-8,-12,windup)
+    const lift=progress<windupEnd?lerp(-3,-12,windup)
      :progress<swingEnd?lerp(-12,-1,swing)+Math.sin(swing*Math.PI)*2
      :lerp(-1,4,recover);
-    // Keep the supporting hand's opening pose continuous with the orbit, then tuck it close.
-    const supportForward=progress<windupEnd?lerp(46,4,windup)
+    // The support hand starts at the other end of the orbit, then tucks close to Gojo.
+    const supportForward=progress<windupEnd?lerp(43,4,windup)
      :progress<swingEnd?lerp(4,5,swing)
      :lerp(5,7,recover);
-    const supportSide=progress<windupEnd?lerp(18,17,windup)
+    const supportSide=progress<windupEnd?lerp(0,17,windup)
      :progress<swingEnd?17
      :lerp(17,14,recover);
-    const supportLift=progress<windupEnd?lerp(-8,-4,windup)
+    const supportLift=progress<windupEnd?lerp(-3,-4,windup)
      :progress<swingEnd?lerp(-4,1,swing)
      :lerp(1,2,recover);
     handA=P(supportForward,supportSide,supportLift);
@@ -7784,7 +7784,14 @@ function drawHeadHands(f){
     handBScale=1.18;handAScale=.96;handBAngle=angle;
    }else if(name==='gojoBlue'||name==='gojoBlueMax'){
     const spread=name==='gojoBlueMax'?20-12*pulse:18-11*pulse,forward=20+26*smooth;
-    handA=P(forward,spread,-8-5*pulse);handB=P(forward,-spread,-8-5*pulse);handAScale=1.15;handBScale=1.15;
+    if(name==='gojoBlue'){
+     const settle=smoothstep01(clamp((progress-.82)/.18,0,1));
+     handA=P(lerp(forward,43,settle),lerp(spread,0,settle),lerp(-8-5*pulse,-3,settle));
+     handB=P(lerp(forward,-43,settle),lerp(-spread,0,settle),lerp(-8-5*pulse,-3,settle));
+    }else{
+     handA=P(forward,spread,-8-5*pulse);handB=P(forward,-spread,-8-5*pulse);
+    }
+    handAScale=1.15;handBScale=1.15;
    }else if(name==='gojoRed'||name==='gojoRedMax'){
     handA=P(18+34*pulse,16,-4);handB=P(8+10*(1-smooth),-18,7);handAScale=1.22;
    }else if(name==='gojoPurple'){
@@ -8013,14 +8020,13 @@ function drawHeadHands(f){
  if(f.awakened&&f.char!=='vessel'){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':c.accent;ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
- if(name==='gojoBlueSpin'){
-  // Reuse the exact M1 hand-trail renderer for both hands throughout the 360-degree spin.
-  drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
-  drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
- }else if(name==='gojoBlueSlap'){
-  // The striking hand leaves the same clean M1 trail as it sweeps across the target.
-  drawM1HandTrail(f,handA,'a',x,headY,false,trailColor);
-  drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
+ if(name==='gojoBlueSpin'||name==='gojoBlueSlap'){
+  // Store the current hand positions; render their M1 trails after every fighter is drawn.
+  f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
+  if(!deferMotionVfx){
+   drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
+   drawM1HandTrail(f,handB,'b',x,headY,true,trailColor);
+  }
  }else if(f.sideViewPreview&&(combo||name==='yujiBlackFlash')){
   // Both preview fists leave their own trail as they punch in alternating rhythm.
   drawM1HandTrail(f,handA,'a',x,headY,true,trailColor);
@@ -8038,7 +8044,8 @@ function drawHeadHands(f){
   drawM1HandTrail(f,yutaCombo===4?handA:handB,yutaCombo===4?'a':'b',x,headY,true,trailColor);
   drawM1HandTrail(f,yutaCombo===4?handB:handA,yutaCombo===4?'b':'a',x,headY,false,trailColor);
  }else if(f.m1HandTrailState){f.m1HandTrailState.a.length=0;f.m1HandTrailState.b.length=0;f.m1HandTrailState.name=''}
- ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);if(name!=='carEnter'&&name!=='carExit'&&!(m&&m.skipMotionVfx))drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
+ if(name!=='gojoBlueSpin'&&name!=='gojoBlueSlap')f.gojoBlueTrailPose=null;
+ ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);if(!deferMotionVfx&&name!=='carEnter'&&name!=='carExit'&&!(m&&m.skipMotionVfx))drawMotionVfx(f,name,progress,c,vfxFade);ctx.restore();
  if(name==='trashCanPickup'||f.carryingTrashCan){
   const hold=P(31,0,24);let canX=hold.x,canY=hold.y;
   if(name==='trashCanPickup'&&Number.isFinite(f.trashCanPickupFromX)&&Number.isFinite(f.trashCanPickupFromY)){
@@ -8177,10 +8184,29 @@ function drawFighter(f){
   const alpha=transition.mode==='enter'?1-smoothstep01(clamp((progress-.58)/.38,0,1)):smoothstep01(clamp(progress/.2,0,1));
   const scale=transition.mode==='enter'?1-.22*eased:.74+.26*eased;
   const visual={...f,x:px,y:py,face:transition.face,vehicle:null,motion:{name:transition.mode==='enter'?'carEnter':'carExit',t:transition.elapsed,duration:transition.duration,activeDuration:transition.duration,angle:transition.face,target:null}};
-  ctx.save();ctx.globalAlpha=alpha;ctx.translate(sx(px),sy(py));ctx.scale(scale,scale);ctx.translate(-sx(px),-sy(py));drawHeadHands(visual);ctx.restore();
- }else drawHeadHands(f);
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(sx(px),sy(py));ctx.scale(scale,scale);ctx.translate(-sx(px),-sy(py));drawHeadHands(visual,true);ctx.restore();
+ }else drawHeadHands(f,true);
  if(!transition&&f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
+}
+function drawFighterMotionOverlays(f){
+ if(!f||f.dead||f.vehicleTransition||!f.motion)return;
+ const m=f.motion,name=m.name||'';
+ if(name==='carEnter'||name==='carExit'||m.skipMotionVfx)return;
+ const progress=clamp(m.t/(m.activeDuration||m.duration||1),0,1);
+ const vfxFade=m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,headY=y-23;
+ const combo=name.startsWith('m1_');
+ const angle=Number.isFinite(m.angle)?m.angle:f.face;
+ if((name==='gojoBlueSpin'||name==='gojoBlueSlap')&&f.gojoBlueTrailPose){
+  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
+  const trailColor=brightenM1TrailColor(palette.accent||palette.main);
+  drawM1HandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY,true,trailColor);
+  drawM1HandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY,true,trailColor);
+ }
+ ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
+ drawMotionVfx(f,name,progress,getFighterLook(f),vfxFade);
+ ctx.restore();
 }
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
@@ -9300,7 +9326,11 @@ function draw(){
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawVesselAwakeningSmoke(remote);}
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
- if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighter(remote);for(const remote of onlineRemotePlayers.values())drawOnlineNameplate(remote)}drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();if(game.domainClash)drawDomainClashFighterMarkers();
+ if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighter(remote);for(const remote of onlineRemotePlayers.values())drawOnlineNameplate(remote)}
+ drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();
+ // Foreground combat pass keeps skill effects and Gojo's hand trails visible over opponents.
+ if(player)drawFighterMotionOverlays(player);if(enemy)drawFighterMotionOverlays(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighterMotionOverlays(remote)}
+ if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
  positionVesselAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
