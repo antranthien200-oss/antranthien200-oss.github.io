@@ -6404,22 +6404,23 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const orb=f.gojoBlueOrb;
   if(orb&&orb.target&&Math.hypot(orb.target.x-orb.x,orb.target.y-orb.y)<24)return;
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const x=72,y=-3,fade=(.98-.06*clamp(p,0,1))*vfxFade;
+  const x=72,y=-3+Math.sin(game.time*1.35)*1.1,fade=(.98-.04*clamp(p,0,1))*vfxFade;
   ctx.save();ctx.rotate(angle);
-  ctx.globalAlpha=.9*fade;
-  ctx.shadowColor='#55cfff';ctx.shadowBlur=13;
+  ctx.globalAlpha=.98*fade;ctx.shadowColor='#3daeff';ctx.shadowBlur=13;
 
-  // Reuse the exact Lapse Blue MAX sprite palette and silhouette, scaled down from 6px to 4px cells.
+  // Compact adaptation of JJS Six Eyes' Lapse Blue MAX: a blue vortex with a flame-like edge.
+  // The jagged silhouette keeps the awakening orb's identity, while the dark center reads as suction.
   drawPixelSpriteGrid(
-   ['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],
-   x,y,4,
-   {B:'#174f78',M:'#39b9e8',H:'#e6fcff'}
+   [".......B.B.......","......BBMMB......",".....BMMMMMB.....","....BBMMMMMBB....","...BMMMMHHMMMB...","..BBMMHHHHHMMBB..",".BBMMHHCCCHHMMBB.","BMMHHCCDDDCCHHMMB","BMMHHCDDDDDCHHMMB","BMMHHCCDDDCCHHMMB",".BBMMHHCCCHHMMBB.","..BBMMHHHHHMMBB..","...BMMMMHHMMMB...","....BBMMMMMBB....",".....BMMMMMB.....","......BBMMB......",".......B.B......."],
+   x,y,2.4,
+   {B:'#123f83',M:'#247bd0',H:'#49bdf4',C:'#9ae8ff',D:'#0e3977'}
   );
 
-  // Keep only the same small highlight pixels used by the awakened orb.
-  ctx.shadowBlur=0;ctx.fillStyle='#ffffff';ctx.globalAlpha=.96*fade;
-  ctx.fillRect(Math.round(x-2),Math.round(y-18),4,4);
-  ctx.fillRect(Math.round(x+14),Math.round(y+6),4,4);
+  // A restrained inner highlight makes the vortex easy to read at this smaller scale.
+  ctx.shadowBlur=0;ctx.globalAlpha=.92*fade;ctx.fillStyle='#dff9ff';
+  ctx.fillRect(Math.round(x-7),Math.round(y-8),2.4,2.4);
+  ctx.fillStyle='#64d2ff';ctx.globalAlpha=.82*fade;
+  ctx.fillRect(Math.round(x+6),Math.round(y+3),2.4,2.4);
   ctx.restore();return;
  }
  if(m==='gojoBlueSucked'){
