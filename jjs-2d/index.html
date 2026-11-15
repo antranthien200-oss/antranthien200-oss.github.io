@@ -4932,7 +4932,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
-    const caught=targetInAim(f,t,320,.82,angle),orbX=f.x+Math.cos(angle)*82,orbY=f.y+Math.sin(angle)*82;
+    const caught=targetInAim(f,t,320,.82,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
     f.skillCd[idx]=15;f.attackAnim=.85;f.invuln=.12;setMotion(f,'gojoBlue',.85,angle,t);
     f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:caught?t:null};
     burst(orbX,orbY,'#65d9ff',12,2.8);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
@@ -5406,7 +5406,7 @@ function updateTenEffects(f,dt){
 }
 function updateFighter(f,dt){if(f.dead)return;
  if(f.gojoBluePull&&!onlineMode){
-  const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,440*dt);
+  const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
   if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
   f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;
   if(pull.life<=0){pull.owner.gojoBlueOrb=null;f.gojoBluePull=null;f.stun=Math.max(f.stun,.62);f.motion=null}
@@ -6404,7 +6404,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const orb=f.gojoBlueOrb;
   if(orb&&orb.target&&Math.hypot(orb.target.x-orb.x,orb.target.y-orb.y)<24)return;
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const x=72,y=-3+Math.sin(game.time*1.35)*1.1,fade=(.98-.04*clamp(p,0,1))*vfxFade;
+  const x=54,y=-3+Math.sin(game.time*1.35)*1.1,fade=(.98-.04*clamp(p,0,1))*vfxFade;
   ctx.save();ctx.rotate(angle);
   ctx.globalAlpha=.98*fade;ctx.shadowColor='#3daeff';ctx.shadowBlur=13;
 
