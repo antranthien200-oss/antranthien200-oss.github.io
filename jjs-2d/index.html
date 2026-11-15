@@ -4966,7 +4966,12 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
          const before=slapHandAt(Math.max(0,contactP-.012)),after=slapHandAt(Math.min(1,contactP+.012));
          const sweepX=after.x-before.x,sweepY=after.y-before.y,sweepLength=Math.hypot(sweepX,sweepY)||1;
          const knockX=sweepX/sweepLength,knockY=sweepY/sweepLength;
-         damage(t,7.5,f,{stun:.78,kx:knockX*16,ky:knockY*16,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
+         // The suction lock zeroes velocity every frame; release it on the actual slap contact.
+         if(!onlineMode&&t.gojoBluePull&&t.gojoBluePull.owner===f){
+          t.gojoBluePull=null;t.motion=null;t.stun=Math.max(t.stun,.78);
+         }
+         damage(t,7.5,f,{stun:.78,kx:knockX*20,ky:knockY*20,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
+         if(!onlineMode){t.vx=knockX*15;t.vy=knockY*15}
          burst(t.x,t.y-23,'#b9efff',30,5.8);burst(t.x,t.y-23,'#4bbfff',22,4.8);spawnGojoBlueSparks(f,t.x,t.y-23,20);
          game.hitStop=Math.max(game.hitStop,.095);game.shake=Math.max(game.shake,14);
          popText(t.x,t.y-61,'BLUE SLAP','#e2f8ff',16);
