@@ -6409,44 +6409,9 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   }
   ctx.restore();return;
  }
- if(m==='sukunaFlurryWindup'||m==='sukunaFlurry'||m==='sukunaFlurryMiss'||m==='sukunaFlurryEnd'||m==='captured_sukunaFlurry'){
+ if(m==='sukunaFlurryWindup'||m==='sukunaFlurry'||m==='sukunaFlurryMiss'||m==='sukunaFlurryEnd'){
   ctx.save();const a=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;ctx.rotate(a);
-  if(m==='captured_sukunaFlurry'){
-   const fade=clamp(1-p,0,1); // Fade the flurry as the capture animation finishes.
-   // Use the exact awakened M1 crescent silhouette: solid black interior and fine white rim.
-   // Each cut keeps its own scale, placement and angle so the flurry feels irregular but consistent.
-   const cuts=[
-    [-25,-27,49,3.2,-.72,.96],
-    [8,-22,62,4.0,.46,.92],
-    [-5,-3,39,2.7,-.18,.94],
-    [25,10,53,3.5,-1.02,.9],
-    [-24,22,36,2.3,.78,.88],
-    [5,28,48,3.1,.98,.94],
-    [-35,-3,31,2.2,1.16,.84],
-    [30,-28,34,2.4,-.42,.9]
-   ];
-   const pulse=.88+.12*Math.sin(game.time*21);
-   for(let i=0;i<cuts.length;i++){
-    const [x,y,length,thickness,rotation,opacity]=cuts[i];
-    const stagger=.82+.18*Math.sin(game.time*16+i*1.37);
-    ctx.save();ctx.translate(x,y);ctx.rotate(rotation+Math.PI/2);
-    ctx.globalAlpha=fade*pulse*stagger*opacity*vfxFade;
-    ctx.beginPath();ctx.moveTo(-length*.5,0);
-    ctx.bezierCurveTo(-length*.31,-thickness*4.2,length*.31,-thickness*4.2,length*.5,0);
-    ctx.bezierCurveTo(length*.28,-thickness*1.65,-length*.28,-thickness*1.65,-length*.5,0);
-    ctx.closePath();
-    ctx.fillStyle='#030405';ctx.strokeStyle='#ffffff';ctx.lineWidth=2.4;ctx.lineJoin='round';
-    ctx.shadowColor='#ffffff';ctx.shadowBlur=4.5;
-    ctx.fill();ctx.stroke();
-    ctx.restore();
-   }
-   // Tiny white contact glints complement the crescents without becoming extra slash shapes.
-   ctx.globalAlpha=.48*fade*vfxFade;ctx.fillStyle='#ffffff';ctx.shadowColor='#ffffff';ctx.shadowBlur=4;
-   for(let i=0;i<4;i++){
-    const x=-12+i*8,y=(i%2?1:-1)*(10+(i%3)*7);
-    ctx.beginPath();ctx.arc(x,y,1.1+(i%2)*.35,0,Math.PI*2);ctx.fill();
-   }
-  }else if(m==='sukunaFlurryWindup'){
+  if(m==='sukunaFlurryWindup'){
    const pull=1-clamp(p/.58,0,1);ctx.globalAlpha=.2+.55*pull;ctx.strokeStyle='#ff526d';ctx.lineWidth=2.5;ctx.shadowColor='#ff405f';ctx.shadowBlur=9;ctx.beginPath();ctx.arc(-25,-4,19+pull*10,-1.1,1.05);ctx.stroke();
    ctx.globalAlpha=.35+.45*pull;ctx.fillStyle='#ff657d';for(let i=0;i<4;i++){const q=i*Math.PI*.5+p*4;ctx.beginPath();ctx.arc(-31+Math.cos(q)*9,-5+Math.sin(q)*9,1.5,0,Math.PI*2);ctx.fill()}
   }else if(m==='sukunaFlurry'){
