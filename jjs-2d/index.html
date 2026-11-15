@@ -6487,9 +6487,9 @@ function drawPixelSkillVfx(f,m,p,c){
 function drawRedGradientSphere(x,y,r,opacity=1){
  ctx.save();ctx.globalAlpha*=opacity;
  const gradient=ctx.createRadialGradient(x-r*.1,y-r*.1,0,x,y,r);
- gradient.addColorStop(0,"#fffafa");
- gradient.addColorStop(.2,"#fff0f2");
- gradient.addColorStop(.43,"#ff9bab");
+ gradient.addColorStop(0,"#ffb5c2");
+ gradient.addColorStop(.2,"#ff9bab");
+ gradient.addColorStop(.43,"#f45f7b");
  gradient.addColorStop(.72,"#ed4563");
  gradient.addColorStop(1,"#b52b49");
  ctx.globalAlpha=1;
