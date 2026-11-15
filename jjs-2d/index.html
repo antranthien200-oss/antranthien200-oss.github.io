@@ -6500,6 +6500,22 @@ function drawRedGradientSphere(x,y,r,opacity=1){
  ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
+function drawBlueGradientSphere(x,y,r,opacity=1){
+ ctx.save();ctx.globalAlpha*=opacity;
+ const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
+ // Match Reversal Red's smooth gradient and keep the color continuous under the hollow ring.
+ gradient.addColorStop(0,"#b8efff");
+ gradient.addColorStop(.48,"#b8efff");
+ gradient.addColorStop(.58,"#b8efff");
+ gradient.addColorStop(.78,"#62c9f2");
+ gradient.addColorStop(1,"#267eb9");
+ ctx.globalAlpha=1;
+ ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ // Outline only: the inner circle has no separate fill or color break.
+ ctx.beginPath();ctx.arc(x,y,r*.48,0,Math.PI*2);
+ ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
+ ctx.restore();
+}
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m)return;
  if(m==='gojoRed'){
@@ -6548,18 +6564,9 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const x=64,y=-3,fade=(.98-.05*clamp(p,0,1))*vfxFade;
   ctx.save();ctx.rotate(angle);ctx.globalAlpha=fade;
 
-  // Keep the Blue sphere centered while it compresses as the opponent reaches it.
-  ctx.shadowColor='#3daeff';ctx.shadowBlur=11*sphereScale;
-  drawPixelatedCircle(x,y,14*sphereScale,{main:'#318fe0',shadow:'#123e82'},2);
-  ctx.shadowBlur=0;
-
-  // The inner vortex and highlights shrink with the same center as the outer sphere.
-  drawPixelatedCircle(x,y,6.2*sphereScale,{main:'#185ca8',shadow:'#0b2e66'},2);
-  ctx.fillStyle='#c9f5ff';ctx.globalAlpha=.96*fade*sphereScale;
-  ctx.fillRect(x-6*sphereScale,y-7*sphereScale,4*sphereScale,3*sphereScale);
-  ctx.fillRect(x-3*sphereScale,y-9*sphereScale,2*sphereScale,2*sphereScale);
-  ctx.fillStyle='#72dfff';ctx.globalAlpha=.9*fade*sphereScale;
-  ctx.fillRect(x+5*sphereScale,y-2*sphereScale,2*sphereScale,3*sphereScale);
+  // Use the same smooth radial sphere treatment as Reversal Red, recolored for Lapse Blue.
+  // The sphere keeps its existing center and shrink animation as the target is pulled in.
+  drawBlueGradientSphere(x,y,14*sphereScale,1);
   ctx.restore();return;
  }
  if(m==='gojoBlueSucked'){
