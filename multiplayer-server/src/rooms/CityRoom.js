@@ -123,7 +123,11 @@ export class CityRoom extends Room{
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
   if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.85;return}
   if(p.grabbedBy||p.activeGrabTarget){p.moveX=0;p.moveY=0;return}
-  if(p.stun>0){p.moveX=0;p.moveY=0}
+  if(p.stun>0){
+   p.moveX=0;p.moveY=0;
+   // Do not let a delayed client snapshot restore a skill after it was interrupted.
+   if(p.attackType==="skill"){p.attackAnim=0;p.attackType="";p.motionName="";p.motionProgress=0;p.motionDuration=1;p.motionStartedAt=now}
+  }
   if(p.vehicleId){
    const c=this.state.world.cars.get(p.vehicleId);
    if(!c||c.destroyed||c.occupiedBy!==id)p.vehicleId="";
