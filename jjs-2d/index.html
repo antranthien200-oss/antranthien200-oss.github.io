@@ -6822,6 +6822,25 @@ if(m==='gojoBlueSpin'){
   }
   ctx.restore();return;
  }
+ if(m==='gojoRapidSpin'){
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,turn=p*Math.PI*2;
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.32+.38*Math.sin(p*Math.PI))*vfxFade;ctx.lineCap='round';ctx.strokeStyle='#63d4ff';ctx.shadowColor='#42bbff';ctx.shadowBlur=isMobileDevice?0:9;ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,35,-.7+turn,-.7+turn+1.5);ctx.stroke();
+  ctx.globalAlpha=.55*vfxFade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,43,.25+turn,.25+turn+.78);ctx.stroke();ctx.restore();return;
+ }
+ if(m==='gojoRapidFlurry'){
+  const fade=vfxFade,finish=smoothstep01(clamp((p-.86)/.14,0,1)),beat=Math.floor(p/.86*11),phase=(p/.86*11)-beat;
+  ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);ctx.lineCap='round';
+  if(p<.86){const side=beat%2===0?-1:1,reach=39+Math.sin(phase*Math.PI)*31;ctx.globalAlpha=(.16+.42*Math.sin(phase*Math.PI))*fade;ctx.strokeStyle='#4abfff';ctx.shadowColor='#38adff';ctx.shadowBlur=isMobileDevice?0:7;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(reach-31,side*15-8);ctx.quadraticCurveTo(reach-8,side*11-12,reach+13,side*15);ctx.stroke()}
+  else{ctx.globalAlpha=(.25+.68*finish)*fade;ctx.strokeStyle='#8fe4ff';ctx.shadowColor='#49c5ff';ctx.shadowBlur=isMobileDevice?0:13;ctx.lineWidth=5+finish*5;ctx.beginPath();ctx.moveTo(18,-17);ctx.quadraticCurveTo(58,-35,101,-1);ctx.stroke();ctx.strokeStyle='#e8fbff';ctx.lineWidth=2+finish*1.5;ctx.beginPath();ctx.moveTo(25,-21);ctx.quadraticCurveTo(68,-40,108,-2);ctx.stroke()}
+  ctx.restore();return;
+ }
+ if(m==='gojoBlueRapidEnd'){
+  const fade=1-smoothstep01(p);ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
+  ctx.globalAlpha=fade*.85;ctx.strokeStyle='#58caff';ctx.shadowColor='#64d5ff';ctx.shadowBlur=isMobileDevice?0:16;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(17,-20);ctx.quadraticCurveTo(61,-43,112,0);ctx.stroke();
+  ctx.globalAlpha=fade;ctx.strokeStyle='#effcff';ctx.shadowBlur=isMobileDevice?0:6;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(26,-23);ctx.quadraticCurveTo(75,-44,118,0);ctx.stroke();
+  for(let i=0;i<7;i++){const a=-1.15+i*.35;ctx.beginPath();ctx.moveTo(91+Math.cos(a)*6,Math.sin(a)*6);ctx.lineTo(91+Math.cos(a)*(20+i%3*5),Math.sin(a)*(20+i%3*5));ctx.stroke()}
+  ctx.restore();return;
+ }
  if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,whirl=Math.sin(p*Math.PI);
   ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.36+.36*whirl)*vfxFade;ctx.lineCap='round';ctx.strokeStyle='#72d8ff';ctx.shadowColor='#35baff';ctx.shadowBlur=isMobileDevice?0:(8);ctx.lineWidth=2;
@@ -8100,7 +8119,13 @@ function drawHeadHands(f,deferMotionVfx=false){
    const left=P(17,17,2),right=P(17,-17,2);
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
-   if(name==='gojoBlueSpin'){
+   if(name==='gojoRapidSpin'){
+    const spin=progress*Math.PI*2,orbit=42,centerX=x,centerY=headY+gojoBlueHeadBob;
+    handA={x:centerX+Math.cos(spin)*orbit,y:centerY+Math.sin(spin)*orbit};handB={x:centerX+Math.cos(spin+Math.PI)*orbit,y:centerY+Math.sin(spin+Math.PI)*orbit};handAScale=1.1;handBScale=1.1;
+   }else if(name==='gojoRapidFlurry'){
+    if(progress<.86){const count=11,step=progress/.86*count,index=Math.min(count-1,Math.floor(step)),phase=step-index,punch=Math.sin(phase*Math.PI),front=index%2===0,forward=reach+7+44*punch,side=front?16:-16;handA=front?P(forward,side,-2-5*punch):P(9,18,4);handB=front?P(9,-18,4):P(forward,side,-2-5*punch);handAScale=front?1.24:.94;handBScale=front?.94:1.24;handAAngle=angle+(front?.08:0);handBAngle=angle+(front?0:-.08)}
+    else{const wind=smoothstep01(clamp((progress-.86)/.08,0,1)),strike=smoothstep01(clamp((progress-.94)/.06,0,1));handA=P(9,18,4);handB=P(lerp(reach-22,reach+76,strike),-16,lerp(-17,-2,strike)-8*wind);handAScale=.96;handBScale=1.35;handBAngle=angle-.12*strike}
+   }else if(name==='gojoBlueSpin'){
     const spin=progress*Math.PI*2,orbit=43,centerX=x,centerY=headY+gojoBlueHeadBob;
     // Use a true screen-space circle centered on Gojo's visible head/player center.
     // Keeping this independent of aim axes prevents the orbit looking skewed or offset.
@@ -8376,7 +8401,10 @@ function drawHeadHands(f,deferMotionVfx=false){
  }
  // Final Gojo Blue pose override: after every generic pose/preview rule, force both fists
  // onto the same true screen-space circle around the visible character center.
- if(name==='gojoBlueSpin'){
+ if(name==='gojoRapidSpin'){
+  const orbitAngle=progress*Math.PI*2,orbitRadius=42,orbitCenterX=sx(f.x),orbitCenterY=sy(f.y)-f.jump*3-23+gojoBlueHeadBob;
+  handA={x:orbitCenterX+Math.cos(orbitAngle)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle)*orbitRadius};handB={x:orbitCenterX+Math.cos(orbitAngle+Math.PI)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle+Math.PI)*orbitRadius};handAScale=1.1;handBScale=1.1;sideViewBackHand=null;sideViewFrontHand=null;
+ }else if(name==='gojoBlueSpin'){
   const orbitAngle=progress*Math.PI*2,orbitRadius=43;
   const orbitCenterX=sx(f.x),orbitCenterY=sy(f.y)-f.jump*3-23+gojoBlueHeadBob;
   handA={x:orbitCenterX+Math.cos(orbitAngle)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle)*orbitRadius};
@@ -8392,7 +8420,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(f.awakened&&f.char!=='vessel'){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':c.accent;ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
- if(name==='gojoBlueSpin'||name==='gojoBlueSlap'){
+ if(name==='gojoBlueSpin'||name==='gojoBlueSlap'||name==='gojoRapidSpin'||name==='gojoRapidFlurry'){
   // During the spin both hands trail; during the slap only the striking hand (B) trails.
   f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
   if(!deferMotionVfx){
@@ -8586,7 +8614,7 @@ function drawFighterMotionOverlays(f){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,headY=y-23;
  const combo=name.startsWith('m1_');
  const angle=Number.isFinite(m.angle)?m.angle:f.face;
- if(name==='gojoBlueSpin'&&f.gojoBlueTrailPose){
+ if((name==='gojoBlueSpin'||name==='gojoRapidSpin'||name==='gojoRapidFlurry')&&f.gojoBlueTrailPose){
   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
  }
