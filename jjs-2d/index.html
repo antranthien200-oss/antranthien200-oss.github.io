@@ -7951,6 +7951,30 @@ function drawGojoBlueHandTrail(f,hand,side,baseX,baseY){
  ribbon(.19,'#ddfaff',.8,2);
  ctx.restore();
 }
+function drawGojoRapidReturnTrail(f,hand,side,baseX,baseY){
+ const motionName=f.motion&&f.motion.name||'gojoRapidFlurry';
+ let state=f.gojoRapidReturnTrailState;
+ if(!state||state.name!==motionName)state=f.gojoRapidReturnTrailState={name:motionName,a:[],b:[]};
+ const points=state[side],now=game.time,x=hand.x-baseX,y=hand.y-baseY,last=points[points.length-1];
+ if(!last||Math.hypot(x-last.x,y-last.y)>.12)points.push({x,y,time:now});
+ while(points.length>24||(points.length&&now-points[0].time>.24))points.shift();
+ if(points.length<2)return;
+ const fade=clamp(1-(now-points[points.length-1].time)/.22,0,1);
+ const stroke=(color,width,alpha,blur)=>{
+  ctx.globalAlpha=alpha*fade;ctx.strokeStyle=color;ctx.lineWidth=width;ctx.shadowColor=color;ctx.shadowBlur=isMobileDevice?0:blur;
+  ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();ctx.moveTo(baseX+points[0].x,baseY+points[0].y);
+  for(let i=1;i<points.length-1;i++){
+   const a=points[i],b=points[i+1];
+   ctx.quadraticCurveTo(baseX+a.x,baseY+a.y,baseX+(a.x+b.x)*.5,baseY+(a.y+b.y)*.5);
+  }
+  const end=points[points.length-1];ctx.lineTo(baseX+end.x,baseY+end.y);ctx.stroke();
+ };
+ ctx.save();
+ stroke('#126eb8',12,.78,12);
+ stroke('#39bfff',7,.96,8);
+ stroke('#e4fbff',2.5,.98,3);
+ ctx.restore();
+}
 function spawnGojoBlueSparks(f,x,y,count=2){
  if(!f.gojoBlueSparks)f.gojoBlueSparks=[];
  const sparks=f.gojoBlueSparks;
@@ -8667,6 +8691,13 @@ function drawFighterMotionOverlays(f){
  if((name==='gojoBlueSpin'||name==='gojoRapidSpin'||name==='gojoRapidFlurry')&&f.gojoBlueTrailPose){
   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
+  if(name==='gojoRapidFlurry'){
+   const step=progress*15,phase=step-Math.floor(step),rightPunch=Math.floor(step)%2===0;
+   if(phase>=.32){
+    const activeSide=rightPunch?'b':'a';
+    drawGojoRapidReturnTrail(f,f.gojoBlueTrailPose[activeSide],activeSide,x,headY);
+   }
+  }
  }
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
  drawMotionVfx(f,name,progress,getFighterLook(f),vfxFade);
