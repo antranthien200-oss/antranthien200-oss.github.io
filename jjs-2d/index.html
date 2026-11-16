@@ -5080,7 +5080,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.skillCd[idx]=20;
    }
    if(idx===2){
-    const spinDuration=.5,flurryDuration=3.3,serial=(f.gojoRapidSerial||0)+1;
+    const spinDuration=.5,flurryDuration=2.88,serial=(f.gojoRapidSerial||0)+1;
     f.gojoRapidSerial=serial;f.skillCd[idx]=15;f.attackAnim=spinDuration;f.invuln=Math.max(f.invuln,.22);
     setMotion(f,'gojoRapidSpin',spinDuration,angle,t);
     burst(f.x,f.y-23,'#50caff',12,3.2);burst(f.x,f.y-23,'#e1faff',6,2.2);
