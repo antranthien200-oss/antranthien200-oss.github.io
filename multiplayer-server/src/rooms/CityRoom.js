@@ -585,7 +585,14 @@ modifyProjectile(client,payload={}){
    return;
   }
   if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}
-  if(!fireArmor)target.stun=Math.max(target.stun,stun);
+  if(!fireArmor){
+   target.stun=Math.max(target.stun,stun);
+   // A real hit interrupts an active skill cast; a guarded hit returned above.
+   if(target.attackType==="skill"){
+    target.attackAnim=0;target.attackType="";
+    target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=Date.now();
+   }
+  }
   target.invuln=invuln;
   if(!fireArmor){
    if(a.character==="honored"&&!a.awakened&&move==="gojoBlueSlap"){
