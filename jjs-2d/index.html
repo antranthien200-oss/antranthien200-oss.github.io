@@ -1890,8 +1890,8 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 const canvas=document.getElementById('game');
 let ctx=canvas.getContext('2d',{alpha:false,desynchronized:true});
 const isMobileDevice=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||((navigator.maxTouchPoints||0)>1&&innerWidth<1000);
-const MOBILE_BASE_DPR=.68,MOBILE_MIN_DPR=.42;
-const MAX_DPR=isMobileDevice?.88:1.75;
+const MOBILE_BASE_DPR=.58,MOBILE_MIN_DPR=.35;
+const MAX_DPR=isMobileDevice ? .82 : 1.75;
 const $=id=>document.getElementById(id);
 let W=innerWidth,H=innerHeight,dpr=isMobileDevice?Math.min(devicePixelRatio||1,MOBILE_BASE_DPR):Math.min(devicePixelRatio||1,MAX_DPR),canvasNeedsDraw=true;
 function isManualScreenRotated(){return document.documentElement.classList.contains('manual-screen-rotated')}
@@ -3409,6 +3409,25 @@ function drawOnlineRemoteDomains(){
   ctx.save();ctx.globalAlpha=.12;ctx.fillStyle=colors[remote.domainType]||'#b9d5ff';ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
   ctx.globalAlpha=.72;ctx.strokeStyle=colors[remote.domainType]||'#b9d5ff';ctx.lineWidth=4;ctx.setLineDash([18,12]);ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
  }
+}
+function getMobileRemoteRenderSets(){
+ const visible=Array.from(onlineRemotePlayers.values()).filter(remote=>!remote.dead&&worldRectVisible(remote.x-100,remote.y-130,200,180,60));
+ if(!isMobileDevice)return {detailed:visible,simple:[]};
+ visible.sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y));
+ return {detailed:visible.slice(0,4),simple:visible.slice(4)};
+}
+function drawMobileRemoteFighter(remote){
+ if(!remote||remote.dead)return;
+ const x=sx(remote.x),y=sy(remote.y)-remote.jump*3,accent=(CHARS[remote.char]&&CHARS[remote.char].accent)||'#65d8ff';
+ ctx.save();ctx.globalAlpha=.96;
+ ctx.fillStyle='#101820';ctx.beginPath();ctx.arc(x,y-23,15,0,Math.PI*2);ctx.fill();
+ ctx.strokeStyle=accent;ctx.lineWidth=2;ctx.beginPath();ctx.arc(x,y-23,15,0,Math.PI*2);ctx.stroke();
+ ctx.fillStyle=accent;ctx.beginPath();ctx.arc(x-18,y+10,6,0,Math.PI*2);ctx.arc(x+18,y+10,6,0,Math.PI*2);ctx.fill();
+ ctx.font='800 8px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
+ const label=String(remote.onlineName||'PLAYER').slice(0,12).toUpperCase();
+ ctx.fillStyle='rgba(4,10,19,.78)';ctx.fillRect(x-27,y-51,54,13);
+ ctx.fillStyle='#e7faff';ctx.fillText(label,x,y-44.5);
+ ctx.restore();
 }
 function drawOnlineNameplate(remote){
  if(!remote||remote.dead||!worldRectVisible(remote.x-90,remote.y-110,180,150,36))return;
@@ -5812,11 +5831,11 @@ function worldRectVisible(x,y,w,h,pad=48){
 function rect(x,y,w,h,c,stroke){ctx.fillStyle=c;ctx.fillRect(sx(x),sy(y),w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sx(x),sy(y),w,h)}}
 function drawMap(){if(isFullScreenDomainActive())return;
  if(!mapCanvas||mapCacheDirty){
-  if(!mapCanvas){mapCanvas=document.createElement('canvas');mapCanvas.width=Math.floor(WORLD.w*(isMobileDevice?.5:1));mapCanvas.height=Math.floor(WORLD.h*(isMobileDevice?.5:1))}
+  if(!mapCanvas){mapCanvas=document.createElement('canvas');mapCanvas.width=Math.floor(WORLD.w*(isMobileDevice ? .5 : 1));mapCanvas.height=Math.floor(WORLD.h*(isMobileDevice ? .5 : 1))}
   const screenCtx=ctx,screenW=W,screenH=H,camX=camera.x,camY=camera.y;
   const mapCtx=mapCanvas.getContext('2d',{alpha:false});
   if(!mapCtx)return;
-  const mapScale=isMobileDevice?.5:1;mapCtx.setTransform(mapScale,0,0,mapScale,0,0);
+  const mapScale=isMobileDevice ? .5 : 1;mapCtx.setTransform(mapScale,0,0,mapScale,0,0);
   ctx=mapCtx;W=WORLD.w;H=WORLD.h;camera.x=WORLD.w/2;camera.y=WORLD.h/2;
 
  ctx.fillStyle='#26313a';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
@@ -6083,7 +6102,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
  const sourceY=clamp(camera.y-viewH/2,0,Math.max(0,WORLD.h-viewH));
  const sourceW=Math.min(viewW,WORLD.w-sourceX),sourceH=Math.min(viewH,WORLD.h-sourceY);
  const destX=sourceX-camera.x+W/2,destY=sourceY-camera.y+H/2;
- ctx.drawImage(mapCanvas,sourceX*(isMobileDevice?.5:1),sourceY*(isMobileDevice?.5:1),sourceW*(isMobileDevice?.5:1),sourceH*(isMobileDevice?.5:1),destX,destY,sourceW,sourceH);
+ ctx.drawImage(mapCanvas,sourceX*(isMobileDevice ? .5 : 1),sourceY*(isMobileDevice ? .5 : 1),sourceW*(isMobileDevice ? .5 : 1),sourceH*(isMobileDevice ? .5 : 1),destX,destY,sourceW,sourceH);
 }
 function drawBuildingInterior(x,y,w,h,index){
  ctx.fillStyle='#c5b79d';ctx.fillRect(x+7,y+7,w-14,h-14);ctx.fillStyle='#b1a187';
@@ -9628,6 +9647,7 @@ function positionVesselAwakeningDialogue(){
 }
 
 function draw(){
+ const mobileRemoteRender=onlineMode?getMobileRemoteRenderSets():{detailed:[],simple:[]};
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
  if(zoomFighter&&!zoomFighter.dead){
   const progress=clamp((zoomFighter.sukunaAwakeningCameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease,viewScale=cameraViewScale();
@@ -9645,14 +9665,14 @@ function draw(){
  if(onlineMode)drawOnlineRemoteDomains();
  if(!isFullScreenDomainActive()){drawMap();drawDynamicCityObjects();drawCityVehicles();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
- if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawVesselAwakeningSmoke(remote);}
+ if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawVesselAwakeningSmoke(remote);}
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
- if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighter(remote);for(const remote of onlineRemotePlayers.values())drawOnlineNameplate(remote)}
+ if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighter(remote);for(const remote of mobileRemoteRender.simple)drawMobileRemoteFighter(remote);for(const remote of mobileRemoteRender.detailed)drawOnlineNameplate(remote)}
  drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();
  // Foreground combat pass keeps skill effects and Gojo's hand trails visible over opponents.
- if(player)drawFighterMotionOverlays(player);if(enemy)drawFighterMotionOverlays(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighterMotionOverlays(remote)}
+ if(player)drawFighterMotionOverlays(player);if(enemy)drawFighterMotionOverlays(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighterMotionOverlays(remote)}
  // Character hands are the top combat layer, above the skill VFX and the opponent.
- if(player)drawFighterHandsForeground(player);if(enemy)drawFighterHandsForeground(enemy);if(onlineMode){for(const remote of onlineRemotePlayers.values())drawFighterHandsForeground(remote)}
+ if(player)drawFighterHandsForeground(player);if(enemy)drawFighterHandsForeground(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighterHandsForeground(remote)}
  if(game.domainClash)drawDomainClashFighterMarkers();
  ctx.restore();
  positionVesselAwakeningDialogue();
