@@ -5082,12 +5082,13 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    }
    if(idx===2){
     const spinDuration=.5,flurryDuration=3.2,serial=(f.gojoRapidSerial||0)+1;
-    f.gojoRapidSerial=serial;f.skillCd[idx]=15;f.attackAnim=spinDuration;f.invuln=Math.max(f.invuln,.22);
+    f.gojoRapidSerial=serial;f.gojoRapidSpinTarget=t;f.gojoRapidSpinHitTarget=null;f.skillCd[idx]=15;f.attackAnim=spinDuration;f.invuln=Math.max(f.invuln,.22);
     setMotion(f,'gojoRapidSpin',spinDuration,angle,t);
     burst(f.x,f.y-23,'#50caff',12,3.2);burst(f.x,f.y-23,'#e1faff',6,2.2);
     schedule(()=>{
      if(f.dead||f.stun>.08||f.gojoRapidSerial!==serial||!f.motion||f.motion.name!=='gojoRapidSpin')return;
-     const caught=targetInAim(f,t,355,.82,angle)&&beginGrab(f,t,'gojoBlueRapid',flurryDuration,angle,'#39bfff',9.75);
+     const spinHitTarget=f.gojoRapidSpinHitTarget||(t&&!t.dead&&dist(f,t)<=88?t:null);f.gojoRapidSpinTarget=null;f.gojoRapidSpinHitTarget=null;
+     const caught=!!spinHitTarget&&!spinHitTarget.dead&&beginGrab(f,spinHitTarget,'gojoBlueRapid',flurryDuration,angle,'#39bfff',9.75);
      if(caught){
       f.invuln=Math.max(f.invuln,.18);f.gojoRapidFinishUntil=game.time+flurryDuration+1.55;
       burst(t.x,t.y-23,'#51caff',12,3.8);burst(t.x,t.y-23,'#e8fbff',6,2.4);
@@ -5554,6 +5555,15 @@ function updateFighter(f,dt){if(f.dead)return;
  if(f.gojoBlueOrb){f.gojoBlueOrb.life=Math.max(0,f.gojoBlueOrb.life-dt);if(f.gojoBlueOrb.life<=0)f.gojoBlueOrb=null}
  if(!onlineMode){f.hpRegenWait=Math.max(0,(f.hpRegenWait||0)-dt);if(!f.jackpot&&f.hp<f.maxHp&&f.hpRegenWait<=0&&!(game.domainClash&&game.domainClash.members.includes(f)))f.hp=Math.min(f.maxHp,f.hp+f.maxHp*.012*dt)}if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);if(f.dead)return;f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){
   f.motion.t+=dt;
+  if(f.motion.name==='gojoRapidSpin'&&!f.gojoRapidSpinHitTarget){
+   const candidate=f.gojoRapidSpinTarget;
+   // Circular melee hitbox for the full rotating-hand sweep; no exact hand collision required.
+   if(candidate&&!candidate.dead&&!candidate.capturedBy&&dist(f,candidate)<=88){
+    f.gojoRapidSpinHitTarget=candidate;
+    burst(candidate.x,candidate.y-23,'#68d5ff',9,3.1);burst(candidate.x,candidate.y-23,'#e8fbff',4,2.2);
+    game.hitStop=Math.max(game.hitStop,.018);game.shake=Math.max(game.shake,2.2);
+   }
+  }
   if(f.motion.name==='gojoBlueSpin'){
    const spinProgress=clamp(f.motion.t/Math.max(.001,f.motion.duration),0,1);
    // Three distinct shake pulses accompany the three fast rotations.
@@ -6828,18 +6838,15 @@ if(m==='gojoBlueSpin'){
   ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.32+.38*Math.sin(p*Math.PI))*vfxFade;ctx.lineCap='round';ctx.strokeStyle='#63d4ff';ctx.shadowColor='#42bbff';ctx.shadowBlur=isMobileDevice?0:9;ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,35,-.7+turn,-.7+turn+1.5);ctx.stroke();
   ctx.globalAlpha=.55*vfxFade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,43,.25+turn,.25+turn+.78);ctx.stroke();ctx.restore();return;
  }
- if(m==='gojoRapidFlurry'){
-  const fade=vfxFade,finish=smoothstep01(clamp((p-.94)/.06,0,1)),beat=Math.floor(p/.94*15),phase=(p/.94*15)-beat;
-  ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);ctx.lineCap='round';
-  if(p<.94){const side=beat%2===0?-1:1,reach=39+Math.sin(phase*Math.PI)*31;ctx.globalAlpha=(.16+.42*Math.sin(phase*Math.PI))*fade;ctx.strokeStyle='#4abfff';ctx.shadowColor='#38adff';ctx.shadowBlur=isMobileDevice?0:7;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(reach-31,side*15-8);ctx.quadraticCurveTo(reach-8,side*11-12,reach+13,side*15);ctx.stroke()}
-  else{ctx.globalAlpha=(.25+.68*finish)*fade;ctx.strokeStyle='#8fe4ff';ctx.shadowColor='#49c5ff';ctx.shadowBlur=isMobileDevice?0:13;ctx.lineWidth=5+finish*5;ctx.beginPath();ctx.moveTo(18,-17);ctx.quadraticCurveTo(58,-35,101,-1);ctx.stroke();ctx.strokeStyle='#e8fbff';ctx.lineWidth=2+finish*1.5;ctx.beginPath();ctx.moveTo(25,-21);ctx.quadraticCurveTo(68,-40,108,-2);ctx.stroke()}
-  ctx.restore();return;
- }
+ if(m==='gojoRapidFlurry')return;
  if(m==='gojoBlueRapidEnd'){
-  const fade=1-smoothstep01(p);ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
-  ctx.globalAlpha=fade*.85;ctx.strokeStyle='#58caff';ctx.shadowColor='#64d5ff';ctx.shadowBlur=isMobileDevice?0:16;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(17,-20);ctx.quadraticCurveTo(61,-43,112,0);ctx.stroke();
-  ctx.globalAlpha=fade;ctx.strokeStyle='#effcff';ctx.shadowBlur=isMobileDevice?0:6;ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(26,-23);ctx.quadraticCurveTo(75,-44,118,0);ctx.stroke();
-  for(let i=0;i<7;i++){const a=-1.15+i*.35;ctx.beginPath();ctx.moveTo(91+Math.cos(a)*6,Math.sin(a)*6);ctx.lineTo(91+Math.cos(a)*(20+i%3*5),Math.sin(a)*(20+i%3*5));ctx.stroke()}
+  const fade=(1-smoothstep01(p))*vfxFade,impact=smoothstep01(p);ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);ctx.lineCap='round';ctx.lineJoin='round';
+  const energy=ctx.createLinearGradient(12,-18,116,2);energy.addColorStop(0,'rgba(35,139,244,0)');energy.addColorStop(.3,'#258fe8');energy.addColorStop(.72,'#59d0ff');energy.addColorStop(1,'#f4fdff');
+  ctx.globalAlpha=.58*fade;ctx.strokeStyle=energy;ctx.shadowColor='#43bfff';ctx.shadowBlur=isMobileDevice?0:18;ctx.lineWidth=27;ctx.beginPath();ctx.moveTo(14,-14);ctx.quadraticCurveTo(61,-51,113,1);ctx.stroke();
+  ctx.globalAlpha=.98*fade;ctx.strokeStyle=energy;ctx.shadowBlur=isMobileDevice?0:9;ctx.lineWidth=11;ctx.beginPath();ctx.moveTo(19,-13);ctx.quadraticCurveTo(69,-43,111,1);ctx.stroke();
+  ctx.globalAlpha=.94*fade;ctx.strokeStyle='#effcff';ctx.shadowBlur=isMobileDevice?0:4;ctx.lineWidth=2.3;ctx.beginPath();ctx.moveTo(27,-18);ctx.quadraticCurveTo(72,-38,119,0);ctx.stroke();
+  ctx.globalAlpha=.82*fade;ctx.strokeStyle='#b7f1ff';ctx.lineWidth=2;ctx.shadowBlur=isMobileDevice?0:8;ctx.beginPath();ctx.arc(103,1,8+impact*19,-1.08,1.08);ctx.stroke();
+  for(let i=0;i<7;i++){const a=-1.15+i*.35,inner=5,outer=15+(i%3)*6;ctx.beginPath();ctx.moveTo(105+Math.cos(a)*inner,1+Math.sin(a)*inner);ctx.lineTo(105+Math.cos(a)*outer,1+Math.sin(a)*outer);ctx.stroke()}
   ctx.restore();return;
  }
  if(m==='gojoBlueSpin'){
@@ -8124,8 +8131,8 @@ function drawHeadHands(f,deferMotionVfx=false){
     const spin=progress*Math.PI*2,orbit=42,centerX=x,centerY=headY+gojoBlueHeadBob;
     handA={x:centerX+Math.cos(spin)*orbit,y:centerY+Math.sin(spin)*orbit};handB={x:centerX+Math.cos(spin+Math.PI)*orbit,y:centerY+Math.sin(spin+Math.PI)*orbit};handAScale=1.1;handBScale=1.1;
    }else if(name==='gojoRapidFlurry'){
-    if(progress<.94){const count=15,step=progress/.94*count,index=Math.min(count-1,Math.floor(step)),phase=step-index,punch=Math.sin(phase*Math.PI),front=index%2===0,forward=reach+7+44*punch,side=front?16:-16;handA=front?P(forward,side,-2-5*punch):P(9,18,4);handB=front?P(9,-18,4):P(forward,side,-2-5*punch);handAScale=front?1.24:.94;handBScale=front?.94:1.24;handAAngle=angle+(front?.08:0);handBAngle=angle+(front?0:-.08)}
-    else{const wind=smoothstep01(clamp((progress-.86)/.08,0,1)),strike=smoothstep01(clamp((progress-.94)/.06,0,1));handA=P(9,18,4);handB=P(lerp(reach-22,reach+76,strike),-16,lerp(-17,-2,strike)-8*wind);handAScale=.96;handBScale=1.35;handBAngle=angle-.12*strike}
+    if(progress<.94){const count=15,step=progress/.94*count,index=Math.min(count-1,Math.floor(step)),phase=step-index,arc=Math.sin(phase*Math.PI),front=index%2===0,forward=reach+7+52*arc,side=front?16:-16,curve=(front?1:-1)*8*arc,vertical=-3-12*arc;handA=front?P(forward,side+curve,vertical):P(9,18,4);handB=front?P(9,-18,4):P(forward,side+curve,vertical);handAScale=front?1.26:.94;handBScale=front?.94:1.26;handAAngle=angle+(front?-.16*arc:0);handBAngle=angle+(front?0:.16*arc)}
+    else{const wind=smoothstep01(clamp((progress-.94)/.03,0,1)),strike=smoothstep01(clamp((progress-.97)/.03,0,1));handA=P(8,19,4);handB=P(lerp(reach-24,reach+82,strike),-16,lerp(-19,-1,strike)-9*wind);handAScale=.94;handBScale=1.4;handBAngle=angle-.18*strike}
    }else if(name==='gojoBlueSpin'){
     const spin=progress*Math.PI*2,orbit=43,centerX=x,centerY=headY+gojoBlueHeadBob;
     // Use a true screen-space circle centered on Gojo's visible head/player center.
@@ -8425,7 +8432,7 @@ function drawHeadHands(f,deferMotionVfx=false){
   // During the spin both hands trail; during the slap only the striking hand (B) trails.
   f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
   if(!deferMotionVfx){
-   if(name==='gojoBlueSpin'){
+   if(name==='gojoBlueSpin'||name==='gojoRapidSpin'||name==='gojoRapidFlurry'){
     drawGojoBlueHandTrail(f,handA,'a',x,headY);
     drawGojoBlueHandTrail(f,handB,'b',x,headY);
    }else if(f.gojoBlueSharpTrailState){
