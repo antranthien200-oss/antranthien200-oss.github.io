@@ -4216,11 +4216,11 @@ function gojoRapidSpinContactTarget(f,preferred=null){
    add(enemy);add(trainingDummy);
   }
  }else add(player);
- let best=null,bestDistance=150;
+ let best=null,bestDistance=320;
  for(const candidate of candidates){
   if(candidate.dead||candidate.capturedBy)continue;
   const distance=dist(f,candidate);
-  if(distance<=150&&distance<bestDistance){best=candidate;bestDistance=distance}
+  if(distance<=320&&distance<bestDistance){best=candidate;bestDistance=distance}
  }
  return best;
 }
