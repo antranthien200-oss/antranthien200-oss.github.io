@@ -560,7 +560,7 @@ modifyProjectile(client,payload={}){
   if(target.invuln>0&&!ignoreInvuln)return;
   // A successful Lapse Blue slap must break the suction hold before applying knockback.
   // Otherwise tick() keeps resetting the victim's velocity to zero until the old grab timer expires.
-  if(a.character==="honored"&&!a.awakened&&move==="gojoBlueSlap"&&target.blueSuckedBy===client.sessionId){
+  if(a.character==="honored"&&!a.awakened&&(move==="gojoBlueSlap"||move==="gojoBlueFlurry")&&target.blueSuckedBy===client.sessionId){
    target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,stun);
    target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=Date.now();
   }
@@ -740,9 +740,9 @@ killPlayer(p){
   const owner=this.state.players.get(target.grabbedBy);
   if(!owner||owner.dead||owner.activeGrabTarget!==targetId){if(owner)owner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.24);continue}
   const angle=owner.face,fx=Math.cos(angle),fy=Math.sin(angle);
-  if(["yujiDrag","gojoFaceGrater","bloodEdge","sukunaCleave"].includes(target.grabKind)){
+  if(["yujiDrag","gojoBlueFlurry","gojoFaceGrater","bloodEdge","sukunaCleave"].includes(target.grabKind)){
    const gap=target.grabKind==="gojoFaceGrater"?Math.max(0,distance(owner,target)-56):target.grabKind==="sukunaCleave"?Math.max(0,distance(owner,target)-54):Infinity;
-   const speed=target.grabKind==="gojoFaceGrater"?760:target.grabKind==="sukunaCleave"?440:target.grabKind==="yujiDrag"?188:35;
+   const speed=target.grabKind==="gojoFaceGrater"?760:target.grabKind==="sukunaCleave"?440:(target.grabKind==="yujiDrag"||target.grabKind==="gojoBlueFlurry")?188:35;
    const step=Number.isFinite(gap)?Math.min(gap,speed*dt):speed*dt;
    const nx=clamp(owner.x+fx*step,45,WORLD_WIDTH-45),ny=clamp(owner.y+fy*step,45,WORLD_HEIGHT-45);
    if(!isBlockedByBuilding({x:nx,y:ny},BUILDING_LAYOUT.filter((b,index)=>!this.state.world.buildings.get(String(index))?.collapsed),29)){owner.x=nx;owner.y=ny}
@@ -750,7 +750,7 @@ killPlayer(p){
   const progress=target.grabDuration>0?1-target.grabRemaining/target.grabDuration:1;
   if(target.grabKind==="todoThrow"){const spin=progress*Math.PI*3.2;target.x=clamp(owner.x+Math.cos(angle+spin)*48,45,WORLD_WIDTH-45);target.y=clamp(owner.y+Math.sin(angle+spin)*34,45,WORLD_HEIGHT-45)}
   else if(target.grabKind==="toadPull"){target.x=clamp(owner.x+fx*50,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*50,45,WORLD_HEIGHT-45)}
-  else{const offset=target.grabKind==="yujiDrag"?46:target.grabKind==="gojoFaceGrater"?48:target.grabKind==="sukunaCleave"?47:target.grabKind==="mahitoTransfigure"?43:target.grabKind==="bloodEdge"?42:52;target.x=clamp(owner.x+fx*offset,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*offset,45,WORLD_HEIGHT-45)}
+  else{const offset=(target.grabKind==="yujiDrag"||target.grabKind==="gojoBlueFlurry")?46:target.grabKind==="gojoFaceGrater"?48:target.grabKind==="sukunaCleave"?47:target.grabKind==="mahitoTransfigure"?43:target.grabKind==="bloodEdge"?42:52;target.x=clamp(owner.x+fx*offset,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*offset,45,WORLD_HEIGHT-45)}
   target.face=angle+Math.PI;target.block=false;target.stun=Math.max(target.stun,.08);
   target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
   if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabTickInterval||.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-target.grabTickDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
