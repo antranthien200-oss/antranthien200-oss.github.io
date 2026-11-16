@@ -4277,6 +4277,8 @@ function updateGrab(f,dt){
  if(!f||!f.grabTarget)return;
  const t=f.grabTarget,kind=f.grabKind,serverControlled=onlineMode&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player));if(f.dead||f.stun>.08||t.dead||t.capturedBy!==f){releaseGrab(f,false);return}
  f.grabElapsed+=dt;let aim=aimedAt(f),a=Math.atan2(aim.y-f.y,aim.x-f.x);if(f.team!=='player')a=Math.atan2(player.y-f.y,player.x-f.x);f.grabAngle=a;f.face=a;
+ // Keep Gojo's Rapid Punches hand rig and its trail aligned to the live grab direction while turning.
+ if(kind==='gojoBlueRapid'&&f.motion&&f.motion.name==='gojoRapidFlurry'){f.motion.angle=a;f.motion.target=t}
  const progress=clamp(f.grabElapsed/f.grabDuration,0,1),fx=Math.cos(a),fy=Math.sin(a),oldX=f.x,oldY=f.y;
  if(kind==='yujiDrag'||kind==='gojoBlueRapid'){f.x+=fx*188*dt;f.y+=fy*188*dt;collideWorld(f);t.x=f.x+fx*46;t.y=f.y+fy*46}
  else if(kind==='toadPull'){const ex=f.x+fx*50,ey=f.y+fy*50;t.x=lerp(t.x,ex,clamp(dt*5.5,0,1));t.y=lerp(t.y,ey,clamp(dt*5.5,0,1))}
