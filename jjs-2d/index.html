@@ -5619,6 +5619,13 @@ function updateProjectiles(dt){
  const projectileDamping=Math.pow(.993,dt*60);
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i],t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
+  if(p.kind==='red'&&p.owner&&p.owner.char==='honored'&&!p.owner.awakened){
+   p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
+   if(p.gojoFlowParticleTimer<=0){
+    p.gojoFlowParticleTimer=isMobileDevice ? .075 : .055;
+    spawnGojoOrbFlowParticles(p.owner,p.x,p.y,'red',isMobileDevice?2:4);
+   }
+  }
   if(p.serverOwnedVisual){
    if(Number.isFinite(p.networkX)){const blend=clamp(dt*13,0,1);p.x=lerp(p.x,p.networkX,blend);p.y=lerp(p.y,p.networkY,blend)}
    if(p.kind==='trashCan')p.rotation=(Number(p.rotation)||0)+(Number(p.spin)||22)*dt;
@@ -7888,6 +7895,18 @@ function spawnGojoBlueSparks(f,x,y,count=2){
  const limit=isMobileDevice?36:64;
  if(sparks.length>limit)sparks.splice(0,sparks.length-limit);
 }
+function spawnGojoOrbFlowParticles(owner,x,y,palette='blue',count=4){
+ if(!owner||owner.dead)return;
+ const colors=palette==='red'?['#ff4b67','#ff8295','#ffc0ca','#e92f50']:['#53caff','#9beaff','#e3fbff','#248bd0'];
+ const amount=isMobileDevice?Math.min(2,count):count;
+ for(let i=0;i<amount;i++){
+  const angle=rnd(0,Math.PI*2),inward=Math.random()<.5;
+  const radius=inward?rnd(42,82):rnd(10,25),speed=inward?rnd(2.5,4.4):rnd(2.8,4.9);
+  const radial=inward?-speed:speed,tangent=rnd(-.7,.7),life=rnd(.22,.4);
+  const color=colors[Math.floor(Math.random()*colors.length)];
+  particles.push({x:x+Math.cos(angle)*radius,y:y+Math.sin(angle)*radius,vx:Math.cos(angle)*radial-Math.sin(angle)*tangent,vy:Math.sin(angle)*radial+Math.cos(angle)*tangent,life,max:life,size:rnd(2,4.2),color,shape:'gojoFlow'});
+ }
+}
 function emitGojoBlueSkillSparks(f,name){
  const now=game.time,interval=name==='gojoBlue'?.085:name==='gojoBlueSpin'?.065:.075;
  if(now<(f.gojoBlueSparkNext||0))return;
@@ -7897,6 +7916,7 @@ function emitGojoBlueSkillSparks(f,name){
   const a=now*12.5,r=7+Math.sin(now*19)*2;
   spawnGojoBlueSparks(f,orb.x+Math.cos(a)*r,orb.y+Math.sin(a)*r,2);
   spawnGojoBlueSparks(f,orb.x-Math.cos(a)*r,orb.y-Math.sin(a)*r,1);
+  spawnGojoOrbFlowParticles(f,orb.x,orb.y,'blue',isMobileDevice?2:4);
   return;
  }
  const pose=f.gojoBlueTrailPose;if(!pose)return;
@@ -9409,6 +9429,12 @@ function drawEffects(){
    ctx.beginPath();ctx.arc(px,py,radius,0,Math.PI*2);ctx.stroke();
    ctx.globalAlpha=.82*life;ctx.strokeStyle='#fff0f3';ctx.lineWidth=1.6;ctx.shadowColor='#ffe9ed';ctx.shadowBlur=isMobileDevice?0:(5);
    ctx.beginPath();ctx.arc(px,py,radius*.63,-.25,Math.PI*1.66);ctx.stroke();ctx.restore();
+  }else if(p.shape==='gojoFlow'){
+   const speed=Math.hypot(p.vx,p.vy)||1,angle=Math.atan2(p.vy,p.vx),length=p.size*(2.1+Math.min(1,speed/5)*1.25);
+   ctx.save();ctx.translate(px,py);ctx.rotate(angle);ctx.globalAlpha=clamp(p.life/p.max,0,1)*.9;
+   ctx.lineCap='round';ctx.strokeStyle=p.color;ctx.lineWidth=Math.max(1,p.size*.48);
+   ctx.beginPath();ctx.moveTo(-length,0);ctx.lineTo(p.size*.35,0);ctx.stroke();
+   ctx.fillStyle=p.color;ctx.beginPath();ctx.arc(p.size*.35,0,Math.max(.8,p.size*.34),0,Math.PI*2);ctx.fill();ctx.restore();
   }else if(p.shape==='square')ctx.fillRect(px,py,p.size,p.size);
   else{ctx.beginPath();ctx.arc(px,py,p.size/2,0,Math.PI*2);ctx.fill()}
  }
