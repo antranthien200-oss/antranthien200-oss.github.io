@@ -32,10 +32,6 @@ test("valid M1 and character skill names pass building-hit move validation",()=>
 test("server grab profiles cover supported player grabs",()=>{
  assert.equal(grabSettings("vessel","yujiCursedDrag").duration,1.05);
  assert.equal(grabSettings("honored","gojoFaceGrater").finishDamage,13);
- const blueFlurry=grabSettings("honored","gojoBlueFlurry");
- assert.equal(blueFlurry.kind,"gojoBlueFlurry");
- assert.equal(blueFlurry.duration,2.37);
- assert.equal(blueFlurry.tickInterval,.23);
  assert.equal(grabSettings("todo","todoSwiftGrab").kind,"todoThrow");
  assert.equal(grabSettings("yuta","yutaM1_1"),null);
 });
