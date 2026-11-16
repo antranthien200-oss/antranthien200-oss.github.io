@@ -8051,6 +8051,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  const gojoBlueSlapRecoil=name==='gojoBlueSlap'?Math.max(0,1-Math.abs(progress-.652)/.18):0;
  const gojoBlueHeadBob=-1.8*gojoBlueSpinPrep+(name==='gojoBlueSpin'?Math.sin(gojoBlueSpinPhase)*.9:0)-1.35*gojoBlueSlapRecoil;
  const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep+(name==='gojoBlueSpin'?Math.sin(gojoBlueSpinPhase)*.028:0)-.04*gojoBlueSlapRecoil;
+ const gojoSpinBodyRotation=(name==='gojoBlueSpin'||name==='gojoRapidSpin')?progress*Math.PI*2:0;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
@@ -8474,7 +8475,23 @@ function drawHeadHands(f,deferMotionVfx=false){
   // During the spin both hands trail; during the slap only the striking hand (B) trails.
   f.gojoBlueTrailPose={a:{x:handA.x,y:handA.y},b:{x:handB.x,y:handB.y}};
   if(!deferMotionVfx){
-   if(name==='gojoBlueSpin'||name==='gojoRapidSpin'||name==='gojoRapidFlurry'){
+   if(name==='gojoRapidFlurry'){
+    const step=progress*15,index=Math.min(14,Math.floor(step)),phase=step-index,rightPunch=index%2===0;
+    if(phase<.32){
+     const activeSide=rightPunch?'b':'a';
+     const phaseKey=index+':punch';
+     if(f.gojoRapidTrailPhaseKey!==phaseKey){
+      if(!f.gojoBlueSharpTrailState||f.gojoBlueSharpTrailState.name!==name)f.gojoBlueSharpTrailState={name,a:[],b:[]};
+      f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0;
+      f.gojoRapidTrailPhaseKey=phaseKey;
+     }
+     drawGojoBlueHandTrail(f,rightPunch?handB:handA,activeSide,x,headY);
+    }else{
+     f.gojoRapidTrailPhaseKey=index+':return';
+     if(f.gojoBlueSharpTrailState){f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0}
+    }
+   }else if(name==='gojoBlueSpin'||name==='gojoRapidSpin'){
+    f.gojoRapidTrailPhaseKey='';
     drawGojoBlueHandTrail(f,handA,'a',x,headY);
     drawGojoBlueHandTrail(f,handB,'b',x,headY);
    }else if(f.gojoBlueSharpTrailState){
@@ -8518,7 +8535,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(!deferHands){
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  }
- drawAccessoryAura(f,x,headY+gojoBlueHeadBob);ctx.save();ctx.translate(x,headY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
+ drawAccessoryAura(f,x,headY+gojoBlueHeadBob);ctx.save();ctx.translate(x,headY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt+gojoSpinBodyRotation);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
@@ -8667,17 +8684,23 @@ function drawFighterMotionOverlays(f){
  if((name==='gojoBlueSpin'||name==='gojoRapidSpin'||name==='gojoRapidFlurry')&&f.gojoBlueTrailPose){
   if(name==='gojoRapidFlurry'){
    const step=progress*15,index=Math.min(14,Math.floor(step)),phase=step-index,rightPunch=index%2===0;
-   const activeSide=rightPunch?'b':'a',trailPhase=phase<.32?'punch':'return';
-   const phaseKey=index+':'+trailPhase;
-   // Start a fresh segment at contact so the very same blue hand ribbon is visible on the retract.
-   if(f.gojoRapidTrailPhaseKey!==phaseKey){
-    if(!f.gojoBlueSharpTrailState||f.gojoBlueSharpTrailState.name!==name)f.gojoBlueSharpTrailState={name,a:[],b:[]};
-    f.gojoBlueSharpTrailState[activeSide]=[];
-    f.gojoRapidTrailPhaseKey=phaseKey;
+   if(phase<.32){
+    const activeSide=rightPunch?'b':'a',phaseKey=index+':punch';
+    if(f.gojoRapidTrailPhaseKey!==phaseKey){
+     if(!f.gojoBlueSharpTrailState||f.gojoBlueSharpTrailState.name!==name)f.gojoBlueSharpTrailState={name,a:[],b:[]};
+     f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0;
+     f.gojoRapidTrailPhaseKey=phaseKey;
+    }
+    drawGojoBlueHandTrail(f,rightPunch?f.gojoBlueTrailPose.b:f.gojoBlueTrailPose.a,activeSide,x,headY);
+   }else{
+    f.gojoRapidTrailPhaseKey=index+':return';
+    if(f.gojoBlueSharpTrailState){f.gojoBlueSharpTrailState.a.length=0;f.gojoBlueSharpTrailState.b.length=0}
    }
-  }else f.gojoRapidTrailPhaseKey='';
-  drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
-  drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
+  }else{
+   f.gojoRapidTrailPhaseKey='';
+   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.a,'a',x,headY);
+   drawGojoBlueHandTrail(f,f.gojoBlueTrailPose.b,'b',x,headY);
+  }
  }
  ctx.save();ctx.translate(x,headY);if(combo)ctx.rotate(angle);
  drawMotionVfx(f,name,progress,getFighterLook(f),vfxFade);
