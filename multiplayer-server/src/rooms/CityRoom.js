@@ -570,7 +570,7 @@ modifyProjectile(client,payload={}){
   const grab=grabSettings(a.character,move);
   if(grab){
    if(target.vehicleId)return;
-   const grabDuration=Number.isFinite(Number(payload.grabDuration))?clamp(Number(payload.grabDuration),.1,3):grab.duration;
+   const maxGrabDuration=grab.kind==="gojoBlueRapid"?3.2:3,grabDuration=Number.isFinite(Number(payload.grabDuration))?clamp(Number(payload.grabDuration),.1,maxGrabDuration):grab.duration;
    const grabTickInterval=Number.isFinite(Number(payload.grabTickInterval))?clamp(Number(payload.grabTickInterval),.04,1):grab.kind==="sukunaFlurry"?.095:grab.kind==="sukunaCleave"?.14:grab.kind==="yujiDrag"?.25:grab.kind==="toadPull"?.22:grab.tickInterval;
    const grabTickDamage=Number.isFinite(Number(payload.grabTickDamage))?clamp(Number(payload.grabTickDamage),0,20):grab.tickDamage;
    const grabFinishDamage=Number.isFinite(Number(payload.grabFinishDamage))?clamp(Number(payload.grabFinishDamage),0,60):grab.finishDamage;
