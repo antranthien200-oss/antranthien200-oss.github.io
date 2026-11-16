@@ -2716,7 +2716,20 @@ updateMenuSummary();
 
 let game={started:false,paused:false,over:false,shake:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
 const scheduledTasks=[];
-function schedule(fn,delayMs){scheduledTasks.push({at:game.time+Math.max(0,delayMs)/1000,fn});}
+let activeSkillScheduleOwner=null;
+function schedule(fn,delayMs){
+ const owner=activeSkillScheduleOwner;
+ scheduledTasks.push({at:game.time+Math.max(0,delayMs)/1000,fn:()=>{
+  if(owner&&owner.fighter.skillCastSerial!==owner.serial)return;
+  const previousOwner=activeSkillScheduleOwner;activeSkillScheduleOwner=owner;
+  try{fn()}finally{activeSkillScheduleOwner=previousOwner}
+ }});
+}
+function interruptSkillCast(f){
+ if(!f||!(f.skillInputLocked&&f.motion||f.attackType==='skill'))return;
+ f.skillCastSerial=(f.skillCastSerial||0)+1;
+ f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType='';
+}
 function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(scheduledTasks[i].at<=game.time){const task=scheduledTasks.splice(i,1)[0];try{task.fn()}catch(err){console.error('Delayed game action failed:',err)}}}}
 const staticBuildings=[
  {x:95,y:50,w:365,h:215,c:'#c5a49c',name:'SHOP'},
@@ -3224,7 +3237,7 @@ function applyOnlineRoomState(state){
   player.meter=clamp(Number(local.meter)||0,0,100);player.awakeMode=String(local.awakeMode||"");player.awakeFuel=Number(local.awakeFuel)||0;player.awakeFuelDrainRate=Number(local.awakeFuelDrainRate)||0;player.jackpot=!!local.jackpot;player.consecutiveJackpots=Number(local.consecutiveJackpots)||0;player.domainStunGuaranteed=!!local.domainStunGuaranteed;player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.blueSuckedBy=String(local.blueSuckedBy||'');player.blueSuctionX=Number(local.blueSuctionX)||0;player.blueSuctionY=Number(local.blueSuctionY)||0;player.blueSuctionRemaining=Number(local.blueSuctionRemaining)||0;if(!(player.onlineDashPredictionUntil>stateArrivalNow)){player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;}
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;const localAbilities=local.abilities||{};
   player.domainType=String(local.domainType||'');player.domainTimer=Number(local.domainTimer)||0;player.domainWindupStart=Number(local.domainWindupStart)||player.domainWindupStart||0;player.domainRadius=Number(local.domainRadius)||0;
-  player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;player.domainWindup=Number(local.domainWindup)||0;player.domainDuration=Number(local.domainDuration)||0;player.counterKind=String(local.combat.counterKind||'');player.counterWindow=Number(local.combat.counterWindow)||0;player.grabbedBy=String(local.combat.grabbedBy||'');player.activeGrabTarget=String(local.combat.activeGrabTarget||'');player.grabKind=String(local.combat.grabKind||'');player.grabRemaining=Number(local.combat.grabRemaining)||0;player.grabDuration=Number(local.combat.grabDuration)||0;player.motionName=String(local.motionName||'');player.motionProgress=Number(local.motionProgress)||0;player.motionDuration=Number(local.motionDuration)||player.motionDuration||1;player.motionStartedAt=Number(local.motionStartedAt)||0;player.domainClashId=String(local.domainClashId||'');player.sukunaFireCast=Number(localAbilities.sukunaFireCast)||0;player.tenDogActive=!!localAbilities.tenDogActive;player.tenDogCharges=Number(localAbilities.tenDogCharges)||0;player.tenDogTimer=Number(localAbilities.tenDogTimer)||0;player.tenGardenTimer=Number(localAbilities.tenGardenTimer)||0;player.soulMode=Number(localAbilities.soulMode)||0;player.convergenceOrbs=Number(localAbilities.convergenceOrbs)||0;player.tenBase=!!localAbilities.tenBase;player.shadowTimer=Number(localAbilities.shadowTimer)||0;player.rikaSummoned=!!localAbilities.rikaSummoned;player.rikaMode=!!localAbilities.rikaMode;player.reserveBallWindow=Number(localAbilities.reserveBallWindow)||0;player.yutaCopyIndex=Number(localAbilities.yutaCopyIndex)||0;player.attackAnim=Number(local.attackAnim)||0;player.attackType=String(local.attackType||'');if(player.skillInputLocked&&player.stun>0&&player.attackType!=='skill'){player.skillInputLocked=false;player.motion=null;player.attackAnim=0;}
+  player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;player.domainWindup=Number(local.domainWindup)||0;player.domainDuration=Number(local.domainDuration)||0;player.counterKind=String(local.combat.counterKind||'');player.counterWindow=Number(local.combat.counterWindow)||0;player.grabbedBy=String(local.combat.grabbedBy||'');player.activeGrabTarget=String(local.combat.activeGrabTarget||'');player.grabKind=String(local.combat.grabKind||'');player.grabRemaining=Number(local.combat.grabRemaining)||0;player.grabDuration=Number(local.combat.grabDuration)||0;player.motionName=String(local.motionName||'');player.motionProgress=Number(local.motionProgress)||0;player.motionDuration=Number(local.motionDuration)||player.motionDuration||1;player.motionStartedAt=Number(local.motionStartedAt)||0;player.domainClashId=String(local.domainClashId||'');player.sukunaFireCast=Number(localAbilities.sukunaFireCast)||0;player.tenDogActive=!!localAbilities.tenDogActive;player.tenDogCharges=Number(localAbilities.tenDogCharges)||0;player.tenDogTimer=Number(localAbilities.tenDogTimer)||0;player.tenGardenTimer=Number(localAbilities.tenGardenTimer)||0;player.soulMode=Number(localAbilities.soulMode)||0;player.convergenceOrbs=Number(localAbilities.convergenceOrbs)||0;player.tenBase=!!localAbilities.tenBase;player.shadowTimer=Number(localAbilities.shadowTimer)||0;player.rikaSummoned=!!localAbilities.rikaSummoned;player.rikaMode=!!localAbilities.rikaMode;player.reserveBallWindow=Number(localAbilities.reserveBallWindow)||0;player.yutaCopyIndex=Number(localAbilities.yutaCopyIndex)||0;player.attackAnim=Number(local.attackAnim)||0;player.attackType=String(local.attackType||'');if(player.skillInputLocked&&player.stun>0&&player.attackType!=='skill')interruptSkillCast(player);
   const previousVehicle=player.vehicle||null,nextVehicle=local.vehicleId?parkedCars.find(c=>String(c.id)===String(local.vehicleId))||null:null;
   if(previousVehicle!==nextVehicle){
    if(nextVehicle)startVehicleTransition(player,'enter',nextVehicle,player.x,player.y);
@@ -4163,7 +4176,7 @@ function damage(target,amount,source,opts={}){
  }
   updateHud();return;
  }
- if(!sukunaFireArmor&&target.skillInputLocked&&target.motion){target.skillInputLocked=false;target.motion=null;target.attackAnim=0;target.attackType=''}
+ if(!sukunaFireArmor)interruptSkillCast(target);
  if(target.block&&!frontGuard&&!opts.unblockable)popText(target.x,target.y-39,'BACK HIT','#ffcfad',10);
  if(!(jackpotProtected&&target.jackpot)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5;}
  registerPlayerHit(target,source,amount);
@@ -4805,7 +4818,10 @@ function useAttack(f,kind){
  if(kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
  if(['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
  if(kind==='special'&&f.specialCd>0)return;
- if(f===player&&f.skillInputLocked&&f.motion){f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType=''}
+ if(f.skillInputLocked&&f.motion)interruptSkillCast(f);
+ f.skillCastSerial=(f.skillCastSerial||0)+1;
+ const previousSkillScheduleOwner=activeSkillScheduleOwner;activeSkillScheduleOwner={fighter:f,serial:f.skillCastSerial};
+ try{
  if(kind==='dash'&&!(onlineMode&&f!==player)){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
  if(onlineMode&&f===player&&onlineRoom){try{if(f.char==='honored'&&!f.awakened&&(kind==='1'||kind==='2')){const skillAim=aimedAt(f);f.face=Math.atan2(skillAim.y-f.y,skillAim.x-f.x)}const actionTarget=targetOf(f);onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||''})}catch(e){}}
  const c=CHARS[f.char],t=targetOf(f);
@@ -5241,13 +5257,14 @@ if(f.char==='choso'){
   if(idx===2){f.skillCd[idx]=20;f.attackAnim=1.3;if(targetInAim(f,t,285,.65,angle)){f.invuln=.45;f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;damage(t,10,f,{stun:.3,color:'#7dffad'});schedule(()=>{if(!t.dead&&dist(f,t)<255)damage(t,5,f,{stun:.22,color:'#7dffad',ignoreInvuln:true})},180);for(let i=0;i<3;i++)schedule(()=>{if(!t.dead&&dist(f,t)<255)damage(t,5,f,{stun:.18,color:'#7dffad',ignoreInvuln:true})},340+i*135);schedule(()=>{if(!t.dead&&dist(f,t)<270)damage(t,10,f,{stun:.65,kx:Math.cos(angle)*13,ky:Math.sin(angle)*13,unblockable:true,color:'#7dffad',big:true,ignoreInvuln:true})},790)}}
   if(idx===3){f.skillCd[idx]=25;f.attackAnim=.75;if(targetInAim(f,t,260,.7,angle)){f.invuln=.25;f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;damage(t,10,f,{stun:.4,color:'#7dffad'});schedule(()=>{if(!t.dead&&dist(f,t)<240)damage(t,10,f,{stun:.65,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,color:'#7dffad',big:true})},260)}}
  }
+ }finally{activeSkillScheduleOwner=previousSkillScheduleOwner}
 }
 
 function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const skillInputLocked=!!(player.skillInputLocked&&player.motion);if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(!skillInputLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){
   if(!skillInputLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;if(keys.has(' ' )&&player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}}
   const wantsBlock=keys.has('f');
-  if(wantsBlock&&!player.block){if(player.skillInputLocked){player.skillInputLocked=false;player.motion=null;player.attackAnim=0;player.attackType=''}player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
+  if(wantsBlock&&!player.block){if(player.skillInputLocked)interruptSkillCast(player);player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
   else if(!wantsBlock&&player.block){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
   if(keys.has('1')){useAttack(player,'1');keys.delete('1')}if(keys.has('2')){useAttack(player,'2');keys.delete('2')}if(keys.has('3')){useAttack(player,'3');keys.delete('3')}if(keys.has('4')){useAttack(player,'4');keys.delete('4')}
  }else player.block=false;
