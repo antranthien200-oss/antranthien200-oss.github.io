@@ -3389,12 +3389,13 @@ function updateOnlineNetwork(dt){
   const throttle=mobile?mobileControl.throttle:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
   onlineRoom.send('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05});
  }
+ const skillInputLocked=!!(player.skillInputLocked&&player.motion);
  let moveX=0,moveY=0;
- if(movementKeys.has('w')||movementKeys.has('arrowup'))moveY--;
- if(movementKeys.has('s')||movementKeys.has('arrowdown'))moveY++;
- if(movementKeys.has('a')||movementKeys.has('arrowleft'))moveX--;
- if(movementKeys.has('d')||movementKeys.has('arrowright'))moveX++;
- if(mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
+ if(!skillInputLocked&&(movementKeys.has('w')||movementKeys.has('arrowup')))moveY--;
+ if(!skillInputLocked&&movementKeys.has('s')||!skillInputLocked&&movementKeys.has('arrowdown'))moveY++;
+ if(!skillInputLocked&&(movementKeys.has('a')||movementKeys.has('arrowleft')))moveX--;
+ if(!skillInputLocked&&(movementKeys.has('d')||movementKeys.has('arrowright')))moveX++;
+ if(!skillInputLocked&&mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
  const moveLength=Math.hypot(moveX,moveY)||1;moveX/=moveLength;moveY/=moveLength;
  const aim=aimedAt(player);
  const snapshot={x:player.x,y:player.y,vx:player.vx||0,vy:player.vy||0,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,accessoryHead:sharedAccessoryLoadout.head||'none',accessoryFace:sharedAccessoryLoadout.face||'none',accessoryNeck:sharedAccessoryLoadout.neck||'none',accessoryAura:sharedAccessoryLoadout.aura||'none',meter:player.meter,awakened:!!player.awakened,awakeMode:String(player.awakeMode||""),awakeFuel:Number(player.awakeFuel)||0,awakeFuelDrainRate:Number(player.awakeFuelDrainRate)||0,jackpot:!!player.jackpot,consecutiveJackpots:Number(player.consecutiveJackpots)||0,domainStunGuaranteed:!!player.domainStunGuaranteed,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,trashCanId:player.carryingTrashCan?String(player.carryingTrashCan.id??''):'',domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainWindupStart:Number(player.domainWindupStart)||0,domainRadius:Number(player.domainRadius)||0,sukunaFireCast:Number(player.sukunaFireCast)||0,tenDogActive:!!player.tenDogActive,tenDogCharges:Number(player.tenDogCharges)||0,tenDogTimer:Number(player.tenDogTimer)||0,tenGardenTimer:Number(player.tenGardenTimer)||0,soulMode:Number(player.soulMode)||0,convergenceOrbs:Number(player.convergenceOrbs)||0,tenBase:!!player.tenBase,shadowTimer:Number(player.shadowTimer)||0,rikaSummoned:!!player.rikaSummoned,rikaMode:!!player.rikaMode,reserveBallWindow:Number(player.reserveBallWindow)||0,yutaCopyIndex:Number(player.yutaCopyIndex)||0};
@@ -4792,6 +4793,7 @@ function useAttack(f,kind){
  if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||f.vehicle||game.cutsceneTimer>0)return;
  if(f.blueSuckedBy||f.gojoBluePull)return;
+ if(f===player&&f.skillInputLocked&&f.motion)return;
  if(f.vesselAwakenSequence)return;
  if(f.sukunaFireCast>0)return;
  if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
@@ -4988,7 +4990,7 @@ if(f.attackCd>0)return;
   showToast('BLACK FLASH',650);return;
  }
  if(f.char==='ten'&&(!f.awakened||f.tenBase)&&idx===1&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead){const comboTarget=f.tenToadTarget;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;setMotion(f,'megumiAbyss',1.15,f.face,comboTarget);showToast('WELL’S UNKNOWN ABYSS',900);comboTarget.rooted=Math.max(comboTarget.rooted||0,1.15);comboTarget.tenRabbitSwarm={owner:f,life:1.1};[0,1,2].forEach(i=>schedule(()=>{if(f.dead||f.stun>.04||comboTarget.dead||dist(f,comboTarget)>560)return;const a=Math.atan2(comboTarget.y-f.y,comboTarget.x-f.x);damage(comboTarget,4,f,{stun:.22,kx:Math.cos(a)*(i===2?10:2),ky:Math.sin(a)*(i===2?10:2),color:'#a9c0e8',blockAllSides:true,ignoreInvuln:true});if(i===1){comboTarget.jump=.32;comboTarget.jumpV=2.2}if(i===2){comboTarget.jump=.95;comboTarget.jumpV=3.6;game.shake=Math.max(game.shake,8)}burst(comboTarget.x,comboTarget.y,'#c5d5ed',7,3)},220+i*260));return}
-if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);
+if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x-f.x);f.face=angle;f.attackAnim=.32;f.attackType='skill';setSkillMotion(f,idx,angle,t);f.skillInputLocked=true;f.vx=0;f.vy=0;
  const isDomainCast=idx===3&&((f.char==='honored'&&f.awakened)||(f.char==='vessel'&&f.awakened)||(f.char==='perfection'&&f.awakened)||(f.char==='trashman'&&f.awakened));
  if(!isDomainCast&&!(f.char==='vessel'&&!f.awakened&&idx===2)&&!(f.char==='vessel'&&f.awakened&&idx===0))damageBuildingAlongRay(f,angle,Math.min(1100,Math.hypot(aim.x-f.x,aim.y-f.y)+55));
  if(f.char==='honored'){
@@ -5240,8 +5242,8 @@ if(f.char==='choso'){
  }
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}let l=Math.hypot(x,y)||1;x/=l;y/=l;
- if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const skillInputLocked=!!(player.skillInputLocked&&player.motion);if(!skillInputLocked&&keys.has('q')&&!player.dead){useAttack(player,'dash');keys.delete('q')}let x=0,y=0;if(!skillInputLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+ if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0&&!skillInputLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
   else if(!wantsBlock&&player.block){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
