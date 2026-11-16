@@ -575,7 +575,7 @@ modifyProjectile(client,payload={}){
    const grabTickDamage=Number.isFinite(Number(payload.grabTickDamage))?clamp(Number(payload.grabTickDamage),0,20):grab.tickDamage;
    const grabFinishDamage=Number.isFinite(Number(payload.grabFinishDamage))?clamp(Number(payload.grabFinishDamage),0,60):grab.finishDamage;
    const grabKnockback=Number.isFinite(Number(payload.grabKnockback))?clamp(Number(payload.grabKnockback),0,40):grab.knockback;
-   target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
+   target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=grab.kind==="gojoBlueRapid"?.08:grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
    target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grab.duration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grab.duration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;return;
   }
   const jackpotProtected=this.consumeJackpotFuel(target,amount);
