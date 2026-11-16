@@ -4236,7 +4236,7 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
   const moveByKind={yujiDrag:'yujiCursedDrag',gojoBlueRapid:'gojoBlueRapid',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge'};
   const move=moveByKind[kind]||String(f.motion&&f.motion.name||f.onlineLastMove||kind).slice(0,48);
   const grabTickDamage=kind==='yujiDrag'?1.1:kind==='gojoBlueRapid'?.5:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*(MAHITO_MODES[f.soulMode]||MAHITO_MODES[0]).damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
-  const grabTickInterval=kind==='yujiDrag'?.25:kind==='gojoBlueRapid'?.23:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
+  const grabTickInterval=kind==='yujiDrag'?.25:kind==='gojoBlueRapid'?.22:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
   const grabKnockback=kind==='yujiDrag'?17:kind==='gojoBlueRapid'?19:kind==='sukunaFlurry'?18:kind==='toadPull'?0:13;
   if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback})}catch(e){}}
   f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;
@@ -4276,8 +4276,8 @@ function updateGrab(f,dt){
   if(hit>0&&!serverControlled){
    damage(t,hit,f,{stun:kind==='sukunaFlurry'?.065:.03,color,ignoreInvuln:true,unblockable:true});
    if(kind==='gojoBlueRapid'){
-    const punchIndex=Math.floor(f.grabElapsed/.23),side=punchIndex%2?1:-1;
-    burst(t.x+fx*side*10,t.y-15+(punchIndex%3-1)*5,'#5acfff',2,2.4);
+    const punchIndex=Math.floor(f.grabElapsed/.22),side=punchIndex%2?1:-1,sideX=-fy*side*10,sideY=fx*side*10;
+    burst(t.x+sideX+fx*4,t.y-15+sideY+(punchIndex%3-1)*4,'#5acfff',3,2.8);
    }
    if(kind==='sukunaFlurry'){
     const cutIndex=Math.floor(f.grabElapsed/.095),side=cutIndex%2?1:-1;
@@ -4289,10 +4289,11 @@ function updateGrab(f,dt){
  f.vx=0;f.vy=0;
  if(f.grabElapsed>=f.grabDuration){const finish=kind==='sukunaCleave'?Math.max(10,t.hp*.4):f.grabFinishDamage,finalAngle=f.grabAngle,launch=kind!=='toadPull';releaseGrab(f,false);if(kind==='gojoBlueRapid')f.gojoRapidFinishUntil=game.time+1.55;
   if(finish>0&&!serverControlled)damage(t,finish,f,{stun:.8,kx:Math.cos(finalAngle)*(kind==='yujiDrag'?16:kind==='gojoBlueRapid'?20:kind==='sukunaFlurry'?17:12),ky:Math.sin(finalAngle)*(kind==='yujiDrag'?16:kind==='gojoBlueRapid'?20:kind==='sukunaFlurry'?17:12),unblockable:true,big:true,color,ignoreInvuln:true});
-  if(launch){t.vx=Math.cos(finalAngle)*(kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:13);t.vy=Math.sin(finalAngle)*(kind==='yujiDrag'?17:kind==='sukunaFlurry'?18:13);t.jump=Math.max(t.jump,.28);t.jumpV=Math.max(t.jumpV,2.4)}else t.stun=Math.max(t.stun,.25);
-  setMotion(f,kind==='yujiDrag'?'yujiCursedDragEnd':kind==='gojoBlueRapid'?'gojoBlueRapidEnd':kind==='todoThrow'?'todoSwiftThrow':kind==='mahitoTransfigure'?'mahitoTransfigureEnd':kind==='gojoFaceGrater'?'gojoFaceGraterEnd':kind==='sukunaCleave'?'sukunaCleaveEnd':kind==='sukunaFlurry'?'sukunaFlurryEnd':kind==='bloodEdge'?'chosoEdgeSlam':'megumiToadRelease',.42,finalAngle,t);
-  burst(t.x,t.y,color,kind==='yujiDrag'?34:24,7);addDebris(t.x,t.y,color,kind==='yujiDrag'?12:8);game.shake=Math.max(game.shake,kind==='yujiDrag'?13:9);game.hitStop=Math.max(game.hitStop,.075);
-  popText(t.x,t.y-60,kind==='yujiDrag'?'CURSED STRIKES':kind==='todoThrow'?'SWIFT KICK':kind==='mahitoTransfigure'?'IDLE TRANSFIGURATION':kind==='sukunaCleave'?'CLEAVE':kind==='gojoFaceGrater'?'FACE GRATER':kind==='bloodEdge'?'BLOOD EDGE':'TOAD PULL',color,15);
+  if(launch){t.vx=Math.cos(finalAngle)*(kind==='yujiDrag'?17:kind==='gojoBlueRapid'?19:kind==='sukunaFlurry'?18:13);t.vy=Math.sin(finalAngle)*(kind==='yujiDrag'?17:kind==='gojoBlueRapid'?19:kind==='sukunaFlurry'?18:13);t.jump=Math.max(t.jump,.28);t.jumpV=Math.max(t.jumpV,2.4)}else t.stun=Math.max(t.stun,.25);
+  setMotion(f,kind==='yujiDrag'?'yujiCursedDragEnd':kind==='gojoBlueRapid'?'gojoBlueRapidEnd':kind==='todoThrow'?'todoSwiftThrow':kind==='mahitoTransfigure'?'mahitoTransfigureEnd':kind==='gojoFaceGrater'?'gojoFaceGraterEnd':kind==='sukunaCleave'?'sukunaCleaveEnd':kind==='sukunaFlurry'?'sukunaFlurryEnd':kind==='bloodEdge'?'chosoEdgeSlam':'megumiToadRelease',kind==='gojoBlueRapid'?.1:.42,finalAngle,t);
+  burst(t.x,t.y,color,kind==='yujiDrag'?34:24,7);addDebris(t.x,t.y,color,kind==='yujiDrag'?12:8);game.shake=Math.max(game.shake,kind==='yujiDrag'||kind==='gojoBlueRapid'?14:9);game.hitStop=Math.max(game.hitStop,kind==='gojoBlueRapid'?.09:.075);
+  if(kind==='gojoBlueRapid'){burst(t.x,t.y-23,'#a8edff',16,5.2);burst(t.x,t.y-23,'#43bfff',24,7)}
+  popText(t.x,t.y-60,kind==='yujiDrag'?'CURSED STRIKES':kind==='gojoBlueRapid'?'RAPID PUNCHES':kind==='todoThrow'?'SWIFT KICK':kind==='mahitoTransfigure'?'IDLE TRANSFIGURATION':kind==='sukunaCleave'?'CLEAVE':kind==='gojoFaceGrater'?'FACE GRATER':kind==='bloodEdge'?'BLOOD EDGE':'TOAD PULL',color,15);
  }
 }
 
@@ -5080,13 +5081,13 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.skillCd[idx]=20;
    }
    if(idx===2){
-    const spinDuration=.5,flurryDuration=2.88,serial=(f.gojoRapidSerial||0)+1;
+    const spinDuration=.5,flurryDuration=3.2,serial=(f.gojoRapidSerial||0)+1;
     f.gojoRapidSerial=serial;f.skillCd[idx]=15;f.attackAnim=spinDuration;f.invuln=Math.max(f.invuln,.22);
     setMotion(f,'gojoRapidSpin',spinDuration,angle,t);
     burst(f.x,f.y-23,'#50caff',12,3.2);burst(f.x,f.y-23,'#e1faff',6,2.2);
     schedule(()=>{
      if(f.dead||f.stun>.08||f.gojoRapidSerial!==serial||!f.motion||f.motion.name!=='gojoRapidSpin')return;
-     const caught=targetInAim(f,t,355,.82,angle)&&beginGrab(f,t,'gojoBlueRapid',flurryDuration,angle,'#39bfff',10.75);
+     const caught=targetInAim(f,t,355,.82,angle)&&beginGrab(f,t,'gojoBlueRapid',flurryDuration,angle,'#39bfff',9.75);
      if(caught){
       f.invuln=Math.max(f.invuln,.18);f.gojoRapidFinishUntil=game.time+flurryDuration+1.55;
       burst(t.x,t.y-23,'#51caff',12,3.8);burst(t.x,t.y-23,'#e8fbff',6,2.4);
@@ -6828,9 +6829,9 @@ if(m==='gojoBlueSpin'){
   ctx.globalAlpha=.55*vfxFade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,43,.25+turn,.25+turn+.78);ctx.stroke();ctx.restore();return;
  }
  if(m==='gojoRapidFlurry'){
-  const fade=vfxFade,finish=smoothstep01(clamp((p-.86)/.14,0,1)),beat=Math.floor(p/.86*11),phase=(p/.86*11)-beat;
+  const fade=vfxFade,finish=smoothstep01(clamp((p-.94)/.06,0,1)),beat=Math.floor(p/.94*15),phase=(p/.94*15)-beat;
   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);ctx.lineCap='round';
-  if(p<.86){const side=beat%2===0?-1:1,reach=39+Math.sin(phase*Math.PI)*31;ctx.globalAlpha=(.16+.42*Math.sin(phase*Math.PI))*fade;ctx.strokeStyle='#4abfff';ctx.shadowColor='#38adff';ctx.shadowBlur=isMobileDevice?0:7;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(reach-31,side*15-8);ctx.quadraticCurveTo(reach-8,side*11-12,reach+13,side*15);ctx.stroke()}
+  if(p<.94){const side=beat%2===0?-1:1,reach=39+Math.sin(phase*Math.PI)*31;ctx.globalAlpha=(.16+.42*Math.sin(phase*Math.PI))*fade;ctx.strokeStyle='#4abfff';ctx.shadowColor='#38adff';ctx.shadowBlur=isMobileDevice?0:7;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(reach-31,side*15-8);ctx.quadraticCurveTo(reach-8,side*11-12,reach+13,side*15);ctx.stroke()}
   else{ctx.globalAlpha=(.25+.68*finish)*fade;ctx.strokeStyle='#8fe4ff';ctx.shadowColor='#49c5ff';ctx.shadowBlur=isMobileDevice?0:13;ctx.lineWidth=5+finish*5;ctx.beginPath();ctx.moveTo(18,-17);ctx.quadraticCurveTo(58,-35,101,-1);ctx.stroke();ctx.strokeStyle='#e8fbff';ctx.lineWidth=2+finish*1.5;ctx.beginPath();ctx.moveTo(25,-21);ctx.quadraticCurveTo(68,-40,108,-2);ctx.stroke()}
   ctx.restore();return;
  }
@@ -7984,7 +7985,7 @@ function drawStunRain(f,x,y){
  const sukunaRushMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaHeadCarryMiss';
  if(f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss)return;
  const strength=vesselSkillOne||sukunaRushMiss?1:clamp(f.stun/.28,.35,1);
- const captured=vesselSkillOne||sukunaRushMiss||motionName.startsWith('captured_');
+ const captured=vesselSkillOne||sukunaRushMiss||motionName.startsWith('captured_'),blueCaptured=motionName==='captured_gojoBlueRapid';
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=isMobileDevice?0:(0);
  for(let i=0;i<9;i++){
   const phase=(game.time*31+i*13)%48;
@@ -7993,7 +7994,7 @@ function drawStunRain(f,x,y){
   const endY=Math.min(y-16,startY+length);
   if(endY<=startY)continue;
   const lineX=Math.round(x+(i-4)*7+Math.sin(game.time*2+i)*1.1)+.5;
-  ctx.strokeStyle=captured?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
+  ctx.strokeStyle=blueCaptured?(i%3===0?'rgba(224,250,255,.96)':'rgba(71,185,242,.86)'):captured?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
   ctx.lineWidth=i%3===0?1.25:1;
   ctx.beginPath();ctx.moveTo(lineX,startY);ctx.lineTo(lineX,endY);ctx.stroke();
  }
@@ -8123,7 +8124,7 @@ function drawHeadHands(f,deferMotionVfx=false){
     const spin=progress*Math.PI*2,orbit=42,centerX=x,centerY=headY+gojoBlueHeadBob;
     handA={x:centerX+Math.cos(spin)*orbit,y:centerY+Math.sin(spin)*orbit};handB={x:centerX+Math.cos(spin+Math.PI)*orbit,y:centerY+Math.sin(spin+Math.PI)*orbit};handAScale=1.1;handBScale=1.1;
    }else if(name==='gojoRapidFlurry'){
-    if(progress<.86){const count=11,step=progress/.86*count,index=Math.min(count-1,Math.floor(step)),phase=step-index,punch=Math.sin(phase*Math.PI),front=index%2===0,forward=reach+7+44*punch,side=front?16:-16;handA=front?P(forward,side,-2-5*punch):P(9,18,4);handB=front?P(9,-18,4):P(forward,side,-2-5*punch);handAScale=front?1.24:.94;handBScale=front?.94:1.24;handAAngle=angle+(front?.08:0);handBAngle=angle+(front?0:-.08)}
+    if(progress<.94){const count=15,step=progress/.94*count,index=Math.min(count-1,Math.floor(step)),phase=step-index,punch=Math.sin(phase*Math.PI),front=index%2===0,forward=reach+7+44*punch,side=front?16:-16;handA=front?P(forward,side,-2-5*punch):P(9,18,4);handB=front?P(9,-18,4):P(forward,side,-2-5*punch);handAScale=front?1.24:.94;handBScale=front?.94:1.24;handAAngle=angle+(front?.08:0);handBAngle=angle+(front?0:-.08)}
     else{const wind=smoothstep01(clamp((progress-.86)/.08,0,1)),strike=smoothstep01(clamp((progress-.94)/.06,0,1));handA=P(9,18,4);handB=P(lerp(reach-22,reach+76,strike),-16,lerp(-17,-2,strike)-8*wind);handAScale=.96;handBScale=1.35;handBAngle=angle-.12*strike}
    }else if(name==='gojoBlueSpin'){
     const spin=progress*Math.PI*2,orbit=43,centerX=x,centerY=headY+gojoBlueHeadBob;
