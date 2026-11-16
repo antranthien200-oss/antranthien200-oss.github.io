@@ -34,8 +34,10 @@ test("server grab profiles cover supported player grabs",()=>{
  assert.equal(grabSettings("honored","gojoFaceGrater").finishDamage,13);
  const rapid=grabSettings("honored","gojoBlueRapid");
  assert.equal(rapid.kind,"gojoBlueRapid");
- assert.equal(rapid.duration,2.88);
- assert.equal(rapid.tickInterval,.23);
+ assert.equal(rapid.finishDamage,9.75);
+ assert.equal(rapid.knockback,19);
+ assert.equal(rapid.duration,3.2);
+ assert.equal(rapid.tickInterval,.22);
  assert.equal(grabSettings("todo","todoSwiftGrab").kind,"todoThrow");
  assert.equal(grabSettings("yuta","yutaM1_1"),null);
 });
