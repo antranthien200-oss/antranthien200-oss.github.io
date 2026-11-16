@@ -4819,7 +4819,13 @@ function useAttack(f,kind){
  if(kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
  if(['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
  if(kind==='special'&&f.specialCd>0)return;
- if(f.skillInputLocked&&f.motion)interruptSkillCast(f);
+ // A committed skill cannot be cancelled by another skill, M1, or dash.
+ // Keep the game's timed combo inputs available during their short follow-up windows.
+ const timedComboFollowUp=
+  (kind==='3'&&f.char==='vessel'&&!f.awakened&&f.blackFlashWindow>0&&f.yujiDivergentAttack&&!f.yujiDivergentAttack.resolved)||
+  (kind==='2'&&f.char==='restless'&&!f.jackpot&&f.feverWindow>0)||
+  (kind==='2'&&f.char==='ten'&&(!f.awakened||f.tenBase)&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead);
+ if(f.skillInputLocked&&f.motion&&kind!=='special'&&!timedComboFollowUp)return;
  f.skillCastSerial=(f.skillCastSerial||0)+1;
  const previousSkillScheduleOwner=activeSkillScheduleOwner;activeSkillScheduleOwner={fighter:f,serial:f.skillCastSerial};
  try{
@@ -5265,7 +5271,7 @@ function handleInput(dt){if(!game.started||game.paused||game.over||game.cutscene
  if(player.stun<=0&&!player.dead&&player.sukunaFireCast<=0){
   if(!skillInputLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;if(keys.has(' ' )&&player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}}
   const wantsBlock=keys.has('f');
-  if(wantsBlock&&!player.block){if(player.skillInputLocked)interruptSkillCast(player);player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
+  if(wantsBlock&&!player.block&&!skillInputLocked){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
   else if(!wantsBlock&&player.block){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
   if(keys.has('1')){useAttack(player,'1');keys.delete('1')}if(keys.has('2')){useAttack(player,'2');keys.delete('2')}if(keys.has('3')){useAttack(player,'3');keys.delete('3')}if(keys.has('4')){useAttack(player,'4');keys.delete('4')}
  }else player.block=false;
