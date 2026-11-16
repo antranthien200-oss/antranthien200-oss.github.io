@@ -6411,7 +6411,7 @@ function drawVesselBaseSmoothSkillVfx(f,m,p){
  const t=clamp(p,0,1),beat=Math.sin(Math.PI*t),ease=t*t*(3-2*t);
  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
  ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
- const glow=(color,blur)=>{ctx.shadowColor=color;ctx.shadowBlur=isMobileDevice?0:(blur});
+ const glow=(color,blur)=>{ctx.shadowColor=color;ctx.shadowBlur=isMobileDevice?0:blur};
  const stroke=(color,width,path)=>{ctx.strokeStyle=color;ctx.lineWidth=width;path();ctx.stroke()};
  const orb=(x,y,r,inner,outer)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,inner);g.addColorStop(.38,inner);g.addColorStop(1,outer);ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill()};
  if(m==='yujiCrush'){
@@ -9682,7 +9682,7 @@ function draw(){
 }
 function drawMenuBackdrop(){ctx.save();ctx.fillStyle='#0a111b66';ctx.fillRect(0,0,W,H);ctx.restore()}
 let mobileAccumulator=0,wasPaused=false,frameUpdateCost=0;
-function loop(ts){const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();const drawCost=performance.now()-drawStart;tuneMobileRenderScale(drawCost,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;requestAnimationFrame(loop)}requestAnimationFrame(loop);
+function loop(ts){const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;requestAnimationFrame(loop)}requestAnimationFrame(loop);
 // Start positions are rendered behind the title screen too.
 resetMatch();camera.x=1100;camera.y=750;
 })();
