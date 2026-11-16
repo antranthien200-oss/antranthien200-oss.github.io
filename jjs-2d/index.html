@@ -7900,9 +7900,9 @@ function spawnGojoOrbFlowParticles(owner,x,y,palette='blue',count=4){
  const colors=palette==='red'?['#ff4b67','#ff8295','#ffc0ca','#e92f50']:['#53caff','#9beaff','#e3fbff','#248bd0'];
  const amount=isMobileDevice?Math.min(2,count):count;
  for(let i=0;i<amount;i++){
-  const angle=rnd(0,Math.PI*2),inward=Math.random()<.5;
-  const radius=inward?rnd(42,82):rnd(10,25),speed=inward?rnd(2.5,4.4):rnd(2.8,4.9);
-  const radial=inward?-speed:speed,tangent=rnd(-.7,.7),life=rnd(.22,.4);
+  const angle=rnd(0,Math.PI*2),inward=palette!=='red';
+  const radius=inward?rnd(48,86):rnd(8,18),speed=inward?rnd(2.8,4.7):rnd(3.1,5.2);
+  const radial=inward?-speed:speed,tangent=rnd(-.22,.22),life=rnd(.22,.4);
   const color=colors[Math.floor(Math.random()*colors.length)];
   particles.push({x:x+Math.cos(angle)*radius,y:y+Math.sin(angle)*radius,vx:Math.cos(angle)*radial-Math.sin(angle)*tangent,vy:Math.sin(angle)*radial+Math.cos(angle)*tangent,life,max:life,size:rnd(2,4.2),color,shape:'gojoFlow'});
  }
