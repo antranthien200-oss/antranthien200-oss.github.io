@@ -3392,7 +3392,7 @@ function updateOnlineNetwork(dt){
  const skillInputLocked=!!(player.skillInputLocked&&player.motion);
  let moveX=0,moveY=0;
  if(!skillInputLocked&&(movementKeys.has('w')||movementKeys.has('arrowup')))moveY--;
- if(!skillInputLocked&&movementKeys.has('s')||!skillInputLocked&&movementKeys.has('arrowdown'))moveY++;
+ if(!skillInputLocked&&(movementKeys.has('s')||movementKeys.has('arrowdown')))moveY++;
  if(!skillInputLocked&&(movementKeys.has('a')||movementKeys.has('arrowleft')))moveX--;
  if(!skillInputLocked&&(movementKeys.has('d')||movementKeys.has('arrowright')))moveX++;
  if(!skillInputLocked&&mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
