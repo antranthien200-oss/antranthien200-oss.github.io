@@ -3408,7 +3408,7 @@ function drawOnlineRemoteDomains(){
  }
 }
 function drawOnlineNameplate(remote){
- if(!remote||remote.dead)return;
+ if(!remote||remote.dead||!worldRectVisible(remote.x-90,remote.y-110,180,150,36))return;
  const x=sx(remote.x),y=sy(remote.y)-55-remote.jump*3,name=String(remote.onlineName||'PLAYER').toUpperCase();
  ctx.save();ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
  const width=Math.max(42,ctx.measureText(name).width+14);
@@ -8446,7 +8446,7 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
- if(f.dead||f.isTrainingDummy)return;
+ if(f.dead||f.isTrainingDummy||!worldRectVisible(f.x-80,f.y-110,160,150,48))return;
  const transition=f.vehicleTransition;
  if(f.vehicle&&!transition)return;
  const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;
@@ -8462,7 +8462,7 @@ function drawFighter(f){
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
 }
 function drawFighterMotionOverlays(f){
- if(!f||f.dead||f.vehicleTransition)return;
+ if(!f||f.dead||f.vehicleTransition||!worldRectVisible(f.x-260,f.y-300,520,600,80))return;
  const m=f.motion;
  if(!m){drawGojoBlueSparks(f);return}
  const name=m.name||'';
@@ -8483,7 +8483,7 @@ function drawFighterMotionOverlays(f){
  drawGojoBlueSparks(f);
 }
 function drawFighterHandsForeground(f){
- if(!f||f.dead||!f.motionHandPose)return;
+ if(!f||f.dead||!f.motionHandPose||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
  const pose=f.motionHandPose;
  // Render the character's own hands after every skill effect, keeping them in the foreground.
  drawFloatingHand(pose.b.x,pose.b.y,pose.b.angle,pose.theme,pose.b.scale);
@@ -9185,7 +9185,7 @@ function drawIdleDeathGamble(f){
  ctx.restore();
 }
 function drawTenSummons(){
- const activeDomain=domainFighters().find(domainIsActive),fighters=(onlineMode?[player,...onlineRemotePlayers.values(),trainingDummy]:[player,enemy,trainingDummy]).filter(f=>f&&f.char==='ten'&&!f.dead&&(!activeDomain||domainViewMatches(f,activeDomain)));
+ const activeDomain=domainFighters().find(domainIsActive),fighters=(onlineMode?[player,...onlineRemotePlayers.values(),trainingDummy]:[player,enemy,trainingDummy]).filter(f=>f&&f.char==='ten'&&!f.dead&&worldRectVisible(f.x-220,f.y-220,440,440,80)&&(!activeDomain||domainViewMatches(f,activeDomain)));
  for(const f of fighters){
   const x=sx(f.x),y=sy(f.y),a=f.face||0;
   if(f.tenToadVisual>0){
@@ -9566,7 +9566,7 @@ function getVesselSmokeAuraFrames(){
  return vesselSmokeAuraFrames;
 }
 function drawVesselAwakeningSmoke(f){
- if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending)return;
+ if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending||!worldRectVisible(f.x-70,f.y-75,140,130,24))return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3-23,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
  const frames=getVesselSmokeAuraFrames(),framePosition=(visualTime*6)%frames.length,frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
  // Dense, dark red-and-black smoke sits almost flush against the round fighter silhouette.
