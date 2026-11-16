@@ -4094,7 +4094,7 @@ function damage(target,amount,source,opts={}){
    if(kind==='yutaOutburst'){
    const a=Math.atan2(source.y-target.y,source.x-target.x);target.invuln=Math.max(target.invuln,.5);
    if((opts.damageType||'melee')==='bullet'||(opts.damageType||'melee')==='projectile')target.skillCd[2]=Math.min(target.skillCd[2]||0,.15);
-   else{source.stun=Math.max(source.stun,.48);source.vx+=Math.cos(a)*-11;source.vy+=Math.sin(a)*-11;target.skillCd[2]=4}
+   else{interruptSkillCast(source);source.stun=Math.max(source.stun,.48);source.vx+=Math.cos(a)*-11;source.vy+=Math.sin(a)*-11;target.skillCd[2]=4}
    burst(target.x,target.y,'#e4c9f0',22,6);return;
   }
   if(kind==='bloodSupernova'){
@@ -4121,7 +4121,7 @@ function damage(target,amount,source,opts={}){
   if(kind==='manji'){
    const a=Math.atan2(source.y-target.y,source.x-target.x),serial=(target.manjiCounterSerial||0)+1;target.manjiCounterSerial=serial;
    target.invuln=Math.max(target.invuln,.72);target.stun=0;target.block=false;target.vx=0;target.vy=0;target.rooted=Math.max(target.rooted||0,.42);
-   source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;source.stun=Math.max(source.stun,.42);source.rooted=Math.max(source.rooted||0,.42);source.vx=0;source.vy=0;
+   source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;interruptSkillCast(source);source.stun=Math.max(source.stun,.42);source.rooted=Math.max(source.rooted||0,.42);source.vx=0;source.vy=0;
    setMotion(target,'yujiManjiBlock',.2,a,source);burst(target.x,target.y,'#f3bb67',18,4.2);burst(source.x,source.y,'#ffd58b',7,3);
    schedule(()=>{
     if(target.dead||source.dead||target.manjiCounterSerial!==serial)return;
@@ -4231,6 +4231,7 @@ function setSkillMotion(f,idx,angle,target){
 
 function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  if(!f||!t||t.dead||(t.block&&kind!=='megumiSerpent'))return false;
+ interruptSkillCast(t);
  if(onlineMode&&onlineRoom&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player))){
   const moveByKind={yujiDrag:'yujiCursedDrag',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge'};
   const move=moveByKind[kind]||String(f.motion&&f.motion.name||f.onlineLastMove||kind).slice(0,48);
