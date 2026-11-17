@@ -4035,17 +4035,25 @@ function applyPull(source,target,duration=.48,strength=4.5,color='#75dcff'){
  if(!source||!target||target.dead||target.capturedBy)return;
  target.pullSource=source;target.pullTimer=Math.max(target.pullTimer||0,duration);target.pullStrength=Math.max(target.pullStrength||0,strength);target.pullColor=color;
 }
+function pullM1AttackerIn(f,t,angle){
+ const gap=dist(f,t),strength=clamp((gap-40)/72,0,1)*1.15;
+ if(strength>0){f.vx+=Math.cos(angle)*strength;f.vy+=Math.sin(angle)*strength}
+}
 function m1Feedback(f,t,angle,hit,finisher){
- const sx=f.x+Math.cos(angle)*18,sy=f.y+Math.sin(angle)*18;
  const ex=hit?t.x:f.x+Math.cos(angle)*78,ey=hit?t.y:f.y+Math.sin(angle)*78;
  const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,color=theme.accent||theme.main;
-
  if(!f.awakened&&f.char!=='yuta'){
-  if(hit){burst(t.x,t.y,finisher?'#ffe2ad':'#eff7ff',finisher?18:9,finisher?6:4);game.hitStop=Math.max(game.hitStop,finisher?.04:.016);game.shake=Math.max(game.shake,finisher?5.5:2.4)}
-  else burst(ex,ey,'#d8eaff',3,2);
+  if(hit){
+   burst(t.x,t.y,finisher?'#ffe2ad':'#eff7ff',finisher?22:13,finisher?7:5);
+   game.hitStop=Math.max(game.hitStop,finisher?.055:.024);
+   game.shake=Math.max(game.shake,finisher?6.8:3.1);
+  }else burst(ex,ey,'#d8eaff',4,2.6);
  }else{
-  if(hit){burst(t.x,t.y,color,finisher?19:(!f.awakened?9:7),finisher?6:(!f.awakened?4:3));game.hitStop=Math.max(game.hitStop,finisher?.05:(!f.awakened?.016:.012));game.shake=Math.max(game.shake,finisher?7:(!f.awakened?2.5:1.8))}
-  else burst(ex,ey,color,3,2);
+  if(hit){
+   burst(t.x,t.y,color,finisher?23:12,finisher?7:4.8);
+   game.hitStop=Math.max(game.hitStop,finisher?.06:.026);
+   game.shake=Math.max(game.shake,finisher?7.2:3.2);
+  }else burst(ex,ey,color,4,2.6);
  }
 }
 function popText(){/* Floating combat callouts disabled to keep the arena clear. */}
@@ -4909,11 +4917,12 @@ function useAttack(f,kind,networkReplay=false){
     schedule(()=>{if(f.dead||f.domainType!=='yuta')return;const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),landed=!t.dead&&d<245&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<1.02;yutaDomainSwordHit(f,t,angle,katana.technique,landed);if(landed){m1Feedback(f,t,angle,true,true);burstLine(f,t,'#f4c8ee',8)}else m1Feedback(f,{x:f.x+Math.cos(angle)*95,y:f.y+Math.sin(angle)*95},angle,false,true)},520);return;
    }
    f.combo=f.comboTimer>0?(f.combo%4)+1:1;const fin=f.combo===4,baseFinisher=fin&&!f.awakened,baseM1=!f.awakened,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);const angle=f.face;
+   const m1MotionName='yutaM1_'+f.combo,m1Duration=baseFinisher?.64:baseM1?fin?.29:.19:fin?.38:.24;
    f.comboTimer=baseFinisher?.86:baseM1?.50:.58;
-   f.attackCd=baseFinisher?.64:baseM1?fin?.24:.13:fin?.3:.16;
+   f.attackCd=baseFinisher?.64:baseM1?fin?.27:.16:fin?.3:.19;
    f.attackAnim=baseFinisher?.64:baseM1?fin?.26:.15:fin?.34:.2;
    f.attackType=baseFinisher?'heavy-punch':'katana';
-   setMotion(f,'yutaM1_'+f.combo,baseFinisher?.64:baseM1?fin?.29:.19:fin?.38:.24,angle,t);
+   setMotion(f,m1MotionName,m1Duration,angle,t);
    const range=mobileControlsEnabled&&f===player?153:132,arc=mobileControlsEnabled&&f===player?1.35:1.12;
    const applyYutaFinisher=()=>{
     if(f.dead||t.dead||f.stun>.02||!f.motion||f.motion.name!=='yutaM1_4')return;
@@ -4921,17 +4930,23 @@ function useAttack(f,kind,networkReplay=false){
     if(dNow<range&&within){
      const theme=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.yuta,color=theme.accent||'#ffaddb';
      damage(t,10,f,{stun:.82,invuln:.1,kx:Math.cos(angle)*2.55,ky:Math.sin(angle)*2.55,color,big:true,ignoreInvuln:true});
-     m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+4,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
+     pullM1AttackerIn(f,t,angle);m1Feedback(f,t,angle,true,true);if(!f.awakened)f.meter=clamp(f.meter+4,0,100);popText(t.x,t.y-50,'HEAVY PUNCH',brightenM1TrailColor(color),13);
     }else{m1Feedback(f,t,angle,false,true);damageBuildingAlongRay(f,angle,range)}
    };
    if(baseFinisher)schedule(applyYutaFinisher,330);
    else{
-    const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),hit=d<range&&Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<arc;
-    if(hit){
-     const dmg=[4,4.2,4.2,5.5][f.combo-1];damage(t,dmg,f,{stun:fin?.5:.22,kx:Math.cos(angle)*(fin?8:.8),ky:Math.sin(angle)*(fin?8:.8),color:'#f1e8ef',ignoreInvuln:true});
-     m1Feedback(f,t,angle,true,fin);burstLine(f,t,'#f0e8f0',4);
-     if(fin){t.jump=Math.max(t.jump,.18);t.jumpV=Math.max(t.jumpV,1.8);if(!f.awakened)f.meter=clamp(f.meter+4,0,100)}
-    }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,135)}
+    const applyYutaStrike=()=>{
+     if(f.dead||f.stun>.02||!f.motion||f.motion.name!==m1MotionName)return;
+     const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x);
+     const hitNow=!t.dead&&dNow<range&&Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<arc;
+     if(hitNow){
+      const dmg=[4,4.2,4.2,5.5][f.combo-1];
+      damage(t,dmg,f,{stun:fin?.5:.28,kx:Math.cos(angle)*(fin?8:1.15),ky:Math.sin(angle)*(fin?8:1.15),color:'#f1e8ef',ignoreInvuln:true});
+      pullM1AttackerIn(f,t,angle);m1Feedback(f,t,angle,true,fin);burstLine(f,t,'#f0e8f0',4);
+      if(fin){t.jump=Math.max(t.jump,.18);t.jumpV=Math.max(t.jumpV,1.8);if(!f.awakened)f.meter=clamp(f.meter+4,0,100)}
+     }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,135)}
+    };
+    schedule(applyYutaStrike,Math.round(m1Duration*500));
    }   return;
   }
 if(f.attackCd>0)return;
@@ -4939,11 +4954,12 @@ if(f.attackCd>0)return;
   const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);
   const shrineM1=f.char==='vessel'&&f.awakened,baseM1=!f.awakened;
   const angle=f.face;
+  const m1MotionName='m1_'+f.combo,m1Duration=shrineM1?(fin?.52:.42):baseM1?fin?.34:.20:fin?.42:.24;
   f.comboTimer=shrineM1?.50:baseM1?.52:.62;
-  f.attackCd=shrineM1?fin?.15:.07:baseM1?fin?.28:.09:fin?.34:.115;
+  f.attackCd=shrineM1?fin?.15:.07:baseM1?fin?.31:.17:fin?.39:.20;
   f.attackAnim=shrineM1?(fin?.42:.32):baseM1?fin?.24:.15:fin?.28:.18;
   f.attackType=shrineM1?'slash':'punch';
-  setMotion(f,'m1_'+f.combo,shrineM1?(fin?.52:.42):baseM1?fin?.34:.20:fin?.42:.24,angle,t);if(shrineM1){f.motion.activeDuration=fin?.42:.32;f.motion.vfxFadeOut=.1;f.motion.shrineReach=clamp(dist(f,t)*.56,23,76);}
+  setMotion(f,m1MotionName,m1Duration,angle,t);if(shrineM1){f.motion.activeDuration=fin?.42:.32;f.motion.vfxFadeOut=.1;f.motion.shrineReach=clamp(dist(f,t)*.56,23,76);}
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
   const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   if(!shrineM1){f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2)}
@@ -4961,13 +4977,17 @@ if(f.attackCd>0)return;
    }
    return;
   }
-  const hit=d<range&&inArc;
-  if(hit){
-   const dmg=[4,4.2,5,8.5][f.combo-1];
-   damage(t,dmg,f,{stun:fin?.72:.34,invuln:fin?.085:.055,kx:Math.cos(angle)*(fin?9.6:.3),ky:Math.sin(angle)*(fin?9.6:.3),color:fin?'#ffdfba':'#fff'});
-   m1Feedback(f,t,angle,true,fin);
-   if(fin){t.jump=Math.max(t.jump,.16);t.jumpV=Math.max(t.jumpV,1.4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'FINISHER','#ffe0ad',12)}
-  }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,range)}
+  schedule(()=>{
+   if(f.dead||f.stun>.02||!f.motion||f.motion.name!==m1MotionName)return;
+   const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x);
+   const hitNow=!t.dead&&dNow<range&&Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
+   if(hitNow){
+    const dmg=[4,4.2,5,8.5][f.combo-1];
+    damage(t,dmg,f,{stun:fin?.72:.38,invuln:fin?.085:.055,kx:Math.cos(angle)*(fin?9.6:1.2),ky:Math.sin(angle)*(fin?9.6:1.2),color:fin?'#ffdfba':'#fff'});
+    pullM1AttackerIn(f,t,angle);m1Feedback(f,t,angle,true,fin);
+    if(fin){t.jump=Math.max(t.jump,.16);t.jumpV=Math.max(t.jumpV,1.4);if(!f.awakened)f.meter=clamp(f.meter+5,0,100);popText(t.x,t.y-50,'FINISHER','#ffe0ad',12)}
+   }else{m1Feedback(f,t,angle,false,fin);damageBuildingAlongRay(f,angle,range)}
+  },Math.round(m1Duration*500));
   return;
  }
  if(kind==='block'){if(!f.block)setMotion(f,'blockGesture',.22,f.face,t);f.block=true;return}
