@@ -2794,7 +2794,6 @@ const ONLINE_STATE_SEND_RATE=30,ONLINE_STATE_SEND_INTERVAL=1/ONLINE_STATE_SEND_R
 const ONLINE_REMOTE_INTERPOLATION_MIN_MS=38,ONLINE_REMOTE_INTERPOLATION_MAX_MS=82,ONLINE_MAX_EXTRAPOLATION_MS=120;
 let onlineRemoteInterpolationDelayMs=44,onlineStateArrivalAt=0,onlineStateJitterMs=0;
 let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlinePlayerNameSetting='',onlineStatusMessage='READY',onlineConnecting=false;
-let onlineReconnectTimer=null,onlineReconnectAttempt=0,onlineReconnectStartedAt=0,onlineReconnectToken='';
 let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
 const onlineRemotePlayers=new Map();
@@ -3475,13 +3474,8 @@ function startOnlineMatch(){
  showToast('ONLINE ALPHA · PLAYER SYNC ACTIVE',1500);
  updateHud(true);
 }
-function clearOnlineReconnect(){
- if(onlineReconnectTimer!==null){clearTimeout(onlineReconnectTimer);onlineReconnectTimer=null}
- onlineReconnectAttempt=0;onlineReconnectStartedAt=0;onlineReconnectToken='';
-}
 function handleOnlineDisconnect(code){
  if(!onlineMode)return;
- clearOnlineReconnect();
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
  onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
  game.started=false;game.paused=false;
@@ -3639,7 +3633,7 @@ function sendOnlineActivity(){
 ['keydown','pointerdown','pointermove','touchstart','touchmove','wheel'].forEach(type=>addEventListener(type,sendOnlineActivity,{passive:true}));
 addEventListener('pagehide',()=>{if(onlineMode)leaveOnlineServer()});
 function leaveOnlineServer(){
- const room=onlineRoom;clearOnlineReconnect();
+ const room=onlineRoom;
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
  onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
  if(room){try{room.leave()}catch(e){console.warn('Could not leave online room cleanly',e)}}
