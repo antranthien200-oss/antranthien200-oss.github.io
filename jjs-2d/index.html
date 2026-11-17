@@ -8204,7 +8204,7 @@ function drawHeadHands(f,deferMotionVfx=false){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoRapidSpin'){
-    const lead=gojoSpinHand(-.42,44,30,-2),follow=gojoSpinHand(.42,40,32,1);
+    const lead=gojoSpinHand(-.42,44,30,-2),follow=gojoSpinHand(Math.PI-.42,44,30,1);
     handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
     handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.1;handBScale=1.1;
    }else if(name==='gojoRapidFlurry'){
@@ -8229,7 +8229,7 @@ function drawHeadHands(f,deferMotionVfx=false){
     handAScale=rightPunch?.92:1.18;handBScale=rightPunch?1.18:.92;
     handAAngle=angle;handBAngle=angle;
    }else if(name==='gojoBlueSpin'){
-    const lead=gojoSpinHand(-.34,45,28,-2),follow=gojoSpinHand(.38,41,31,1);
+    const lead=gojoSpinHand(-.34,45,28,-2),follow=gojoSpinHand(Math.PI-.34,45,28,1);
     handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
     handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
@@ -8501,11 +8501,11 @@ function drawHeadHands(f,deferMotionVfx=false){
  }
  // Final Gojo spin pose: hands follow staggered elliptical arcs instead of a rigid pinwheel.
  if(name==='gojoRapidSpin'){
-  const lead=gojoSpinHand(-.42,44,30,-2),follow=gojoSpinHand(.42,40,32,1);
+  const lead=gojoSpinHand(-.42,44,30,-2),follow=gojoSpinHand(Math.PI-.42,44,30,1);
   handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
   handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.1;handBScale=1.1;sideViewBackHand=null;sideViewFrontHand=null;
  }else if(name==='gojoBlueSpin'){
-  const lead=gojoSpinHand(-.34,45,28,-2),follow=gojoSpinHand(.38,41,31,1);
+  const lead=gojoSpinHand(-.34,45,28,-2),follow=gojoSpinHand(Math.PI-.34,45,28,1);
   handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
   handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.08;handBScale=1.08;
   sideViewBackHand=null;sideViewFrontHand=null;
