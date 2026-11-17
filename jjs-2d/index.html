@@ -10049,7 +10049,7 @@ function positionVesselAwakeningDialogue(){
  if(!f||f.dead||!box)return;
  const zoom=cameraViewScale(),shakeX=Math.sin(game.time*71)*game.shake,shakeY=Math.cos(game.time*59)*game.shake*.62;
  let px=W*.5+(f.x-camera.x)/zoom+shakeX;
- let py=H*.5+(f.y-72-camera.y)/zoom+shakeY;
+ let py=H*.5+(f.y-(f.jump||0)*3-72-camera.y)/zoom+shakeY;
  const cinematicProgress=clamp((f.sukunaAwakeningCameraTime||0)/1.55,0,1),cinematicEase=cinematicProgress*cinematicProgress*(3-2*cinematicProgress),cinematicZoom=1+.45*cinematicEase;
  const focusX=W*.5+(f.x-camera.x)/zoom,focusY=H*.5+(f.y-camera.y)/zoom;
  px=focusX+(px-focusX)*cinematicZoom;py=focusY+(py-focusY)*cinematicZoom;
