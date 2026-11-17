@@ -1809,19 +1809,6 @@ html.manual-screen-rotated #menu .menu-art-stage{
 }
 
 /* Uniform menu fitting: preserve each menu's authored proportions and scale the whole panel only. */
-#menu .menu-art-stage>.menu-main{
- top:43%!important;
- bottom:auto!important;
- left:50%!important;
- width:390px!important;
- height:auto!important;
- min-height:0!important;
- max-height:none!important;
- overflow:visible!important;
- box-sizing:border-box!important;
- transform:translateX(-50%) scale(var(--menu-fit-scale,1))!important;
- transform-origin:top center!important;
-}
 #menuSub{
  padding:0!important;
  overflow:hidden!important;
@@ -2207,17 +2194,6 @@ function getAccessorySummary(char){const loadout=accessoryLoadouts[char]||{};con
 function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentAccessoriesSummary').textContent=getAccessorySummary(selected)}
 
 function fitMenuLayouts(){
- const stage=document.querySelector('#menu .menu-art-stage');
- const main=stage&&stage.querySelector('.menu-main');
- if(stage&&main){
-  main.style.setProperty('--menu-fit-scale','1');
-  const width=main.offsetWidth||390;
-  const height=main.scrollHeight||main.offsetHeight||1;
-  const availableWidth=Math.max(1,stage.clientWidth-24);
-  const availableHeight=Math.max(1,stage.clientHeight*.55-8);
-  const scale=Math.max(.1,Math.min(1,availableWidth/width,availableHeight/height));
-  main.style.setProperty('--menu-fit-scale',String(scale));
- }
  const sub=document.getElementById('menuSub');
  const panel=sub&&sub.querySelector('.menu-sub-panel');
  if(sub&&panel&&!sub.hidden){
