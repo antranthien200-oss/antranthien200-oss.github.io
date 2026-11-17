@@ -4458,7 +4458,7 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
   setMotion(f,kind==='gojoBlueRapid'?'gojoRapidFlurry':move,duration,angle,t);return true;
  }
  if(t.vehicle)toggleCityVehicle(t);
- if(t.capturedBy)return false;
+ if(t.capturedBy){if(kind!=='gojoBlueRapid')return false;releaseGrab(t.capturedBy,false)}
  f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=kind==='sukunaFlurry'?.06:.08;f.grabLastX=f.x;f.grabLastY=f.y;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;
  t.capturedBy=f;t.block=false;t.invuln=0;t.stun=duration+.22;t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
  f.vx=0;f.vy=0;setMotion(f,kind==='yujiDrag'?'yujiCursedDrag':kind==='gojoBlueRapid'?'gojoRapidFlurry':kind==='todoThrow'?'todoSwiftGrab':kind==='toadPull'?'megumiToad':kind==='mahitoTransfigure'?'mahitoTransfigure':kind==='gojoFaceGrater'?'gojoFaceGrater':kind==='sukunaCleave'?'sukunaCleave':kind==='sukunaFlurry'?'sukunaFlurry':kind==='bloodEdge'?'chosoEdge':'megumiSerpent',duration,angle,t);return true;

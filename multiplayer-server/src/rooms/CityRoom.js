@@ -68,7 +68,7 @@ export class CityRoom extends Room{
   for(const [zoneId,zone] of this.fireZones)if(zone.ownerId===id){this.fireZones.delete(zoneId);this.broadcast("combat:fire-zone-end",{sessionId:id,id:zoneId})}
   p.x=spawn.x;p.y=spawn.y;p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.moveScale=1;p.aimX=spawn.x;p.aimY=spawn.y;
   p.face=0;p.walk=0;p.jump=0;p.block=false;p.attackAnim=0;p.attackType="";
-  p.motionName="";p.motionProgress=0;p.motionDuration=1;p.motionStartedAt=0;p.lastActionKind="";p.lastActionAt=0;
+  p.motionName="";p.motionProgress=0;p.motionDuration=1;p.motionStartedAt=0;p.lastActionKind="";p.lastActionAt=0;p.gojoRapidAt=0;
   p.hp=p.maxHp=CHARACTER_HP[p.character]||100;p.meter=0;p.stun=0;p.invuln=1.2;p.dead=false;p.respawnTimer=0;
   p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.consecutiveJackpots=0;p.domainStunGuaranteed=false;
   p.vehicleId="";p.trashCanId="";
