@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {MAX_PLAYERS,CHARACTER_IDS,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,isMoveAuthorizedForAction,isProjectileKindAllowed,isProjectileMoveAllowed,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
+import {MAX_PLAYERS,CHARACTER_IDS,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,isMoveAuthorizedForAction,isProjectileKindAllowed,isProjectileMoveAllowed,isGuaranteedRapidGrabAllowed,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
 test("one shared city has 16 seats",()=>assert.equal(MAX_PLAYERS,16));
 test("character list has the supported fighters",()=>{assert.ok(CHARACTER_IDS.includes("vessel"));assert.ok(!CHARACTER_IDS.includes("bad"))});
 test("all fixed spawns are on-map and separated",()=>{const ps=Array.from({length:16},(_,i)=>createSpawn(i));let min=Infinity;for(let i=0;i<ps.length;i++){assert.ok(ps[i].x>=45&&ps[i].x<=3255);assert.ok(ps[i].y>=45&&ps[i].y<=1955);for(let j=i+1;j<ps.length;j++)min=Math.min(min,Math.hypot(ps[i].x-ps[j].x,ps[i].y-ps[j].y))}assert.ok(min>=72)});
@@ -104,4 +104,13 @@ test("combat hit validation matches the move to the selected skill slot",()=>{
  assert.equal(isMoveAuthorizedForAction("honored","gojoFaceGrater","special"),true);
  assert.equal(isMoveAuthorizedForAction("honored","m1_1","m1"),true);
  assert.equal(isMoveAuthorizedForAction("honored","gojoPurple","m1"),false);
+});
+
+test("Gojo Rapid Punches is guaranteed only after confirmed base third-skill contact",()=>{
+ assert.equal(isMoveAuthorizedForAction("honored","gojoBlueRapid","3"),true);
+ assert.equal(isGuaranteedRapidGrabAllowed("honored","gojoBlueRapid",1000,1500,true,false),true);
+ assert.equal(isGuaranteedRapidGrabAllowed("honored","gojoBlueRapid",1000,1500,false,false),false);
+ assert.equal(isGuaranteedRapidGrabAllowed("honored","gojoBlueRapid",1000,3501,true,false),false);
+ assert.equal(isGuaranteedRapidGrabAllowed("honored","gojoBlueRapid",1000,1500,true,true),false);
+ assert.equal(isGuaranteedRapidGrabAllowed("vessel","gojoBlueRapid",1000,1500,true,false),false);
 });

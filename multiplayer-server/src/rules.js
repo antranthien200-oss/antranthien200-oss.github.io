@@ -79,7 +79,7 @@ export function isMoveAuthorizedForAction(character,moveName,actionKind){
  if(action==="m1")return /^(m1_[1-4]|yutaM1_[1-4]|yutaDomainSwordRun)$/i.test(move);
  if(action==="special")return isMoveAllowed(character,move)&&!/^(m1_|yutaM1_)/i.test(move);
  const slots={
-  honored:[["gojoBlue","gojoBlueMax"],["gojoRed","gojoRedMax"],["gojoRapid","gojoPurple"],["gojoTwofold","gojoVoid"]],
+  honored:[["gojoBlue","gojoBlueMax"],["gojoRed","gojoRedMax"],["gojoRapid","gojoBlueRapid","gojoPurple"],["gojoTwofold","gojoVoid"]],
   vessel:[["yujiCursedDrag","sukunaFlurryWindup"],["yujiCrush","sukunaOpen","sukunaFireArrowCast"],["yujiDivergent","sukunaHeadCarryWindup"],["yujiManjiCounter","sukunaShrine"]],
   restless:[["hakariBall","hakariVolley"],["hakariDoors","hakariRushdown"],["hakariRough","hakariOverwhelming"],["hakariFever","hakariSurge"]],
   ten:[["megumiRabbit","megumiElephant"],["megumiNue","megumiSerpent"],["megumiToad","megumiSwarm"],["megumiDog","megumiMahoraga"]],
@@ -121,6 +121,10 @@ export function isProjectileKindAllowed(character,moveName,kindName){
  if(kind==="trashCan"&&/^trashCanThrow$/i.test(move))return true;
  if(kind==="trashCan"&&!/^trashman$/i.test(character))return false;
  return !!allowed[kind]&&allowed[kind].test(move)&&isProjectileMoveAllowed(character,move);
+}
+export function isGuaranteedRapidGrabAllowed(character,moveName,rapidAt,now=Date.now(),contactConfirmed=false,awakened=false){
+ const started=Number(rapidAt),current=Number(now);
+ return contactConfirmed===true&&character==="honored"&&moveName==="gojoBlueRapid"&&awakened!==true&&Number.isFinite(started)&&Number.isFinite(current)&&current>=started&&current-started<=2200;
 }
 export function domainSettings(character,domainType){
  if(!(DOMAIN_BY_CHARACTER[character]||[]).includes(domainType))return null;

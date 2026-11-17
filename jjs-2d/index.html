@@ -4452,10 +4452,10 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
   const grabTickDamage=kind==='yujiDrag'?1.1:kind==='gojoBlueRapid'?.5:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*(MAHITO_MODES[f.soulMode]||MAHITO_MODES[0]).damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
   const grabTickInterval=kind==='yujiDrag'?.25:kind==='gojoBlueRapid'?.22:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
   const grabKnockback=kind==='yujiDrag'?17:kind==='gojoBlueRapid'?19:kind==='sukunaFlurry'?18:kind==='toadPull'?0:13;
-  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback})}catch(e){}}
-  f.grabTarget=t;f.onlineGrabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;
+  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback,guaranteedContact:kind==='gojoBlueRapid',ignoreInvuln:kind==='gojoBlueRapid',unblockable:kind==='gojoBlueRapid'})}catch(e){}}
+  f.grabTarget=t;f.onlineGrabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;f.attackAnim=duration;f.attackType='grab';
   t.capturedBy=f;t.block=false;t.stun=Math.max(t.stun,duration+.2);t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
-  setMotion(f,move,duration,angle,t);return true;
+  setMotion(f,kind==='gojoBlueRapid'?'gojoRapidFlurry':move,duration,angle,t);return true;
  }
  if(t.vehicle)toggleCityVehicle(t);
  if(t.capturedBy)return false;
@@ -5332,8 +5332,10 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     burst(f.x,f.y-23,'#50caff',12,3.2);burst(f.x,f.y-23,'#e1faff',6,2.2);
     schedule(()=>{
      // The spin motion may naturally expire on the same frame as this callback; only reject a replacement motion.
-     if(f.dead||f.stun>.08||f.gojoRapidSerial!==serial||(f.motion&&f.motion.name!=='gojoRapidSpin'))return;
-     const spinHitTarget=f.gojoRapidSpinHitTarget||gojoRapidSpinContactTarget(f,f.gojoRapidSpinTarget);f.gojoRapidSpinTarget=null;f.gojoRapidSpinHitTarget=null;
+     const confirmedHitTarget=f.gojoRapidSpinHitTarget;
+     if(f.dead||f.gojoRapidSerial!==serial||(!confirmedHitTarget&&(f.stun>.08||(f.motion&&f.motion.name!=='gojoRapidSpin'))))return;
+     const spinHitTarget=confirmedHitTarget;f.gojoRapidSpinTarget=null;f.gojoRapidSpinHitTarget=null;
+     if(confirmedHitTarget){f.stun=0;f.vx=0;f.vy=0;}
      const caught=!!spinHitTarget&&!spinHitTarget.dead&&beginGrab(f,spinHitTarget,'gojoBlueRapid',flurryDuration,angle,'#39bfff',9.75);
      if(caught){
       f.invuln=Math.max(f.invuln,.18);f.gojoRapidFinishUntil=game.time+flurryDuration+1.55;

@@ -1,10 +1,10 @@
 import { Room } from "colyseus";
 import { schema,t } from "@colyseus/schema";
-import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
-const PlayerCombatState=schema({lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickInterval:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerCombatState");
+import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isGuaranteedRapidGrabAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
+const PlayerCombatState=schema({lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),gojoRapidAt:t.number().default(0),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickInterval:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerCombatState");
 const PlayerAbilityState=schema({sukunaFireCast:t.number().default(0),tenDogActive:t.boolean().default(false),tenDogCharges:t.number().default(0),tenDogTimer:t.number().default(0),tenGardenTimer:t.number().default(0),soulMode:t.number().default(0),convergenceOrbs:t.number().default(0),tenBase:t.boolean().default(false),shadowTimer:t.number().default(0),rikaSummoned:t.boolean().default(false),rikaMode:t.boolean().default(false),reserveBallWindow:t.number().default(0),yutaCopyIndex:t.number().default(0)},"PlayerAbilityState");
 const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),abilities:PlayerAbilityState,combat:PlayerCombatState},"PlayerState");
-for(const field of ["lastActionKind","lastActionAt","counterKind","counterWindow","grabbedBy","activeGrabTarget","grabKind","grabRemaining","grabDuration","grabTick","grabTickInterval","grabTickDamage","grabFinishDamage","grabKnockback"]){
+for(const field of ["lastActionKind","lastActionAt","gojoRapidAt","counterKind","counterWindow","grabbedBy","activeGrabTarget","grabKind","grabRemaining","grabDuration","grabTick","grabTickInterval","grabTickDamage","grabFinishDamage","grabKnockback"]){
  Object.defineProperty(PlayerState.prototype,field,{configurable:true,enumerable:false,get(){return this.combat[field]},set(value){this.combat[field]=value}});
 }
 for(const field of ["sukunaFireCast","tenDogActive","tenDogCharges","tenDogTimer","tenGardenTimer","soulMode","convergenceOrbs","tenBase","shadowTimer","rikaSummoned","rikaMode","reserveBallWindow","yutaCopyIndex"]){
@@ -183,7 +183,7 @@ combatAction(client,payload={}){
    }
    if(target){target.stun=Math.max(target.stun,7);target.invuln=0}
   }
-  times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;
+  times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;if(kind==="3"&&p.character==="honored"&&!p.awakened)p.gojoRapidAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
   this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,modeToggle,awakenedJustNow:kind==="awaken"&&!modeToggle&&!wasAwakened&&p.awakened,serverTime:now,face:p.face,targetId:actionTargetId,aimX:actionAimX,aimY:actionAimY,jackpot:boolState("jackpot"),awakeMode:textState("awakeMode",24),awakeFuel:numberState("awakeFuel",100),tenBase:boolState("tenBase"),rikaMode:boolState("rikaMode"),rikaSummoned:boolState("rikaSummoned"),soulMode:numberState("soulMode",2),yutaCopyIndex:numberState("yutaCopyIndex",10),convergenceOrbs:numberState("convergenceOrbs",4),reserveBallWindow:numberState("reserveBallWindow",3),tenDogActive:boolState("tenDogActive"),tenDogCharges:numberState("tenDogCharges",3),tenDogTimer:numberState("tenDogTimer",30),tenGardenTimer:numberState("tenGardenTimer",999),shadowTimer:numberState("shadowTimer",30),sukunaFireCast:numberState("sukunaFireCast",5),...(blueSuction||{})});
  }
@@ -557,9 +557,10 @@ modifyProjectile(client,payload={}){
   return false;
  }
  combatHit(client,payload={}){
-  const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id);
-  if(!a||!target||a===target||a.dead||target.dead||a.stun>0||a.activeGrabTarget||target.grabbedBy)return;
-  const move=String(payload.move||"").slice(0,48),profile=combatProfile(a.character,move,a.awakened);
+  const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id),move=String(payload.move||"").slice(0,48);
+  const guaranteedRapidGrab=isGuaranteedRapidGrabAllowed(a?.character,move,a?.gojoRapidAt,Date.now(),payload.guaranteedContact===true,a?.awakened);
+  if(!a||!target||a===target||a.dead||target.dead||(a.stun>0&&!guaranteedRapidGrab)||a.activeGrabTarget||(target.grabbedBy&&!guaranteedRapidGrab))return;
+  const profile=combatProfile(a.character,move,a.awakened);
   const incomingType=String(payload.damageType||"melee").slice(0,24);
   const amountValue=Number(payload.amount),amount=Number.isFinite(amountValue)?clamp(amountValue,0,250):profile.damage;
   const stunValue=Number(payload.stun),stun=Number.isFinite(stunValue)?clamp(stunValue,0,8):profile.stun;
@@ -569,8 +570,8 @@ modifyProjectile(client,payload={}){
   const ignoreInvuln=payload.ignoreInvuln===true,unblockable=payload.unblockable===true;
   const blockAllSides=payload.blockAllSides===true,blockedValue=Number(payload.blockedDamage);
   const blockedDamage=Number.isFinite(blockedValue)?clamp(blockedValue,0,250):amount*.12;
-  if(this.resolveCounter(a,target,incomingType,client.sessionId,id))return;
-  if(target.invuln>0&&!ignoreInvuln)return;
+  if(!guaranteedRapidGrab&&this.resolveCounter(a,target,incomingType,client.sessionId,id))return;
+  if(target.invuln>0&&!ignoreInvuln&&!guaranteedRapidGrab)return;
   // A successful Lapse Blue slap must break the suction hold before applying knockback.
   // Otherwise tick() keeps resetting the victim's velocity to zero until the old grab timer expires.
   if(a.character==="honored"&&!a.awakened&&move==="gojoBlueSlap"&&target.blueSuckedBy===client.sessionId){
@@ -582,14 +583,21 @@ modifyProjectile(client,payload={}){
   const fireArmor=Number(target.sukunaFireCast)>0;
   const grab=grabSettings(a.character,move);
   if(grab){
-   if(target.vehicleId)return;
+   if(target.vehicleId&&!guaranteedRapidGrab)return;
+   if(guaranteedRapidGrab){
+    if(target.grabbedBy){const previousOwner=this.state.players.get(target.grabbedBy);if(previousOwner)previousOwner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0}
+    if(target.vehicleId){const car=this.state.world.cars.get(target.vehicleId);if(car&&car.occupiedBy===id){car.occupiedBy="";car.speed=0;car.vx=0;car.vy=0}target.vehicleId=""}
+    a.stun=0;a.vx=0;a.vy=0;
+   }
    const maxGrabDuration=grab.kind==="gojoBlueRapid"?3.2:3,grabDuration=Number.isFinite(Number(payload.grabDuration))?clamp(Number(payload.grabDuration),.1,maxGrabDuration):grab.duration;
    const grabTickInterval=Number.isFinite(Number(payload.grabTickInterval))?clamp(Number(payload.grabTickInterval),.04,1):grab.kind==="sukunaFlurry"?.095:grab.kind==="sukunaCleave"?.14:grab.kind==="yujiDrag"?.25:grab.kind==="toadPull"?.22:grab.tickInterval;
    const grabTickDamage=Number.isFinite(Number(payload.grabTickDamage))?clamp(Number(payload.grabTickDamage),0,20):grab.tickDamage;
    const grabFinishDamage=Number.isFinite(Number(payload.grabFinishDamage))?clamp(Number(payload.grabFinishDamage),0,60):grab.finishDamage;
    const grabKnockback=Number.isFinite(Number(payload.grabKnockback))?clamp(Number(payload.grabKnockback),0,40):grab.knockback;
    target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=grab.kind==="gojoBlueRapid"?.08:grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
-   target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grab.duration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grab.duration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;return;
+   target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grabDuration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grabDuration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;
+   if(guaranteedRapidGrab){a.motionName="gojoRapidFlurry";a.motionProgress=0;a.motionDuration=grabDuration;a.motionStartedAt=Date.now();a.attackAnim=grabDuration;a.attackType="grab"}
+   return;
   }
   const jackpotProtected=this.consumeJackpotFuel(target,amount);
   const incoming=Math.atan2(a.y-target.y,a.x-target.x),guard=Math.atan2(Math.sin(incoming-target.face),Math.cos(incoming-target.face));
