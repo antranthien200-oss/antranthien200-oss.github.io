@@ -719,6 +719,30 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 
 /* Keep the manual orientation toggle responsive to mobile browser viewport changes. */
 @media(hover:none) and (pointer:coarse){#screenRotateBtn{touch-action:manipulation}}
+/* Keep menu controls aligned to the visible 16:9 artwork, regardless of viewport ratio. */
+#menu .menu-art-stage{
+ position:absolute;
+ z-index:2;
+ top:50%;
+ left:50%;
+ width:min(100vw,177.79vh);
+ height:auto;
+ aspect-ratio:1672 / 941;
+ transform:translate(-50%,-50%);
+ pointer-events:none;
+}
+#menu .menu-art-stage>.menu-main{pointer-events:auto}
+@supports (height:100dvh){
+ #menu .menu-art-stage{width:min(100dvw,177.79dvh)}
+}
+@media(max-width:640px) and (orientation:portrait){
+ #menu .menu-art-stage>.menu-main{max-height:calc(50dvh + 14px)!important}
+}
+html.manual-screen-rotated #menu .menu-art-stage{
+ width:100%;
+ height:100%;
+ aspect-ratio:auto;
+}
 
 /* Vessel awakening: compact, straight-edged manga text panel on the left. */
 #awakeningCutscene.vessel-dialogue{position:fixed;inset:0;display:none;align-items:initial;justify-content:initial;overflow:hidden;pointer-events:none;background:transparent;animation:none!important;z-index:1000}
@@ -1859,6 +1883,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
   <div class="menu-art" aria-hidden="true"></div><div class="menu-screen-shade" aria-hidden="true"></div>
   <button type="button" id="screenRotateBtn" aria-label="Rotate game screen" title="Rotate game screen" aria-pressed="false"><span class="rotate-glyph" aria-hidden="true">⟳</span></button>
   <div class="menu-topline"><div class="menu-brand"><span class="menu-brand-mark">呪</span><span>BALLS SHENANIGAN</span></div><div class="menu-version">BALLS <i>2D</i> <b>FIGHTING GAME</b></div></div>
+  <div class="menu-art-stage">
   <main class="menu-main">
     <div class="menu-logo"><div class="menu-kicker">THE PIXEL BRAWL</div><div class="menu-title">BALLS</div><div class="menu-subtitle">SHENANIGAN</div><div class="menu-title-rule"><span></span><b>2D FIGHTING GAME</b><span></span></div></div>
     <div class="menu-actions">
@@ -1876,6 +1901,7 @@ html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
     </div>
     <div class="menu-selected"><div class="selected-caption">CURRENT LOADOUT</div><div class="selected-main"><span id="currentCharIcon" class="selected-icon">🕶️</span><span id="currentCharName">THE HONORED ONE</span></div><div class="selected-accessory-line"><span>ACCESSORIES</span><b id="currentAccessoriesSummary">NONE EQUIPPED</b></div></div>
   </main>
+  </div>
   <div class="menu-bottomline"><span>WASD MOVE</span><i>·</i><span>MOUSE AIM</span><i>·</i><span>TAP M1</span><i>·</i><span>E PICK UP / THROW</span><i>·</i><span>1–4 SKILLS</span></div>
   <div id="menuSub" class="menu-sub" hidden><section class="menu-sub-panel">
     <div class="menu-sub-head"><div><div class="menu-kicker" id="menuSubKicker" hidden></div><h2 id="menuSubTitle">SWITCH CHARACTER</h2><p id="menuSubHint" hidden></p></div><button id="menuSubClose" class="menu-close" aria-label="Close">×</button></div>
