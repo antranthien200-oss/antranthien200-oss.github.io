@@ -10,7 +10,7 @@ test("client can't set HP, awaken state or death",()=>{const n=normalizePlayerUp
 test("M1 finisher and Black Flash have distinct server damage profiles",()=>{assert.ok(combatProfile("vessel","m1_4").damage>combatProfile("vessel","m1_1").damage);assert.ok(combatProfile("vessel","yujiBlackFlash").damage>=18)});
 test("building ray check rejects buildings behind attacker",()=>{assert.equal(rayHitsRect({x:40,y:150},0,BUILDING_LAYOUT[0],500),true);assert.equal(rayHitsRect({x:500,y:150},0,BUILDING_LAYOUT[0],500),false)});
 test("shared world layout matches the game objects",()=>{assert.equal(BUILDING_LAYOUT.length,13);assert.equal(CAR_SPAWNS.length,11);assert.equal(PROP_SPAWNS.length,5)});
-test("player labels are cleaned and limited",()=>{assert.equal(sanitizePlayerName(" A <Player> "),"A Player");assert.equal(sanitizePlayerName(" "),"Player")});
+test("player labels are cleaned and limited",()=>{assert.equal(sanitizePlayerName(" A <Player> "),"A Player");assert.equal(sanitizePlayerName(" "),"Player");assert.equal(sanitizePlayerName("Player",""),"Player");assert.equal(sanitizePlayerName("",""),"")});
 
 test("combat move names are restricted to the chosen character",()=>{assert.equal(isMoveAllowed("honored","gojoPurple"),true);assert.equal(isMoveAllowed("vessel","gojoPurple"),false);assert.equal(isMoveAllowed("vessel","m1_4"),true);assert.equal(isMoveAllowed("trashman","trashManThrow"),true)});
 test("domain radius and duration come from server settings",()=>{assert.equal(domainSettings("restless","hakari").duration,120);assert.equal(domainSettings("vessel","hakari"),null)});
