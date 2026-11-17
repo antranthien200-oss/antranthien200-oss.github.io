@@ -3625,7 +3625,7 @@ async function joinOnlineServer(){
  onlineConnecting=true;if(button){button.disabled=true;button.textContent='JOINING...'}setOnlineStatus('CONNECTING TO THE CITY...');
  try{
   const {Client}=await import('https://esm.sh/@colyseus/sdk@0.18.10');const client=new Client(serverUrl);
-  const room=await client.join('city',{character:selected,name:requestedName||'Player'});
+  const room=await client.join('city',{character:selected,name:requestedName});
   bindOnlineRoom(client,room);startOnlineMatch();const label=$('onlinePlayersCount');if(label)label.textContent=(room.state&&room.state.players?room.state.players.size:1)+' / 16 PLAYERS';setOnlineStatus('CONNECTED · ONE SHARED CITY');
  }catch(error){onlineRoom=null;onlineClient=null;onlineSessionId=null;const message=String(error&&error.message||error);setOnlineStatus(/full|locked|capacity|available room|seat/i.test(message)?'SERVER FULL · 16/16 PLAYERS':'CONNECTION FAILED · CHECK SERVER URL');console.error('Balls Shenanigan online connection failed:',error)}
  finally{onlineConnecting=false;const b=$('onlineJoinBtn');if(b){b.disabled=false;b.textContent='JOIN CITY'}}
