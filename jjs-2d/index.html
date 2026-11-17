@@ -4963,7 +4963,6 @@ if(f.attackCd>0)return;
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
   const range=baseRange*(mobileControlsEnabled&&f===player?1.25:1);
   if(!shrineM1){f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2)}
-  const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
   if(shrineM1){
    const slashContactDuration=fin?.42:.32;
    schedule(()=>{
