@@ -27,7 +27,7 @@ export class CityRoom extends Room{
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
-  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:activity",c=>{if(this.state.players.has(c.sessionId))this.lastActivityAt.set(c.sessionId,Date.now())});this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-modify",(c,p)=>this.modifyProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
+  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:activity",c=>{if(this.state.players.has(c.sessionId))this.lastActivityAt.set(c.sessionId,Date.now())});this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-modify",(c,p)=>this.modifyProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("domain:request",(c,p)=>this.requestDomain(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
   this.onMessage("network:ping",(client,payload={})=>{const sentAt=Number(payload.sentAt);if(Number.isFinite(sentAt))client.send("network:pong",{sentAt})});
   this.setSimulationInterval(ms=>this.tick(ms/1000),1000/30);
  }
@@ -134,18 +134,8 @@ export class CityRoom extends Room{
    }
    p.x=x;p.y=y;
   }
-  const requested=String(payload.domainType||""),settings=domainSettings(p.character,requested);
-  if(!requested){
-   p.domainRequestType="";
-   if(p.domainType&&!p.domainClashId){p.domainType="";p.domainTimer=0;p.domainWindup=0;p.domainWindupStart=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0}
-  }else if(requested!==p.domainRequestType&&!p.domainType&&settings&&(p.awakened||p.meter>=100)&&!p.domainClashId&&p.stun<=0){
-   p.domainRequestType=requested;
-   if(!p.awakened)p.meter=0;
-   p.domainType=requested;p.domainWindup=Math.max(.2,Math.min(3,Number(payload.domainWindup)||1.25));p.domainWindupStart=p.domainWindup;
-   p.domainDuration=settings.duration;p.domainTimer=0;p.domainRadius=settings.radius;p.domainX=p.x;p.domainY=p.y;p.domainCastAt=now;
-   this.broadcast("domain:cast",{sessionId:id,domainType:requested,startedAt:now,windup:p.domainWindup,duration:p.domainDuration,x:p.x,y:p.y});
-   this.tryStartDomainClash(id,p,now);
-  }
+  // Domain casts are handled only by the explicit domain:request message; movement snapshots never start or cancel them.
+
  }
 combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),kind=String(payload.kind||"");
@@ -196,6 +186,33 @@ combatAction(client,payload={}){
   times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
   this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,modeToggle,awakenedJustNow:kind==="awaken"&&!modeToggle&&!wasAwakened&&p.awakened,serverTime:now,face:p.face,targetId:actionTargetId,aimX:actionAimX,aimY:actionAimY,jackpot:boolState("jackpot"),awakeMode:textState("awakeMode",24),awakeFuel:numberState("awakeFuel",100),tenBase:boolState("tenBase"),rikaMode:boolState("rikaMode"),rikaSummoned:boolState("rikaSummoned"),soulMode:numberState("soulMode",2),yutaCopyIndex:numberState("yutaCopyIndex",10),convergenceOrbs:numberState("convergenceOrbs",4),reserveBallWindow:numberState("reserveBallWindow",3),tenDogActive:boolState("tenDogActive"),tenDogCharges:numberState("tenDogCharges",3),tenDogTimer:numberState("tenDogTimer",30),tenGardenTimer:numberState("tenGardenTimer",999),shadowTimer:numberState("shadowTimer",30),sukunaFireCast:numberState("sukunaFireCast",5),...(blueSuction||{})});
+ }
+ requestDomain(client,payload={}){
+  const id=client.sessionId,p=this.state.players.get(id),requested=String(payload.domainType||"");
+  const reject=reason=>{client.send("domain:reject",{domainType:requested,reason});return false};
+  if(!p||!requested)return reject("INVALID DOMAIN");
+  if(p.dead||p.vehicleId||p.stun>0||p.domainClashId)return reject("DOMAIN UNAVAILABLE");
+  const settings=domainSettings(p.character,requested);
+  if(!settings)return reject("INVALID DOMAIN");
+  if(p.domainType||p.domainWindup>0||p.domainTimer>0){
+   if(p.domainType===requested&&p.domainRequestType===requested){
+    client.send("domain:accepted",{domainType:p.domainType,windup:p.domainWindup,windupStart:p.domainWindupStart,duration:p.domainDuration,timer:p.domainTimer,radius:p.domainRadius,x:p.domainX,y:p.domainY,startedAt:p.domainCastAt,clashId:p.domainClashId});
+    return true;
+   }
+   return reject("DOMAIN ALREADY ACTIVE");
+  }
+  const reportedMeter=clamp(Number(payload.meter)||0,0,100);
+  if(!p.awakened)p.meter=Math.max(p.meter,reportedMeter);
+  if(!p.awakened&&p.meter<100)return reject("AWAKENING REQUIRED");
+  const now=Date.now();
+  p.domainRequestType=requested;
+  if(!p.awakened)p.meter=0;
+  p.domainType=requested;p.domainWindup=clamp(Number(payload.domainWindup)||1.25,.2,3);p.domainWindupStart=p.domainWindup;
+  p.domainDuration=settings.duration;p.domainTimer=0;p.domainRadius=settings.radius;p.domainX=p.x;p.domainY=p.y;p.domainCastAt=now;
+  this.broadcast("domain:cast",{sessionId:id,domainType:requested,startedAt:now,windup:p.domainWindup,duration:p.domainDuration,x:p.x,y:p.y});
+  this.tryStartDomainClash(id,p,now);
+  client.send("domain:accepted",{domainType:p.domainType,windup:p.domainWindup,windupStart:p.domainWindupStart,duration:p.domainDuration,timer:p.domainTimer,radius:p.domainRadius,x:p.domainX,y:p.domainY,startedAt:p.domainCastAt,clashId:p.domainClashId});
+  return true;
  }
  tryStartDomainClash(sessionId,player,now=Date.now()){
   if(!player||!CLASHABLE_DOMAINS.has(player.domainType)||player.domainClashId)return false;
@@ -248,7 +265,7 @@ finishDomainClash(clash,winnerId=null,reason="TIME"){
     p.domainWindup=0;p.domainTimer=Math.max(2,p.domainDuration||8);p.domainCastAt=now;
    }else{
     if(winnerId&&!p.awakened)p.meter=Math.max(p.meter,75);
-    p.domainType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0;
+    p.domainType="";p.domainRequestType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0;
    }
   }
   this.domainClashes.delete(clash.id);
@@ -494,7 +511,7 @@ modifyProjectile(client,payload={}){
   if(!p)return;
   const hadJackpot=!!p.jackpot;
   p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;
-  p.domainStunGuaranteed=false;p.domainType="";p.domainTimer=0;p.domainWindup=0;p.domainWindupStart=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0;
+  p.domainStunGuaranteed=false;p.domainType="";p.domainRequestType="";p.domainTimer=0;p.domainWindup=0;p.domainWindupStart=0;p.domainDuration=0;p.domainRadius=0;p.domainCastAt=0;
   if(hadJackpot){p.meter=Math.min(100,40+(p.consecutiveJackpots||0)*25);p.consecutiveJackpots=(p.consecutiveJackpots||0)+1}
   else if(p.character==="restless")p.consecutiveJackpots=0;
  }
@@ -611,7 +628,7 @@ killPlayer(p){
   if(p.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}
   if(p.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.3)}}
   p.grabbedBy="";p.activeGrabTarget="";p.grabKind="";p.grabRemaining=0;p.blueSuckedBy="";p.blueSuctionRemaining=0;p.counterKind="";p.counterWindow=0;
-  p.hp=0;p.hpRegenWait=0;p.dead=true;p.respawnTimer=2.5;p.stun=0;p.invuln=0;p.block=false;p.domainType="";p.domainTimer=0;p.domainWindup=0;p.domainRadius=0;
+  p.hp=0;p.hpRegenWait=0;p.dead=true;p.respawnTimer=2.5;p.stun=0;p.invuln=0;p.block=false;p.domainType="";p.domainRequestType="";p.domainTimer=0;p.domainWindup=0;p.domainRadius=0;
   if(p.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}p.vehicleId=""}
  }
  hitBuilding(client,payload={}){
@@ -706,7 +723,7 @@ killPlayer(p){
   }
  }
 
- tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const [playerId,lastActive] of this.lastActivityAt){const inactivePlayer=this.state.players.get(playerId);if(!inactivePlayer){this.lastActivityAt.delete(playerId);continue}if(!inactivePlayer.connected||now-lastActive<300000)continue;const inactiveClient=this.clients.find(c=>c.sessionId===playerId);if(inactiveClient){this.lastActivityAt.set(playerId,now);inactiveClient.leave(4008,"AFK_TIMEOUT")}}for(const [id,building] of this.state.world.buildings){if(building.collapsed){building.respawnTimer=Math.max(0,building.respawnTimer-dt);if(building.respawnTimer===0){building.stage=0;building.collapsed=false}}}for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);p.hpRegenWait=Math.max(0,p.hpRegenWait-dt);if(!p.dead&&!p.jackpot&&!p.domainClashId&&p.hp<p.maxHp&&p.hpRegenWait<=0)p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.012*dt);if(p.jackpot&&!p.dead&&!p.domainClashId)p.hp=Math.min(p.maxHp,p.hp+4*dt);if(p.domainWindup>0){if(p.stun>0){p.domainType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainStunGuaranteed=false}else{p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0){p.domainTimer=p.domainDuration||0;if(p.character==="restless"&&p.domainType==="hakari"&&p.domainStunGuaranteed){let nearest=null,best=Infinity;for(const [otherId,other] of this.state.players){if(otherId===id||other.dead)continue;const d=distance(p,other);if(d<best){best=d;nearest=other}}if(nearest&&best<600){nearest.stun=Math.max(nearest.stun,.7);nearest.invuln=0}p.domainStunGuaranteed=false}}}}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainWindupStart=0;p.domainRadius=0;p.domainCastAt=0;p.domainStunGuaranteed=false}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.hpRegenWait=0;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.domainStunGuaranteed=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
+ tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const [playerId,lastActive] of this.lastActivityAt){const inactivePlayer=this.state.players.get(playerId);if(!inactivePlayer){this.lastActivityAt.delete(playerId);continue}if(!inactivePlayer.connected||now-lastActive<300000)continue;const inactiveClient=this.clients.find(c=>c.sessionId===playerId);if(inactiveClient){this.lastActivityAt.set(playerId,now);inactiveClient.leave(4008,"AFK_TIMEOUT")}}for(const [id,building] of this.state.world.buildings){if(building.collapsed){building.respawnTimer=Math.max(0,building.respawnTimer-dt);if(building.respawnTimer===0){building.stage=0;building.collapsed=false}}}for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);p.hpRegenWait=Math.max(0,p.hpRegenWait-dt);if(!p.dead&&!p.jackpot&&!p.domainClashId&&p.hp<p.maxHp&&p.hpRegenWait<=0)p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.012*dt);if(p.jackpot&&!p.dead&&!p.domainClashId)p.hp=Math.min(p.maxHp,p.hp+4*dt);if(p.domainWindup>0){if(p.stun>0){p.domainType="";p.domainRequestType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainStunGuaranteed=false}else{p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0){p.domainTimer=p.domainDuration||0;if(p.character==="restless"&&p.domainType==="hakari"&&p.domainStunGuaranteed){let nearest=null,best=Infinity;for(const [otherId,other] of this.state.players){if(otherId===id||other.dead)continue;const d=distance(p,other);if(d<best){best=d;nearest=other}}if(nearest&&best<600){nearest.stun=Math.max(nearest.stun,.7);nearest.invuln=0}p.domainStunGuaranteed=false}}}}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRequestType="";p.domainWindupStart=0;p.domainRadius=0;p.domainCastAt=0;p.domainStunGuaranteed=false}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){const others=[];this.state.players.forEach(q=>{if(q!==p&&!q.dead)others.push(q)});const spawn=findAvailableSpawn(others);p.x=spawn.x;p.y=spawn.y;p.hp=p.maxHp;p.hpRegenWait=0;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.domainStunGuaranteed=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
   if(!target.blueSuckedBy)continue;
   const owner=this.state.players.get(target.blueSuckedBy);
   if(!owner||owner.dead||target.dead){

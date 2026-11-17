@@ -3387,8 +3387,12 @@ function applyOnlineRoomState(state){
    if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp;player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',12,4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,2.5);game.hitStop=Math.max(game.hitStop,.018)}}
   player.meter=clamp(Number(local.meter)||0,0,100);player.awakeMode=String(local.awakeMode||"");player.awakeFuel=Number(local.awakeFuel)||0;player.awakeFuelDrainRate=Number(local.awakeFuelDrainRate)||0;player.jackpot=!!local.jackpot;player.consecutiveJackpots=Number(local.consecutiveJackpots)||0;player.domainStunGuaranteed=!!local.domainStunGuaranteed;player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.blueSuckedBy=String(local.blueSuckedBy||'');player.blueSuctionX=Number(local.blueSuctionX)||0;player.blueSuctionY=Number(local.blueSuctionY)||0;player.blueSuctionRemaining=Number(local.blueSuctionRemaining)||0;if(!(player.onlineDashPredictionUntil>stateArrivalNow)){player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;}
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;const localAbilities=local.abilities||{};
-  player.domainType=String(local.domainType||'');player.domainTimer=Number(local.domainTimer)||0;player.domainWindupStart=Number(local.domainWindupStart)||player.domainWindupStart||0;player.domainRadius=Number(local.domainRadius)||0;
-  player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;player.domainWindup=Number(local.domainWindup)||0;player.domainDuration=Number(local.domainDuration)||0;player.counterKind=String(local.combat.counterKind||'');player.counterWindow=Number(local.combat.counterWindow)||0;player.grabbedBy=String(local.combat.grabbedBy||'');player.activeGrabTarget=String(local.combat.activeGrabTarget||'');player.grabKind=String(local.combat.grabKind||'');player.grabRemaining=Number(local.combat.grabRemaining)||0;player.grabDuration=Number(local.combat.grabDuration)||0;player.motionName=String(local.motionName||'');player.motionProgress=Number(local.motionProgress)||0;player.motionDuration=Number(local.motionDuration)||player.motionDuration||1;player.motionStartedAt=Number(local.motionStartedAt)||0;player.domainClashId=String(local.domainClashId||'');player.sukunaFireCast=Number(localAbilities.sukunaFireCast)||0;player.tenDogActive=!!localAbilities.tenDogActive;player.tenDogCharges=Number(localAbilities.tenDogCharges)||0;player.tenDogTimer=Number(localAbilities.tenDogTimer)||0;player.tenGardenTimer=Number(localAbilities.tenGardenTimer)||0;player.soulMode=Number(localAbilities.soulMode)||0;player.convergenceOrbs=Number(localAbilities.convergenceOrbs)||0;player.tenBase=!!localAbilities.tenBase;player.shadowTimer=Number(localAbilities.shadowTimer)||0;player.rikaSummoned=!!localAbilities.rikaSummoned;player.rikaMode=!!localAbilities.rikaMode;player.reserveBallWindow=Number(localAbilities.reserveBallWindow)||0;player.yutaCopyIndex=Number(localAbilities.yutaCopyIndex)||0;player.attackAnim=Number(local.attackAnim)||0;player.attackType=String(local.attackType||'');if(player.skillInputLocked&&player.stun>0&&player.attackType!=='skill')interruptSkillCast(player);
+  const pendingDomain=player.onlineDomainRequestPending,serverDomainType=String(local.domainType||'');
+  if(!pendingDomain||serverDomainType===pendingDomain.type){
+   if(pendingDomain)player.onlineDomainRequestPending=null;
+   player.domainType=serverDomainType;player.domainTimer=Number(local.domainTimer)||0;player.domainWindupStart=Number(local.domainWindupStart)||player.domainWindupStart||0;player.domainRadius=Number(local.domainRadius)||0;
+   player.domainCenterX=Number(local.domainX)||player.x;player.domainCenterY=Number(local.domainY)||player.y;player.domainWindup=Number(local.domainWindup)||0;player.domainDuration=Number(local.domainDuration)||0;
+  }player.counterKind=String(local.combat.counterKind||'');player.counterWindow=Number(local.combat.counterWindow)||0;player.grabbedBy=String(local.combat.grabbedBy||'');player.activeGrabTarget=String(local.combat.activeGrabTarget||'');player.grabKind=String(local.combat.grabKind||'');player.grabRemaining=Number(local.combat.grabRemaining)||0;player.grabDuration=Number(local.combat.grabDuration)||0;player.motionName=String(local.motionName||'');player.motionProgress=Number(local.motionProgress)||0;player.motionDuration=Number(local.motionDuration)||player.motionDuration||1;player.motionStartedAt=Number(local.motionStartedAt)||0;player.domainClashId=String(local.domainClashId||'');player.sukunaFireCast=Number(localAbilities.sukunaFireCast)||0;player.tenDogActive=!!localAbilities.tenDogActive;player.tenDogCharges=Number(localAbilities.tenDogCharges)||0;player.tenDogTimer=Number(localAbilities.tenDogTimer)||0;player.tenGardenTimer=Number(localAbilities.tenGardenTimer)||0;player.soulMode=Number(localAbilities.soulMode)||0;player.convergenceOrbs=Number(localAbilities.convergenceOrbs)||0;player.tenBase=!!localAbilities.tenBase;player.shadowTimer=Number(localAbilities.shadowTimer)||0;player.rikaSummoned=!!localAbilities.rikaSummoned;player.rikaMode=!!localAbilities.rikaMode;player.reserveBallWindow=Number(localAbilities.reserveBallWindow)||0;player.yutaCopyIndex=Number(localAbilities.yutaCopyIndex)||0;player.attackAnim=Number(local.attackAnim)||0;player.attackType=String(local.attackType||'');if(player.skillInputLocked&&player.stun>0&&player.attackType!=='skill')interruptSkillCast(player);
   const previousVehicle=player.vehicle||null,nextVehicle=local.vehicleId?parkedCars.find(c=>String(c.id)===String(local.vehicleId))||null:null;
   if(previousVehicle!==nextVehicle){
    if(nextVehicle)startVehicleTransition(player,'enter',nextVehicle,player.x,player.y);
@@ -3736,7 +3740,19 @@ function bindOnlineRoom(client,room){
   const age=Math.max(0,(Date.now()-remote.domainCastStartedAt)/1000);
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,age)}
  });
- room.onMessage('domain:clash:start',data=>{
+ room.onMessage('domain:accepted',data=>{
+   const pending=player&&player.onlineDomainRequestPending;
+   if(!data||!pending||String(data.domainType||'')!==pending.type)return;
+   pending.accepted=true;
+  });
+  room.onMessage('domain:reject',data=>{
+   const pending=player&&player.onlineDomainRequestPending;
+   if(!data||!pending||String(data.domainType||'')!==pending.type)return;
+   player.onlineDomainRequestPending=null;player.domainType='';player.domainState='';player.domainTimer=0;player.domainWindup=0;player.domainWindupStart=0;player.domainDuration=0;player.domainRadius=0;player.domainClashId='';player.skillCd[3]=0;
+   if(player.motion&&['gojoVoid','sukunaShrine','mahitoDomain','hakariDomain','yutaDomain','trashManDomain'].includes(player.motion.name))player.motion=null;
+   showToast(String(data.reason||'DOMAIN UNAVAILABLE'),1000);updateHud(true);
+  });
+  room.onMessage('domain:clash:start',data=>{
   if(!data||!Array.isArray(data.participants)||!data.participants.includes(onlineSessionId))return;
   const opponents=data.participants.filter(id=>id!==onlineSessionId).map(id=>onlineRemotePlayers.get(id)).filter(Boolean);
   if(opponents.length&&player){game.domainClash={id:String(data.id),members:[player,...opponents],time:Number(data.time)||15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};updateDomainClashHud();showToast(opponents.length>1?'MULTI DOMAIN CLASH · LAND HITS TO WIN':'DOMAIN CLASH · LAND HITS TO WIN',1300)}
@@ -4085,6 +4101,15 @@ function releaseDomainOccupants(owner){
  }
  f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=Math.hypot(WORLD.w,WORLD.h);f.domainVisualRadius=Math.min(radius*2,860);f.domainCenterX=f.x;f.domainCenterY=f.y;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
  f.block=false;f.vx*=.18;f.vy*=.18;
+ if(onlineMode&&f===player&&onlineRoom){
+  f.onlineDomainRequestPending={type,sentAt:performance.now()};
+  try{onlineRoom.send('domain:request',{domainType:type,domainWindup:windup,meter:Number(f.meter)||0})}
+  catch(error){
+   f.onlineDomainRequestPending=null;f.domainType='';f.domainState='';f.domainWindup=0;f.domainWindupStart=0;f.domainDuration=0;f.domainTimer=0;f.domainRadius=0;
+   if(f.motion&&['gojoVoid','sukunaShrine','mahitoDomain','hakariDomain','yutaDomain','trashManDomain'].includes(f.motion.name))f.motion=null;
+   showToast('DOMAIN REQUEST FAILED',900);return false;
+  }
+ }
  const pose=type==='void'?'gojoVoid':type==='shrine'?'sukunaShrine':type==='hakari'?'hakariDomain':type==='yuta'?'yutaDomain':type==='trash'?'trashManDomain':'mahitoDomain';
  setMotion(f,pose,windup,f.face,targetOf(f));damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));
  burst(f.x,f.y,type==='void'?'#aebcff':type==='shrine'?'#f3445b':'#8bd9c7',30,5);showToast('DOMAIN EXPANSION · '+domainName(type),1500);game.shake=Math.max(game.shake,8);return true;
@@ -5151,7 +5176,14 @@ if(f.attackCd>0)return;
   if(f.char==='vessel'){f.motion=null;f.attackAnim=0;f.attackType='';}else setMotion(f,({honored:'gojoAwaken',vessel:'sukunaAwaken',restless:'hakariDomain',ten:'megumiAwaken',perfection:'mahitoAwaken',todo:'todoAwaken',choso:'chosoAwaken',trashman:'trashManAwaken'})[f.char]||'awakening',isHakariDomain?1.25:1.55,f.face,t);
   if(f.char!=='vessel')burst(f.x,f.y,c.accent,56,8);game.shake=13;
   if(isHakariDomain){f.invuln=Math.max(f.invuln,1.3);damageBuildingAlongRay(f,f.face,Math.min(1100,Math.hypot(aimedAt(f).x-f.x,aimedAt(f).y-f.y)+55));showToast(c.awakening+' · HANDSIGN',1300)}
-  else{playAwakeningCutscene(f);showToast(c.awakening,1600)}
+  else{
+   if(f===player)playAwakeningCutscene(f);
+   else if(f.char==='vessel'){
+    f.sukunaAwakeningVisualPending=false;f.sukunaAwakeningCameraTime=1.55;
+    setMotion(f,'sukunaAwaken',1.55,f.face,t);
+   }
+   showToast(c.awakening,1600);
+  }
   if(f.char!=='vessel')popText(f.x,f.y-65,c.awakeName,'#ffde89',25);updateHud();return;
  }
  if(kind==='special'){
