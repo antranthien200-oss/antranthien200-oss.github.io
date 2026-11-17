@@ -2761,6 +2761,7 @@ let onlineProjectileCounter=0;
 projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
  const shot={...p,targetRef:p.targetRef||(p.owner===player?targetOf(player):null)};
  const networkKinds=['trashCan','trashJunk','red','fire','blueMax','redmax','hollow','tenNue','bloodBomb','bloodBombProjectile','sukunaFireArrow','soul','bodyrepel','pebble','bloodBeam','ball'];
+ if(onlineMode&&shot.owner&&shot.owner!==player&&networkKinds.includes(String(shot.kind||''))&&(shot.owner.onlineActionReplay===true||Number(shot.owner.onlineActionReplayUntil)>performance.now())){shot.networkReplayPlaceholder=true;return shot}
  if(onlineMode&&onlineRoom&&shot.owner===player&&networkKinds.includes(String(shot.kind||''))){
   const move=String(shot.owner.motion&&shot.owner.motion.name||shot.owner.onlineLastMove||'').slice(0,48);
   if(move){
@@ -3519,7 +3520,18 @@ function receiveOnlineProjectile(data){
  if(index>=0){Object.assign(projectiles[index],{x:Number(data.x)||projectiles[index].x,y:Number(data.y)||projectiles[index].y,networkX:Number(data.x)||projectiles[index].x,networkY:Number(data.y)||projectiles[index].y,serverOwnedVisual:true,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant});return}
  if(data.sessionId===onlineSessionId)return;
  const owner=onlineRemotePlayers.get(data.sessionId)||Object.assign(makeFighter('enemy','vessel',Number(data.x)||0,Number(data.y)||0),{onlineSessionId:data.sessionId});
- nativeProjectilePush({x:Number(data.x)||0,y:Number(data.y)||0,networkX:Number(data.x)||0,networkY:Number(data.y)||0,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||18,life:Number(data.life)||1.2,maxDistance:Number(data.maxDistance)||700,travelled:0,owner,targetRef:player,kind:String(data.kind||'projectile'),color:String(data.color||'#b8e8ff'),rotation:0,spin:22,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant,networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true});
+ const x=Number(data.x)||0,y=Number(data.y)||0,kind=String(data.kind||'projectile');
+ const targetId=String(data.targetId||''),targetRef=targetId===onlineSessionId?player:onlineRemotePlayers.get(targetId)||player;
+ let predictedIndex=-1,predictedDistance=520;
+ for(let i=0;i<projectiles.length;i++){
+  const candidate=projectiles[i];
+  if(!candidate||!candidate.networkReplayPlaceholder||candidate.owner!==owner||String(candidate.kind||'')!==kind)continue;
+  const d=Math.hypot((Number(candidate.x)||0)-x,(Number(candidate.y)||0)-y);
+  if(d<=predictedDistance){predictedDistance=d;predictedIndex=i}
+ }
+ const authoritative={x,y,networkX:x,networkY:y,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||18,life:Number(data.life)||1.2,maxDistance:Number(data.maxDistance)||700,owner,targetRef,kind,color:String(data.color||'#b8e8ff'),golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant,networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true,networkReplayPlaceholder:false};
+ if(predictedIndex>=0){Object.assign(projectiles[predictedIndex],authoritative);return}
+ nativeProjectilePush({...authoritative,travelled:0,rotation:0,spin:22});
 }
 function spawnOnlineSukunaFireZone(data){
  if(!data||!data.id||!data.sessionId||fireZones.some(z=>z.onlineId===String(data.id)))return;
@@ -3560,11 +3572,30 @@ function bindOnlineRoom(client,room){
  room.onMessage('network:pong',data=>{const sentAt=Number(data&&data.sentAt);if(!Number.isFinite(sentAt))return;const rtt=Math.max(0,performance.now()-sentAt);onlineLatencyMs=onlineLatencyMs===null?rtt:onlineLatencyMs*.8+rtt*.2;const label=$('onlinePing');if(label){label.textContent='PING '+Math.round(onlineLatencyMs)+' MS';label.dataset.quality=onlineLatencyMs<50?'good':onlineLatencyMs<100?'medium':'high'}});
  room.onMessage('combat:action',data=>{
   if(!data||data.sessionId===onlineSessionId)return;
-  const remote=onlineRemotePlayers.get(data.sessionId);if(!remote||remote.dead)return;
+  const remote=onlineRemotePlayers.get(data.sessionId);if(!remote)return;
+  remote.dead=false;
+  if(data.character&&CHARS[data.character])remote.char=data.character;
+  const actionKind=String(data.kind||'m1'),awakeningTransition=actionKind==='awaken'&&data.awakenedJustNow===true;
+  if(actionKind==='awaken'){
+   if(awakeningTransition){remote.awakened=false;remote.meter=100}
+   else if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
+  }else if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
   if(Number.isFinite(Number(data.face)))remote.face=Number(data.face);
-  if(data.kind==='awaken')remote.meter=100;
+  const stateBools=['jackpot','tenBase','rikaMode','rikaSummoned','tenDogActive'];
+  for(const key of stateBools)if(typeof data[key]==='boolean')remote[key]=data[key];
+  const stateNumbers=['awakeFuel','soulMode','yutaCopyIndex','convergenceOrbs','reserveBallWindow','tenDogCharges','tenDogTimer','tenGardenTimer','shadowTimer','sukunaFireCast'];
+  for(const key of stateNumbers)if(Number.isFinite(Number(data[key])))remote[key]=Number(data[key]);
+  if(typeof data.awakeMode==='string')remote.awakeMode=data.awakeMode;
+  const targetId=String(data.targetId||''),target=targetId===onlineSessionId?player:onlineRemotePlayers.get(targetId)||null;
+  remote.onlineActionTarget=target&&target!==remote?target:null;
+  remote.onlineActionAim=Number.isFinite(Number(data.aimX))&&Number.isFinite(Number(data.aimY))?{x:Number(data.aimX),y:Number(data.aimY)}:null;
+  const replayUntil=performance.now()+7500;
+  remote.onlineActionTargetUntil=replayUntil;remote.onlineActionAimUntil=replayUntil;remote.onlineActionReplayUntil=replayUntil;
+  remote.block=false;remote.stun=0;remote.attackCd=0;remote.skillCd=[0,0,0,0];remote.specialCd=0;remote.dashCd=0;remote.rooted=0;remote.tenNueM1Lock=0;remote.skillInputLocked=false;remote.vehicle=null;remote.blueSuckedBy=null;remote.gojoBluePull=null;
   const serverAge=Number(data.serverTime)?Math.max(0,(Date.now()-Number(data.serverTime))/1000):0;
-  useAttack(remote,String(data.kind||'m1'));
+  remote.onlineActionReplay=true;
+  try{useAttack(remote,actionKind,true)}finally{remote.onlineActionReplay=false}
+  if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
  room.onMessage('combat:projectile',receiveOnlineProjectile);
@@ -4196,6 +4227,7 @@ function aimWorld(){const scale=cameraViewScale();return {x:camera.x+(mouse.x-W/
 let camera={x:1100,y:750};
 function activeMoves(f){if(f.char==='yuta'){if(f.domainType==='yuta'&&f.domainTimer>0){const moves=(f.awakened?CHARS.yuta.awakeMoves:CHARS.yuta.moves).map(m=>m.slice());moves[3]=f.yutaHeldKatana?['KATANA · '+f.yutaHeldKatana.technique,'Press M1 to run and activate the copied technique']:f.yutaJacobReady?["JACOB'S LADDER",'Press 4 while aiming at a target']:['AUTHENTIC MUTUAL LOVE · '+Math.min(4,f.yutaDomainHits||0)+'/4','Walk near one of the four landed katanas'];return moves}if(f.rikaMode)return f.awakened?YUTA_RIKA_AWAKE_MOVES:YUTA_RIKA_MOVES;if(f.awakened){const moves=CHARS.yuta.awakeMoves.map(m=>m.slice());moves[1]=['COPY: '+YUTA_COPY_OPTIONS[(f.yutaCopyIndex||0)%YUTA_COPY_OPTIONS.length],'Cycle the copied technique with G'];return moves}return CHARS.yuta.moves}if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
 function targetOf(f){
+ if(f&&f.onlineActionTarget&&Number(f.onlineActionTargetUntil)>performance.now()&&!f.onlineActionTarget.dead)return f.onlineActionTarget;
  if(f===player&&onlineMode){
   if(trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
   const targets=[...onlineRemotePlayers.values()].filter(t=>!t.dead);
@@ -4224,7 +4256,7 @@ function gojoRapidSpinContactTarget(f,preferred=null){
  }
  return best;
 }
-function aimedAt(f){return f.team==='player'?aimWorld():{x:player.x,y:player.y}}
+function aimedAt(f){if(f&&f.onlineActionAim&&Number(f.onlineActionAimUntil)>performance.now()&&Number.isFinite(f.onlineActionAim.x)&&Number.isFinite(f.onlineActionAim.y))return f.onlineActionAim;return f.team==='player'?aimWorld():{x:player.x,y:player.y}}
 function faceTarget(f,t){f.face=Math.atan2(t.y-f.y,t.x-f.x)}
 function aimedAngle(f){const a=aimedAt(f);return Math.atan2(a.y-f.y,a.x-f.x)}
 function targetInAim(f,t,range,halfAngle=.8,angle=aimedAngle(f)){const mobileBoost=mobileControlsEnabled&&f===player;if(!t||t.dead||dist(f,t)>range*(mobileBoost?1.22:1))return false;const da=Math.atan2(t.y-f.y,t.x-f.x);return Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<=halfAngle+(mobileBoost?.16:0)}
@@ -4253,13 +4285,13 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  if(!f||!t||t.dead||(t.block&&kind!=='megumiSerpent'&&kind!=='gojoBlueRapid'))return false;
  interruptSkillCast(t);
  if(onlineMode&&onlineRoom&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player))){
-  const moveByKind={yujiDrag:'yujiCursedDrag',gojoBlueRapid:'gojoBlueRapid',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge'};
+  const moveByKind={yujiDrag:'yujiCursedDrag',gojoBlueRapid:'gojoBlueRapid',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge',rikaThrow:'rikaThrow',yutaSecondWind:'rikaHaymaker'};
   const move=moveByKind[kind]||String(f.motion&&f.motion.name||f.onlineLastMove||kind).slice(0,48);
   const grabTickDamage=kind==='yujiDrag'?1.1:kind==='gojoBlueRapid'?.5:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*(MAHITO_MODES[f.soulMode]||MAHITO_MODES[0]).damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
   const grabTickInterval=kind==='yujiDrag'?.25:kind==='gojoBlueRapid'?.22:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
   const grabKnockback=kind==='yujiDrag'?17:kind==='gojoBlueRapid'?19:kind==='sukunaFlurry'?18:kind==='toadPull'?0:13;
   if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback})}catch(e){}}
-  f.grabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;
+  f.grabTarget=t;f.onlineGrabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;
   t.capturedBy=f;t.block=false;t.stun=Math.max(t.stun,duration+.2);t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
   setMotion(f,move,duration,angle,t);return true;
  }
@@ -4270,13 +4302,13 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  f.vx=0;f.vy=0;setMotion(f,kind==='yujiDrag'?'yujiCursedDrag':kind==='gojoBlueRapid'?'gojoRapidFlurry':kind==='todoThrow'?'todoSwiftGrab':kind==='toadPull'?'megumiToad':kind==='mahitoTransfigure'?'mahitoTransfigure':kind==='gojoFaceGrater'?'gojoFaceGrater':kind==='sukunaCleave'?'sukunaCleave':kind==='sukunaFlurry'?'sukunaFlurry':kind==='bloodEdge'?'chosoEdge':'megumiSerpent',duration,angle,t);return true;
 }
 function releaseGrab(f,launch=true){
- const t=f&&f.grabTarget;if(!t)return;const a=Number.isFinite(f.grabAngle)?f.grabAngle:f.face;t.capturedBy=null;f.grabTarget=null;f.grabKind='';f.grabElapsed=0;
+ const t=f&&f.grabTarget;if(!t)return;const a=Number.isFinite(f.grabAngle)?f.grabAngle:f.face;t.capturedBy=null;f.grabTarget=null;f.onlineGrabTarget=null;f.grabKind='';f.grabElapsed=0;
  if(!t.dead){t.invuln=0;t.stun=Math.max(t.stun,.48);if(launch){t.vx=Math.cos(a)*13;t.vy=Math.sin(a)*13;t.jump=Math.max(t.jump,.12)}}
 }
 function updateGrab(f,dt){
  if(!f||!f.grabTarget)return;
  const t=f.grabTarget,kind=f.grabKind,serverControlled=onlineMode&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player));if(f.dead||f.stun>.08||t.dead||t.capturedBy!==f){releaseGrab(f,false);return}
- f.grabElapsed+=dt;let aim=aimedAt(f),a=Math.atan2(aim.y-f.y,aim.x-f.x);if(f.team!=='player')a=Math.atan2(player.y-f.y,player.x-f.x);f.grabAngle=a;f.face=a;
+ f.grabElapsed+=dt;let aim=f.team!=='player'&&f.onlineGrabTarget&&!f.onlineGrabTarget.dead?{x:f.onlineGrabTarget.x,y:f.onlineGrabTarget.y}:aimedAt(f);if(f.team!=='player'&&!f.onlineGrabTarget)aim={x:player.x,y:player.y};let a=Math.atan2(aim.y-f.y,aim.x-f.x);f.grabAngle=a;f.face=a;
  // Keep Gojo's Rapid Punches hand rig and its trail aligned to the live grab direction while turning.
  if(kind==='gojoBlueRapid'&&f.motion&&f.motion.name==='gojoRapidFlurry'){f.motion.angle=a;f.motion.target=t}
  const progress=clamp(f.grabElapsed/f.grabDuration,0,1),fx=Math.cos(a),fy=Math.sin(a),oldX=f.x,oldY=f.y;
@@ -4831,21 +4863,21 @@ function updateTrashManEffects(f,dt){
  else if(f.trashDomainCanCooldown>0){f.trashDomainCanCooldown=Math.max(0,f.trashDomainCanCooldown-dt);if(f.trashDomainCanCooldown===0&&f.domainType==='trash'&&f.domainTimer>0)f.trashDomainCanAvailable=true}
  if(f.domainType!=='trash'||f.domainTimer<=0){f.trashGoldenCanCarried=false;f.trashGoldenCanInFlight=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=0}
 }
-function useAttack(f,kind){
+function useAttack(f,kind,networkReplay=false){
  if(f===player&&f.vehicle)toggleCityVehicle(f);
- if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||f.vehicle||game.cutsceneTimer>0)return;
- if(f.blueSuckedBy||f.gojoBluePull)return;
- if(f.vesselAwakenSequence)return;
- if(f.sukunaFireCast>0)return;
- if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash')return}
- if(f.block)return;
- if(kind==='dash'&&(f.dashCd>0||f.rooted>0||(f.char==='ten'&&f.shadowTimer>0)))return;
- if(f.char==='ten'&&f.shadowTimer>0&&(kind==='2'||kind==='3'))return;
- if(kind==='m1'&&f.char!=='ten'&&f.attackCd>0)return;
- if(kind==='m1'&&f.char==='ten'&&f.tenNueM1Lock>0)return;
- if(kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
- if(['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
- if(kind==='special'&&f.specialCd>0)return;
+ if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||(!networkReplay&&f.vehicle)||(!networkReplay&&game.cutsceneTimer>0))return;
+ if(!networkReplay&&(f.blueSuckedBy||f.gojoBluePull))return;
+ if(!networkReplay&&f.vesselAwakenSequence)return;
+ if(!networkReplay&&f.sukunaFireCast>0)return;
+ if(game.domainClash){if(kind==='m1'){useDomainClashM1(f);return}if(kind!=='dash'&&!networkReplay)return}
+ if(!networkReplay&&f.block)return;
+ if(!networkReplay&&kind==='dash'&&(f.dashCd>0||f.rooted>0||(f.char==='ten'&&f.shadowTimer>0)))return;
+ if(!networkReplay&&f.char==='ten'&&f.shadowTimer>0&&(kind==='2'||kind==='3'))return;
+ if(!networkReplay&&kind==='m1'&&f.char!=='ten'&&f.attackCd>0)return;
+ if(!networkReplay&&kind==='m1'&&f.char==='ten'&&f.tenNueM1Lock>0)return;
+ if(!networkReplay&&kind==='m1'&&f.char==='ten'&&f.shadowTimer<=0&&!f.tenShadowStoredCan&&f.attackCd>0)return;
+ if(!networkReplay&&['1','2','3','4'].includes(kind)&&Number(f.skillCd[Number(kind)-1])>0)return;
+ if(!networkReplay&&kind==='special'&&f.specialCd>0)return;
  // A committed skill cannot be cancelled by another skill, M1, or dash.
  // Keep the game's timed combo inputs available during their short follow-up windows.
  const timedComboFollowUp=
@@ -4857,12 +4889,16 @@ function useAttack(f,kind){
  const previousSkillScheduleOwner=activeSkillScheduleOwner;activeSkillScheduleOwner={fighter:f,serial:f.skillCastSerial};
  try{
  if(kind==='dash'&&!(onlineMode&&f!==player)){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
- if(onlineMode&&f===player&&onlineRoom){try{if(f.char==='honored'&&!f.awakened&&(kind==='1'||kind==='2')){const skillAim=aimedAt(f);f.face=Math.atan2(skillAim.y-f.y,skillAim.x-f.x)}const actionTarget=targetOf(f);onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||''})}catch(e){}}
+ if(onlineMode&&f===player&&onlineRoom){try{
+  if(f.char==='honored'&&!f.awakened&&(kind==='1'||kind==='2')){const skillAim=aimedAt(f);f.face=Math.atan2(skillAim.y-f.y,skillAim.x-f.x)}
+  const actionTarget=targetOf(f),actionAim=aimedAt(f);
+  onlineRoom.send('combat:action',{kind:String(kind),face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||'',aimX:Number(actionAim.x)||0,aimY:Number(actionAim.y)||0,awakened:!!f.awakened,jackpot:!!f.jackpot,awakeMode:String(f.awakeMode||''),awakeFuel:Number(f.awakeFuel)||0,tenBase:!!f.tenBase,rikaMode:!!f.rikaMode,rikaSummoned:!!f.rikaSummoned,soulMode:Number(f.soulMode)||0,yutaCopyIndex:Number(f.yutaCopyIndex)||0,convergenceOrbs:Number(f.convergenceOrbs)||0,reserveBallWindow:Number(f.reserveBallWindow)||0,tenDogActive:!!f.tenDogActive,tenDogCharges:Number(f.tenDogCharges)||0,tenDogTimer:Number(f.tenDogTimer)||0,tenGardenTimer:Number(f.tenGardenTimer)||0,shadowTimer:Number(f.shadowTimer)||0,sukunaFireCast:Number(f.sukunaFireCast)||0});
+ }catch(e){}}
  const c=CHARS[f.char],t=targetOf(f);
  if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;const dashAim=onlineMode&&f!==player?{x:f.x+Math.cos(f.face)*1000,y:f.y+Math.sin(f.face)*1000}:aimedAt(f),dx=dashAim.x-f.x,dy=dashAim.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;if(onlineMode&&f===player)f.onlineDashPredictionUntil=performance.now()+145;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
- if(f.stun>0)return;
- if(f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
- if(f.char==='ten'&&f.shadowTimer>0&&kind!=='special'&&kind!=='m1'&&kind!=='1'&&kind!=='4')return;
+ if(f.stun>0&&!networkReplay)return;
+ if(!networkReplay&&f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
+ if(!networkReplay&&f.char==='ten'&&f.shadowTimer>0&&kind!=='special'&&kind!=='m1'&&kind!=='1'&&kind!=='4')return;
  if(kind==='m1'){
   if(f.char==='ten'&&f.tenNueM1Lock>0)return;
   if(f.char==='ten'&&(f.shadowTimer>0||f.tenShadowStoredCan)){tenExitShadow(f);return}
