@@ -6608,6 +6608,8 @@ function drawVesselBaseSmoothSkillVfx(f,m,p){
  ctx.restore();return true;
 }
 function drawPixelSkillVfx(f,m,p,c){
+ // Gojo Rapid Punches miss uses the shared red stun streaks, not the generic pixel marker.
+ if(m==='gojoRapidMiss')return true;
  if(!m||m==='trashCanPickup'||m==='trashCanThrow'||m.startsWith('m1_')||m.startsWith('yutaM1_')||m==='blockGesture'||m==='dashGesture')return false;
  if(f.char==='vessel'&&!f.awakened&&['yujiCursedDrag','yujiCursedDragEnd','yujiCrush','yujiDivergent','yujiBlackFlash','yujiManjiBlock','yujiManjiCounter'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
  const beat=Math.sin(Math.PI*clamp(p,0,1));
@@ -8050,9 +8052,10 @@ function drawStunRain(f,x,y){
  const motionName=f.motion&&typeof f.motion.name==='string'?f.motion.name:'';
  const vesselSkillOne=f.char==='vessel'&&!f.awakened&&(motionName==='yujiCursedDrag'||motionName==='yujiCursedDragEnd');
  const sukunaRushMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaHeadCarryMiss';
- if(f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss)return;
- const strength=vesselSkillOne||sukunaRushMiss?1:clamp(f.stun/.28,.35,1);
- const captured=vesselSkillOne||sukunaRushMiss||motionName.startsWith('captured_'),blueCaptured=motionName==='captured_gojoBlueRapid';
+ const gojoRapidMiss=f.char==='honored'&&motionName==='gojoRapidMiss';
+ if(f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss&&!gojoRapidMiss)return;
+ const strength=vesselSkillOne||sukunaRushMiss||gojoRapidMiss?1:clamp(f.stun/.28,.35,1);
+ const captured=vesselSkillOne||sukunaRushMiss||gojoRapidMiss||motionName.startsWith('captured_'),blueCaptured=motionName==='captured_gojoBlueRapid';
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=isMobileDevice?0:(0);
  for(let i=0;i<9;i++){
   const phase=(game.time*31+i*13)%48;
