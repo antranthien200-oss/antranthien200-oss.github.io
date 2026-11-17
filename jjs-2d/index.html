@@ -2642,6 +2642,9 @@ function renderMenuSub(){
     '<div class="online-simple-title"><span class="online-simple-signal"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9.2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.8 12h18.4M12 2.8c2.6 2.5 3.8 5.6 3.8 9.2s-1.2 6.7-3.8 9.2c-2.6-2.5-3.8-5.6-3.8-9.2S9.4 5.3 12 2.8Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></span><strong>ONE SHARED CITY</strong></div>'+
     '<div class="online-player-count" title="Players currently connected to the server"><b id="onlinePlayerCount">—</b><span>/ 16<br>PLAYERS</span></div>'+
    '</div>'+
+   '<label class="online-server-field" for="onlinePlayerName">PLAYER NAME (OPTIONAL · 16 CHARACTERS MAX)'+
+    '<input id="onlinePlayerName" type="text" autocomplete="nickname" autocapitalize="off" spellcheck="false" maxlength="16" placeholder="ENTER YOUR NAME">'+
+   '</label>'+
    '<label class="online-server-field" for="onlineServerUrl">SERVER ADDRESS'+
     '<input id="onlineServerUrl" type="url" inputmode="url" autocomplete="url" placeholder="https://your-server.onrender.com">'+
    '</label>'+
@@ -2688,6 +2691,7 @@ function renderMenuSub(){
  $('menuSubSelected').textContent=isOnline?'ONE SHARED SERVER · 16 PLAYER LIMIT':isCharacter?'SELECTED: '+CHARS[selected].name:'LOADOUT: '+getAccessorySummary(selected);
  $('menuSubDone').innerHTML=isOnline?'BACK <span>→</span>':'DONE <span>→</span>';
  if(isOnline){
+  const nameField=$('onlinePlayerName');if(nameField){nameField.value=onlinePlayerNameSetting;nameField.addEventListener('input',()=>{onlinePlayerNameSetting=nameField.value.slice(0,16);try{localStorage.setItem('ballsShenaniganPlayerName',onlinePlayerNameSetting)}catch(e){}})}
   const field=$('onlineServerUrl');if(field){field.value=onlineServerUrlSetting;field.addEventListener('input',()=>{onlineServerUrlSetting=field.value.trim()})}
   setOnlineStatus(onlineStatusMessage);
   $('onlineJoinBtn').addEventListener('click',joinOnlineServer);
@@ -2789,12 +2793,12 @@ const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.c
 const ONLINE_STATE_SEND_RATE=30,ONLINE_STATE_SEND_INTERVAL=1/ONLINE_STATE_SEND_RATE,ONLINE_STATE_INTERVAL_MS=1000/ONLINE_STATE_SEND_RATE;
 const ONLINE_REMOTE_INTERPOLATION_MIN_MS=38,ONLINE_REMOTE_INTERPOLATION_MAX_MS=82,ONLINE_MAX_EXTRAPOLATION_MS=120;
 let onlineRemoteInterpolationDelayMs=44,onlineStateArrivalAt=0,onlineStateJitterMs=0;
-let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlineStatusMessage='READY',onlineConnecting=false;
+let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlinePlayerNameSetting='',onlineStatusMessage='READY',onlineConnecting=false;
 let onlineReconnectTimer=null,onlineReconnectAttempt=0,onlineReconnectStartedAt=0,onlineReconnectToken='';
 let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
 const onlineRemotePlayers=new Map();
-try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL}catch(e){}
+try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL;onlinePlayerNameSetting=localStorage.getItem('ballsShenaniganPlayerName')||''}catch(e){}
 function setOnlineStatus(message){
  onlineStatusMessage=String(message||'');
  const status=$('onlineStatusText');
@@ -3487,30 +3491,6 @@ function handleOnlineDisconnect(code){
  setOnlineStatus(Number(code)===4008?'REMOVED · INACTIVE FOR 5 MINUTES':Number(code)===4003?'RECONNECTION FAILED · TRY AGAIN':'CONNECTION LOST · TRY AGAIN');
  showMenuSub('online');
 }
-function scheduleOnlineReconnect(droppedRoom){
- if(!onlineMode||!onlineClient||!droppedRoom||!droppedRoom.reconnectionToken)return;
- if(!onlineReconnectStartedAt)onlineReconnectStartedAt=Date.now();
- onlineReconnectToken=droppedRoom.reconnectionToken;
- if(onlineReconnectTimer!==null)return;
- if(Date.now()-onlineReconnectStartedAt>21500){handleOnlineDisconnect(4003);return}
- const delay=Math.min(2400,350*Math.pow(1.55,onlineReconnectAttempt++));
- onlineReconnectTimer=setTimeout(async()=>{
-  onlineReconnectTimer=null;
-  if(!onlineMode||onlineRoom!==droppedRoom)return;
-  const client=onlineClient,token=onlineReconnectToken;
-  if(!client||!token){handleOnlineDisconnect(4003);return}
-  try{
-   const restored=await client.reconnect(token);
-   if(!onlineMode)return;
-   clearOnlineReconnect();bindOnlineRoom(client,restored);
-   setOnlineStatus('RECONNECTED · BACK IN THE CITY');showToast('CONNECTION RESTORED',900);
-  }catch(error){
-   console.warn('Automatic multiplayer reconnect failed:',error);
-   if(Date.now()-onlineReconnectStartedAt>21500){handleOnlineDisconnect(4003);return}
-   scheduleOnlineReconnect(droppedRoom);
-  }
- },delay);
-}
 function findOnlineProjectileIndex(sessionId,id){
  return projectiles.findIndex(p=>p&&p.serverOwnedVisual&&p.networkSessionId===sessionId&&String(p.networkId)===String(id));
 }
@@ -3561,10 +3541,8 @@ function removeOnlineProjectile(data,hit=false){
 }
 function bindOnlineRoom(client,room){
  onlineClient=client;onlineRoom=room;onlineSessionId=room.sessionId;
- const save=()=>{try{sessionStorage.setItem('ballsShenaniganReconnect',room.reconnectionToken)}catch(e){}};
- save();room.onStateChange(state=>applyOnlineRoomState(state));
- room.onDrop(()=>{setOnlineStatus('CONNECTION LOST · RECONNECTING...');scheduleOnlineReconnect(room)});
- room.onReconnect(()=>{clearOnlineReconnect();save();setOnlineStatus('RECONNECTED · BACK IN THE CITY');showToast('CONNECTION RESTORED',900)});
+ room.onStateChange(state=>applyOnlineRoomState(state));
+ room.onDrop(()=>{if(room===onlineRoom)handleOnlineDisconnect(1006)});
  room.onLeave(code=>{if(room===onlineRoom)handleOnlineDisconnect(code)});
  room.onError((code,message)=>{console.warn('Online room error',code,message);setOnlineStatus('SERVER ERROR · CHECK CONNECTION')});
  room.onMessage('server:player-count',data=>{const label=$('onlinePlayersCount');if(label&&data)label.textContent=(Number(data.count)||0)+' / 16 PLAYERS'});
@@ -3637,16 +3615,17 @@ function bindOnlineRoom(client,room){
 }
 async function joinOnlineServer(){
  if(onlineConnecting)return;
- const field=$('onlineServerUrl'),button=$('onlineJoinBtn'),raw=field?field.value.trim():onlineServerUrlSetting;
+ const field=$('onlineServerUrl'),nameField=$('onlinePlayerName'),button=$('onlineJoinBtn'),raw=field?field.value.trim():onlineServerUrlSetting;
  if(!raw){setOnlineStatus('PASTE THE SERVER URL FIRST');if(field)field.focus();return}
  let serverUrl;try{serverUrl=normalizeOnlineServerUrl(raw)}catch(e){setOnlineStatus('INVALID SERVER URL · USE HTTPS');return}
- onlineServerUrlSetting=serverUrl;try{localStorage.setItem('ballsShenaniganOnlineServer',serverUrl)}catch(e){}
+ const requestedName=String(nameField?nameField.value:onlinePlayerNameSetting).replace(/[^a-zA-Z0-9 _-]/g,'').trim().slice(0,16);
+ onlinePlayerNameSetting=requestedName;
+ onlineServerUrlSetting=serverUrl;try{localStorage.setItem('ballsShenaniganOnlineServer',serverUrl);localStorage.setItem('ballsShenaniganPlayerName',requestedName)}catch(e){}
+ try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
  onlineConnecting=true;if(button){button.disabled=true;button.textContent='JOINING...'}setOnlineStatus('CONNECTING TO THE CITY...');
  try{
-  const {Client}=await import('https://esm.sh/@colyseus/sdk@0.18.10');const client=new Client(serverUrl);let room=null,token=null;
-  try{token=sessionStorage.getItem('ballsShenaniganReconnect')}catch(e){}
-  if(token){try{room=await client.reconnect(token)}catch(error){try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(ignore){}}}
-  if(!room)room=await client.join('city',{character:selected,name:'Player'});
+  const {Client}=await import('https://esm.sh/@colyseus/sdk@0.18.10');const client=new Client(serverUrl);
+  const room=await client.join('city',{character:selected,name:requestedName||'Player'});
   bindOnlineRoom(client,room);startOnlineMatch();const label=$('onlinePlayersCount');if(label)label.textContent=(room.state&&room.state.players?room.state.players.size:1)+' / 16 PLAYERS';setOnlineStatus('CONNECTED · ONE SHARED CITY');
  }catch(error){onlineRoom=null;onlineClient=null;onlineSessionId=null;const message=String(error&&error.message||error);setOnlineStatus(/full|locked|capacity|available room|seat/i.test(message)?'SERVER FULL · 16/16 PLAYERS':'CONNECTION FAILED · CHECK SERVER URL');console.error('Balls Shenanigan online connection failed:',error)}
  finally{onlineConnecting=false;const b=$('onlineJoinBtn');if(b){b.disabled=false;b.textContent='JOIN CITY'}}
