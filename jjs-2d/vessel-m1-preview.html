@@ -5588,6 +5588,9 @@ function draw(){
  drawFloatingHand(-18,16+leftHandBob,-.18,theme,1.2);
  drawFloatingHand(18,16+rightHandBob,.18,theme,1.2);
  drawCuteHead(previewFighter,CHARS.honored,theme);
+ // Gojo's pure-black eye bandage; flat fill with no highlight or transparency.
+ ctx.fillStyle='#000000';
+ ctx.fillRect(-13.2,-4.1,26.4,7.2);
  // Deliberately omit the accessory-preview floor ellipse and all drop shadows.
  ctx.restore();
 }
