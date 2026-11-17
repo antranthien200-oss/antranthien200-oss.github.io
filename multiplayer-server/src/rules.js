@@ -32,6 +32,8 @@ export function grabSettings(character,moveName){
  if(character==="perfection"&&/mahitoTransfigure/i.test(move))return{kind:"mahitoTransfigure",duration:1.2,tickDamage:2,tickInterval:.22,finishDamage:14,knockback:12};
  if(character==="ten"&&/megumiToad|megumiSerpent/i.test(move))return{kind:/Serpent/i.test(move)?"megumiSerpent":"toadPull",duration:.9,tickDamage:0,tickInterval:.2,finishDamage:7,knockback:0};
  if(character==="choso"&&/chosoEdge/i.test(move))return{kind:"bloodEdge",duration:.82,tickDamage:1.9,tickInterval:.2,finishDamage:9,knockback:13};
+ if(character==="yuta"&&/rikaThrow/i.test(move))return{kind:"rikaThrow",duration:.62,tickDamage:0,tickInterval:.22,finishDamage:16,knockback:13};
+ if(character==="yuta"&&/rikaHaymaker|yutaSecondWind/i.test(move))return{kind:"yutaSecondWind",duration:.48,tickDamage:0,tickInterval:.22,finishDamage:8,knockback:13};
  return null;
 }
 export function counterSettings(character,action,awakened=false){
