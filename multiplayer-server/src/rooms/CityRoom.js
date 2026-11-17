@@ -36,19 +36,6 @@ export class CityRoom extends Room{
   const others=[];this.state.players.forEach(p=>others.push(p));
   const spawn=findAvailableSpawn(others),character=CHARACTER_IDS.includes(options.character)?options.character:"vessel",hp=CHARACTER_HP[character]||100,p=new PlayerState(),name=sanitizePlayerName(options.name,"Player");
   p.name=name==="Player"?"Player-"+client.sessionId.slice(0,4).toUpperCase():name;p.character=character;p.x=spawn.x;p.y=spawn.y;p.hp=hp;p.maxHp=hp;this.state.players.set(client.sessionId,p);this.lastUpdateAt.set(client.sessionId,Date.now());this.lastActivityAt.set(client.sessionId,Date.now());this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] joined",p.name,this.state.players.size+"/16")}
- async onDrop(client){
-  const p=this.state.players.get(client.sessionId);
-  if(p)p.connected=false;
-  try{
-   await this.allowReconnection(client,25);
-   const reconnected=this.state.players.get(client.sessionId);
-   if(reconnected)reconnected.connected=true;
-  }catch(error){
-   // Expired reconnect reservations are cleaned up by onLeave().
-   console.log("[city] reconnect window expired",client.sessionId);
-  }
- }
- onReconnect(client){const p=this.state.players.get(client.sessionId);if(p){p.connected=true;this.lastActivityAt.set(client.sessionId,Date.now())}console.log("[city] reconnected",p?.name||client.sessionId)}
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
