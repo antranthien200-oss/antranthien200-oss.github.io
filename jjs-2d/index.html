@@ -4956,7 +4956,7 @@ if(f.attackCd>0)return;
   const angle=f.face;
   const m1MotionName='m1_'+f.combo,m1Duration=shrineM1?(fin?.52:.42):baseM1?fin?.34:.20:fin?.42:.24;
   f.comboTimer=shrineM1?.50:baseM1?.52:.62;
-  f.attackCd=shrineM1?fin?.15:.07:baseM1?fin?.31:.17:fin?.39:.20;
+  f.attackCd=shrineM1?fin?.40:.30:baseM1?fin?.31:.17:fin?.39:.20;
   f.attackAnim=shrineM1?(fin?.42:.32):baseM1?fin?.24:.15:fin?.28:.18;
   f.attackType=shrineM1?'slash':'punch';
   setMotion(f,m1MotionName,m1Duration,angle,t);if(shrineM1){f.motion.activeDuration=fin?.42:.32;f.motion.vfxFadeOut=.1;f.motion.shrineReach=clamp(dist(f,t)*.56,23,76);}
@@ -4965,16 +4965,22 @@ if(f.attackCd>0)return;
   if(!shrineM1){f.vx+=Math.cos(angle)*(fin?2.4:1.2);f.vy+=Math.sin(angle)*(fin?2.4:1.2)}
   const d=dist(f,t),da=Math.atan2(t.y-f.y,t.x-f.x),inArc=Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
   if(shrineM1){
-   const hit=d<range&&inArc;
-   if(hit){
-    const finalSlash=fin,damageAmount=finalSlash?4.8:f.combo===3?4.4:3.8,push=finalSlash?11.5:.25;
-    damage(t,damageAmount,f,{stun:finalSlash?.42:.17,invuln:.045,kx:Math.cos(angle)*push,ky:Math.sin(angle)*push,color:'#ffffff',damageType:'bullet'});
-    burst(t.x,t.y,'#ffffff',finalSlash?13:f.combo===3?10:6,finalSlash?5.5:3.2);
-    game.hitStop=Math.max(game.hitStop,finalSlash?.045:.012);
-    game.shake=Math.max(game.shake,finalSlash?6:f.combo===3?3.4:1.5);
-   }else{
-    damageBuildingAlongRay(f,angle,range);
-   }
+   const slashContactDuration=fin?.42:.32;
+   schedule(()=>{
+    if(f.dead||f.stun>.02||!f.motion||f.motion.name!==m1MotionName)return;
+    const dNow=dist(f,t),daNow=Math.atan2(t.y-f.y,t.x-f.x);
+    const inArcNow=Math.abs(Math.atan2(Math.sin(daNow-angle),Math.cos(daNow-angle)))<(mobileControlsEnabled&&f===player?1.28:1.08);
+    if(!t.dead&&dNow<range&&inArcNow){
+     const finalSlash=fin,damageAmount=finalSlash?4.8:f.combo===3?4.4:3.8,push=finalSlash?11.5:1.2;
+     damage(t,damageAmount,f,{stun:finalSlash?.42:.24,invuln:.045,kx:Math.cos(angle)*push,ky:Math.sin(angle)*push,color:'#ffffff',damageType:'bullet'});
+     pullM1AttackerIn(f,t,angle);
+     burst(t.x,t.y,'#ffffff',finalSlash?17:f.combo===3?12:9,finalSlash?6.5:4.6);
+     game.hitStop=Math.max(game.hitStop,finalSlash?.055:.026);
+     game.shake=Math.max(game.shake,finalSlash?6.5:f.combo===3?4:2.8);
+    }else{
+     damageBuildingAlongRay(f,angle,range);
+    }
+   },Math.round(slashContactDuration*500));
    return;
   }
   schedule(()=>{
