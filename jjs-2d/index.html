@@ -8093,7 +8093,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  const gojoBlueHeadBob=-1.8*gojoBlueSpinPrep+gojoSpinDip+(gojoSpinActive?Math.sin(gojoSpinTurn*2)*.7:0)-1.35*gojoBlueSlapRecoil;
  const gojoSpinHeadLean=gojoSpinWave*.075;
  const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep-.04*gojoBlueSlapRecoil+gojoSpinHeadLean;
- const gojoBlueHeadShiftX=px.x*gojoSpinWave*2.2,gojoBlueHeadShiftY=px.y*gojoSpinWave*2.2;
+ const gojoBlueHeadShiftX=px*gojoSpinWave*2.2,gojoBlueHeadShiftY=py*gojoSpinWave*2.2;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  const gojoSpinHand=(phase,forwardRadius,sideRadius,vertical=0)=>{
