@@ -34,8 +34,8 @@ export class CityRoom extends Room{
  onJoin(client,options={}){
   if(this.state.players.size>=MAX_PLAYERS){client.leave(4003,"SERVER_FULL");return}
   const others=[];this.state.players.forEach(p=>others.push(p));
-  const spawn=findAvailableSpawn(others),character=CHARACTER_IDS.includes(options.character)?options.character:"vessel",hp=CHARACTER_HP[character]||100,p=new PlayerState(),name=sanitizePlayerName(options.name,"Player");
-  p.name=name==="Player"?"Player-"+client.sessionId.slice(0,4).toUpperCase():name;p.character=character;p.x=spawn.x;p.y=spawn.y;p.hp=hp;p.maxHp=hp;this.state.players.set(client.sessionId,p);this.lastUpdateAt.set(client.sessionId,Date.now());this.lastActivityAt.set(client.sessionId,Date.now());this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] joined",p.name,this.state.players.size+"/16")}
+  const spawn=findAvailableSpawn(others),character=CHARACTER_IDS.includes(options.character)?options.character:"vessel",hp=CHARACTER_HP[character]||100,p=new PlayerState(),name=sanitizePlayerName(options.name,"");
+  p.name=name||"Player-"+client.sessionId.slice(0,4).toUpperCase();p.character=character;p.x=spawn.x;p.y=spawn.y;p.hp=hp;p.maxHp=hp;this.state.players.set(client.sessionId,p);this.lastUpdateAt.set(client.sessionId,Date.now());this.lastActivityAt.set(client.sessionId,Date.now());this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});console.log("[city] joined",p.name,this.state.players.size+"/16")}
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
