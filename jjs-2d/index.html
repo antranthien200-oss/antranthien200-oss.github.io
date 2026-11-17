@@ -4919,7 +4919,7 @@ function useAttack(f,kind,networkReplay=false){
    f.combo=f.comboTimer>0?(f.combo%4)+1:1;const fin=f.combo===4,baseFinisher=fin&&!f.awakened,baseM1=!f.awakened,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);const angle=f.face;
    const m1MotionName='yutaM1_'+f.combo,m1Duration=baseFinisher?.64:baseM1?fin?.29:.19:fin?.38:.24;
    f.comboTimer=baseFinisher?.86:baseM1?.50:.58;
-   f.attackCd=baseFinisher?.64:baseM1?fin?.27:.16:fin?.3:.19;
+   f.attackCd=baseFinisher?.64:baseM1?fin?.27:.16:fin?.34:.19;
    f.attackAnim=baseFinisher?.64:baseM1?fin?.26:.15:fin?.34:.2;
    f.attackType=baseFinisher?'heavy-punch':'katana';
    setMotion(f,m1MotionName,m1Duration,angle,t);
