@@ -6830,24 +6830,24 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  }
 if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
-  const turn=clamp(p,0,1)*Math.PI*2,whirl=Math.abs(Math.sin(clamp(p,0,1)*Math.PI));
+  const eased=smoothstep01(clamp(p,0,1)),turn=eased*Math.PI*2,whirl=Math.abs(Math.sin(eased*Math.PI));
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
 
-  // Visible reference ring exactly matches the radius followed by both hands.
+  // A shallow ellipse matches the staggered hand paths, rather than a perfect pinwheel.
   ctx.globalAlpha=(.2+.08*whirl)*vfxFade;ctx.strokeStyle='#278ed1';ctx.shadowColor='#35baff';ctx.shadowBlur=isMobileDevice?0:(9);ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.arc(0,0,43,0,Math.PI*2);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,44,31,0,0,Math.PI*2);ctx.stroke();
 
   // Three bright arcs race around the same circular path as the hands.
   for(let i=0;i<3;i++){
-   const radius=35+i*8,phase=turn*(i%2?-1:1)+game.time*1.5+i*2.05;
+   const radius=35+i*7,phase=turn*(i%2?-1:1)+game.time*1.5+i*2.05;
    ctx.globalAlpha=(.3+.28*whirl)*(i===1?1:.72)*vfxFade;
    ctx.strokeStyle=i===1?'#dffaff':'#62d3ff';ctx.shadowColor='#3cbcff';ctx.shadowBlur=isMobileDevice?0:(i===1?12:7);
    ctx.lineWidth=i===1?2.8:1.7;
-   ctx.beginPath();ctx.arc(0,0,radius,phase,phase+1.55);ctx.stroke();
+   ctx.beginPath();ctx.ellipse(0,0,radius,radius*.70,0,phase,phase+1.55);ctx.stroke();
   }
   // A leading crescent makes each of the three revolutions easy to read.
   ctx.globalAlpha=(.34+.34*whirl)*vfxFade;ctx.strokeStyle='#f0fdff';ctx.shadowColor='#55caff';ctx.shadowBlur=isMobileDevice?0:(10);ctx.lineWidth=2.2;
-  ctx.beginPath();ctx.arc(0,0,43,-Math.PI*.5+turn,-Math.PI*.5+turn+.9);ctx.stroke();
+  ctx.beginPath();ctx.ellipse(0,0,44,31,0,-Math.PI*.5+turn,-Math.PI*.5+turn+.9);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSlap'){
@@ -6894,9 +6894,9 @@ if(m==='gojoBlueSpin'){
   ctx.restore();return;
  }
  if(m==='gojoRapidSpin'){
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,turn=p*Math.PI*2;
-  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.32+.38*Math.sin(p*Math.PI))*vfxFade;ctx.lineCap='round';ctx.strokeStyle='#63d4ff';ctx.shadowColor='#42bbff';ctx.shadowBlur=isMobileDevice?0:9;ctx.lineWidth=2.4;ctx.beginPath();ctx.arc(0,0,35,-.7+turn,-.7+turn+1.5);ctx.stroke();
-  ctx.globalAlpha=.55*vfxFade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,43,.25+turn,.25+turn+.78);ctx.stroke();ctx.restore();return;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face,turn=smoothstep01(clamp(p,0,1))*Math.PI*2;
+  ctx.save();ctx.rotate(angle);ctx.globalAlpha=(.32+.38*Math.sin(p*Math.PI))*vfxFade;ctx.lineCap='round';ctx.strokeStyle='#63d4ff';ctx.shadowColor='#42bbff';ctx.shadowBlur=isMobileDevice?0:9;ctx.lineWidth=2.4;ctx.beginPath();ctx.ellipse(0,0,35,25,0,-.7+turn,-.7+turn+1.5);ctx.stroke();
+  ctx.globalAlpha=.55*vfxFade;ctx.strokeStyle='#e8fbff';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,0,43,31,0,.25+turn,.25+turn+.78);ctx.stroke();ctx.restore();return;
  }
  if(m==='gojoRapidFlurry')return;
  if(m==='gojoBlueRapidEnd'){
@@ -8082,14 +8082,26 @@ function drawHeadHands(f,deferMotionVfx=false){
  const awakenSurge=name==='sukunaAwaken'?smoothstep01(clamp((progress-.48)/.30,0,1)):0;
  const awakenHeadDrop=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*10-awakenSurge*2:0;
  const awakenHeadTilt=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*.16-awakenSurge*.035:0;
+ const gojoSpinActive=name==='gojoBlueSpin'||name==='gojoRapidSpin';
+ const gojoSpinEase=gojoSpinActive?smoothstep01(progress):0;
+ const gojoSpinTurn=gojoSpinEase*Math.PI*2;
  const gojoBlueSpinPrep=name==='gojoBlueSpin'?1-smoothstep01(clamp(progress/.18,0,1)):0;
- const gojoBlueSpinPhase=name==='gojoBlueSpin'?progress*Math.PI*2:0;
+ const gojoBlueSpinPhase=name==='gojoBlueSpin'?gojoSpinTurn:0;
  const gojoBlueSlapRecoil=name==='gojoBlueSlap'?Math.max(0,1-Math.abs(progress-.652)/.18):0;
- const gojoBlueHeadBob=-1.8*gojoBlueSpinPrep+(name==='gojoBlueSpin'?Math.sin(gojoBlueSpinPhase)*.9:0)-1.35*gojoBlueSlapRecoil;
- const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep+(name==='gojoBlueSpin'?Math.sin(gojoBlueSpinPhase)*.028:0)-.04*gojoBlueSlapRecoil;
- const gojoSpinBodyRotation=(name==='gojoBlueSpin'||name==='gojoRapidSpin')?progress*Math.PI*2:0;
+ const gojoSpinWave=gojoSpinActive?Math.sin(gojoSpinTurn):0;
+ const gojoSpinDip=gojoSpinActive?-1.4*Math.sin(Math.PI*progress):0;
+ const gojoBlueHeadBob=-1.8*gojoBlueSpinPrep+gojoSpinDip+(gojoSpinActive?Math.sin(gojoSpinTurn*2)*.7:0)-1.35*gojoBlueSlapRecoil;
+ const gojoSpinHeadLean=gojoSpinWave*.075;
+ const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep-.04*gojoBlueSlapRecoil+gojoSpinHeadLean;
+ const gojoBlueHeadShiftX=px.x*gojoSpinWave*2.2,gojoBlueHeadShiftY=px.y*gojoSpinWave*2.2;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
+ const gojoSpinHand=(phase,forwardRadius,sideRadius,vertical=0)=>{
+  const theta=gojoSpinTurn+phase,forward=Math.cos(theta)*forwardRadius,side=Math.sin(theta)*sideRadius;
+  const tangentForward=-Math.sin(theta)*forwardRadius,tangentSide=Math.cos(theta)*sideRadius;
+  const tangentX=nx*tangentForward+px*tangentSide,tangentY=ny*tangentForward+py*tangentSide;
+  return{x:x+gojoBlueHeadShiftX+nx*forward+px*side,y:headY+gojoBlueHeadShiftY+gojoBlueHeadBob+ny*forward+py*side+vertical,angle:Math.atan2(tangentY,tangentX)};
+ };
  let handA,handB,handAAngle=angle,handBAngle=angle,handAScale=1.04,handBScale=.94;
  let sideViewBackHand=null,sideViewFrontHand=null;
  const combo=name.startsWith('m1_')?(Number(name.slice(3))||1):0,yutaCombo=name.startsWith('yutaM1_')?(Number(name.slice(7))||1):0;
@@ -8189,8 +8201,9 @@ function drawHeadHands(f,deferMotionVfx=false){
    // Every skill has an authored two-hand gesture. Each pose animates through a wind-up,
    // release and recovery so the floating pixel fists never remain static during skills.
    if(name==='gojoRapidSpin'){
-    const spin=progress*Math.PI*2,orbit=42,centerX=x,centerY=headY+gojoBlueHeadBob;
-    handA={x:centerX+Math.cos(spin)*orbit,y:centerY+Math.sin(spin)*orbit};handB={x:centerX+Math.cos(spin+Math.PI)*orbit,y:centerY+Math.sin(spin+Math.PI)*orbit};handAScale=1.1;handBScale=1.1;
+    const lead=gojoSpinHand(-.42,44,30,-2),follow=gojoSpinHand(.42,40,32,1);
+    handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
+    handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.1;handBScale=1.1;
    }else if(name==='gojoRapidFlurry'){
     const count=15,step=progress*count,index=Math.min(count-1,Math.floor(step)),phase=clamp(step-index,0,1);
     const rightPunch=index%2===0,sideSign=rightPunch?-1:1;
@@ -8213,12 +8226,9 @@ function drawHeadHands(f,deferMotionVfx=false){
     handAScale=rightPunch?.92:1.18;handBScale=rightPunch?1.18:.92;
     handAAngle=angle;handBAngle=angle;
    }else if(name==='gojoBlueSpin'){
-    const spin=progress*Math.PI*2,orbit=43,centerX=x,centerY=headY+gojoBlueHeadBob;
-    // Use a true screen-space circle centered on Gojo's visible head/player center.
-    // Keeping this independent of aim axes prevents the orbit looking skewed or offset.
-    handA={x:centerX+Math.cos(spin)*orbit,y:centerY+Math.sin(spin)*orbit};
-    handB={x:centerX+Math.cos(spin+Math.PI)*orbit,y:centerY+Math.sin(spin+Math.PI)*orbit};
-    handAScale=1.08;handBScale=1.08;
+    const lead=gojoSpinHand(-.34,45,28,-2),follow=gojoSpinHand(.38,41,31,1);
+    handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
+    handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.08;handBScale=1.08;
    }else if(name==='gojoBlueSlap'){
     const windupEnd=.24,swingEnd=.68;
     const windup=smoothstep01(clamp(progress/windupEnd,0,1));
@@ -8486,17 +8496,15 @@ function drawHeadHands(f,deferMotionVfx=false){
    handA=front;handB=back;sideViewFrontHand=front;sideViewBackHand=back;
   }
  }
- // Final Gojo Blue pose override: after every generic pose/preview rule, force both fists
- // onto the same true screen-space circle around the visible character center.
+ // Final Gojo spin pose: hands follow staggered elliptical arcs instead of a rigid pinwheel.
  if(name==='gojoRapidSpin'){
-  const orbitAngle=progress*Math.PI*2,orbitRadius=42,orbitCenterX=sx(f.x),orbitCenterY=sy(f.y)-f.jump*3-23+gojoBlueHeadBob;
-  handA={x:orbitCenterX+Math.cos(orbitAngle)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle)*orbitRadius};handB={x:orbitCenterX+Math.cos(orbitAngle+Math.PI)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle+Math.PI)*orbitRadius};handAScale=1.1;handBScale=1.1;sideViewBackHand=null;sideViewFrontHand=null;
+  const lead=gojoSpinHand(-.42,44,30,-2),follow=gojoSpinHand(.42,40,32,1);
+  handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
+  handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.1;handBScale=1.1;sideViewBackHand=null;sideViewFrontHand=null;
  }else if(name==='gojoBlueSpin'){
-  const orbitAngle=progress*Math.PI*2,orbitRadius=43;
-  const orbitCenterX=sx(f.x),orbitCenterY=sy(f.y)-f.jump*3-23+gojoBlueHeadBob;
-  handA={x:orbitCenterX+Math.cos(orbitAngle)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle)*orbitRadius};
-  handB={x:orbitCenterX+Math.cos(orbitAngle+Math.PI)*orbitRadius,y:orbitCenterY+Math.sin(orbitAngle+Math.PI)*orbitRadius};
-  handAScale=1.08;handBScale=1.08;
+  const lead=gojoSpinHand(-.34,45,28,-2),follow=gojoSpinHand(.38,41,31,1);
+  handA={x:lead.x,y:lead.y};handB={x:follow.x,y:follow.y};
+  handAAngle=lead.angle;handBAngle=follow.angle;handAScale=1.08;handBScale=1.08;
   sideViewBackHand=null;sideViewFrontHand=null;
  }
  // Small idle drift, but active attacks own the hand positions for their complete animation.
@@ -8571,7 +8579,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(!deferHands){
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  }
- drawAccessoryAura(f,x,headY+gojoBlueHeadBob);ctx.save();ctx.translate(x,headY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt+gojoSpinBodyRotation);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
+ drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
