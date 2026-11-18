@@ -555,6 +555,21 @@ modifyProjectile(client,payload={}){
    defender.activeGrabTarget=attackerId;defender.grabKind="sukunaFlurry";defender.motionName="sukunaFlurry";defender.motionProgress=0;defender.motionDuration=1;defender.attackAnim=1;defender.attackType="grab";return true;
   }
   if(kind==="door"){if(incomingType!=="melee")return projectile;hurt(attacker,5,.5,7);return true}
+  if(kind==="gojoTwofoldCounter"){
+   defender.invuln=Math.max(defender.invuln,.82);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
+   attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
+   hurt(attacker,2.5,.16,0);
+   if(!attacker.dead)hurt(attacker,8.5,.68,10);
+   let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
+   if(!resolvedAttackerId||!resolvedDefenderId){
+    for(const [playerId,player] of this.state.players){
+     if(player===attacker)resolvedAttackerId=playerId;
+     if(player===defender)resolvedDefenderId=playerId;
+    }
+   }
+   if(resolvedAttackerId&&resolvedDefenderId)this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:Date.now()});
+   return true;
+  }
   if(kind==="manji"){defender.invuln=Math.max(defender.invuln,.72);hurt(attacker,8.5,.68,10);return true}
   if(kind==="todoDream"){defender.invuln=Math.max(defender.invuln,.45);hurt(attacker,13,.8,12);return true}
   if(kind==="todoBrothers"){defender.invuln=Math.max(defender.invuln,.6);hurt(attacker,28,1,17);return true}
