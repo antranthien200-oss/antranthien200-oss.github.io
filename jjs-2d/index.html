@@ -3592,6 +3592,8 @@ function applyOnlineRoomState(state){
 function updateOnlineRemotePlayers(dt){
  const now=performance.now(),renderTime=now-onlineRemoteInterpolationDelayMs;
  for(const remote of onlineRemotePlayers.values()){
+  // Remote attack replays don't run the local fighter simulation, so expire their short white punch flash here.
+  if(remote.cursedWhiteFlash>0)remote.cursedWhiteFlash=Math.max(0,remote.cursedWhiteFlash-dt);
   advanceVehicleTransition(remote,dt);
   if(remote.vehicleTransition)continue;
   if(remote.vehicle){remote.x=remote.vehicle.x;remote.y=remote.vehicle.y;continue}
