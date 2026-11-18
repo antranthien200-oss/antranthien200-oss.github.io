@@ -29,7 +29,7 @@ export class CityRoom extends Room{
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
   this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:activity",c=>{if(this.state.players.has(c.sessionId))this.lastActivityAt.set(c.sessionId,Date.now())});this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-modify",(c,p)=>this.modifyProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("domain:request",(c,p)=>this.requestDomain(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
   this.onMessage("network:ping",(client,payload={})=>{const sentAt=Number(payload.sentAt);if(Number.isFinite(sentAt))client.send("network:pong",{sentAt})});
-  this.setSimulationInterval(ms=>this.tick(ms/1000),1000/30);
+  this.setSimulationInterval(ms=>this.tick(ms/1000),1000/20);
  }
  onJoin(client,options={}){
   if(this.state.players.size>=MAX_PLAYERS){client.leave(4003,"SERVER_FULL");return}
