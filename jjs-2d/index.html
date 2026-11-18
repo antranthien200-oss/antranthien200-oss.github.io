@@ -2079,8 +2079,44 @@ function finishEKey(){
  const started=eKeyDownAt;eKeyDownAt=0;
  if(started&&performance.now()-started<190&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if(!toggleCityVehicle(player))toggleTrashCan(player);}
 }
-addEventListener('keydown',e=>{const k=e.key.toLowerCase();keys.add(k);const movementKey=MOVEMENT_CODE_MAP[e.code];if(movementKey)movementKeys.add(movementKey);if([' ','w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k))e.preventDefault();if(k==='escape'&&!e.repeat&&game.started)togglePause();if(k==='e'&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if(!e.repeat)eKeyDownAt=performance.now();return}if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if((k==='g'||k==='r')&&player.char==='honored'&&keys.has(k==='g'?'r':'g')){useAttack(player,'domain02');keys.delete('g');keys.delete('r');suppressedKeyUps.add('g');suppressedKeyUps.add('r')}else if(k==='q'){useAttack(player,'dash');keys.delete(k)}else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}}});
-addEventListener('keyup',e=>{const k=e.key.toLowerCase();keys.delete(k);const movementKey=MOVEMENT_CODE_MAP[e.code];if(movementKey)movementKeys.delete(movementKey);if(k==='e')finishEKey();if(k==='f'&&player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')});
+function isTextEntryTarget(target){
+ if(!target)return false;
+ const element=target.nodeType===1?target:target.parentElement;
+ if(!element)return false;
+ return !!(element.isContentEditable||element.closest('input:not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),textarea,select,[contenteditable]:not([contenteditable="false"]),[role="textbox"]'));
+}
+addEventListener('keydown',e=>{
+ const k=e.key.toLowerCase();
+ const movementKey=MOVEMENT_CODE_MAP[e.code];
+ if(isTextEntryTarget(e.target)||isTextEntryTarget(document.activeElement)){
+  keys.delete(k);if(movementKey)movementKeys.delete(movementKey);
+  if(k==='e')eKeyDownAt=0;
+  if(suppressedKeyUps.has(k))suppressedKeyUps.delete(k);
+  return;
+ }
+ keys.add(k);if(movementKey)movementKeys.add(movementKey);
+ if([' ','w','a','s','d','arrowup','arrowdown','arrowleft','arrowright','e'].includes(k))e.preventDefault();
+ if(k==='escape'&&!e.repeat&&game.started)togglePause();
+ if(k==='e'&&game.started&&!game.paused&&!game.over&&player&&!player.dead){if(!e.repeat)eKeyDownAt=performance.now();return}
+ if(!e.repeat&&game.started&&!game.paused&&!game.over&&player&&!player.dead){
+  if((k==='g'||k==='r')&&player.char==='honored'&&keys.has(k==='g'?'r':'g')){useAttack(player,'domain02');keys.delete('g');keys.delete('r');suppressedKeyUps.add('g');suppressedKeyUps.add('r')}
+  else if(k==='q'){useAttack(player,'dash');keys.delete(k)}
+  else if(['1','2','3','4'].includes(k)){useAttack(player,k);keys.delete(k)}
+ }
+});
+addEventListener('keyup',e=>{
+ const k=e.key.toLowerCase(),movementKey=MOVEMENT_CODE_MAP[e.code];
+ keys.delete(k);if(movementKey)movementKeys.delete(movementKey);
+ if(isTextEntryTarget(e.target)||isTextEntryTarget(document.activeElement)){
+  if(k==='e')eKeyDownAt=0;
+  if(suppressedKeyUps.has(k))suppressedKeyUps.delete(k);
+  return;
+ }
+ if(k==='e')finishEKey();
+ if(k==='f'&&player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
+ if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}
+ if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')
+});
 function clearHeldInputs(){eKeyDownAt=0;keys.clear();movementKeys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(typeof stopMobileJoystick==='function')stopMobileJoystick();document.querySelectorAll('#mobileControls .mobile-btn.active').forEach(btn=>btn.classList.remove('active'))}
 addEventListener('blur',clearHeldInputs);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHeldInputs()});
