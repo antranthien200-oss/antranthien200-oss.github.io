@@ -3594,6 +3594,13 @@ function updateOnlineRemotePlayers(dt){
  for(const remote of onlineRemotePlayers.values()){
   // Remote attack replays don't run the local fighter simulation, so expire their short white punch flash here.
   if(remote.cursedWhiteFlash>0)remote.cursedWhiteFlash=Math.max(0,remote.cursedWhiteFlash-dt);
+  // Counter animations are client-triggered and aren't included in normal server motion snapshots.
+  // Advance the temporary remote override so both alternating punches actually play for other clients.
+  if(remote.counterMotionOverrideUntil>now&&remote.motion){
+   const duration=Math.max(.08,Number(remote.motion.duration)||.5);
+   remote.motion.t=Math.min(duration,(Number(remote.motion.t)||0)+dt);
+   if(remote.motion.t>=duration)remote.motion=null;
+  }
   advanceVehicleTransition(remote,dt);
   if(remote.vehicleTransition)continue;
   if(remote.vehicle){remote.x=remote.vehicle.x;remote.y=remote.vehicle.y;continue}
