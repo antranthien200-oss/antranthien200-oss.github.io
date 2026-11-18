@@ -9109,65 +9109,65 @@ function drawGojoTeleportGlassBackdrop(f){
  const m=f&&f.motion;
  if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
  const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
- const x=sx(f.x),y=sy(f.y)-f.jump*3-11;
- ctx.save();ctx.translate(x,y);ctx.lineJoin='miter';
- // Phase one: black horizontal speed cuts appear first as Gojo shakes sideways.
+ // The black horizontal cuts play first, during the side-to-side shake.
  const streakFade=1-smoothstep01(clamp(progress/.40,0,1));
- if(streakFade>.005){
-  ctx.save();ctx.globalAlpha=.96*streakFade;
-  const streaks=[[-31,-43,31,3],[-12,-32,55,3],[-38,-21,27,2.5],[-25,-10,67,3.2],[-4,1,43,2.7],[8,12,56,3],[-27,23,35,2.7],[5,34,43,2.5]];
-  ctx.fillStyle='rgba(3,5,10,.96)';
-  for(let i=0;i<streaks.length;i++){
-   const [sx0,sy0,w,h]=streaks[i];
-   const slide=Math.sin(game.time*34+i*1.7)*(2.2+(i%3));
-   ctx.fillRect(sx0+slide,sy0,w,h);
-  }
-  ctx.restore();
+ if(streakFade<=.005)return;
+ const x=sx(f.x),y=sy(f.y)-f.jump*3-11;
+ ctx.save();ctx.translate(x,y);ctx.globalAlpha=.96*streakFade;
+ const streaks=[[-31,-43,31,3],[-12,-32,55,3],[-38,-21,27,2.5],[-25,-10,67,3.2],[-4,1,43,2.7],[8,12,56,3],[-27,23,35,2.7],[5,34,43,2.5]];
+ ctx.fillStyle='rgba(3,5,10,.96)';
+ for(let i=0;i<streaks.length;i++){
+  const [sx0,sy0,w,h]=streaks[i];
+  const slide=Math.sin(game.time*34+i*1.7)*(2.2+(i%3));
+  ctx.fillRect(sx0+slide,sy0,w,h);
  }
- // Phase two: only after the black streaks clear, a glass pane fractures behind him.
+ ctx.restore();
+}
+function drawGojoTeleportGlassForeground(f){
+ const m=f&&f.motion;
+ if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
+ const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
  const glassIn=smoothstep01(clamp((progress-.40)/.32,0,1));
  const glassOut=1-smoothstep01(clamp((progress-.86)/.14,0,1));
  const glassFade=glassIn*glassOut;
- if(glassFade>.005){
-  const spread=smoothstep01(clamp((progress-.42)/.54,0,1));
-  ctx.save();ctx.globalAlpha=.94*glassFade;
-  ctx.fillStyle='rgba(166,220,250,.15)';
-  ctx.strokeStyle='rgba(222,246,255,.9)';ctx.lineWidth=1.35;
-  ctx.beginPath();ctx.moveTo(-37,-49);ctx.lineTo(-15,-55);ctx.lineTo(3,-48);ctx.lineTo(24,-54);ctx.lineTo(43,-36);ctx.lineTo(38,-13);ctx.lineTo(47,8);ctx.lineTo(26,31);ctx.lineTo(5,27);ctx.lineTo(-17,39);ctx.lineTo(-43,19);ctx.lineTo(-38,-5);ctx.closePath();ctx.fill();ctx.stroke();
-  // Sharp fracture lines radiate from the centre like a pane snapping apart.
-  const cracks=[
-   [[0,-7],[-12,-23],[-34,-43]],
-   [[0,-7],[13,-25],[35,-46]],
-   [[0,-7],[-21,-2],[-43,12]],
-   [[0,-7],[20,8],[42,27]],
-   [[0,-7],[-7,16],[-20,38]],
-   [[0,-7],[5,-31],[10,-52]],
-   [[-12,-23],[-5,-28],[1,-39]],
-   [[13,-25],[9,-14],[22,-6]],
-   [[20,8],[10,14],[5,27]]
-  ];
-  ctx.strokeStyle='rgba(238,251,255,.97)';ctx.lineWidth=1.5;
-  for(const path of cracks){
-   ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);
-   for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);
-   ctx.stroke();
-  }
-  // Glass shards spread outward only after the fracture appears.
-  const shardAngles=[-2.55,-1.92,-1.15,-.32,.52,1.22,2.08,2.75];
-  for(let i=0;i<shardAngles.length;i++){
-   const a=shardAngles[i],travel=spread*(18+(i%3)*6),cx=Math.cos(a)*(17+travel),cy=Math.sin(a)*(24+travel);
-   const size=7+(i%3)*2.5,side=size*(.55+(i%2)*.18);
-   ctx.fillStyle=i%2?'rgba(173,226,250,.27)':'rgba(230,248,255,.34)';
-   ctx.strokeStyle='rgba(240,252,255,.94)';ctx.lineWidth=1;
-   ctx.beginPath();ctx.moveTo(cx,cy-size);ctx.lineTo(cx+side,cy+size*.45);ctx.lineTo(cx-side*.72,cy+size*.18);ctx.closePath();ctx.fill();ctx.stroke();
-  }
-  ctx.fillStyle='rgba(235,250,255,.95)';
-  for(let i=0;i<8;i++){
-   const a=-2.7+i*.76,r=23+spread*(13+(i%3)*6);
-   const px=Math.cos(a)*r,py=Math.sin(a)*r;
-   ctx.fillRect(Math.round(px),Math.round(py),2,2);
-  }
-  ctx.restore();
+ if(glassFade<=.005)return;
+ const spread=smoothstep01(clamp((progress-.42)/.54,0,1));
+ const x=sx(f.x),y=sy(f.y)-f.jump*3-11;
+ ctx.save();ctx.translate(x,y);ctx.globalAlpha=.94*glassFade;ctx.lineJoin='miter';
+ // This fractured pane is rendered in the foreground, over Gojo.
+ ctx.fillStyle='rgba(166,220,250,.15)';
+ ctx.strokeStyle='rgba(222,246,255,.9)';ctx.lineWidth=1.35;
+ ctx.beginPath();ctx.moveTo(-37,-49);ctx.lineTo(-15,-55);ctx.lineTo(3,-48);ctx.lineTo(24,-54);ctx.lineTo(43,-36);ctx.lineTo(38,-13);ctx.lineTo(47,8);ctx.lineTo(26,31);ctx.lineTo(5,27);ctx.lineTo(-17,39);ctx.lineTo(-43,19);ctx.lineTo(-38,-5);ctx.closePath();ctx.fill();ctx.stroke();
+ const cracks=[
+  [[0,-7],[-12,-23],[-34,-43]],
+  [[0,-7],[13,-25],[35,-46]],
+  [[0,-7],[-21,-2],[-43,12]],
+  [[0,-7],[20,8],[42,27]],
+  [[0,-7],[-7,16],[-20,38]],
+  [[0,-7],[5,-31],[10,-52]],
+  [[-12,-23],[-5,-28],[1,-39]],
+  [[13,-25],[9,-14],[22,-6]],
+  [[20,8],[10,14],[5,27]]
+ ];
+ ctx.strokeStyle='rgba(238,251,255,.97)';ctx.lineWidth=1.5;
+ for(const path of cracks){
+  ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);
+  for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);
+  ctx.stroke();
+ }
+ const shardAngles=[-2.55,-1.92,-1.15,-.32,.52,1.22,2.08,2.75];
+ for(let i=0;i<shardAngles.length;i++){
+  const a=shardAngles[i],travel=spread*(18+(i%3)*6),cx=Math.cos(a)*(17+travel),cy=Math.sin(a)*(24+travel);
+  const size=7+(i%3)*2.5,side=size*(.55+(i%2)*.18);
+  ctx.fillStyle=i%2?'rgba(173,226,250,.27)':'rgba(230,248,255,.34)';
+  ctx.strokeStyle='rgba(240,252,255,.94)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx,cy-size);ctx.lineTo(cx+side,cy+size*.45);ctx.lineTo(cx-side*.72,cy+size*.18);ctx.closePath();ctx.fill();ctx.stroke();
+ }
+ ctx.fillStyle='rgba(235,250,255,.95)';
+ for(let i=0;i<8;i++){
+  const a=-2.7+i*.76,r=23+spread*(13+(i%3)*6);
+  const px=Math.cos(a)*r,py=Math.sin(a)*r;
+  ctx.fillRect(Math.round(px),Math.round(py),2,2);
  }
  ctx.restore();
 }
@@ -9224,6 +9224,8 @@ function drawFighterMotionOverlays(f){
  ctx.restore();
  if(name==='gojoBlue'||name==='gojoBlueSpin')emitGojoBlueSkillSparks(f,name);
  drawGojoBlueSparks(f);
+ // The glass shatter is a foreground layer, drawn after Gojo's body and motion effects.
+ drawGojoTeleportGlassForeground(f);
 }
 function drawFighterHandsForeground(f){
  if(!f||f.dead||!f.motionHandPose||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
