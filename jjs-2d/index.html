@@ -8858,7 +8858,15 @@ function drawHeadHands(f,deferMotionVfx=false){
   }
   ctx.restore();
  }
- if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);drawAccessoryOverlays(f,0,0);ctx.restore();
+ if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);
+ drawAccessoryOverlays(f,0,0);
+ // Gojo's fixed black blindfold: keep it in the head transform, outside the
+ // selectable accessory renderer so it cannot affect accessory handling.
+ if(f.char==='honored'){
+  ctx.fillStyle='#000000';
+  ctx.fillRect(-16.5,-5.3,33,9.6);
+ }
+ ctx.restore();
  if(!deferHands&&f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
  drawStunRain(f,x,y);
  
