@@ -7657,7 +7657,7 @@ function drawAccessoryAura(f,x,y,scale=1){
  ctx.restore();
 }
 function drawAccessoryOverlays(f,x,y,scale=1){
- const a=getFighterAccessories(f);if(f.char!=='honored'&&!Object.values(a).some(v=>v&&v!=='none'))return;
+ const a=getFighterAccessories(f);if(!Object.values(a).some(v=>v&&v!=='none'))return;
  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
  ctx.lineJoin='miter';ctx.lineCap='square';
  const polygon=(points,fill,stroke='#101827',lineWidth=1.5)=>{
@@ -8151,12 +8151,6 @@ function drawAddedAccessoryDetail(a){
   ctx.strokeStyle='#68758d';ctx.lineWidth=2.2;ctx.beginPath();ctx.moveTo(-17,5);ctx.lineTo(14,24);ctx.moveTo(17,5);ctx.lineTo(-14,24);ctx.stroke();
   path([[-14,8],[11,22]],'#c1cada',.7,[2,2]);path([[14,8],[-11,22]],'#c1cada',.7,[2,2]);
   poly([[-3,11],[3,11],[4,17],[0,19],[-4,17]],'#aeb9ca','#263246',1);ctx.fillStyle='#f0d99b';ctx.fillRect(-1,13,2,2);
- }
- // Gojo's fixed blindfold matches the pure-black wrap in the Vessel preview.
- // Draw it last so selectable face gear cannot remove or recolour it.
- if(f.char==='honored'){
-  ctx.fillStyle='#000000';
-  ctx.fillRect(-16.5,-5.3,33,9.6);
  }
  ctx.restore();
 }
