@@ -8457,7 +8457,9 @@ function drawStunRain(f,x,y){
  ctx.restore();
 }
 function drawHeadHands(f,deferMotionVfx=false){
- const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
+ const teleportMotion=f.motion&&f.motion.name==='gojoLimitless'?f.motion:null;
+ const teleportShake=teleportMotion?Math.sin(game.time*76)*3.6*(1-smoothstep01(clamp((teleportMotion.t||0)/Math.max(.08,(teleportMotion.duration||.58)*.84),0,1))):0;
+ const x=sx(f.x)+teleportShake,y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
@@ -9102,6 +9104,58 @@ function drawTrashManEffects(){
   }
  }
 }
+function drawGojoTeleportGlassBackdrop(f){
+ const m=f&&f.motion;
+ if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
+ const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
+ const fade=1-smoothstep01(clamp((progress-.42)/.58,0,1));
+ const spread=smoothstep01(clamp(progress/.9,0,1));
+ const x=sx(f.x),y=sy(f.y)-f.jump*3-11;
+ ctx.save();ctx.translate(x,y);ctx.globalAlpha=.92*fade;ctx.lineJoin='miter';
+ // A thin, fractured glass pane sits behind Gojo while the teleport settles.
+ ctx.fillStyle='rgba(166,220,250,.15)';
+ ctx.strokeStyle='rgba(222,246,255,.88)';ctx.lineWidth=1.35;
+ ctx.beginPath();ctx.moveTo(-37,-49);ctx.lineTo(-15,-55);ctx.lineTo(3,-48);ctx.lineTo(24,-54);ctx.lineTo(43,-36);ctx.lineTo(38,-13);ctx.lineTo(47,8);ctx.lineTo(26,31);ctx.lineTo(5,27);ctx.lineTo(-17,39);ctx.lineTo(-43,19);ctx.lineTo(-38,-5);ctx.closePath();ctx.fill();ctx.stroke();
+ // Dark, parallel horizontal streaks of deliberately different lengths.
+ const streaks=[[-30,-43,31,3],[-13,-32,54,3],[-36,-21,27,2.5],[-23,-10,66,3.2],[-5,1,43,2.7],[7,12,56,3],[-25,23,35,2.7],[5,33,43,2.5]];
+ ctx.fillStyle='rgba(3,5,10,.91)';
+ for(const [sx0,sy0,w,h] of streaks)ctx.fillRect(sx0,sy0,w,h);
+ // Bright fracture lines radiate from the impact point like a pane snapping apart.
+ const cracks=[
+  [[0,-7],[-12,-23],[-34,-43]],
+  [[0,-7],[13,-25],[35,-46]],
+  [[0,-7],[-21,-2],[-43,12]],
+  [[0,-7],[20,8],[42,27]],
+  [[0,-7],[-7,16],[-20,38]],
+  [[0,-7],[5,-31],[10,-52]],
+  [[-12,-23],[-5,-28],[1,-39]],
+  [[13,-25],[9,-14],[22,-6]],
+  [[20,8],[10,14],[5,27]]
+ ];
+ ctx.strokeStyle='rgba(238,251,255,.95)';ctx.lineWidth=1.5;
+ for(const path of cracks){
+  ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);
+  for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);
+  ctx.stroke();
+ }
+ // A few transparent triangular shards peel away from the broken pane.
+ const shardAngles=[-2.55,-1.92,-1.15,-.32,.52,1.22,2.08,2.75];
+ for(let i=0;i<shardAngles.length;i++){
+  const a=shardAngles[i],travel=spread*(17+(i%3)*5),cx=Math.cos(a)*(17+travel),cy=Math.sin(a)*(24+travel);
+  const size=7+(i%3)*2.5,side=size*(.55+(i%2)*.18);
+  ctx.fillStyle=i%2?'rgba(173,226,250,.25)':'rgba(230,248,255,.32)';
+  ctx.strokeStyle='rgba(240,252,255,.9)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(cx,cy-size);ctx.lineTo(cx+side,cy+size*.45);ctx.lineTo(cx-side*.72,cy+size*.18);ctx.closePath();ctx.fill();ctx.stroke();
+ }
+ // Tiny glass splinters catch the light as the larger fragments move outward.
+ ctx.fillStyle='rgba(235,250,255,.92)';
+ for(let i=0;i<8;i++){
+  const a=-2.7+i*.76,r=23+spread*(13+(i%3)*6);
+  const px=Math.cos(a)*r,py=Math.sin(a)*r;
+  ctx.fillRect(Math.round(px),Math.round(py),2,2);
+ }
+ ctx.restore();
+}
 function drawFighter(f){
  if(f.dead||f.isTrainingDummy||!worldRectVisible(f.x-80,f.y-110,160,150,48))return;
  const transition=f.vehicleTransition;
@@ -9114,7 +9168,7 @@ function drawFighter(f){
   const scale=transition.mode==='enter'?1-.22*eased:.74+.26*eased;
   const visual={...f,x:px,y:py,face:transition.face,vehicle:null,motion:{name:transition.mode==='enter'?'carEnter':'carExit',t:transition.elapsed,duration:transition.duration,activeDuration:transition.duration,angle:transition.face,target:null}};
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(sx(px),sy(py));ctx.scale(scale,scale);ctx.translate(-sx(px),-sy(py));drawHeadHands(visual,true);ctx.restore();
- }else drawHeadHands(f,true);
+ }else{drawGojoTeleportGlassBackdrop(f);drawHeadHands(f,true);}
  if(!transition&&f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
 }
