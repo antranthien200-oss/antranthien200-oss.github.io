@@ -3501,10 +3501,12 @@ function applyOnlineRoomState(state){
   }
   remote.trashCanId=heldCanId;
   remote.attackAnim=Number(net.attackAnim)||0;remote.attackType=String(net.attackType||'');
-  if(net.motionName){
-   const duration=remote.motionDuration,reported=clamp(Number(net.motionProgress)||0,0,1)*duration,serverAge=remote.motionStartedAt?Math.max(0,(Date.now()-remote.motionStartedAt)/1000):reported;
-   remote.motion={name:String(net.motionName),t:clamp(Math.max(reported,serverAge),0,duration),duration,activeDuration:duration,angle:remote.networkFace,target:null};
-  }else remote.motion=null;
+  if(!(remote.counterMotionOverrideUntil>performance.now())){
+   if(net.motionName){
+    const duration=remote.motionDuration,reported=clamp(Number(net.motionProgress)||0,0,1)*duration,serverAge=remote.motionStartedAt?Math.max(0,(Date.now()-remote.motionStartedAt)/1000):reported;
+    remote.motion={name:String(net.motionName),t:clamp(Math.max(reported,serverAge),0,duration),duration,activeDuration:duration,angle:remote.networkFace,target:null};
+   }else remote.motion=null;
+  }
   if(remote.hp<oldHp&&!remote.dead){const loss=oldHp-remote.hp;remote.flash=.16;const grabImpact=remote.attackType==='grab';burst(remote.x,remote.y,'#ffe1ac',grabImpact?2:10,grabImpact?2.1:3);popText(remote.x,remote.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,1.2)}
   if(remote.dead&&!remote.wasDead){popText(remote.x,remote.y-65,'K.O.','#ffcf75',25);remote.wasDead=true}
   if(!remote.dead)remote.wasDead=false;
@@ -3763,6 +3765,14 @@ function bindOnlineRoom(client,room){
   try{useAttack(remote,actionKind,true)}finally{remote.onlineActionReplay=false}
   if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
+ });
+ room.onMessage('combat:counter',data=>{
+  if(!data||data.kind!=='gojoTwofoldCounter')return;
+  const defenderId=String(data.defenderId||''),attackerId=String(data.attackerId||'');
+  const defender=defenderId===onlineSessionId?player:onlineRemotePlayers.get(defenderId)||null;
+  const attacker=attackerId===onlineSessionId?player:onlineRemotePlayers.get(attackerId)||null;
+  if(!defender||!attacker)return;
+  playGojoTwofoldCounterResponse(defender,attacker,false);
  });
  room.onMessage('combat:projectile',receiveOnlineProjectile);
   room.onMessage('combat:door-trap',data=>{if(!data||!Number.isFinite(Number(data.x))||!Number.isFinite(Number(data.y)))return;const owner=data.sessionId===onlineSessionId?player:onlineRemotePlayers.get(data.sessionId)||null;doorTraps.push({x:Number(data.x),y:Number(data.y),life:clamp(Number(data.life)||1.25,.1,2),owner,hit:true})});
