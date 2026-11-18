@@ -2883,7 +2883,7 @@ function renderMenuSub(){
   const restorePreview=()=>{accessoryPreviewHoverId=null;drawAccessoryPreview()};
   btn.addEventListener('mouseenter',previewItem);btn.addEventListener('mouseleave',restorePreview);
   btn.addEventListener('focus',previewItem);btn.addEventListener('blur',restorePreview);
-  btn.addEventListener('click',()=>{const itemId=btn.dataset.accessory;if(itemId!=='none'&&!findAccessory(accessorySlot,itemId))return;accessoryLoadouts[selected][accessorySlot]=itemId;saveAccessoryLoadouts();accessoryPreviewHoverId=null;updateMenuSummary();renderMenuSub()});
+  btn.addEventListener('click',()=>{const itemId=btn.dataset.accessory;if(itemId!=='none'&&!findAccessory(accessorySlot,itemId))return;const currentGrid=document.querySelector('.accessory-preview-items'),savedScrollTop=currentGrid?currentGrid.scrollTop:0;accessoryLoadouts[selected][accessorySlot]=itemId;saveAccessoryLoadouts();accessoryPreviewHoverId=null;updateMenuSummary();renderMenuSub();const rebuiltGrid=document.querySelector('.accessory-preview-items');if(rebuiltGrid)rebuiltGrid.scrollTop=savedScrollTop});
  });
  scheduleMenuFit();
 }
