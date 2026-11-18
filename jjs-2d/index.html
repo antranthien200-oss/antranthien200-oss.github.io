@@ -3006,7 +3006,7 @@ function startOnlineFightAnimation(){
  const tick=now=>{
   onlineFightAnimationFrame=0;
   if(game.started||$('menu').style.display==='none'||menuView!=='online'||$('menuSub').hidden)return;
-  if(now-onlineFightLastDraw>=16){
+  if(now-onlineFightLastDraw>=(isMobileDevice?33:16)){
    drawOnlineFightScene(now);
    onlineFightLastDraw=now;
   }
@@ -3014,12 +3014,25 @@ function startOnlineFightAnimation(){
  };
  onlineFightAnimationFrame=requestAnimationFrame(tick);
 }
+function refreshOnlineFightSceneAfterResume(){
+ if(game.started||$('menu').style.display==='none'||menuView!=='online'||$('menuSub').hidden)return;
+ stopOnlineFightAnimation();
+ onlineFightLastDraw=0;
+ drawOnlineFightScene(performance.now());
+ startOnlineFightAnimation();
+}
+document.addEventListener('visibilitychange',()=>{
+ if(document.hidden)stopOnlineFightAnimation();
+ else refreshOnlineFightSceneAfterResume();
+});
+window.addEventListener('pageshow',refreshOnlineFightSceneAfterResume);
+window.addEventListener('orientationchange',refreshOnlineFightSceneAfterResume);
 function drawOnlineFightScene(now){
  const canvas=$('onlineFightCanvas');
  if(!canvas)return;
  const rect=canvas.getBoundingClientRect();
  if(rect.width<2||rect.height<2)return;
- const dpr=Math.min(window.devicePixelRatio||1,2);
+ const dpr=Math.min(window.devicePixelRatio||1,isMobileDevice?1.5:2);
  const width=Math.max(1,Math.round(rect.width*dpr)),height=Math.max(1,Math.round(rect.height*dpr));
  if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height}
  const sceneCtx=canvas.getContext('2d');
@@ -3581,8 +3594,22 @@ function drawOnlineRemoteDomains(){
 function getMobileRemoteRenderSets(){
  const visible=Array.from(onlineRemotePlayers.values()).filter(remote=>!remote.dead&&worldRectVisible(remote.x-100,remote.y-130,200,180,60));
  if(!isMobileDevice)return {detailed:visible,simple:[]};
- visible.sort((a,b)=>Math.hypot(a.x-player.x,a.y-player.y)-Math.hypot(b.x-player.x,b.y-player.y));
- return {detailed:visible.slice(0,4),simple:visible.slice(4)};
+ const distanceFromPlayer=remote=>Math.hypot(remote.x-player.x,remote.y-player.y);
+ visible.sort((a,b)=>distanceFromPlayer(a)-distanceFromPlayer(b));
+ // Never downgrade a visible fighter in the middle of a move or grab to the static mobile avatar.
+ const engaged=visible.filter(remote=>
+  Number(remote.attackAnim)>0.04||
+  Number(remote.grabRemaining)>0||
+  !!remote.grabbedBy||
+  !!remote.activeGrabTarget||
+  !!(remote.motion&&remote.motion.duration>0&&remote.motion.t<remote.motion.duration-.035)
+ );
+ const detailed=[...engaged.slice(0,4)];
+ for(const remote of visible){
+  if(detailed.length>=4)break;
+  if(!detailed.includes(remote))detailed.push(remote);
+ }
+ return {detailed,simple:visible.filter(remote=>!detailed.includes(remote))};
 }
 function drawMobileRemoteFighter(remote){
  if(!remote||remote.dead)return;
@@ -6419,13 +6446,53 @@ function drawBuildingInterior(x,y,w,h,index){
 function drawMobileCityObjects(){
  ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
  for(const b of staticBuildings){
-  if(!worldRectVisible(b.x,b.y,b.w,b.h,72))continue;
-  ctx.fillStyle=b.collapsed?'#303b42':'#26343b';ctx.fillRect(b.x-4,b.y-4,b.w+8,b.h+8);
-  ctx.fillStyle=b.collapsed?'#657078':b.c;ctx.fillRect(b.x,b.y,b.w,b.h);
-  ctx.strokeStyle=b.collapsed?'#202a30':'#e1e4dc';ctx.lineWidth=3;ctx.strokeRect(b.x+2,b.y+2,b.w-4,b.h-4);
-  ctx.fillStyle=b.collapsed?'#303b42':'#71858a';ctx.fillRect(b.x+16,b.y+22,b.w-32,Math.max(10,b.h*.3));
-  if(b.collapsed){ctx.fillStyle='#f1e4c8';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText('COLLAPSED',b.x+b.w/2,b.y+b.h-12)}
-  else if(b.damageStage>0){ctx.strokeStyle='#20282e';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(b.x+b.w*.25,b.y+b.h*.2);ctx.lineTo(b.x+b.w*.42,b.y+b.h*.48);ctx.lineTo(b.x+b.w*.34,b.y+b.h*.7);ctx.stroke()}
+  const {x,y,w,h}=b;
+  if(!worldRectVisible(x,y,w,h,72))continue;
+  // Keep the mobile renderer light, but preserve the recognizable house facade.
+  ctx.fillStyle='#10182075';ctx.fillRect(x+9,y+13,w,h);
+  ctx.fillStyle=b.collapsed?'#303b42':'#26343b';ctx.fillRect(x-5,y-5,w+10,h+10);
+  ctx.fillStyle=b.collapsed?'#657078':'#d8d8cd';ctx.fillRect(x-2,y-2,w+4,h+4);
+  ctx.fillStyle=b.collapsed?'#303b42':b.c;ctx.fillRect(x,y,w,h);
+  ctx.strokeStyle=b.collapsed?'#202a30':'#38464d';ctx.lineWidth=4;ctx.strokeRect(x+3,y+3,w-6,h-6);
+  if(!b.collapsed){
+   // Roof inset and upper facade strip.
+   ctx.fillStyle='#71858a';ctx.fillRect(x+15,y+18,w-30,Math.max(12,h*.29));
+   ctx.fillStyle='#91a4a5';ctx.fillRect(x+22,y+25,w-44,5);
+   ctx.strokeStyle='#53666b';ctx.lineWidth=2;ctx.strokeRect(x+15,y+18,w-30,Math.max(12,h*.29));
+   // Three broad windows remain visible at phone scale.
+   const winY=y+Math.max(36,h*.42),winW=Math.max(22,Math.min(58,(w-88)/3));
+   for(let i=0;i<3;i++){
+    const wx=x+27+i*(winW+12);
+    ctx.fillStyle='#152a35';ctx.fillRect(wx,winY,winW,Math.max(16,Math.min(25,h*.13)));
+    ctx.fillStyle='#91b4bb';ctx.fillRect(wx+3,winY+3,winW-6,3);
+    ctx.fillStyle='#526f7a';ctx.fillRect(wx+winW*.48,winY,3,Math.max(16,Math.min(25,h*.13)));
+   }
+   // Front awning, central entrance, and a readable building sign.
+   const doorY=y+h-53;
+   ctx.fillStyle='#293840';ctx.fillRect(x+12,doorY,w-24,43);
+   ctx.fillStyle='#152a35';ctx.fillRect(x+w/2-15,doorY+3,30,40);
+   ctx.fillStyle='#b7c8c2';ctx.fillRect(x+w/2-11,doorY+6,22,3);
+   ctx.fillStyle='#d0b37c';ctx.fillRect(x+w/2+7,doorY+24,3,3);
+   ctx.fillStyle='#17232b';ctx.fillRect(x+w/2-43,y+h-8,86,16);
+   ctx.strokeStyle='#d2e0d9';ctx.lineWidth=1;ctx.strokeRect(x+w/2-43,y+h-8,86,16);
+   ctx.fillStyle='#f3f5eb';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText(b.name,x+w/2,y+h+3);
+   if(b.damageStage>=1){
+    ctx.strokeStyle='#20282e';ctx.lineWidth=4;ctx.beginPath();
+    ctx.moveTo(x+w*.2,y+h*.16);ctx.lineTo(x+w*.3,y+h*.31);ctx.lineTo(x+w*.26,y+h*.46);
+    ctx.moveTo(x+w*.78,y+h*.19);ctx.lineTo(x+w*.69,y+h*.35);ctx.lineTo(x+w*.74,y+h*.5);ctx.stroke();
+   }
+   if(b.damageStage>=2){
+    ctx.strokeStyle='#20282e';ctx.lineWidth=5;ctx.beginPath();
+    ctx.moveTo(x+w*.35,y+h*.15);ctx.lineTo(x+w*.48,y+h*.32);ctx.lineTo(x+w*.42,y+h*.57);ctx.lineTo(x+w*.61,y+h*.75);ctx.stroke();
+   }
+  }else{
+   // A few low-cost rubble blocks show that a destroyed house is still present.
+   for(let i=0;i<8;i++){
+    const rx=x+12+((i*47)%(Math.max(1,w-38))),ry=y+12+((i*31)%(Math.max(1,h-28)));
+    ctx.fillStyle=i%2?'#78848a':'#4e5a62';ctx.fillRect(rx,ry,12+(i%3)*5,6+(i%2)*4);
+   }
+   ctx.fillStyle='#f1e4c8';ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.fillText('COLLAPSED · '+b.name,x+w/2,y+h-12);
+  }
  }
  for(const o of destructibles){
   if(!o.alive||!worldRectVisible(o.x,o.y,o.w,o.h,18))continue;
