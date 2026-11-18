@@ -2012,7 +2012,7 @@ html.manual-screen-rotated #menu .menu-art-stage{
 const canvas=document.getElementById('game');
 let ctx=canvas.getContext('2d',{alpha:false,desynchronized:true});
 const isMobileDevice=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||((navigator.maxTouchPoints||0)>1&&innerWidth<1000);
-const MOBILE_BASE_DPR=.58,MOBILE_MIN_DPR=.35;
+const MOBILE_BASE_DPR=.72,MOBILE_MIN_DPR=.35;
 const MAX_DPR=isMobileDevice ? .82 : 1.75;
 const $=id=>document.getElementById(id);
 let W=innerWidth,H=innerHeight,dpr=isMobileDevice?Math.min(devicePixelRatio||1,MOBILE_BASE_DPR):Math.min(devicePixelRatio||1,MAX_DPR),canvasNeedsDraw=true;
@@ -3593,23 +3593,9 @@ function drawOnlineRemoteDomains(){
 }
 function getMobileRemoteRenderSets(){
  const visible=Array.from(onlineRemotePlayers.values()).filter(remote=>!remote.dead&&worldRectVisible(remote.x-100,remote.y-130,200,180,60));
- if(!isMobileDevice)return {detailed:visible,simple:[]};
- const distanceFromPlayer=remote=>Math.hypot(remote.x-player.x,remote.y-player.y);
- visible.sort((a,b)=>distanceFromPlayer(a)-distanceFromPlayer(b));
- // Never downgrade a visible fighter in the middle of a move or grab to the static mobile avatar.
- const engaged=visible.filter(remote=>
-  Number(remote.attackAnim)>0.04||
-  Number(remote.grabRemaining)>0||
-  !!remote.grabbedBy||
-  !!remote.activeGrabTarget||
-  !!(remote.motion&&remote.motion.duration>0&&remote.motion.t<remote.motion.duration-.035)
- );
- const detailed=[...engaged.slice(0,4)];
- for(const remote of visible){
-  if(detailed.length>=4)break;
-  if(!detailed.includes(remote))detailed.push(remote);
- }
- return {detailed,simple:visible.filter(remote=>!detailed.includes(remote))};
+ // Render every visible remote fighter with the normal game artwork and animations.
+ // The viewport culling above still keeps off-screen fighters out of the render pass.
+ return {detailed:visible,simple:[]};
 }
 function drawMobileRemoteFighter(remote){
  if(!remote||remote.dead)return;
@@ -6163,11 +6149,11 @@ function worldRectVisible(x,y,w,h,pad=48){
 function rect(x,y,w,h,c,stroke){ctx.fillStyle=c;ctx.fillRect(sx(x),sy(y),w,h);if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.strokeRect(sx(x),sy(y),w,h)}}
 function drawMap(){if(isFullScreenDomainActive())return;
  if(!mapCanvas||mapCacheDirty){
-  if(!mapCanvas){mapCanvas=document.createElement('canvas');mapCanvas.width=Math.floor(WORLD.w*(isMobileDevice ? .5 : 1));mapCanvas.height=Math.floor(WORLD.h*(isMobileDevice ? .5 : 1))}
+  if(!mapCanvas){mapCanvas=document.createElement('canvas');mapCanvas.width=Math.floor(WORLD.w*(1));mapCanvas.height=Math.floor(WORLD.h*(1))}
   const screenCtx=ctx,screenW=W,screenH=H,camX=camera.x,camY=camera.y;
   const mapCtx=mapCanvas.getContext('2d',{alpha:false});
   if(!mapCtx)return;
-  const mapScale=isMobileDevice ? .5 : 1;mapCtx.setTransform(mapScale,0,0,mapScale,0,0);
+  const mapScale=1;mapCtx.setTransform(mapScale,0,0,mapScale,0,0);
   ctx=mapCtx;W=WORLD.w;H=WORLD.h;camera.x=WORLD.w/2;camera.y=WORLD.h/2;
 
  ctx.fillStyle='#26313a';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
@@ -6434,7 +6420,7 @@ function drawMap(){if(isFullScreenDomainActive())return;
  const sourceY=clamp(camera.y-viewH/2,0,Math.max(0,WORLD.h-viewH));
  const sourceW=Math.min(viewW,WORLD.w-sourceX),sourceH=Math.min(viewH,WORLD.h-sourceY);
  const destX=sourceX-camera.x+W/2,destY=sourceY-camera.y+H/2;
- ctx.drawImage(mapCanvas,sourceX*(isMobileDevice ? .5 : 1),sourceY*(isMobileDevice ? .5 : 1),sourceW*(isMobileDevice ? .5 : 1),sourceH*(isMobileDevice ? .5 : 1),destX,destY,sourceW,sourceH);
+ ctx.drawImage(mapCanvas,sourceX*(1),sourceY*(1),sourceW*(1),sourceH*(1),destX,destY,sourceW,sourceH);
 }
 function drawBuildingInterior(x,y,w,h,index){
  ctx.fillStyle='#c5b79d';ctx.fillRect(x+7,y+7,w-14,h-14);ctx.fillStyle='#b1a187';
@@ -6503,7 +6489,6 @@ function drawMobileCityObjects(){
 }
 function drawDynamicCityObjects(){
  if(isFullScreenDomainActive())return;
- if(isMobileDevice){drawMobileCityObjects();return}
  ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
  for(let i=0;i<staticBuildings.length;i++){
   const b=staticBuildings[i],x=b.x,y=b.y,w=b.w,h=b.h;
@@ -6551,13 +6536,6 @@ function drawCityVehicles(){
  ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
  for(const car of parkedCars){
   if(!worldRectVisible(car.x-42,car.y-52,84,104,30))continue;
-  if(isMobileDevice){
-   ctx.save();ctx.translate(car.x,car.y);ctx.rotate(car.angle);
-   ctx.fillStyle='#101820';ctx.fillRect(-19,-36,38,72);
-   ctx.fillStyle=car.destroyed?'#454d50':car.color;ctx.fillRect(-15,-32,30,64);
-   if(!car.destroyed){ctx.fillStyle='#203c49';ctx.fillRect(-11,-17,22,16);ctx.fillRect(-11,7,22,15);ctx.fillStyle=car.highlight;ctx.fillRect(-10,-28,20,7)}
-   ctx.strokeStyle='#263b45';ctx.lineWidth=2;ctx.strokeRect(-15,-32,30,64);ctx.restore();continue;
-  }
   for(const mark of car.skidMarks||[]){ctx.globalAlpha=clamp(mark.life/1.4,0,.42);ctx.fillStyle='#11171a';ctx.fillRect(mark.x-3,mark.y-3,6,6)}
   ctx.globalAlpha=1;ctx.save();ctx.translate(car.x,car.y);ctx.rotate(car.angle);
   if(car.destroyed){
