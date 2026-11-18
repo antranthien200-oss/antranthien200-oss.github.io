@@ -4316,6 +4316,7 @@ function addDebris(x,y,color,n=10){if(isMobileDevice){n=Math.min(n,2);const over
 function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
  if(!defender||!attacker||defender.dead||attacker.dead)return;
  const angle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+ defender.face=angle;
  const serial=(defender.gojoTwofoldCounterSerial||0)+1;
  defender.gojoTwofoldCounterSerial=serial;
  defender.counterWindow=0;defender.counterKind='';defender.block=false;
@@ -4323,7 +4324,7 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
  attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
  attacker.stun=Math.max(attacker.stun||0,.42);attacker.vx=0;attacker.vy=0;
  interruptSkillCast(attacker);
- if(defender.onlineSessionId)defender.counterMotionOverrideUntil=performance.now()+520;
+ if(defender.onlineSessionId)defender.counterMotionOverrideUntil=performance.now()+620;
  setMotion(defender,'gojoCounterJab',.14,angle,attacker);
  burst(defender.x,defender.y-23,'#f3bb67',12,3.8);burst(attacker.x,attacker.y-23,'#fff0a8',5,2.5);
  if(applyDamage)damage(attacker,2.5,defender,{stun:.16,kx:0,ky:0,color:'#ffdc58',unblockable:true,ignoreInvuln:true});
