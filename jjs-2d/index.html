@@ -4358,22 +4358,28 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
  const serial=(defender.gojoTwofoldCounterSerial||0)+1;
  defender.gojoTwofoldCounterSerial=serial;
  defender.counterWindow=0;defender.counterKind='';defender.block=false;
- defender.stun=0;defender.invuln=Math.max(defender.invuln||0,.82);defender.vx=0;defender.vy=0;
+ defender.stun=0;defender.invuln=Math.max(defender.invuln||0,.72);defender.vx=0;defender.vy=0;
  attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
- attacker.stun=Math.max(attacker.stun||0,.42);attacker.vx=0;attacker.vy=0;
+ attacker.stun=Math.max(attacker.stun||0,.42);attacker.rooted=Math.max(attacker.rooted||0,.42);attacker.vx=0;attacker.vy=0;
  interruptSkillCast(attacker);
  if(defender.onlineSessionId)defender.counterMotionOverrideUntil=performance.now()+620;
- setMotion(defender,'gojoCounterJab',.14,angle,attacker);
- burst(defender.x,defender.y-23,'#f3bb67',12,3.8);burst(attacker.x,attacker.y-23,'#fff0a8',5,2.5);
+ // Gojo replaces Yuji's first blocking beat with a fast punch from one hand.
+ setMotion(defender,'gojoCounterJab',.17,angle,attacker);
+ burst(defender.x,defender.y-23,'#f3bb67',18,4.8);burst(attacker.x,attacker.y-23,'#fff0a8',8,3.2);
  if(applyDamage)damage(attacker,2.5,defender,{stun:.16,kx:0,ky:0,color:'#ffdc58',unblockable:true,ignoreInvuln:true});
- scheduledTasks.push({at:game.time+.105,fn:()=>{
+ scheduledTasks.push({at:game.time+.17,fn:()=>{
   if(defender.dead||attacker.dead||defender.gojoTwofoldCounterSerial!==serial)return;
   const hitAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+  attacker.stun=Math.max(attacker.stun||0,.22);attacker.rooted=Math.max(attacker.rooted||0,.22);attacker.vx=0;attacker.vy=0;
   setMotion(defender,'gojoCounterFinish',.3,hitAngle,attacker);
-  if(applyDamage)damage(attacker,8.5,defender,{stun:.68,kx:Math.cos(hitAngle)*10,ky:Math.sin(hitAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
-  burst(defender.x,defender.y-22,'#f3bb67',20,5.3);burst(attacker.x,attacker.y-22,'#fff0a8',15,4.5);
-  game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
-  popText(attacker.x,attacker.y-58,'TWO-FOLD COUNTER','#ffe28a',13);
+  scheduledTasks.push({at:game.time+.11,fn:()=>{
+   if(defender.dead||attacker.dead||defender.gojoTwofoldCounterSerial!==serial)return;
+   const finishAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+   if(applyDamage)damage(attacker,8.5,defender,{stun:.68,kx:Math.cos(finishAngle)*10,ky:Math.sin(finishAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
+   burst(defender.x,defender.y-22,'#f3bb67',26,6.2);burst(attacker.x,attacker.y-22,'#fff0a8',20,5.2);
+   game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
+   popText(attacker.x,attacker.y-58,'TWO-FOLD COUNTER','#ffe28a',13);
+  }});
  }});
 }
 function damage(target,amount,source,opts={}){
@@ -5467,9 +5473,9 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     return;
    }
    if(idx===3){
-    f.counterWindow=.6;f.counterKind='gojoTwofoldCounter';f.skillCd[idx]=18;f.block=false;
-    setMotion(f,'gojoCounterReady',.6,angle,t);
-    burst(f.x,f.y-23,'#f3bb67',12,3.3);burst(f.x,f.y-23,'#fff0a8',5,2.2);
+    f.counterWindow=.6;f.counterKind='gojoTwofoldCounter';f.skillCd[idx]=20;f.block=false;
+    setMotion(f,'gojoCounterReady',.55,angle,t);
+    burst(f.x,f.y-23,'#f3bb67',16,4.1);burst(f.x,f.y-23,'#fff0a8',7,2.8);
     popText(f.x,f.y-55,'TWO-FOLD COUNTER','#ffe28a',12);showToast('COUNTER READY',550);
    }
   }else{
@@ -7486,20 +7492,37 @@ if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
   if(m==='gojoCounterReady'){
-   const flicker=.5+.5*Math.sin(game.time*22);
-   ctx.globalAlpha=(.3+.35*flicker)*vfxFade;ctx.shadowColor='#f3bb67';ctx.shadowBlur=isMobileDevice?0:14;
-   ctx.strokeStyle='#f3bb67';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(30,-9,12+flicker*3,-.95,.85);ctx.stroke();
-   ctx.fillStyle='#fff0a8';ctx.beginPath();ctx.arc(33,-11,3+flicker*2,0,Math.PI*2);ctx.fill();
+   const flicker=.5+.5*Math.sin(game.time*22),radius=25+flicker*4;
+   ctx.globalAlpha=(.62+.25*flicker)*vfxFade;ctx.shadowColor='#ffca39';ctx.shadowBlur=isMobileDevice?0:17;
+   ctx.strokeStyle='#9a6116';ctx.lineWidth=8;ctx.beginPath();ctx.arc(28,-9,radius,-1.02,.9);ctx.stroke();
+   ctx.strokeStyle='#f2b83f';ctx.lineWidth=4.5;ctx.beginPath();ctx.arc(28,-9,radius,-1.02,.9);ctx.stroke();
+   ctx.strokeStyle='#fff0a8';ctx.lineWidth=2;ctx.beginPath();ctx.arc(28,-9,radius-5,-.92,.78);ctx.stroke();
+   ctx.fillStyle='#ffce4f';ctx.beginPath();ctx.arc(34,-10,7+flicker*2,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#fff8d4';ctx.beginPath();ctx.arc(34,-10,3.4+flicker,0,Math.PI*2);ctx.fill();
   }else{
-   const jab=m==='gojoCounterJab',snap=smoothstep01(clamp(p/.44,0,1)),recover=smoothstep01(clamp((p-.44)/.56,0,1));
-   const maxReach=jab?70:83,reach=p<.44?lerp(15,maxReach,snap):lerp(maxReach,18,recover);
-   const impact=.5+.5*Math.sin(p*Math.PI);
-   ctx.globalAlpha=(.46+.48*impact)*vfxFade;ctx.shadowColor='#ffda58';ctx.shadowBlur=isMobileDevice?0:(jab?13:19);
-   ctx.strokeStyle='#d49a35';ctx.lineWidth=jab?9:11;ctx.beginPath();ctx.moveTo(5,12);ctx.quadraticCurveTo(reach*.46,-21,reach+13,-8);ctx.stroke();
-   ctx.strokeStyle='#ffe58a';ctx.lineWidth=jab?4:5;ctx.beginPath();ctx.moveTo(9,9);ctx.quadraticCurveTo(reach*.5,-17,reach+15,-8);ctx.stroke();
-   ctx.strokeStyle='#fff8d7';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(17,7);ctx.quadraticCurveTo(reach*.54,-13,reach+16,-8);ctx.stroke();
-   ctx.fillStyle='#fff0a8';ctx.beginPath();ctx.arc(reach+16,-8,jab?4.5:6,0,Math.PI*2);ctx.fill();
-   if(!jab){ctx.globalAlpha*=.68;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(reach+11,-8,13+impact*6,-.85,.82);ctx.stroke()}
+   const jab=m==='gojoCounterJab',snap=smoothstep01(clamp(p/(jab?.24:.21),0,1)),recover=smoothstep01(clamp((p-(jab?.43:.38))/(jab?.57:.62),0,1));
+   const maxReach=jab?88:104,reach=p<(jab?.43:.38)?lerp(14,maxReach,snap):lerp(maxReach,17,recover);
+   const impact=.5+.5*Math.sin(p*Math.PI),tipX=reach+20,tipY=-7;
+   ctx.globalAlpha=(.78+.22*impact)*vfxFade;ctx.shadowColor='#ffc52f';ctx.shadowBlur=isMobileDevice?0:(jab?19:25);
+   // Broad, layered ribbons make the cursed-energy punch read clearly even without glow.
+   const punchPath=()=>{ctx.beginPath();ctx.moveTo(1,15);ctx.bezierCurveTo(reach*.24,-10,reach*.56,-25,tipX,tipY)};
+   ctx.strokeStyle='rgba(105,58,8,.92)';ctx.lineWidth=jab?24:29;punchPath();ctx.stroke();
+   ctx.strokeStyle='#c77b16';ctx.lineWidth=jab?19:23;punchPath();ctx.stroke();
+   ctx.strokeStyle='#ffc83c';ctx.lineWidth=jab?13:16;punchPath();ctx.stroke();
+   ctx.strokeStyle='#fff0a5';ctx.lineWidth=jab?6:8;punchPath();ctx.stroke();
+   // Fast trailing streaks and a bright impact flare give the punch a sharp snap.
+   for(let i=0;i<3;i++){
+    const y=-18+i*12,offset=i*5;
+    ctx.globalAlpha=(.68-i*.12)*vfxFade;ctx.strokeStyle=i===1?'#fff4bd':'#ffd65a';ctx.lineWidth=i===1?3.5:2.5;
+    ctx.beginPath();ctx.moveTo(-17-offset,y+8);ctx.quadraticCurveTo(reach*.34,y-9,tipX-10,y-3+i*3);ctx.stroke();
+   }
+   ctx.globalAlpha=(.82+.18*impact)*vfxFade;ctx.fillStyle='#ffcf47';ctx.beginPath();ctx.arc(tipX,tipY,jab?10+impact*3:13+impact*5,0,Math.PI*2);ctx.fill();
+   ctx.fillStyle='#fff5c5';ctx.beginPath();ctx.arc(tipX+1,tipY-1,jab?5.5+impact:7+impact*2,0,Math.PI*2);ctx.fill();
+   ctx.strokeStyle='#fff0a8';ctx.lineWidth=3.5;ctx.beginPath();ctx.arc(tipX-1,tipY,jab?12+impact*4:16+impact*6,-.95,.95);ctx.stroke();
+   if(impact>.35){
+    ctx.globalAlpha=(impact-.35)*1.15*vfxFade;ctx.strokeStyle='#ffe17a';ctx.lineWidth=2.5;
+    for(let i=0;i<5;i++){const a=-1.1+i*.55;ctx.beginPath();ctx.moveTo(tipX+Math.cos(a)*8,tipY+Math.sin(a)*8);ctx.lineTo(tipX+Math.cos(a)*(20+impact*8),tipY+Math.sin(a)*(20+impact*8));ctx.stroke()}
+   }
   }
   ctx.restore();
  }else if(m==='gojoTwofold'||m==='yujiStrikes'||m==='yujiDropkick'||m==='hakariFever'){
@@ -8659,10 +8682,11 @@ function drawHeadHands(f,deferMotionVfx=false){
    }else if(name==='gojoCounterReady'){
     const ready=.5+.5*Math.sin(game.time*18);handB=P(23+ready*3,-18,-5);handA=P(10,18,4);handBScale=1.16;handAScale=.94;handBAngle=angle-.08;
    }else if(name==='gojoCounterJab'||name==='gojoCounterFinish'){
-    const jab=name==='gojoCounterJab',snap=smoothstep01(clamp(progress/.44,0,1)),recover=smoothstep01(clamp((progress-.44)/.56,0,1)),maxReach=jab?reach+54:reach+68;
-    const forward=progress<.44?lerp(12,maxReach,snap):lerp(maxReach,14,recover);
-    if(jab){handB=P(forward,-17,-4);handA=P(9,19,4);handBScale=1.28;handAScale=.92;handBAngle=angle-.08}
-    else{handA=P(forward,16,-3);handB=P(9,-19,4);handAScale=1.22;handBScale=.92;handAAngle=angle+.08}
+    const jab=name==='gojoCounterJab',snap=smoothstep01(clamp(progress/(jab?.24:.21),0,1)),recover=smoothstep01(clamp((progress-(jab?.43:.38))/(jab?.57:.62),0,1)),maxReach=jab?reach+72:reach+88;
+    const forward=progress<(jab?.43:.38)?lerp(10,maxReach,snap):lerp(maxReach,12,recover);
+    // The counter uses the opposite hand for each rapid strike, just like Yuji's alternating counter sequence.
+    if(jab){handB=P(forward,-17,-5);handA=P(8,19,5);handBScale=1.38;handAScale=.9;handBAngle=angle-.13}
+    else{handA=P(forward,16,-4);handB=P(8,-19,5);handAScale=1.34;handBScale=.9;handAAngle=angle+.13}
    }else if(name==='gojoTwofold'){
     handA=P(38+16*pulse,25-9*pulse,-12+10*progress);handB=P(38+16*pulse,-25+9*pulse,-12+10*progress);handAScale=1.15;handBScale=1.15;
    }else if(name==='gojoLimitless'){
