@@ -2937,9 +2937,9 @@ let player,enemy,trainingDummy;
 
 let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
-const ONLINE_STATE_SEND_RATE=30,ONLINE_STATE_SEND_INTERVAL=1/ONLINE_STATE_SEND_RATE,ONLINE_STATE_INTERVAL_MS=1000/ONLINE_STATE_SEND_RATE;
-const ONLINE_REMOTE_INTERPOLATION_MIN_MS=38,ONLINE_REMOTE_INTERPOLATION_MAX_MS=82,ONLINE_MAX_EXTRAPOLATION_MS=120;
-let onlineRemoteInterpolationDelayMs=44,onlineStateArrivalAt=0,onlineStateJitterMs=0;
+const ONLINE_STATE_SEND_RATE=20,ONLINE_STATE_SEND_INTERVAL=1/ONLINE_STATE_SEND_RATE,ONLINE_STATE_INTERVAL_MS=1000/ONLINE_STATE_SEND_RATE;
+const ONLINE_REMOTE_INTERPOLATION_MIN_MS=52,ONLINE_REMOTE_INTERPOLATION_MAX_MS=104,ONLINE_MAX_EXTRAPOLATION_MS=120;
+let onlineRemoteInterpolationDelayMs=60,onlineStateArrivalAt=0,onlineStateJitterMs=0;
 let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineServerUrlSetting=ONLINE_DEFAULT_SERVER_URL,onlinePlayerNameSetting='',onlineStatusMessage='READY',onlineConnecting=false;
 let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
@@ -3545,7 +3545,6 @@ function updateOnlineRemotePlayers(dt){
 }
 function updateOnlineNetwork(dt){
  if(!onlineMode||!onlineRoom||!player)return;
- updateOnlineRemotePlayers(dt);
  onlineSendAccumulator+=Math.min(dt,.1);onlinePingAccumulator+=Math.min(dt,.1);
  if(onlinePingAccumulator>=1){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
  const networkSendInterval=ONLINE_STATE_SEND_INTERVAL;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
@@ -3610,7 +3609,7 @@ function drawOnlineNameplate(remote){
 function startOnlineMatch(){
  stopOnlinePlayerCountPolling();stopOnlineFightAnimation();stopCharacterPreviewAnimation();stopAccessoryPreviewAnimation();
  onlineMode=true;updatePauseActionButton();
- resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;onlineStateArrivalAt=0;onlineStateJitterMs=0;onlineRemoteInterpolationDelayMs=44;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
+ resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;onlineStateArrivalAt=0;onlineStateJitterMs=0;onlineRemoteInterpolationDelayMs=60;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
  if(onlineRoom&&onlineRoom.state&&onlineRoom.state.players){
   let localState=null;
   if(typeof onlineRoom.state.players.get==='function')localState=onlineRoom.state.players.get(onlineSessionId);
@@ -4452,7 +4451,7 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
   const grabTickDamage=kind==='yujiDrag'?1.1:kind==='gojoBlueRapid'?.5:kind==='todoThrow'?1.8:kind==='mahitoTransfigure'?2*(MAHITO_MODES[f.soulMode]||MAHITO_MODES[0]).damage:kind==='gojoFaceGrater'?3.2:kind==='sukunaCleave'?2.1:kind==='sukunaFlurry'?1.6:kind==='bloodEdge'?1.9:0;
   const grabTickInterval=kind==='yujiDrag'?.25:kind==='gojoBlueRapid'?.22:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
   const grabKnockback=kind==='yujiDrag'?17:kind==='gojoBlueRapid'?19:kind==='sukunaFlurry'?18:kind==='toadPull'?0:13;
-  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback,guaranteedContact:kind==='gojoBlueRapid',ignoreInvuln:kind==='gojoBlueRapid',unblockable:kind==='gojoBlueRapid'})}catch(e){}}
+  if(f===player){try{onlineRoom.send('combat:hit',{targetId:t.onlineSessionId,move,damageType:'melee',grabDuration:duration,grabTickDamage,grabTickInterval,grabFinishDamage:kind==='sukunaCleave'?Math.max(10,t.hp*.4):Number(finishDamage)||0,grabKnockback,guaranteedContact:kind==='gojoBlueRapid',ignoreInvuln:true,unblockable:kind==='gojoBlueRapid'})}catch(e){}}
   f.grabTarget=t;f.onlineGrabTarget=t;f.grabKind=kind;f.grabElapsed=0;f.grabDuration=duration;f.grabTick=.08;f.grabAngle=angle;f.grabColor=color;f.grabFinishDamage=finishDamage||0;f.vx=0;f.vy=0;f.attackAnim=duration;f.attackType='grab';
   t.capturedBy=f;t.block=false;t.stun=Math.max(t.stun,duration+.2);t.vx=0;t.vy=0;t.motion={name:'captured_'+kind,t:0,duration,angle,target:f};
   setMotion(f,kind==='gojoBlueRapid'?'gojoRapidFlurry':move,duration,angle,t);return true;
@@ -6128,7 +6127,7 @@ function update(dt){if(game.cutsceneTimer>0){
   }
  }
  return
-}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);if(onlineMode){for(const remote of onlineRemotePlayers.values())updateGrab(remote,dt)}updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();updateBuildingRespawns(dt);updateLocalVehicleRespawns(dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
+}if(game.hitStop>0){game.hitStop=Math.max(0,game.hitStop-dt);return}game.time+=dt;updatePlayerHitStreak(dt);updateDomainClash(dt);runScheduledTasks();if(!isFullScreenDomainActive())updateTrashCanRespawns(dt);handleInput(dt);if(player&&!player.dead){if(mobileControlsEnabled){updateMobileAimPointer();player.face=Math.atan2(mobileFacing.y,mobileFacing.x)}else{const aim=aimWorld();player.face=Math.atan2(aim.y-player.y,aim.x-player.x)}}if(!onlineMode)ai(dt);if(onlineMode)updateOnlineRemotePlayers(dt);if(player.dead){if(!game.playerDeathNotified){game.playerDeathNotified=true;showCombatAnnouncement('YOU DIED','death')}if(onlineMode){player.respawn=Math.max(0,player.respawn||0)}else{player.respawn-=dt;if(player.respawn<=0){const savedAwakenMeter=player.meter;player=makeFighter('player',selected,950,750);player.meter=clamp(savedAwakenMeter,0,100);player.invuln=1.2;game.playerDeathNotified=false;updateHud(true);showToast('YOU RESPAWNED · METER KEPT',900)}}}else{updateGrab(player,dt);if(onlineMode){for(const remote of onlineRemotePlayers.values())updateGrab(remote,dt)}updateFighter(player,dt);updateVesselAwakenSequence(player,dt)}updateGrab(enemy,dt);updateFighter(enemy,dt);updateVesselAwakenSequence(enemy,dt);updateCityTrainImpact();updateBuildingRespawns(dt);updateLocalVehicleRespawns(dt);if(!isFullScreenDomainActive())updateTrainingDummy(dt);updateProjectiles(dt);updateSukunaFireZones(dt);updateDoorTraps(dt);if(!isFullScreenDomainActive())updateDestructibles(dt);for(let i=trailStrokes.length-1;i>=0;i--){trailStrokes[i].life-=dt;if(trailStrokes[i].life<=0)trailStrokes.splice(i,1)}const particleDamping=Math.pow(.97,dt*60);for(let i=particles.length-1;i>=0;i--){let p=particles[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.vx*=particleDamping;p.vy*=particleDamping;p.life-=dt;if(p.life<=0)particles.splice(i,1)}for(let i=debris.length-1;i>=0;i--){let p=debris[i];p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;p.z+=p.vz*60*dt;p.vz-=18*dt;p.rot+=p.vr;if(p.z<0){p.z=0;p.vz*= -.35;p.vx*=.75;p.vy*=.75}p.life-=dt;if(p.life<=0)debris.splice(i,1)}for(let i=texts.length-1;i>=0;i--){let t=texts[i];t.life-=dt;t.y-=40*dt;if(t.life<=0)texts.splice(i,1)}// Keep purely visual effect pools bounded on desktop as well as mobile.
  const particleLimit=isMobileDevice?40:320,debrisLimit=isMobileDevice?16:120,trailLimit=isMobileDevice?34:240;
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
