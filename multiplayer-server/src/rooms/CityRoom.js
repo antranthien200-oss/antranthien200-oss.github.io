@@ -19,7 +19,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),distance=(a,b)=>Math.hypot(a.x-b.
 const pointSegmentDistance=(point,a,b)=>{const dx=b.x-a.x,dy=b.y-a.y,length=dx*dx+dy*dy||1,t=clamp(((point.x-a.x)*dx+(point.y-a.y)*dy)/length,0,1);return Math.hypot(point.x-(a.x+dx*t),point.y-(a.y+dy*t))};
 const CLASHABLE_DOMAINS=new Set(["void","shrine","hakari","soul","yuta","trash"]);
 export class CityRoom extends Room{
- maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/30;maxMessagesPerSecond=180;
+ maxClients=MAX_PLAYERS;autoDispose=false;patchRate=1000/20;maxMessagesPerSecond=180;
  onCreate(){
   this.maxClients=MAX_PLAYERS;
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
@@ -596,7 +596,8 @@ modifyProjectile(client,payload={}){
    const grabKnockback=Number.isFinite(Number(payload.grabKnockback))?clamp(Number(payload.grabKnockback),0,40):grab.knockback;
    target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=grab.kind==="gojoBlueRapid"?.08:grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
    target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grabDuration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grabDuration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;
-   if(guaranteedRapidGrab){a.motionName="gojoRapidFlurry";a.motionProgress=0;a.motionDuration=grabDuration;a.motionStartedAt=Date.now();a.attackAnim=grabDuration;a.attackType="grab"}
+   // Replicate the attacker's grab pose for every supported grab, not only Gojo Rapid Punches.
+   a.motionName=grab.kind==="gojoBlueRapid"?"gojoRapidFlurry":move;a.motionProgress=0;a.motionDuration=grabDuration;a.motionStartedAt=Date.now();a.attackAnim=grabDuration;a.attackType="grab";
    return;
   }
   const jackpotProtected=this.consumeJackpotFuel(target,amount);
