@@ -541,7 +541,7 @@ modifyProjectile(client,payload={}){
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
   if(Math.abs(facing)>1.18)return false;
   const projectile=["bullet","projectile"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-  const hurt=(target,amount,stun,push)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+nx*push,-60,60);target.vy=clamp((Number(target.vy)||0)+ny*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
+  const hurt=(target,amount,stun,push,directionX=nx,directionY=ny)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+directionX*push,-60,60);target.vy=clamp((Number(target.vy)||0)+directionY*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
   defender.counterKind="";defender.counterWindow=0;
   if(kind==="sukunaCleaveCounter"&&(projectile||incomingType==="domain"||d>220))return false;
   if(kind==="yutaOutburst"){defender.invuln=Math.max(defender.invuln,.5);if(!projectile){attacker.stun=Math.max(attacker.stun,.48);attacker.vx=clamp((Number(attacker.vx)||0)-nx*11,-60,60);attacker.vy=clamp((Number(attacker.vy)||0)-ny*11,-60,60)}return true}
@@ -555,10 +555,11 @@ modifyProjectile(client,payload={}){
   }
   if(kind==="door"){if(incomingType!=="melee")return projectile;hurt(attacker,5,.5,7);return true}
   if(kind==="gojoTwofoldCounter"){
-   defender.invuln=Math.max(defender.invuln,.82);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
+   defender.invuln=Math.max(defender.invuln,.72);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
    attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
+   attacker.stun=Math.max(attacker.stun,.42);attacker.vx=0;attacker.vy=0;
+   // The first quick yellow-energy jab replaces Yuji's initial block beat.
    hurt(attacker,2.5,.16,0);
-   if(!attacker.dead)hurt(attacker,8.5,.68,10);
    let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
    if(!resolvedAttackerId||!resolvedDefenderId){
     for(const [playerId,player] of this.state.players){
@@ -566,7 +567,20 @@ modifyProjectile(client,payload={}){
      if(player===defender)resolvedDefenderId=playerId;
     }
    }
-   if(resolvedAttackerId&&resolvedDefenderId)this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:Date.now()});
+   if(resolvedAttackerId&&resolvedDefenderId){
+    this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:Date.now()});
+    setTimeout(()=>{
+     const currentDefender=this.state.players.get(resolvedDefenderId),currentAttacker=this.state.players.get(resolvedAttackerId);
+     if(!currentDefender||!currentAttacker||currentDefender.dead||currentAttacker.dead)return;
+     currentAttacker.stun=Math.max(currentAttacker.stun,.22);currentAttacker.vx=0;currentAttacker.vy=0;
+     setTimeout(()=>{
+      const finishDefender=this.state.players.get(resolvedDefenderId),finishAttacker=this.state.players.get(resolvedAttackerId);
+      if(!finishDefender||!finishAttacker||finishDefender.dead||finishAttacker.dead)return;
+      const finalDx=finishAttacker.x-finishDefender.x,finalDy=finishAttacker.y-finishDefender.y,finalLength=Math.hypot(finalDx,finalDy)||1;
+      hurt(finishAttacker,8.5,.68,10,finalDx/finalLength,finalDy/finalLength);
+     },110);
+    },170);
+   }
    return true;
   }
   if(kind==="manji"){defender.invuln=Math.max(defender.invuln,.72);hurt(attacker,8.5,.68,10);return true}
