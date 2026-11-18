@@ -49,6 +49,10 @@ test("counter windows are limited to intended character actions",()=>{
  assert.equal(counterSettings("trashman","special",false).kind,"trashSwap");
  assert.equal(counterSettings("vessel","special",true).kind,"sukunaCleaveCounter");
  assert.equal(counterSettings("honored","special",false),null);
+ const yuji=counterSettings("vessel","4",false),gojo=counterSettings("honored","4",false);
+ assert.equal(gojo.window,yuji.window);
+ assert.equal(gojo.cooldown,yuji.cooldown);
+ assert.equal(gojo.cooldown,20);
 });
 
 test("movement intent is normalized and bounded independently of reported position",()=>{
