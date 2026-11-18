@@ -23,7 +23,7 @@ export class CityRoom extends Room{
  onCreate(){
   this.maxClients=MAX_PLAYERS;
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
-  this.lastUpdateAt=new Map();this.lastActivityAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.lastBuildingAt=new Map();this.projectiles=new Map();this.fireZones=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
+  this.lastUpdateAt=new Map();this.lastActivityAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.blackFlashFollowUps=new Map();this.lastBuildingAt=new Map();this.projectiles=new Map();this.fireZones=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
@@ -39,7 +39,7 @@ export class CityRoom extends Room{
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
-  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastActivityAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);
+  this.state.players.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastActivityAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.blackFlashFollowUps.delete(sessionId);
   for(const [zoneId,zone] of this.fireZones)if(zone.ownerId===sessionId){this.fireZones.delete(zoneId);this.broadcast("combat:fire-zone-end",{sessionId,id:zoneId})}
   for(const [key,projectile] of this.projectiles)if(projectile.ownerId===sessionId){this.projectiles.delete(key);this.broadcast("combat:projectile-end",{sessionId,id:projectile.clientId})}
   for(const [id,clash] of this.domainClashes)if(clash.participants.includes(sessionId)){
@@ -77,7 +77,7 @@ export class CityRoom extends Room{
   p.tenDogActive=false;p.tenDogCharges=0;p.tenDogTimer=0;p.tenGardenTimer=0;p.soulMode=0;p.convergenceOrbs=0;p.tenBase=false;p.shadowTimer=0;
   p.rikaSummoned=false;p.rikaMode=false;p.reserveBallWindow=0;p.yutaCopyIndex=0;
   p.grabbedBy="";p.activeGrabTarget="";p.grabKind="";p.grabRemaining=0;p.grabDuration=0;p.grabTick=0;p.grabTickInterval=0;p.grabTickDamage=0;p.grabFinishDamage=0;p.grabKnockback=0;
-  this.lastActionAt.delete(id);this.lastCarControlAt.delete(id);this.lastUpdateAt.set(id,now);
+  this.lastActionAt.delete(id);this.blackFlashFollowUps.delete(id);this.lastCarControlAt.delete(id);this.lastUpdateAt.set(id,now);
   client.send("player:reset",{character:p.character,x:p.x,y:p.y,invuln:p.invuln});
  }
  updatePlayer(client,payload){
@@ -145,8 +145,13 @@ combatAction(client,payload={}){
   const counter=counterSettings(p.character,kind,p.awakened);
   const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten"),wasAwakened=p.awakened;
   const cooldown=kind==="domain02"?24:modeToggle?.08:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
-  const now=Date.now(),times=this.lastActionAt.get(id)||new Map();
-  if(now-(times.get(kind)||0)<cooldown*1000)return;
+  const now=Date.now(),times=this.lastActionAt.get(id)||new Map(),blackFlashState=this.blackFlashFollowUps.get(id);
+  const blackFlashFollowUp=kind==="3"&&p.character==="vessel"&&!p.awakened&&payload.blackFlashFollowUp===true&&blackFlashState&&!blackFlashState.used&&now-blackFlashState.startedAt>=160&&now-blackFlashState.startedAt<=2000;
+  if(!blackFlashFollowUp&&now-(times.get(kind)||0)<cooldown*1000)return;
+  if(kind==="3"&&p.character==="vessel"&&!p.awakened){
+   if(blackFlashFollowUp)blackFlashState.used=true;
+   else this.blackFlashFollowUps.set(id,{startedAt:now,used:false});
+  }
   if(kind==="dash"&&p.stun>0){p.stun=0;p.invuln=Math.max(p.invuln,.24)}
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
   const requestedTargetId=String(payload.targetId||""),requestedTarget=this.state.players.get(requestedTargetId);
@@ -185,7 +190,7 @@ combatAction(client,payload={}){
   }
   times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;if(kind==="3"&&p.character==="honored"&&!p.awakened)p.gojoRapidAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
-  this.broadcast("combat:action",{sessionId:id,kind,character:p.character,awakened:p.awakened,modeToggle,awakenedJustNow:kind==="awaken"&&!modeToggle&&!wasAwakened&&p.awakened,serverTime:now,face:p.face,targetId:actionTargetId,aimX:actionAimX,aimY:actionAimY,jackpot:boolState("jackpot"),awakeMode:textState("awakeMode",24),awakeFuel:numberState("awakeFuel",100),tenBase:boolState("tenBase"),rikaMode:boolState("rikaMode"),rikaSummoned:boolState("rikaSummoned"),soulMode:numberState("soulMode",2),yutaCopyIndex:numberState("yutaCopyIndex",10),convergenceOrbs:numberState("convergenceOrbs",4),reserveBallWindow:numberState("reserveBallWindow",3),tenDogActive:boolState("tenDogActive"),tenDogCharges:numberState("tenDogCharges",3),tenDogTimer:numberState("tenDogTimer",30),tenGardenTimer:numberState("tenGardenTimer",999),shadowTimer:numberState("shadowTimer",30),sukunaFireCast:numberState("sukunaFireCast",5),...(blueSuction||{})});
+  this.broadcast("combat:action",{sessionId:id,kind,blackFlashFollowUp,character:p.character,awakened:p.awakened,modeToggle,awakenedJustNow:kind==="awaken"&&!modeToggle&&!wasAwakened&&p.awakened,serverTime:now,face:p.face,targetId:actionTargetId,aimX:actionAimX,aimY:actionAimY,jackpot:boolState("jackpot"),awakeMode:textState("awakeMode",24),awakeFuel:numberState("awakeFuel",100),tenBase:boolState("tenBase"),rikaMode:boolState("rikaMode"),rikaSummoned:boolState("rikaSummoned"),soulMode:numberState("soulMode",2),yutaCopyIndex:numberState("yutaCopyIndex",10),convergenceOrbs:numberState("convergenceOrbs",4),reserveBallWindow:numberState("reserveBallWindow",3),tenDogActive:boolState("tenDogActive"),tenDogCharges:numberState("tenDogCharges",3),tenDogTimer:numberState("tenDogTimer",30),tenGardenTimer:numberState("tenGardenTimer",999),shadowTimer:numberState("shadowTimer",30),sukunaFireCast:numberState("sukunaFireCast",5),...(blueSuction||{})});
  }
  requestDomain(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),requested=String(payload.domainType||"");
