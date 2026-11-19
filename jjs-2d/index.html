@@ -4664,11 +4664,12 @@ function updateGrab(f,dt){
    f.onlineGrabTrailTimer=.055;
    const last=f.onlineGrabTrailPos,color=f.grabColor||(kind==='yujiDrag'?'#e3344e':'#39bfff');
    if(last){
+    // The movement trail belongs to the attacker only. The captured opponent
+    // should move cleanly without leaving a second body trail.
     if(Math.hypot(f.x-last.fx,f.y-last.fy)>.45)trailStrokes.push({x1:last.fx,y1:last.fy-23,x2:f.x,y2:f.y-23,life:.32,max:.32,color,width:10});
-    if(Math.hypot(t.x-last.tx,t.y-last.ty)>.45)trailStrokes.push({x1:last.tx,y1:last.ty-23,x2:t.x,y2:t.y-23,life:.34,max:.34,color,width:11});
     if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
    }
-   f.onlineGrabTrailPos={fx:f.x,fy:f.y,tx:t.x,ty:t.y};
+   f.onlineGrabTrailPos={fx:f.x,fy:f.y};
   }
   return;
  }
@@ -4686,10 +4687,9 @@ function updateGrab(f,dt){
  else if(kind==='bloodEdge'){f.x+=fx*35*dt;f.y+=fy*35*dt;collideWorld(f);t.x=f.x+fx*42;t.y=f.y+fy*42}
  else{const orbit=a+progress*Math.PI*2;t.x=f.x+Math.cos(orbit)*43;t.y=f.y+Math.sin(orbit)*28}
  t.vx=0;t.vy=0;t.jump=0;if(t.motion){t.motion.t=f.grabElapsed;t.motion.angle=a}
- const color=f.grabColor||'#e83c57',isLongDrag=kind==='yujiDrag'||kind==='gojoBlueRapid',attackerTravel=Math.hypot(f.x-oldX,f.y-oldY),targetTravel=Math.hypot(t.x-oldTargetX,t.y-oldTargetY);
- // Keep the visual trails attached to the moving fighters, not to particle bursts.
+ const color=f.grabColor||'#e83c57',isLongDrag=kind==='yujiDrag'||kind==='gojoBlueRapid',attackerTravel=Math.hypot(f.x-oldX,f.y-oldY);
+ // Only the attacking fighter leaves a movement trail; the grabbed target does not.
  if(attackerTravel>0.65)trailStrokes.push({x1:oldX,y1:oldY-23,x2:f.x,y2:f.y-23,life:isLongDrag?.32:.2,max:isLongDrag?.32:.2,color,width:isLongDrag?10:7});
- if(targetTravel>0.65)trailStrokes.push({x1:oldTargetX,y1:oldTargetY-23,x2:t.x,y2:t.y-23,life:isLongDrag?.34:.22,max:isLongDrag?.34:.22,color,width:isLongDrag?11:8});
  if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
  while(f.grabElapsed>=f.grabTick&&f.grabTick<f.grabDuration){
   f.grabTick+=kind==='yujiDrag'?.25:kind==='gojoBlueRapid'?.23:kind==='sukunaCleave'?.14:kind==='sukunaFlurry'?.095:.22;
