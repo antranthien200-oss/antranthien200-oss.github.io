@@ -4255,7 +4255,7 @@ function updateDomainState(f,dt){
   if(!chimeraSuppress){
   if(f.domainType==='shrine'){
    f.domainTick-=dt;
-   if(f.domainTick<=0){f.domainTick=.11;if(inside){const a=Math.atan2(t.y-f.y,t.x-f.x);damage(t,2,f,{stun:.04,color:'#f34a60',damageType:'domain',blockedDamage:.5,ignoreInvuln:true});spawnShrineDomainSlashes(t.x,t.y,a);burst(t.x+rnd(-28,28),t.y+rnd(-28,28),'#fb5267',2,3)}}
+   if(f.domainTick<=0){f.domainTick=.11;if(inside){const a=Math.atan2(t.y-f.y,t.x-f.x);if(!onlineMode||f!==player)damage(t,2,f,{stun:.04,color:'#f34a60',damageType:'domain',blockedDamage:.5,ignoreInvuln:true});spawnShrineDomainSlashes(t.x,t.y,a);burst(t.x+rnd(-28,28),t.y+rnd(-28,28),'#fb5267',2,3)}}
   }else if(f.domainType==='void'){
    f.domainTick-=dt;
    if(f.domainTick<=0){f.domainTick=.35;if(inside){t.stun=Math.max(t.stun,.42);t.invuln=0;burst(t.x+rnd(-18,18),t.y+rnd(-18,18),'#b9caff',2,2)}}
