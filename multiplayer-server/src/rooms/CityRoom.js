@@ -679,6 +679,7 @@ modifyProjectile(client,payload={}){
   const fireArmor=Number(target.sukunaFireCast)>0;
   const grab=grabSettings(a.character,move);
   if(grab){
+   if(grab.kind==="yujiDrag"&&target.block&&!guaranteedRapidGrab)return;
    if(target.vehicleId&&!guaranteedRapidGrab)return;
    if(guaranteedRapidGrab){
     if(target.grabbedBy){const previousOwner=this.state.players.get(target.grabbedBy);if(previousOwner)previousOwner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0}
@@ -858,9 +859,12 @@ killPlayer(p){
   const owner=this.state.players.get(target.grabbedBy);
   if(!owner||owner.dead||owner.activeGrabTarget!==targetId){if(owner)owner.activeGrabTarget="";target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.24);continue}
   const angle=owner.face,fx=Math.cos(angle),fy=Math.sin(angle);
-  if(["yujiDrag","gojoBlueRapid","gojoFaceGrater","bloodEdge","sukunaCleave"].includes(target.grabKind)){
+  // Yuji Drag and Gojo Rapid Punches are client-predicted by the attacking player.
+  // Do not advance their owner a second time here; this used to double their speed
+  // and fight the client's position snapshots. The server still owns the captured target.
+  if(["gojoFaceGrater","bloodEdge","sukunaCleave"].includes(target.grabKind)){
    const gap=target.grabKind==="gojoFaceGrater"?Math.max(0,distance(owner,target)-56):target.grabKind==="sukunaCleave"?Math.max(0,distance(owner,target)-54):Infinity;
-   const speed=target.grabKind==="gojoFaceGrater"?760:target.grabKind==="sukunaCleave"?440:(target.grabKind==="yujiDrag"||target.grabKind==="gojoBlueRapid")?188:35;
+   const speed=target.grabKind==="gojoFaceGrater"?760:target.grabKind==="sukunaCleave"?440:35;
    const step=Number.isFinite(gap)?Math.min(gap,speed*dt):speed*dt;
    const nx=clamp(owner.x+fx*step,45,WORLD_WIDTH-45),ny=clamp(owner.y+fy*step,45,WORLD_HEIGHT-45);
    if(!isBlockedByBuilding({x:nx,y:ny},BUILDING_LAYOUT.filter((b,index)=>!this.state.world.buildings.get(String(index))?.collapsed),29)){owner.x=nx;owner.y=ny}
@@ -895,6 +899,11 @@ killPlayer(p){
   if(target.hp<=0){this.killPlayer(target);continue}
   if(target.grabRemaining<=0){
    const finishedKind=target.grabKind,finish=finishedKind==="sukunaCleave"?Math.max(10,target.hp*.4):target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
+   if(finishedKind==="yujiDrag"||finishedKind==="gojoBlueRapid"){
+    owner.motionName=finishedKind==="yujiDrag"?"yujiCursedDragEnd":"gojoBlueRapidEnd";
+    owner.motionProgress=0;owner.motionDuration=finishedKind==="yujiDrag"?.42:.1;owner.motionStartedAt=now;
+    owner.attackAnim=owner.motionDuration;owner.attackType="skill";
+   }
    const hpBefore=target.hp;target.hp=Math.max(0,target.hp-finish);if(target.hp<hpBefore)target.hpRegenWait=4.5;target.stun=Math.max(target.stun,finishedKind==="sukunaHeadCarry"?1.05:.82);target.invuln=Math.max(target.invuln,.16);
    if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now;target.jump=.5;}
    target.x=clamp(target.x+fx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+fy*push,45,WORLD_HEIGHT-45);
