@@ -25,7 +25,7 @@ export function combatProfile(character,moveName,awakened=false){const m=String(
 export function grabSettings(character,moveName){
  const move=String(moveName||"");
  if(character==="vessel"&&/yujiCursedDrag/i.test(move))return{kind:"yujiDrag",duration:3,tickDamage:1.1,tickInterval:.25,finishDamage:4.3,knockback:17};
- if(character==="honored"&&/gojoBlueRapid/i.test(move))return{kind:"gojoBlueRapid",duration:3.2,tickDamage:.5,tickInterval:.22,finishDamage:9.75,knockback:19};
+ if(character==="honored"&&/gojoBlueRapid/i.test(move))return{kind:"gojoBlueRapid",duration:3.2,tickDamage:.5,tickInterval:.23,finishDamage:9.75,knockback:19};
  if(character==="honored"&&/gojoFaceGrater/i.test(move))return{kind:"gojoFaceGrater",duration:.95,tickDamage:3.2,tickInterval:.22,finishDamage:13,knockback:13};
  if(character==="vessel"&&/sukunaHeadCarryWindup/i.test(move))return{kind:"sukunaHeadCarry",duration:1.66,tickDamage:0,tickInterval:1.66,finishDamage:38,knockback:10};
  if(character==="vessel"&&/sukunaCleave|sukunaFlurry/i.test(move)){const cleave=/sukunaCleave/i.test(move);return{kind:cleave?"sukunaCleave":"sukunaFlurry",duration:1,tickDamage:cleave?2.1:1.6,tickInterval:cleave?.14:.095,finishDamage:cleave?10:16,knockback:cleave?13:18};}
