@@ -56,6 +56,7 @@ export class CityRoom extends Room{
  }
  resetCharacter(client){
   const id=client.sessionId,p=this.state.players.get(id);if(!p)return;
+  this.lastActionAt.get(id)?.delete("special");
   const now=Date.now();
   const spawn=PLAYER_RESPAWN_POINT;
   if(p.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget="";}
@@ -143,12 +144,13 @@ export class CityRoom extends Room{
 combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),kind=String(payload.kind||"");
   const flameArrowAction=!!p&&kind==="2"&&p.character==="vessel"&&p.awakened&&p.stun<=.16;
+  const gojoLimitlessAction=!!p&&kind==="special"&&p.character==="honored";
   if(!p||p.dead||p.vehicleId||(p.stun>0&&kind!=="dash"&&!flameArrowAction)||p.grabbedBy||p.activeGrabTarget||p.blueSuckedBy)return;
   if(!["m1","dash","special","awaken","domain02","1","2","3","4"].includes(kind))return;
   if(kind==="domain02"&&(p.character!=="honored"||(p.awakened===false&&p.meter<100)))return;
   const counter=counterSettings(p.character,kind,p.awakened);
   const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten"),wasAwakened=p.awakened;
-  const cooldown=kind==="domain02"?24:modeToggle?.08:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42));
+  const cooldown=kind==="domain02"?24:modeToggle?.08:(gojoLimitlessAction?15:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42)));
   const now=Date.now(),times=this.lastActionAt.get(id)||new Map(),blackFlashState=this.blackFlashFollowUps.get(id);
   const blackFlashFollowUp=kind==="3"&&p.character==="vessel"&&!p.awakened&&payload.blackFlashFollowUp===true&&blackFlashState&&!blackFlashState.used&&now-blackFlashState.startedAt>=160&&now-blackFlashState.startedAt<=2000;
   if(!blackFlashFollowUp&&now-(times.get(kind)||0)<cooldown*1000)return;
@@ -160,10 +162,29 @@ combatAction(client,payload={}){
   const requestedFace=Number(payload.face);if(Number.isFinite(requestedFace))p.face=clamp(requestedFace,-Math.PI,Math.PI);
   if(flameArrowAction){p.stun=0;this.sukunaFireArrowCasts.set(id,{launchAt:now+2520,angle:p.face})}
   const requestedTargetId=String(payload.targetId||""),requestedTarget=this.state.players.get(requestedTargetId);
-  const actionTargetId=requestedTarget&&requestedTarget!==p&&!requestedTarget.dead?requestedTargetId:"";
+  let actionTargetId=requestedTarget&&requestedTarget!==p&&!requestedTarget.dead?requestedTargetId:"";
   const requestedAimX=Number(payload.aimX),requestedAimY=Number(payload.aimY);
-  const actionAimX=clamp(Number.isFinite(requestedAimX)?requestedAimX:(Number(p.aimX)||p.x),45,WORLD_WIDTH-45);
-  const actionAimY=clamp(Number.isFinite(requestedAimY)?requestedAimY:(Number(p.aimY)||p.y),45,WORLD_HEIGHT-45);
+  let actionAimX=clamp(Number.isFinite(requestedAimX)?requestedAimX:(Number(p.aimX)||p.x),45,WORLD_WIDTH-45);
+  let actionAimY=clamp(Number.isFinite(requestedAimY)?requestedAimY:(Number(p.aimY)||p.y),45,WORLD_HEIGHT-45);
+  if(gojoLimitlessAction){
+   let target=actionTargetId?this.state.players.get(actionTargetId):null;
+   if(!target||target===p||target.dead){
+    target=null;let best=Infinity;
+    for(const [otherId,other] of this.state.players){
+     if(otherId===id||other.dead)continue;
+     const d=Math.hypot(other.x-p.x,other.y-p.y);
+     if(d<best){best=d;target=other;actionTargetId=otherId}
+    }
+   }
+   if(!target)return;
+   const angle=Math.atan2(target.y-p.y,target.x-p.x);
+   p.face=angle;p.x=clamp(target.x-Math.cos(angle)*45,45,WORLD_WIDTH-45);
+   p.y=clamp(target.y-Math.sin(angle)*45,45,WORLD_HEIGHT-45);
+   p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.jump=0;p.block=false;
+   p.attackAnim=0;p.attackType="";
+   p.motionName="gojoLimitless";p.motionProgress=0;p.motionDuration=.58;p.motionStartedAt=now;
+   actionAimX=target.x;actionAimY=target.y;
+  }
   p.aimX=actionAimX;p.aimY=actionAimY;
   const boolState=key=>typeof payload[key]==="boolean"?payload[key]:!!p[key];
   const numberState=(key,max)=>clamp(Number.isFinite(Number(payload[key]))?Number(payload[key]):Number(p[key])||0,0,max);
