@@ -4401,7 +4401,7 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
  if(defender.onlineSessionId)defender.counterMotionOverrideUntil=performance.now()+620;
  // Gojo replaces Yuji's first blocking beat with a fast punch from one hand.
  setMotion(defender,'gojoCounterJab',.17,angle,attacker);
- burst(defender.x,defender.y-23,'#f3bb67',18,4.8);burst(attacker.x,attacker.y-23,'#fff0a8',8,3.2);
+ burst(defender.x,defender.y-23,'#ffc83c',22,5.8);burst(attacker.x,attacker.y-23,'#fff8cf',10,4.1);
  if(applyDamage)damage(attacker,2.5,defender,{stun:.16,kx:0,ky:0,color:'#ffdc58',unblockable:true,ignoreInvuln:true});
  scheduledTasks.push({at:game.time+.17,fn:()=>{
   if(defender.dead||attacker.dead||defender.gojoTwofoldCounterSerial!==serial)return;
@@ -4412,9 +4412,10 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
    if(defender.dead||attacker.dead||defender.gojoTwofoldCounterSerial!==serial)return;
    const finishAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
    if(applyDamage)damage(attacker,8.5,defender,{stun:.68,kx:Math.cos(finishAngle)*10,ky:Math.sin(finishAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
-   burst(defender.x,defender.y-22,'#f3bb67',26,6.2);burst(attacker.x,attacker.y-22,'#fff0a8',20,5.2);
-   game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
-   popText(attacker.x,attacker.y-58,'TWO-FOLD COUNTER','#ffe28a',13);
+   burst(defender.x,defender.y-22,'#ffc83c',30,7.2);burst(attacker.x,attacker.y-22,'#fff8cf',22,6.1);
+   burst(attacker.x,attacker.y-28,'#ffffff',5,2.8);
+   game.hitStop=Math.max(game.hitStop,.045);game.shake=Math.max(game.shake,5.5);
+   popText(attacker.x,attacker.y-58,'TWO-FOLD COUNTER','#fff0a3',14);
   }});
  }});
 }
@@ -5560,8 +5561,8 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    if(idx===3){
     f.counterWindow=.6;f.counterKind='gojoTwofoldCounter';f.skillCd[idx]=20;f.block=false;
     setMotion(f,'gojoCounterReady',.55,angle,t);
-    burst(f.x,f.y-23,'#f3bb67',16,4.1);burst(f.x,f.y-23,'#fff0a8',7,2.8);
-    popText(f.x,f.y-55,'TWO-FOLD COUNTER','#ffe28a',12);showToast('COUNTER READY',550);
+    burst(f.x,f.y-23,'#ffc83c',20,5.2);burst(f.x,f.y-23,'#fff4bd',9,3.6);
+    popText(f.x,f.y-55,'TWO-FOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
    }
   }else{
    if(idx===0){projectiles.push({x:f.x+Math.cos(angle)*35,y:f.y+Math.sin(angle)*35,vx:0,vy:0,r:30,life:4,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2});f.skillCd[idx]=17;burst(f.x,f.y,'#55cfff',25,5);showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
@@ -7577,38 +7578,54 @@ if(m==='gojoBlueSpin'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
   if(m==='gojoCounterReady'){
-   // Keep the counter stance close to Yuji's Manji Block, but use Gojo's yellow energy.
-   const pulse=.5+.5*Math.sin(game.time*18),radius=37+pulse*4;
-   ctx.globalAlpha=(.65+.2*pulse)*vfxFade;ctx.shadowColor='#ffc83c';ctx.shadowBlur=isMobileDevice?0:12;
-   ctx.strokeStyle='rgba(255,214,143,.82)';ctx.lineWidth=4+pulse*2;
-   ctx.beginPath();ctx.arc(20,0,radius,-1.08,1.08);ctx.stroke();
-   ctx.strokeStyle='#f3bb67';ctx.lineWidth=2.5;
-   ctx.beginPath();ctx.arc(20,0,radius-7,-.92,.92);ctx.stroke();
-   ctx.globalAlpha=(.55+.2*pulse)*vfxFade;ctx.strokeStyle='#fff4c8';ctx.lineWidth=2;
-   ctx.beginPath();ctx.moveTo(38,-24);ctx.quadraticCurveTo(57,0,38,24);ctx.stroke();
-   const orb=ctx.createRadialGradient(44,0,0,44,0,9+pulse*4);
-   orb.addColorStop(0,'#fff8d9');orb.addColorStop(.42,'#ffe18a');orb.addColorStop(1,'rgba(255,194,48,0)');
-   ctx.fillStyle=orb;ctx.beginPath();ctx.arc(44,0,9+pulse*4,0,Math.PI*2);ctx.fill();
-  }else{
-   // Same compact curved hand trail used by Yuji's Manji counter, recolored for Gojo.
-   const jab=m==='gojoCounterJab',beat=Math.sin(Math.PI*clamp(p,0,1));
-   const reach=14+beat*(jab?39:45),tipX=reach+24,tipY=-4;
-   ctx.globalAlpha=(.28+beat*.55)*vfxFade;ctx.shadowColor='#ffc83c';ctx.shadowBlur=isMobileDevice?0:19;
-   const g=ctx.createLinearGradient(4,0,tipX,0);
-   g.addColorStop(0,'rgba(255,198,57,0)');g.addColorStop(.5,'#ffc83c');g.addColorStop(1,'#fff5c9');
-   ctx.strokeStyle=g;ctx.lineWidth=jab?11:12;
-   ctx.beginPath();ctx.moveTo(2,16);ctx.quadraticCurveTo(reach*.55,-15,tipX,-4);ctx.stroke();
-   ctx.globalAlpha=(.72+.2*beat)*vfxFade;ctx.shadowBlur=isMobileDevice?0:8;
-   ctx.strokeStyle='rgba(255,247,218,.96)';ctx.lineWidth=2.5;
-   ctx.beginPath();ctx.moveTo(9,13);ctx.quadraticCurveTo(reach*.6,-10,tipX+3,-4);ctx.stroke();
-   ctx.globalAlpha=(.4+beat*.45)*vfxFade;ctx.strokeStyle='#ffd66a';ctx.lineWidth=2;
-   ctx.beginPath();ctx.arc(reach+14,-4,14+beat*8,-.85,.85);ctx.stroke();
-   const orb=ctx.createRadialGradient(tipX,-4,0,tipX,-4,9+beat*4);
-   orb.addColorStop(0,'#fff8dc');orb.addColorStop(.4,'#ffe38e');orb.addColorStop(1,'rgba(255,191,43,0)');
-   ctx.globalAlpha=(.75+.2*beat)*vfxFade;ctx.fillStyle=orb;
-   ctx.beginPath();ctx.arc(tipX,-4,9+beat*4,0,Math.PI*2);ctx.fill();
-  }
-  ctx.restore(); }else if(m==='gojoTwofold'||m==='yujiStrikes'||m==='yujiDropkick'||m==='hakariFever'){
+    // Bold gold guard cue, following the layered impact style of Yuji's Manji counter.
+    const pulse=.5+.5*Math.sin(game.time*18),radius=43+pulse*6;
+    ctx.globalAlpha=(.72+.22*pulse)*vfxFade;ctx.shadowColor='#ffc83c';ctx.shadowBlur=isMobileDevice?0:18;
+    ctx.strokeStyle='rgba(255,186,53,.94)';ctx.lineWidth=8+pulse*2;
+    ctx.beginPath();ctx.arc(20,0,radius,-1.12,1.12);ctx.stroke();
+    ctx.strokeStyle='#fff0a8';ctx.lineWidth=3.5;
+    ctx.beginPath();ctx.arc(20,0,radius-8,-1.02,1.02);ctx.stroke();
+    ctx.strokeStyle='#f3a82e';ctx.lineWidth=2.5;
+    ctx.beginPath();ctx.arc(20,0,radius+7,-.92,.92);ctx.stroke();
+    ctx.globalAlpha=(.78+.18*pulse)*vfxFade;ctx.strokeStyle='#fff8d9';ctx.lineWidth=3;
+    ctx.beginPath();ctx.moveTo(35,-30);ctx.quadraticCurveTo(66,0,35,30);ctx.stroke();
+    for(let i=0;i<3;i++){
+     const a=-.82+i*.82,rx=20+Math.cos(a)*radius,ry=Math.sin(a)*radius;
+     ctx.globalAlpha=(.65+.3*pulse)*vfxFade;ctx.fillStyle=i===1?'#fff8d9':'#ffc83c';
+     ctx.beginPath();ctx.arc(rx,ry,3.2+pulse*1.4,0,Math.PI*2);ctx.fill();
+    }
+    const orb=ctx.createRadialGradient(47,0,0,47,0,15+pulse*5);
+    orb.addColorStop(0,'#fffdf0');orb.addColorStop(.34,'#fff0a3');orb.addColorStop(.7,'#ffc83c');orb.addColorStop(1,'rgba(255,175,24,0)');
+    ctx.globalAlpha=(.9+.1*pulse)*vfxFade;ctx.fillStyle=orb;ctx.beginPath();ctx.arc(47,0,15+pulse*5,0,Math.PI*2);ctx.fill();
+   }else{
+    // A bold layered hand-swipe like Yuji's Manji counter, with a clear gold contact flash.
+    const jab=m==='gojoCounterJab',beat=Math.sin(Math.PI*clamp(p,0,1));
+    const reach=18+beat*(jab?43:52),tipX=reach+29;
+    const g=ctx.createLinearGradient(-4,0,tipX+8,0);
+    g.addColorStop(0,'rgba(255,142,23,0)');g.addColorStop(.28,'rgba(255,174,36,.9)');g.addColorStop(.68,'#ffc83c');g.addColorStop(1,'#fff9d9');
+    ctx.globalAlpha=(.54+beat*.42)*vfxFade;ctx.shadowColor='#ffb52f';ctx.shadowBlur=isMobileDevice?0:24;
+    ctx.strokeStyle=g;ctx.lineWidth=jab?18:22;
+    ctx.beginPath();ctx.moveTo(-2,19);ctx.bezierCurveTo(reach*.18,25,reach*.42,-30,tipX,-4);ctx.stroke();
+    ctx.globalAlpha=(.9+.08*beat)*vfxFade;ctx.shadowBlur=isMobileDevice?0:12;
+    ctx.strokeStyle='rgba(255,239,166,.98)';ctx.lineWidth=8+beat*2;
+    ctx.beginPath();ctx.moveTo(1,17);ctx.quadraticCurveTo(reach*.5,-19,tipX+3,-4);ctx.stroke();
+    ctx.globalAlpha=.95*vfxFade;ctx.shadowBlur=0;ctx.strokeStyle='#fffdf0';ctx.lineWidth=2.8;
+    ctx.beginPath();ctx.moveTo(8,12);ctx.quadraticCurveTo(reach*.55,-14,tipX+8,-5);ctx.stroke();
+    ctx.globalAlpha=(.5+beat*.42)*vfxFade;ctx.strokeStyle='#ffb52f';ctx.lineWidth=jab?5:7;
+    ctx.beginPath();ctx.moveTo(reach*.42,25);ctx.quadraticCurveTo(reach*.82,12,tipX+5,8);ctx.stroke();
+    ctx.globalAlpha=(.55+beat*.4)*vfxFade;ctx.strokeStyle='#fff0a3';ctx.lineWidth=3;
+    ctx.beginPath();ctx.arc(tipX+2,-4,17+beat*(jab?8:13),-.95,.95);ctx.stroke();
+    ctx.globalAlpha=(.72+.25*beat)*vfxFade;ctx.strokeStyle='#ffc83c';ctx.lineWidth=2.5;
+    for(let i=0;i<5;i++){
+     const a=-1.18+i*.59,r1=13+beat*4,r2=25+beat*10,cx=tipX+2,cy=-4;
+     ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*r1,cy+Math.sin(a)*r1);ctx.lineTo(cx+Math.cos(a)*r2,cy+Math.sin(a)*r2);ctx.stroke();
+    }
+    const orb=ctx.createRadialGradient(tipX,-4,0,tipX,-4,15+beat*7);
+    orb.addColorStop(0,'#fffef3');orb.addColorStop(.36,'#fff0a3');orb.addColorStop(.72,'#ffc83c');orb.addColorStop(1,'rgba(255,166,20,0)');
+    ctx.globalAlpha=(.92+.08*beat)*vfxFade;ctx.fillStyle=orb;
+    ctx.beginPath();ctx.arc(tipX,-4,15+beat*7,0,Math.PI*2);ctx.fill();
+   }
+   ctx.restore(); }else if(m==='gojoTwofold'||m==='yujiStrikes'||m==='yujiDropkick'||m==='hakariFever'){
   ctx.save();ctx.globalAlpha=.45;ctx.strokeStyle=m==='gojoTwofold'?'#d9f5ff':m==='hakariFever'?'#e4c4ff':'#ffc17c';ctx.lineWidth=5;ctx.beginPath();ctx.arc(18,4,31,-1.2,1.05);ctx.stroke();ctx.restore();
  }else if(m==='yujiDivergent'||m==='yujiBlackFlash'){
   if(m==='yujiBlackFlash'){ctx.save();ctx.globalAlpha=.6+.4*pulse;ctx.strokeStyle='#0b0d18';ctx.lineWidth=4;for(let i=0;i<7;i++){let a=-.9+i*.3;ctx.beginPath();ctx.moveTo(front,-15);ctx.lineTo(front+Math.cos(a)*37,-15+Math.sin(a)*37);ctx.stroke()}ctx.strokeStyle='#ffcb56';ctx.lineWidth=2;ctx.beginPath();ctx.arc(front,-15,25,0,Math.PI*2);ctx.stroke();ctx.restore()}else{ctx.save();ctx.fillStyle='#ffb35f';ctx.globalAlpha=.5*pulse;ctx.beginPath();ctx.arc(front+8,-12,10,0,Math.PI*2);ctx.fill();ctx.restore()}
