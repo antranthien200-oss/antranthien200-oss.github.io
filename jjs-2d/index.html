@@ -4683,6 +4683,9 @@ function updateVesselAwakenSequence(f,dt){
    seq.phase='carry';seq.elapsed=0;seq.carryDuration=.84;seq.angle=a;seq.sparkTimer=0;
    t.capturedBy=f;t.block=false;t.invuln=0;t.stun=99;t.vx=0;t.vy=0;t.jump=0;t.jumpV=0;
    t.motion={name:'captured_sukunaHeadCarry',t:0,duration:seq.carryDuration,angle:a,target:f};
+   if(onlineMode&&f===player&&onlineRoom&&t.onlineSessionId){
+    try{onlineRoom.send('combat:grab-start',{targetId:t.onlineSessionId})}catch(error){}
+   }
    setMotion(f,'sukunaHeadCarryRun',seq.carryDuration,a,t);f.motion.t=0;
    burst(t.x,t.y-23,'#ff526b',30,6);burst(t.x,t.y-23,'#ffe8ec',14,4.2);
    game.hitStop=Math.max(game.hitStop,.075);game.shake=Math.max(game.shake,9);
