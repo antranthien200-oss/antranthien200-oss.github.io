@@ -5425,7 +5425,7 @@ if(f.attackCd>0)return;
   if(f.specialCd>0)return;
   // Gojo: Limitless. It is a targeted reposition, with an aerial kick variant.
   if(f.char==='honored'){
-   const aim=aimedAt(f),target=t;if(f.gojoRapidFinishUntil>game.time){const a=Math.atan2(target.y-f.y,target.x-f.x);if(dist(f,target)>230||!beginGrab(f,target,'gojoFaceGrater',.5,a,'#d8f3ff',16)){showToast('FACE GRATER · NO GRAB',500);return}f.gojoRapidFinishUntil=0;f.meter=Math.max(0,f.meter-6);f.specialCd=18;showToast('FACE GRATER',650);return}if(f.meter<6)return;f.meter-=6;if(dist(f,target)<560){const a=Math.atan2(target.y-f.y,target.x-f.x);f.face=a;setMotion(f,'gojoLimitless',.58,a,target);f.x=target.x-Math.cos(a)*45;f.y=target.y-Math.sin(a)*45;collideWorld(f);burst(target.x,target.y,'#d8f3ff',20,4);if(target.jump>.25){damage(target,8,f,{stun:.5,kx:Math.cos(a)*7,ky:Math.sin(a)*7,unblockable:true,color:'#cbeaff'});popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15)}else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13)}else{setMotion(f,'gojoLimitless',.4,Math.atan2(aim.y-f.y,aim.x-f.x),target);f.x=aim.x;f.y=aim.y;collideWorld(f);burst(f.x,f.y,'#d8f3ff',16,4)}f.specialCd=15;return;
+   const aim=aimedAt(f),target=t;if(f.gojoRapidFinishUntil>game.time){const a=Math.atan2(target.y-f.y,target.x-f.x);if(dist(f,target)>230||!beginGrab(f,target,'gojoFaceGrater',.5,a,'#d8f3ff',16)){showToast('FACE GRATER · NO GRAB',500);return}f.gojoRapidFinishUntil=0;f.meter=Math.max(0,f.meter-6);f.specialCd=18;showToast('FACE GRATER',650);return}if(f.meter<6)return;f.meter-=6;game.shake=Math.max(game.shake,18);if(dist(f,target)<560){const a=Math.atan2(target.y-f.y,target.x-f.x);f.face=a;setMotion(f,'gojoLimitless',.58,a,target);f.x=target.x-Math.cos(a)*45;f.y=target.y-Math.sin(a)*45;collideWorld(f);burst(target.x,target.y,'#d8f3ff',20,4);if(target.jump>.25){damage(target,8,f,{stun:.5,kx:Math.cos(a)*7,ky:Math.sin(a)*7,unblockable:true,color:'#cbeaff'});popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15)}else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13)}else{setMotion(f,'gojoLimitless',.4,Math.atan2(aim.y-f.y,aim.x-f.x),target);f.x=aim.x;f.y=aim.y;collideWorld(f);burst(f.x,f.y,'#d8f3ff',16,4)}schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoLimitless')game.shake=Math.max(game.shake,13)},230);f.specialCd=15;return;
   }
   if(f.char==='vessel'&&f.awakened){
    if(f.specialCd>0)return;
@@ -7040,6 +7040,7 @@ function drawPixelSkillVfx(f,m,p,c){
  // Gojo's missed attacks use the shared red stun streaks, not the generic pixel marker.
  if(m==='gojoRapidMiss'||m==='gojoCounterMiss')return true;
  if(!m||m==='trashCanPickup'||m==='trashCanThrow'||m.startsWith('m1_')||m.startsWith('yutaM1_')||m==='blockGesture'||m==='dashGesture')return false;
+ if(m==='gojoLimitless')return true;
  if(f.char==='vessel'&&!f.awakened&&['yujiCursedDrag','yujiCursedDragEnd','yujiCrush','yujiDivergent','yujiBlackFlash','yujiManjiBlock','yujiManjiCounter'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
  const beat=Math.sin(Math.PI*clamp(p,0,1));
  const cell=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(Math.round(x/3)*3,Math.round(y/3)*3,Math.max(3,Math.ceil(w/3)*3),Math.max(3,Math.ceil(h/3)*3))};
@@ -7053,7 +7054,7 @@ function drawPixelSkillVfx(f,m,p,c){
  }else if(m.startsWith('gojoRed')){
   // Reversal Red's main sphere and orbiting trails are drawn in drawMotionVfx.
   // Skip this duplicate sprite/spoke layer so the wind-up stays compact and readable.
- }else if(m==='gojoPurple'||m==='gojoAwaken'||m==='gojoLimitless'||m==='gojoDomain02'){
+ }else if(m==='gojoPurple'||m==='gojoAwaken'||m==='gojoDomain02'){
   drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],41,-16,4,{B:'#433b85',M:'#8c78ed',H:'#f1eaff'});
   for(let i=0;i<6;i++){const x=14+i*10;cell(x,-38+(i%2)*8,3,12,'#c4b7ff')}
  }else if(m==='gojoRapid'||m.startsWith('gojo02Rush')||m==='gojoTwofold'||m==='gojoFaceGrater'){
@@ -8552,10 +8553,8 @@ function drawStunRain(f,x,y){
  ctx.restore();
 }
 function drawHeadHands(f,deferMotionVfx=false){
- const teleportMotion=f.motion&&f.motion.name==='gojoLimitless'?f.motion:null;
- const teleportProgress=teleportMotion?clamp((teleportMotion.t||0)/Math.max(.08,teleportMotion.duration||.58),0,1):1;
- const teleportShake=teleportMotion?Math.sin(game.time*88)*4.2*(1-smoothstep01(clamp(teleportProgress/.40,0,1))):0;
- const x=sx(f.x)+teleportShake,y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
+ const teleportShake=gojoLimitlessVisualShake(f);
+ const x=sx(f.x)+teleportShake.x,y=sy(f.y)-f.jump*3+teleportShake.y,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
@@ -9200,6 +9199,16 @@ function drawTrashManEffects(){
   }
  }
 }
+function gojoLimitlessVisualShake(f){
+ const m=f&&f.motion;
+ if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return {x:0,y:0};
+ const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
+ const envelope=1-smoothstep01(clamp((progress-.66)/.31,0,1));
+ return {
+  x:(Math.sin(game.time*108)*9.5+Math.sin(game.time*181+.7)*3.2)*envelope,
+  y:(Math.cos(game.time*91)*3.5+Math.sin(game.time*157+1.2)*1.45)*envelope
+ };
+}
 function drawGojoTeleportGlassBackdrop(f){
  const m=f&&f.motion;
  if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
@@ -9207,7 +9216,7 @@ function drawGojoTeleportGlassBackdrop(f){
  // The black horizontal cuts play first, during the side-to-side shake.
  const streakFade=1-smoothstep01(clamp(progress/.40,0,1));
  if(streakFade<=.005)return;
- const x=sx(f.x),y=sy(f.y)-f.jump*3-11;
+ const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-11+shake.y;
  ctx.save();ctx.translate(x,y);ctx.globalAlpha=.96*streakFade;
  const streaks=[[-31,-43,31,3],[-12,-32,55,3],[-38,-21,27,2.5],[-25,-10,67,3.2],[-4,1,43,2.7],[8,12,56,3],[-27,23,35,2.7],[5,34,43,2.5]];
  ctx.fillStyle='rgba(3,5,10,.96)';
@@ -9222,47 +9231,88 @@ function drawGojoTeleportGlassForeground(f){
  const m=f&&f.motion;
  if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
  const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
- const glassIn=smoothstep01(clamp((progress-.40)/.32,0,1));
- const glassOut=1-smoothstep01(clamp((progress-.86)/.14,0,1));
+ const glassIn=smoothstep01(clamp((progress-.34)/.18,0,1));
+ const glassOut=1-smoothstep01(clamp((progress-.84)/.16,0,1));
  const glassFade=glassIn*glassOut;
  if(glassFade<=.005)return;
- const spread=smoothstep01(clamp((progress-.42)/.54,0,1));
- const x=sx(f.x),y=sy(f.y)-f.jump*3-11;
- ctx.save();ctx.translate(x,y);ctx.globalAlpha=.94*glassFade;ctx.lineJoin='miter';
- // This fractured pane is rendered in the foreground, over Gojo.
- ctx.fillStyle='rgba(166,220,250,.15)';
- ctx.strokeStyle='rgba(222,246,255,.9)';ctx.lineWidth=1.35;
- ctx.beginPath();ctx.moveTo(-37,-49);ctx.lineTo(-15,-55);ctx.lineTo(3,-48);ctx.lineTo(24,-54);ctx.lineTo(43,-36);ctx.lineTo(38,-13);ctx.lineTo(47,8);ctx.lineTo(26,31);ctx.lineTo(5,27);ctx.lineTo(-17,39);ctx.lineTo(-43,19);ctx.lineTo(-38,-5);ctx.closePath();ctx.fill();ctx.stroke();
+ const breakProgress=smoothstep01(clamp((progress-.42)/.48,0,1));
+ const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-11+shake.y;
+ ctx.save();ctx.translate(x,y);ctx.lineJoin='miter';ctx.lineCap='round';
+
+ // A clear fractured pane flashes over the character before splitting into sharp shards.
+ const paneAlpha=glassFade*(.52*(1-breakProgress)+.09);
+ const pane=ctx.createLinearGradient(-58,-66,58,64);
+ pane.addColorStop(0,'rgba(225,249,255,.40)');
+ pane.addColorStop(.38,'rgba(142,211,242,.23)');
+ pane.addColorStop(.72,'rgba(219,244,255,.32)');
+ pane.addColorStop(1,'rgba(119,190,228,.16)');
+ ctx.globalAlpha=paneAlpha;ctx.fillStyle=pane;ctx.strokeStyle='rgba(240,252,255,.98)';ctx.lineWidth=2.1;
+ ctx.beginPath();
+ ctx.moveTo(-47,-58);ctx.lineTo(-19,-65);ctx.lineTo(8,-57);ctx.lineTo(34,-60);
+ ctx.lineTo(54,-37);ctx.lineTo(48,-10);ctx.lineTo(58,15);ctx.lineTo(34,48);
+ ctx.lineTo(8,43);ctx.lineTo(-18,57);ctx.lineTo(-49,34);ctx.lineTo(-55,5);ctx.lineTo(-50,-23);
+ ctx.closePath();ctx.fill();ctx.stroke();
+
  const cracks=[
-  [[0,-7],[-12,-23],[-34,-43]],
-  [[0,-7],[13,-25],[35,-46]],
-  [[0,-7],[-21,-2],[-43,12]],
-  [[0,-7],[20,8],[42,27]],
-  [[0,-7],[-7,16],[-20,38]],
-  [[0,-7],[5,-31],[10,-52]],
-  [[-12,-23],[-5,-28],[1,-39]],
-  [[13,-25],[9,-14],[22,-6]],
-  [[20,8],[10,14],[5,27]]
+  [[0,-7],[-13,-25],[-19,-44],[-47,-58]],
+  [[0,-7],[17,-25],[29,-43],[34,-60]],
+  [[0,-7],[27,-7],[48,-10],[58,15]],
+  [[0,-7],[18,13],[34,30],[34,48]],
+  [[0,-7],[-15,17],[-18,39],[-49,34]],
+  [[0,-7],[-27,-1],[-48,8],[-55,5]],
+  [[-19,-44],[-4,-36],[8,-29]],
+  [[29,-43],[18,-30],[23,-17]],
+  [[48,-10],[31,2],[23,17]],
+  [[34,30],[17,23],[8,43]],
+  [[-18,39],[-5,22],[-15,17]],
+  [[-48,8],[-31,-11],[-27,-1]]
  ];
- ctx.strokeStyle='rgba(238,251,255,.97)';ctx.lineWidth=1.5;
- for(const path of cracks){
-  ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);
-  for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);
-  ctx.stroke();
+ ctx.globalAlpha=glassFade*(.94-.38*breakProgress);
+ ctx.strokeStyle='rgba(250,254,255,.98)';ctx.lineWidth=2.05;
+ for(const path of cracks){ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);ctx.stroke()}
+ ctx.globalAlpha=glassFade*(.82-.34*breakProgress);ctx.lineWidth=1;
+ const branches=[
+  [[-19,-44],[-32,-31],[-43,-28]],[[29,-43],[41,-29],[47,-24]],
+  [[48,-10],[37,-19],[35,-32]],[[34,30],[46,24],[52,17]],
+  [[-18,39],[-31,25],[-43,22]],[[-48,8],[-39,1],[-36,-11]],
+  [[-13,-25],[-2,-19],[9,-21]],[[17,-25],[5,-16],[-3,-7]]
+ ];
+ for(const path of branches){ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);ctx.stroke()}
+
+ // Larger glass pieces separate and rotate outward from the impact point.
+ const shards=[
+  {a:-2.55,r:37,w:21,h:39,rot:-.22},{a:-1.88,r:34,w:23,h:34,rot:.16},
+  {a:-1.22,r:39,w:19,h:41,rot:-.18},{a:-.55,r:37,w:24,h:36,rot:.24},
+  {a:.12,r:40,w:20,h:42,rot:-.16},{a:.78,r:38,w:24,h:35,rot:.19},
+  {a:1.42,r:35,w:20,h:40,rot:-.21},{a:2.08,r:39,w:24,h:36,rot:.17},
+  {a:2.72,r:36,w:21,h:39,rot:-.18},{a:3.35,r:31,w:18,h:32,rot:.22}
+ ];
+ for(let i=0;i<shards.length;i++){
+  const s=shards[i],travel=breakProgress*(34+(i%4)*12);
+  const cx=Math.cos(s.a)*s.r+Math.cos(s.a)*travel,cy=Math.sin(s.a)*s.r+Math.sin(s.a)*travel;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(s.a+Math.PI*.5+s.rot*breakProgress);
+  ctx.globalAlpha=glassFade*(.56+.34*breakProgress);
+  const shard=ctx.createLinearGradient(-s.w,-s.h*.5,s.w,s.h*.5);
+  shard.addColorStop(0,'rgba(236,250,255,.56)');shard.addColorStop(.52,'rgba(145,211,240,.28)');shard.addColorStop(1,'rgba(220,245,255,.50)');
+  ctx.fillStyle=shard;ctx.strokeStyle='rgba(249,254,255,.98)';ctx.lineWidth=1.8;
+  ctx.beginPath();ctx.moveTo(-s.w*.48,-s.h*.48);ctx.lineTo(s.w*.26,-s.h*.62);ctx.lineTo(s.w*.57,-s.h*.12);ctx.lineTo(s.w*.34,s.h*.48);ctx.lineTo(-s.w*.42,s.h*.22);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.globalAlpha=glassFade*(.52+.38*breakProgress);ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=1.15;
+  ctx.beginPath();ctx.moveTo(-s.w*.35,-s.h*.34);ctx.lineTo(s.w*.30,s.h*.31);ctx.stroke();
+  ctx.restore();
  }
- const shardAngles=[-2.55,-1.92,-1.15,-.32,.52,1.22,2.08,2.75];
- for(let i=0;i<shardAngles.length;i++){
-  const a=shardAngles[i],travel=spread*(18+(i%3)*6),cx=Math.cos(a)*(17+travel),cy=Math.sin(a)*(24+travel);
-  const size=7+(i%3)*2.5,side=size*(.55+(i%2)*.18);
-  ctx.fillStyle=i%2?'rgba(173,226,250,.27)':'rgba(230,248,255,.34)';
-  ctx.strokeStyle='rgba(240,252,255,.94)';ctx.lineWidth=1;
-  ctx.beginPath();ctx.moveTo(cx,cy-size);ctx.lineTo(cx+side,cy+size*.45);ctx.lineTo(cx-side*.72,cy+size*.18);ctx.closePath();ctx.fill();ctx.stroke();
- }
- ctx.fillStyle='rgba(235,250,255,.95)';
- for(let i=0;i<8;i++){
-  const a=-2.7+i*.76,r=23+spread*(13+(i%3)*6);
-  const px=Math.cos(a)*r,py=Math.sin(a)*r;
-  ctx.fillRect(Math.round(px),Math.round(py),2,2);
+
+ // Expanding ring and long splinters sell the break without blocky pixel specks.
+ ctx.globalAlpha=glassFade*(1-breakProgress*.72);ctx.strokeStyle='rgba(248,254,255,.98)';ctx.lineWidth=3.2;
+ ctx.beginPath();ctx.arc(0,-7,18+breakProgress*43,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=glassFade*(.85*(1-breakProgress)+.12);ctx.fillStyle='#f8fdff';
+ ctx.beginPath();ctx.arc(0,-7,4+breakProgress*4,0,Math.PI*2);ctx.fill();
+ for(let i=0;i<12;i++){
+  const a=-Math.PI+i*(Math.PI*2/12)+.13,travel=breakProgress*(55+(i%3)*15);
+  const px=Math.cos(a)*(37+travel),py=Math.sin(a)*(43+travel);
+  ctx.save();ctx.translate(px,py);ctx.rotate(a+.45);ctx.globalAlpha=glassFade*(.78-.18*(i%3));
+  ctx.fillStyle=i%2?'rgba(232,250,255,.96)':'rgba(160,218,246,.88)';
+  ctx.beginPath();ctx.moveTo(-2,-7-(i%3)*2);ctx.lineTo(3,1);ctx.lineTo(-1,8+(i%2)*3);ctx.closePath();ctx.fill();
+  ctx.restore();
  }
  ctx.restore();
 }
