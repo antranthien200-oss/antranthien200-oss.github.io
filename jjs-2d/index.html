@@ -3550,7 +3550,7 @@ function applyOnlineRoomState(state){
  for(const [id,remote] of onlineRemotePlayers)if(!seen.has(id)){if(remote.trashCanId){const prop=trashCans.find(p=>String(p.id)===String(remote.trashCanId));if(prop&&prop.carried==='remote'){prop.carried=false;prop.respawnTimer=0}}onlineRemotePlayers.delete(id)}
  const bindReplicatedGrab=(owner,target)=>{
   if(!owner)return;
-  if(!target){owner.grabTarget=null;owner.grabKind='';owner.grabRemaining=0;owner.grabDuration=0;owner.grabElapsed=0;return}
+  if(!target){owner.grabTarget=null;owner.grabKind='';owner.grabRemaining=0;owner.grabDuration=0;owner.grabElapsed=0;owner.onlineGrabTrailPos=null;owner.onlineGrabTrailTimer=0;return}
   owner.grabTarget=target;
   owner.grabKind=String(target.grabKind||owner.grabKind||'');
   owner.grabDuration=Math.max(.08,Number(target.grabDuration)||owner.grabDuration||.8);
@@ -4628,7 +4628,7 @@ function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  f.vx=0;f.vy=0;setMotion(f,kind==='yujiDrag'?'yujiCursedDrag':kind==='gojoBlueRapid'?'gojoRapidFlurry':kind==='todoThrow'?'todoSwiftGrab':kind==='toadPull'?'megumiToad':kind==='mahitoTransfigure'?'mahitoTransfigure':kind==='gojoFaceGrater'?'gojoFaceGrater':kind==='sukunaCleave'?'sukunaCleave':kind==='sukunaFlurry'?'sukunaFlurry':kind==='bloodEdge'?'chosoEdge':kind==='rikaThrow'?'rikaThrow':kind==='yutaSecondWind'?(f.rikaMode?'rikaHaymaker':'yutaSecondWind'):'megumiSerpent',duration,angle,t);return true;
 }
 function releaseGrab(f,launch=true){
- const t=f&&f.grabTarget;if(!t)return;const a=Number.isFinite(f.grabAngle)?f.grabAngle:f.face;t.capturedBy=null;f.grabTarget=null;f.onlineGrabTarget=null;f.grabKind='';f.grabElapsed=0;
+ const t=f&&f.grabTarget;if(!t)return;const a=Number.isFinite(f.grabAngle)?f.grabAngle:f.face;t.capturedBy=null;f.grabTarget=null;f.onlineGrabTarget=null;f.grabKind='';f.grabElapsed=0;f.onlineGrabTrailPos=null;f.onlineGrabTrailTimer=0;
  if(!t.dead){t.invuln=0;t.stun=Math.max(t.stun,.48);if(launch){t.vx=Math.cos(a)*13;t.vy=Math.sin(a)*13;t.jump=Math.max(t.jump,.12)}}
 }
 function updateGrab(f,dt){
@@ -4650,6 +4650,20 @@ function updateGrab(f,dt){
   f.grabAngle=a;f.vx=0;f.vy=0;
   if(kind==='gojoBlueRapid'&&f.motion&&f.motion.name==='gojoRapidFlurry'){f.motion.angle=a;f.motion.target=t}
   if(t.motion){t.motion.t=f.grabElapsed;t.motion.angle=a;t.motion.target=f}
+  // Rebuild the same attached movement trails from interpolated server positions.
+  // Sampling at ~18 Hz keeps all spectators' drag trails smooth without a 60 Hz
+  // particle/trail loop for every remote-to-remote grab.
+  f.onlineGrabTrailTimer=(Number(f.onlineGrabTrailTimer)||0)-dt;
+  if(f.onlineGrabTrailTimer<=0){
+   f.onlineGrabTrailTimer=.055;
+   const last=f.onlineGrabTrailPos,color=f.grabColor||(kind==='yujiDrag'?'#e3344e':'#39bfff');
+   if(last){
+    if(Math.hypot(f.x-last.fx,f.y-last.fy)>.45)trailStrokes.push({x1:last.fx,y1:last.fy-23,x2:f.x,y2:f.y-23,life:.32,max:.32,color,width:10});
+    if(Math.hypot(t.x-last.tx,t.y-last.ty)>.45)trailStrokes.push({x1:last.tx,y1:last.ty-23,x2:t.x,y2:t.y-23,life:.34,max:.34,color,width:11});
+    if(trailStrokes.length>260)trailStrokes.splice(0,trailStrokes.length-260);
+   }
+   f.onlineGrabTrailPos={fx:f.x,fy:f.y,tx:t.x,ty:t.y};
+  }
   return;
  }
  f.grabElapsed+=dt;let aim=f.team!=='player'&&f.onlineGrabTarget&&!f.onlineGrabTarget.dead?{x:f.onlineGrabTarget.x,y:f.onlineGrabTarget.y}:aimedAt(f);if(f.team!=='player'&&!f.onlineGrabTarget)aim={x:player.x,y:player.y};let a=Math.atan2(aim.y-f.y,aim.x-f.x);f.grabAngle=a;f.face=a;
@@ -5209,6 +5223,7 @@ function updateTrashManEffects(f,dt){
 function useAttack(f,kind,networkReplay=false){
  if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||(!networkReplay&&f.vehicle)||(!networkReplay&&game.cutsceneTimer>0))return;
+ if(!networkReplay&&f.grabbedBy)return;
  if(!networkReplay&&(f.blueSuckedBy||f.gojoBluePull))return;
  if(!networkReplay&&f.vesselAwakenSequence)return;
  if(!networkReplay&&f.sukunaFireCast>0)return;
@@ -5727,7 +5742,7 @@ function handleInput(dt){if(!game.started||game.paused||game.over||game.cutscene
   if(keys.has('1')){useAttack(player,'1');keys.delete('1')}if(keys.has('2')){useAttack(player,'2');keys.delete('2')}if(keys.has('3')){useAttack(player,'3');keys.delete('3')}if(keys.has('4')){useAttack(player,'4');keys.delete('4')}
  }else player.block=false;
  // A physical click creates one M1 request. Holding the mouse button never auto-repeats.
- if(mouse.pending){if(player.dead||player.stun>0||player.block){mouse.pending=false;mouse.buffer=0}else if(player.attackCd<=0){useAttack(player,'m1');mouse.pending=false;mouse.buffer=0}else{mouse.buffer=Math.max(0,mouse.buffer-dt);if(mouse.buffer<=0)mouse.pending=false}}
+ if(mouse.pending){if(player.dead||player.stun>0||player.grabbedBy||player.block){mouse.pending=false;mouse.buffer=0}else if(player.attackCd<=0){useAttack(player,'m1');mouse.pending=false;mouse.buffer=0}else{mouse.buffer=Math.max(0,mouse.buffer-dt);if(mouse.buffer<=0)mouse.pending=false}}
 }
 function ai(dt){if(trainingDummy)trainingDummy.aiDisabled=true;if(enemy.dead){enemy.respawn-=dt;if(enemy.respawn<=0){const defeatedChar=enemy.char;let nextChars=Object.keys(CHARS).filter(k=>k!==defeatedChar&&k!==player.char);if(!nextChars.length)nextChars=Object.keys(CHARS).filter(k=>k!==defeatedChar);const nextChar=nextChars.length?nextChars[Math.floor(Math.random()*nextChars.length)]:defeatedChar;enemy=makeFighter('enemy',nextChar,1510+rnd(-120,120),930+rnd(-110,110));showToast('NEW CHALLENGER · '+CHARS[nextChar].name,1100)}return}
  enemy.aiThink-=dt;enemy.aiAction-=dt;let dx=player.x-enemy.x,dy=player.y-enemy.y,d=Math.hypot(dx,dy)||1;let nx=dx/d,ny=dy/d;enemy.face=Math.atan2(dy,dx);if(enemy.stun>0)return;if(game.domainClash){enemy.block=false;if(d>112){enemy.vx+=nx*.85;enemy.vy+=ny*.85}if(d<140&&enemy.attackCd<=0)useAttack(enemy,'m1');else if(d>145&&enemy.dashCd<=0&&Math.random()<.22)useAttack(enemy,'dash');return}if(enemy.aiThink<=0){enemy.aiThink=rnd(.12,.25);if(d>90){enemy.vx+=nx*.75;enemy.vy+=ny*.75}else if(d<65){enemy.vx-=nx*.35;enemy.vy-=ny*.35}if(d<100&&Math.random()<.5)enemy.block=Math.random()<.28;else enemy.block=false;
