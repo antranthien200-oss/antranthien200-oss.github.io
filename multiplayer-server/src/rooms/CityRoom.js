@@ -88,6 +88,10 @@ export class CityRoom extends Room{
   if(p.dead)return;
   const now=Date.now(),prev=this.lastUpdateAt.get(id)||now-33,n=normalizePlayerUpdate(payload,p,now-prev);if(!n)return;
   this.lastUpdateAt.set(id,now);
+  // The server owns a captured victim's transform and pose until the grab ends.
+  // Ignore that victim's periodic snapshots instead of letting stale client motion,
+  // facing, or velocity overwrite the server-driven capture animation.
+  if(p.grabbedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.jump=0;p.block=false;return}
   const previousMotion=p.motionName;
   if(!p.awakened&&!p.domainType)p.meter=Math.max(p.meter,clamp(Number(payload.meter)||0,0,100));
   if(p.awakened){
@@ -909,7 +913,7 @@ killPlayer(p){
    if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now;target.jump=.5;}
    target.x=clamp(target.x+fx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+fy*push,45,WORLD_HEIGHT-45);
    if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now}
-   else if(finishedKind==="yujiDrag"||finishedKind==="gojoBlueRapid"){target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=now}
+   else if(finishedKind==="yujiDrag"||finishedKind==="gojoBlueRapid"){target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=now;target.attackType=""}
    else{target.motionName="grabRelease";target.motionProgress=1}target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
    if(target.hp<=0)this.killPlayer(target);
   }
