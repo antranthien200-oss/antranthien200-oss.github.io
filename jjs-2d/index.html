@@ -3463,7 +3463,7 @@ function applyOnlineRoomState(state){
  const local=state.players.get(onlineSessionId);
  if(local&&player){
   const wasDead=player.dead,oldLocalHp=Number(player.hp)||0;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
-   if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp;player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',12,4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,2.5);game.hitStop=Math.max(game.hitStop,.018)}}
+   if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp,grabImpact=String(local.attackType||'')==='grab';player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',grabImpact?2:12,grabImpact?2.1:4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,grabImpact?.8:2.5);if(!grabImpact)game.hitStop=Math.max(game.hitStop,.018)}}
   player.meter=clamp(Number(local.meter)||0,0,100);player.awakeMode=String(local.awakeMode||"");player.awakeFuel=Number(local.awakeFuel)||0;player.awakeFuelDrainRate=Number(local.awakeFuelDrainRate)||0;player.jackpot=!!local.jackpot;player.consecutiveJackpots=Number(local.consecutiveJackpots)||0;player.domainStunGuaranteed=!!local.domainStunGuaranteed;player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.blueSuckedBy=String(local.blueSuckedBy||'');player.blueSuctionX=Number(local.blueSuctionX)||0;player.blueSuctionY=Number(local.blueSuctionY)||0;player.blueSuctionRemaining=Number(local.blueSuctionRemaining)||0;if(!(player.onlineDashPredictionUntil>stateArrivalNow)){player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;}
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;const localAbilities=local.abilities||{};
   const pendingDomain=player.onlineDomainRequestPending,serverDomainType=String(local.domainType||'');
@@ -3570,9 +3570,15 @@ function applyOnlineRoomState(state){
   const captor=player.grabbedBy?onlineRemotePlayers.get(player.grabbedBy)||null:null;
   player.capturedBy=captor;
   if(captor&&String(player.motionName||'').startsWith('captured_')){
-   player.motion={name:String(player.motionName),t:clamp(Number(player.grabDuration)-Number(player.grabRemaining),0,1),duration:Math.max(.08,Number(player.grabDuration)||.8),angle:captor.face,target:captor};
+   const captureDuration=Math.max(.08,Number(player.grabDuration)||.8);
+   const captureElapsed=clamp(captureDuration-Number(player.grabRemaining),0,captureDuration);
+   player.motion={name:String(player.motionName),t:captureElapsed,duration:captureDuration,activeDuration:captureDuration,angle:captor.face,target:captor};
    player.attackAnim=Number(player.attackAnim)||0;
    player.attackType=String(player.attackType||'grab');
+  }else if(!captor&&player.motion&&String(player.motion.name||'').startsWith('captured_')){
+   // A completed server grab has released this player; don't keep replaying
+   // the old captured pose after the server clears grabbedBy.
+   player.motion=null;player.motionHandPose=null;
   }
   const held=player.activeGrabTarget?onlineRemotePlayers.get(player.activeGrabTarget):null;
   bindReplicatedGrab(player,held||null);
