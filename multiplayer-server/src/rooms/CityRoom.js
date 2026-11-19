@@ -554,6 +554,37 @@ modifyProjectile(client,payload={}){
    defender.activeGrabTarget=attackerId;defender.grabKind="sukunaFlurry";defender.motionName="sukunaFlurry";defender.motionProgress=0;defender.motionDuration=1;defender.attackAnim=1;defender.attackType="grab";return true;
   }
   if(kind==="door"){if(incomingType!=="melee")return projectile;hurt(attacker,5,.5,7);return true}
+  if(kind==="manji"){
+   defender.invuln=Math.max(defender.invuln,.72);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
+   attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
+   attacker.stun=Math.max(attacker.stun,.42);attacker.vx=0;attacker.vy=0;attacker.motionName="";attacker.motionProgress=0;attacker.motionDuration=1;attacker.attackAnim=0;attacker.attackType="";
+   let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
+   if(!resolvedAttackerId||!resolvedDefenderId){
+    for(const [playerId,player] of this.state.players){
+     if(player===attacker)resolvedAttackerId=playerId;
+     if(player===defender)resolvedDefenderId=playerId;
+    }
+   }
+   if(resolvedAttackerId&&resolvedDefenderId){
+    const started=Date.now();
+    defender.motionName="yujiManjiBlock";defender.motionProgress=0;defender.motionDuration=.2;defender.motionStartedAt=started;defender.attackAnim=.2;defender.attackType="skill";
+    this.broadcast("combat:counter",{kind:"manji",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:started});
+    setTimeout(()=>{
+     const currentDefender=this.state.players.get(resolvedDefenderId),currentAttacker=this.state.players.get(resolvedAttackerId);
+     if(!currentDefender||!currentAttacker||currentDefender.dead||currentAttacker.dead)return;
+     const strikeAngle=Math.atan2(currentAttacker.y-currentDefender.y,currentAttacker.x-currentDefender.x);
+     currentDefender.face=strikeAngle;currentDefender.motionName="yujiManjiCounter";currentDefender.motionProgress=0;currentDefender.motionDuration=.3;currentDefender.motionStartedAt=Date.now();currentDefender.attackAnim=.3;currentDefender.attackType="skill";
+     currentAttacker.stun=Math.max(currentAttacker.stun,.22);currentAttacker.vx=0;currentAttacker.vy=0;
+     setTimeout(()=>{
+      const finishDefender=this.state.players.get(resolvedDefenderId),finishAttacker=this.state.players.get(resolvedAttackerId);
+      if(!finishDefender||!finishAttacker||finishDefender.dead||finishAttacker.dead)return;
+      const finalDx=finishAttacker.x-finishDefender.x,finalDy=finishAttacker.y-finishDefender.y,finalLength=Math.hypot(finalDx,finalDy)||1;
+      hurt(finishAttacker,8.5,.68,10,finalDx/finalLength,finalDy/finalLength);
+     },110);
+    },170);
+   }
+   return true;
+  }
   if(kind==="gojoTwofoldCounter"){
    defender.invuln=Math.max(defender.invuln,.72);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
    attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
