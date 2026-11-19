@@ -4569,6 +4569,14 @@ function targetOf(f){
  if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
  return f===player?enemy:player;
 }
+function gojoLimitlessTarget(f){
+ if(f===player&&onlineMode){
+  const targets=[...onlineRemotePlayers.values()].filter(t=>t&&!t.dead&&t!==f);
+  targets.sort((a,b)=>dist(f,a)-dist(f,b));
+  return targets[0]||null;
+ }
+ return targetOf(f);
+}
 function gojoRapidSpinContactTarget(f,preferred=null){
  const candidates=[];
  const add=target=>{if(target&&target!==f&&!candidates.includes(target))candidates.push(target)};
@@ -5253,16 +5261,19 @@ function useAttack(f,kind,networkReplay=false){
  if(f.skillInputLocked&&f.motion&&kind!=='special'&&!timedComboFollowUp)return;
  // Buffer an early second press so players do not have to hit the exact midpoint frame.
  if(yujiBlackFlashFollowUp&&!(f.blackFlashWindow>0)){f.yujiDivergentAttack.buffered=true;return}
+ const gojoLimitlessTargetRef=f.char==='honored'&&kind==='special'?gojoLimitlessTarget(f):null;
+ if(!networkReplay&&onlineMode&&f===player&&f.char==='honored'&&kind==='special'&&!gojoLimitlessTargetRef){showToast('LIMITLESS · NO OTHER PLAYER ONLINE',900);return}
+ if(f.char==='honored'&&kind==='special'&&gojoLimitlessTargetRef)f.face=Math.atan2(gojoLimitlessTargetRef.y-f.y,gojoLimitlessTargetRef.x-f.x);
  f.skillCastSerial=(f.skillCastSerial||0)+1;
  const previousSkillScheduleOwner=activeSkillScheduleOwner;activeSkillScheduleOwner={fighter:f,serial:f.skillCastSerial};
  try{
  if(kind==='dash'&&!(onlineMode&&f!==player)){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
  if(onlineMode&&f===player&&onlineRoom){try{
   if(f.char==='honored'&&!f.awakened&&(kind==='1'||kind==='2')){const skillAim=aimedAt(f);f.face=Math.atan2(skillAim.y-f.y,skillAim.x-f.x)}
-  const actionTarget=targetOf(f),actionAim=aimedAt(f);
+  const actionTarget=(kind==='special'&&f.char==='honored')?(gojoLimitlessTargetRef||gojoLimitlessTarget(f)):targetOf(f),actionAim=aimedAt(f);
   onlineRoom.send('combat:action',{kind:String(kind),blackFlashFollowUp:!!yujiBlackFlashFollowUp,face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||'',aimX:Number(actionAim.x)||0,aimY:Number(actionAim.y)||0,awakened:!!f.awakened,jackpot:!!f.jackpot,awakeMode:String(f.awakeMode||''),awakeFuel:Number(f.awakeFuel)||0,tenBase:!!f.tenBase,rikaMode:!!f.rikaMode,rikaSummoned:!!f.rikaSummoned,soulMode:Number(f.soulMode)||0,yutaCopyIndex:Number(f.yutaCopyIndex)||0,convergenceOrbs:Number(f.convergenceOrbs)||0,reserveBallWindow:Number(f.reserveBallWindow)||0,tenDogActive:!!f.tenDogActive,tenDogCharges:Number(f.tenDogCharges)||0,tenDogTimer:Number(f.tenDogTimer)||0,tenGardenTimer:Number(f.tenGardenTimer)||0,shadowTimer:Number(f.shadowTimer)||0,sukunaFireCast:Number(f.sukunaFireCast)||0});
  }catch(e){}}
- const c=CHARS[f.char],t=targetOf(f);
+ const c=CHARS[f.char],t=(kind==='special'&&f.char==='honored')?(gojoLimitlessTargetRef||gojoLimitlessTarget(f)):targetOf(f);
  if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;const dashAim=onlineMode&&f!==player?{x:f.x+Math.cos(f.face)*1000,y:f.y+Math.sin(f.face)*1000}:aimedAt(f),dx=dashAim.x-f.x,dy=dashAim.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;if(onlineMode&&f===player)f.onlineDashPredictionUntil=performance.now()+145;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0&&!networkReplay)return;
  if(!networkReplay&&f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
@@ -5423,9 +5434,32 @@ if(f.attackCd>0)return;
    showToast('SKILL CANCEL · AWAKEN +10',650);return;
   }
   if(f.specialCd>0)return;
-  // Gojo: Limitless. It is a targeted reposition, with an aerial kick variant.
+  // Gojo: Limitless. R locks onto a living opponent anywhere in the server and warps behind them.
   if(f.char==='honored'){
-   const aim=aimedAt(f),target=t;if(f.gojoRapidFinishUntil>game.time){const a=Math.atan2(target.y-f.y,target.x-f.x);if(dist(f,target)>230||!beginGrab(f,target,'gojoFaceGrater',.5,a,'#d8f3ff',16)){showToast('FACE GRATER · NO GRAB',500);return}f.gojoRapidFinishUntil=0;f.meter=Math.max(0,f.meter-6);f.specialCd=18;showToast('FACE GRATER',650);return}if(f.meter<6)return;f.meter-=6;game.shake=Math.max(game.shake,18);if(dist(f,target)<560){const a=Math.atan2(target.y-f.y,target.x-f.x);f.face=a;setMotion(f,'gojoLimitless',.58,a,target);f.x=target.x-Math.cos(a)*45;f.y=target.y-Math.sin(a)*45;collideWorld(f);burst(target.x,target.y,'#d8f3ff',20,4);if(target.jump>.25){damage(target,8,f,{stun:.5,kx:Math.cos(a)*7,ky:Math.sin(a)*7,unblockable:true,color:'#cbeaff'});popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15)}else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13)}else{setMotion(f,'gojoLimitless',.4,Math.atan2(aim.y-f.y,aim.x-f.x),target);f.x=aim.x;f.y=aim.y;collideWorld(f);burst(f.x,f.y,'#d8f3ff',16,4)}schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoLimitless')game.shake=Math.max(game.shake,13)},230);f.specialCd=15;return;
+   const target=t;
+   if(!target||target===f||target.dead){if(!networkReplay)showToast('LIMITLESS · NO OTHER PLAYER ONLINE',900);return}
+   // Preserve the old Face Grater follow-up offline; multiplayer R is always the guaranteed teleport.
+   if(!onlineMode&&f.gojoRapidFinishUntil>game.time){
+    const closeAngle=Math.atan2(target.y-f.y,target.x-f.x);
+    if(dist(f,target)<=230&&beginGrab(f,target,'gojoFaceGrater',.5,closeAngle,'#d8f3ff',16)){
+     f.gojoRapidFinishUntil=0;f.meter=Math.max(0,f.meter-6);f.specialCd=18;showToast('FACE GRATER',650);return;
+    }
+   }
+   f.gojoRapidFinishUntil=0;
+   const angle=Math.atan2(target.y-f.y,target.x-f.x);
+   f.face=angle;f.vx=0;f.vy=0;
+   setMotion(f,'gojoLimitless',.58,angle,target);
+   f.x=clamp(target.x-Math.cos(angle)*45,45,WORLD.w-45);
+   f.y=clamp(target.y-Math.sin(angle)*45,45,WORLD.h-45);
+   collideWorld(f);
+   burst(target.x,target.y,'#d8f3ff',24,5);
+   if(target.jump>.25){
+    damage(target,8,f,{stun:.5,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,unblockable:true,color:'#cbeaff'});
+    popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15);
+   }else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13);
+   game.shake=Math.max(game.shake,18);
+   schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoLimitless')game.shake=Math.max(game.shake,13)},230);
+   f.specialCd=15;return;
   }
   if(f.char==='vessel'&&f.awakened){
    if(f.specialCd>0)return;
