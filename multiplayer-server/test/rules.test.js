@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import {MAX_PLAYERS,CHARACTER_IDS,PLAYER_RESPAWN_POINT,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,isMoveAuthorizedForAction,isProjectileKindAllowed,isProjectileMoveAllowed,isGuaranteedRapidGrabAllowed,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
+import {MAX_PLAYERS,CHARACTER_IDS,PLAYER_RESPAWN_POINT,createSpawn,findAvailableSpawn,normalizePlayerUpdate,sanitizePlayerName,combatProfile,isMoveAllowed,domainSettings,grabSettings,counterSettings,isBlockedByBuilding,rayHitsRect,isMoveAuthorizedForAction,isProjectileKindAllowed,isProjectileMoveAllowed,isGuaranteedRapidGrabAllowed,domainPulseSettings,BUILDING_LAYOUT,CAR_SPAWNS,PROP_SPAWNS} from "../src/rules.js";
 test("one shared city has 16 seats",()=>assert.equal(MAX_PLAYERS,16));
 test("character list has the supported fighters",()=>{assert.ok(CHARACTER_IDS.includes("vessel"));assert.ok(!CHARACTER_IDS.includes("bad"))});
 test("all fixed spawns are on-map and separated",()=>{const ps=Array.from({length:16},(_,i)=>createSpawn(i));let min=Infinity;for(let i=0;i<ps.length;i++){assert.ok(ps[i].x>=45&&ps[i].x<=3255);assert.ok(ps[i].y>=45&&ps[i].y<=1955);for(let j=i+1;j<ps.length;j++)min=Math.min(min,Math.hypot(ps[i].x-ps[j].x,ps[i].y-ps[j].y))}assert.ok(min>=72)});
@@ -118,4 +118,12 @@ test("Gojo Rapid Punches is guaranteed only after confirmed base third-skill con
  assert.equal(isGuaranteedRapidGrabAllowed("honored","gojoBlueRapid",1000,3501,true,false),false);
  assert.equal(isGuaranteedRapidGrabAllowed("honored","gojoBlueRapid",1000,1500,true,true),false);
  assert.equal(isGuaranteedRapidGrabAllowed("vessel","gojoBlueRapid",1000,1500,true,false),false);
+});
+
+test("domain sure-hit pulse settings match single-player timings",()=>{
+ const shrine=domainPulseSettings("shrine");
+ assert.deepEqual(shrine,{interval:.11,damage:2,stun:.04,blockedDamage:.5,damageType:"domain",ignoreInvuln:true});
+ const voidPulse=domainPulseSettings("void");
+ assert.deepEqual(voidPulse,{interval:.35,damage:0,stun:.42,blockedDamage:0,damageType:"domain",ignoreInvuln:true});
+ assert.equal(domainPulseSettings("unknown"),null);
 });
