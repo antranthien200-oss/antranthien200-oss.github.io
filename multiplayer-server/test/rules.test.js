@@ -39,7 +39,7 @@ test("server grab profiles cover supported player grabs",()=>{
  assert.equal(rapid.finishDamage,9.75);
  assert.equal(rapid.knockback,19);
  assert.equal(rapid.duration,3.2);
- assert.equal(rapid.tickInterval,.22);
+ assert.equal(rapid.tickInterval,.23);
  assert.equal(grabSettings("todo","todoSwiftGrab").kind,"todoThrow");
  assert.equal(grabSettings("yuta","rikaThrow").kind,"rikaThrow");
  assert.equal(grabSettings("yuta","rikaHaymaker").kind,"yutaSecondWind");
