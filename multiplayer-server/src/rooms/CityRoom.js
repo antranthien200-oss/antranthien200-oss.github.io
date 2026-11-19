@@ -108,7 +108,7 @@ export class CityRoom extends Room{
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
   if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.85;return}
-  if(p.grabbedBy||(p.activeGrabTarget&&p.grabKind!=="sukunaHeadCarry")){p.moveX=0;p.moveY=0;return}
+  if(p.grabbedBy||(p.activeGrabTarget&&!["sukunaHeadCarry","yujiDrag","gojoBlueRapid"].includes(p.grabKind))){p.moveX=0;p.moveY=0;return}
   if(p.stun>0){
    p.moveX=0;p.moveY=0;
    // Do not let a delayed client snapshot restore a skill after it was interrupted.
@@ -691,7 +691,7 @@ modifyProjectile(client,payload={}){
    const grabTickDamage=Number.isFinite(Number(payload.grabTickDamage))?clamp(Number(payload.grabTickDamage),0,20):grab.tickDamage;
    const grabFinishDamage=Number.isFinite(Number(payload.grabFinishDamage))?clamp(Number(payload.grabFinishDamage),0,60):grab.finishDamage;
    const grabKnockback=Number.isFinite(Number(payload.grabKnockback))?clamp(Number(payload.grabKnockback),0,40):grab.knockback;
-   target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=grab.kind==="gojoBlueRapid"?.08:grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
+   target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=(grab.kind==="gojoBlueRapid"||grab.kind==="yujiDrag")?.08:grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
    target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grabDuration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grabDuration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;
    // Replicate the attacker's grab pose for every supported grab, not only Gojo Rapid Punches.
    a.motionName=grab.kind==="gojoBlueRapid"?"gojoRapidFlurry":move;a.motionProgress=0;a.motionDuration=grabDuration;a.motionStartedAt=Date.now();a.attackAnim=grabDuration;a.attackType="grab";
