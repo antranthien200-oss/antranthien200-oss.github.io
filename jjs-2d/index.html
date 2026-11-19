@@ -3732,7 +3732,12 @@ function receiveOnlineProjectile(data){
  if(!data||!data.sessionId||!data.id)return;
  const index=findOnlineProjectileIndex(data.sessionId,data.id);
  if(index>=0){Object.assign(projectiles[index],{x:Number(data.x)||projectiles[index].x,y:Number(data.y)||projectiles[index].y,networkX:Number(data.x)||projectiles[index].x,networkY:Number(data.y)||projectiles[index].y,serverOwnedVisual:true,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant});return}
- if(data.sessionId===onlineSessionId)return;
+ if(data.sessionId===onlineSessionId){
+  if(String(data.kind||'')!=='sukunaFireArrow')return;
+  const x=Number(data.x)||0,y=Number(data.y)||0;
+  nativeProjectilePush({x,y,networkX:x,networkY:y,vx:Number(data.vx)||0,vy:Number(data.vy)||0,r:Number(data.r)||19,life:Number(data.life)||2.2,maxDistance:Number(data.maxDistance)||980,travelled:0,owner:player,targetRef:null,kind:'sukunaFireArrow',color:String(data.color||'#ff8b37'),networkId:String(data.id),networkSessionId:String(data.sessionId),serverOwnedVisual:true,networkReplayPlaceholder:false});
+  return;
+ }
  const owner=onlineRemotePlayers.get(data.sessionId)||Object.assign(makeFighter('enemy','vessel',Number(data.x)||0,Number(data.y)||0),{onlineSessionId:data.sessionId});
  const x=Number(data.x)||0,y=Number(data.y)||0,kind=String(data.kind||'projectile');
  const targetId=String(data.targetId||''),targetRef=targetId===onlineSessionId?player:onlineRemotePlayers.get(targetId)||player;
@@ -5576,7 +5581,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
       if(!valid())return;
       const x=f.x+Math.cos(angle)*42,y=f.y-23+Math.sin(angle)*42;
       fireBurst(x,y,17);
-      projectiles.push({x,y,vx:Math.cos(angle)*21,vy:Math.sin(angle)*21,r:19,life:2.2,maxDistance:980,travelled:0,flightLength:980,owner:f,kind:'sukunaFireArrow',damage:18,color:'#ff8b37'});
+      if(!onlineMode||!onlineRoom)projectiles.push({x,y,vx:Math.cos(angle)*21,vy:Math.sin(angle)*21,r:19,life:2.2,maxDistance:980,travelled:0,flightLength:980,owner:f,kind:'sukunaFireArrow',damage:18,color:'#ff8b37'});
       game.shake=Math.max(game.shake,4);showToast('FLAME ARROW · RELEASED',650);
      },2520);
      return;
