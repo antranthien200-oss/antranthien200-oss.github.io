@@ -3812,12 +3812,13 @@ function bindOnlineRoom(client,room){
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
  room.onMessage('combat:counter',data=>{
-  if(!data||data.kind!=='gojoTwofoldCounter')return;
+  if(!data||!['gojoTwofoldCounter','manji'].includes(data.kind))return;
   const defenderId=String(data.defenderId||''),attackerId=String(data.attackerId||'');
   const defender=defenderId===onlineSessionId?player:onlineRemotePlayers.get(defenderId)||null;
   const attacker=attackerId===onlineSessionId?player:onlineRemotePlayers.get(attackerId)||null;
   if(!defender||!attacker)return;
-  playGojoTwofoldCounterResponse(defender,attacker,false);
+  if(data.kind==='gojoTwofoldCounter')playGojoTwofoldCounterResponse(defender,attacker,false);
+  else playYujiManjiCounterResponse(defender,attacker,false);
  });
  room.onMessage('combat:projectile',receiveOnlineProjectile);
   room.onMessage('combat:door-trap',data=>{if(!data||!Number.isFinite(Number(data.x))||!Number.isFinite(Number(data.y)))return;const owner=data.sessionId===onlineSessionId?player:onlineRemotePlayers.get(data.sessionId)||null;doorTraps.push({x:Number(data.x),y:Number(data.y),life:clamp(Number(data.life)||1.25,.1,2),owner,hit:true})});
@@ -4389,6 +4390,37 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
   }});
  }});
 }
+function playYujiManjiCounterResponse(defender,attacker,applyDamage=true){
+ if(!defender||!attacker||defender.dead||attacker.dead)return;
+ const angle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+ const serial=(defender.manjiCounterSerial||0)+1;
+ defender.manjiCounterSerial=serial;
+ defender.counterWindow=0;defender.counterKind='';defender.block=false;
+ defender.stun=0;defender.invuln=Math.max(defender.invuln||0,.72);defender.vx=0;defender.vy=0;
+ attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
+ attacker.stun=Math.max(attacker.stun||0,.42);attacker.rooted=Math.max(attacker.rooted||0,.42);attacker.vx=0;attacker.vy=0;
+ interruptSkillCast(attacker);
+ if(defender.onlineSessionId)defender.counterMotionOverrideUntil=performance.now()+620;
+ setMotion(defender,'yujiManjiBlock',.2,angle,attacker);
+ burst(defender.x,defender.y,'#f3bb67',18,4.2);burst(attacker.x,attacker.y,'#ffd58b',7,3);
+ scheduledTasks.push({at:game.time+.17,fn:()=>{
+  if(defender.dead||attacker.dead||defender.manjiCounterSerial!==serial)return;
+  const strikeAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+  defender.face=strikeAngle;defender.rooted=Math.max(defender.rooted||0,.22);
+  attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
+  attacker.stun=Math.max(attacker.stun||0,.22);attacker.rooted=Math.max(attacker.rooted||0,.22);attacker.vx=0;attacker.vy=0;
+  setMotion(defender,'yujiManjiCounter',.3,strikeAngle,attacker);
+  scheduledTasks.push({at:game.time+.11,fn:()=>{
+   if(defender.dead||attacker.dead||defender.manjiCounterSerial!==serial)return;
+   const hitAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+   attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
+   if(applyDamage)damage(attacker,8.5,defender,{stun:.68,kx:Math.cos(hitAngle)*10,ky:Math.sin(hitAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
+   burst(defender.x,defender.y,'#f3bb67',24,5.8);burst(attacker.x,attacker.y,'#ffd58b',18,4.8);
+   game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
+   showToast('MANJI BLOCK · COUNTER',650);
+  }});
+ }});
+}
 function damage(target,amount,source,opts={}){
  if(target.dead)return;
  if(onlineMode){
@@ -4443,29 +4475,7 @@ function damage(target,amount,source,opts={}){
   if(kind==='gojoTwofoldCounter'){
    playGojoTwofoldCounterResponse(target,source,true);return;
   }
-  if(kind==='manji'){
-   const a=Math.atan2(source.y-target.y,source.x-target.x),serial=(target.manjiCounterSerial||0)+1;target.manjiCounterSerial=serial;
-   target.invuln=Math.max(target.invuln,.72);target.stun=0;target.block=false;target.vx=0;target.vy=0;target.rooted=Math.max(target.rooted||0,.42);
-   source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;interruptSkillCast(source);source.stun=Math.max(source.stun,.42);source.rooted=Math.max(source.rooted||0,.42);source.vx=0;source.vy=0;
-   setMotion(target,'yujiManjiBlock',.2,a,source);burst(target.x,target.y,'#f3bb67',18,4.2);burst(source.x,source.y,'#ffd58b',7,3);
-   schedule(()=>{
-    if(target.dead||source.dead||target.manjiCounterSerial!==serial)return;
-    const strikeAngle=Math.atan2(source.y-target.y,source.x-target.x);
-    target.face=strikeAngle;target.rooted=Math.max(target.rooted||0,.22);
-    source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;source.stun=Math.max(source.stun,.22);source.rooted=Math.max(source.rooted||0,.22);source.vx=0;source.vy=0;
-    setMotion(target,'yujiManjiCounter',.3,strikeAngle,source);
-    schedule(()=>{
-     if(target.dead||source.dead||target.manjiCounterSerial!==serial)return;
-     const hitAngle=Math.atan2(source.y-target.y,source.x-target.x);
-     source.counterWindow=0;source.counterKind='';source.block=false;source.invuln=0;
-     damage(source,8.5,target,{stun:.68,kx:Math.cos(hitAngle)*10,ky:Math.sin(hitAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
-     burst(target.x,target.y,'#f3bb67',24,5.8);burst(source.x,source.y,'#ffd58b',18,4.8);
-     game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
-     showToast('MANJI BLOCK · COUNTER',650);
-    },110);
-   },170);
-   return;
-  }
+  if(kind==='manji'){playYujiManjiCounterResponse(target,source,true);return;}
   if(kind==='door'&&(opts.damageType||'melee')==='bullet'){burst(target.x,target.y,'#d9a4ff',14,4);showToast('DOORS SHATTERED',550);return}
   if(kind==='door'&&(opts.damageType||'melee')==='melee'){
    setMotion(target,'hakariDoorCounter',.62,Math.atan2(source.y-target.y,source.x-target.x),source);
