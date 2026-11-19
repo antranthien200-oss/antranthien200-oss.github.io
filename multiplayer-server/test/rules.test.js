@@ -127,3 +127,9 @@ test("domain sure-hit pulse settings match single-player timings",()=>{
  assert.deepEqual(voidPulse,{interval:.35,damage:0,stun:.42,blockedDamage:0,damageType:"domain",ignoreInvuln:true});
  assert.equal(domainPulseSettings("unknown"),null);
 });
+
+test("Sukuna awakened Rush has a dedicated multiplayer capture profile",()=>{
+ const rush=grabSettings("vessel","sukunaHeadCarryWindup");
+ assert.deepEqual(rush,{kind:"sukunaHeadCarry",duration:1.66,tickDamage:0,tickInterval:1.66,finishDamage:38,knockback:10});
+ assert.equal(isMoveAllowed("vessel","sukunaHeadCarryWindup"),true);
+});
