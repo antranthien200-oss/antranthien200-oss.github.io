@@ -692,7 +692,8 @@ modifyProjectile(client,payload={}){
    const grabFinishDamage=Number.isFinite(Number(payload.grabFinishDamage))?clamp(Number(payload.grabFinishDamage),0,60):grab.finishDamage;
    const grabKnockback=Number.isFinite(Number(payload.grabKnockback))?clamp(Number(payload.grabKnockback),0,40):grab.knockback;
    target.grabbedBy=client.sessionId;target.grabKind=grab.kind;target.grabRemaining=grabDuration;target.grabDuration=grabDuration;target.grabTick=(grab.kind==="gojoBlueRapid"||grab.kind==="yujiDrag")?.08:grabTickInterval;target.grabTickInterval=grabTickInterval;target.grabTickDamage=grabTickDamage;target.grabFinishDamage=grabFinishDamage;target.grabKnockback=grabKnockback;
-   target.motionName="captured_"+grab.kind;target.motionProgress=0;target.attackAnim=grabDuration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grabDuration+.2;a.activeGrabTarget=id;a.grabKind=grab.kind;
+   const grabStartedAt=Date.now();
+   target.motionName="captured_"+grab.kind;target.motionProgress=0;target.motionDuration=grabDuration;target.motionStartedAt=grabStartedAt;target.attackAnim=grabDuration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=grabDuration+.2;target.vx=0;target.vy=0;target.jump=0;a.activeGrabTarget=id;a.grabKind=grab.kind;
    // Replicate the attacker's grab pose for every supported grab, not only Gojo Rapid Punches.
    a.motionName=grab.kind==="gojoBlueRapid"?"gojoRapidFlurry":move;a.motionProgress=0;a.motionDuration=grabDuration;a.motionStartedAt=Date.now();a.attackAnim=grabDuration;a.attackType="grab";
    return;
@@ -907,7 +908,9 @@ killPlayer(p){
    const hpBefore=target.hp;target.hp=Math.max(0,target.hp-finish);if(target.hp<hpBefore)target.hpRegenWait=4.5;target.stun=Math.max(target.stun,finishedKind==="sukunaHeadCarry"?1.05:.82);target.invuln=Math.max(target.invuln,.16);
    if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now;target.jump=.5;}
    target.x=clamp(target.x+fx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+fy*push,45,WORLD_HEIGHT-45);
-   if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now}else{target.motionName="grabRelease";target.motionProgress=1}target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
+   if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now}
+   else if(finishedKind==="yujiDrag"||finishedKind==="gojoBlueRapid"){target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=now}
+   else{target.motionName="grabRelease";target.motionProgress=1}target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
    if(target.hp<=0)this.killPlayer(target);
   }
  }
