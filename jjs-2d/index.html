@@ -3811,6 +3811,10 @@ function bindOnlineRoom(client,room){
   if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
+ room.onMessage('combat:grab-started',data=>{
+  const seq=player&&player.vesselAwakenSequence;
+  if(seq&&seq.target&&String(seq.target.onlineSessionId||'')===String(data&&data.targetId||''))seq.networkCaptured=true;
+ });
  room.onMessage('combat:counter',data=>{
   if(!data||!['gojoTwofoldCounter','manji'].includes(data.kind))return;
   const defenderId=String(data.defenderId||''),attackerId=String(data.attackerId||'');
@@ -4654,6 +4658,7 @@ function updateGrab(f,dt){
 function updateVesselAwakenSequence(f,dt){
  const seq=f&&f.vesselAwakenSequence;if(!seq)return;
  const t=seq.target;
+ if(onlineMode&&f===player&&t.onlineSessionId&&f.activeGrabTarget===t.onlineSessionId)seq.networkCaptured=true;
  if(f.dead||!t||t.dead){
   if(t&&t.capturedBy===f){t.capturedBy=null;t.stun=Math.min(t.stun||0,.2)}
   if(t&&t.motion&&t.motion.name.startsWith('captured_sukunaHeadCarry'))t.motion=null;
@@ -4770,7 +4775,7 @@ function updateVesselAwakenSequence(f,dt){
    const impactX=t.x,impactY=t.y;
    t.capturedBy=null;t.invuln=0;t.stun=0;t.jump=0;t.jumpV=0;
    t.motion={name:'captured_sukunaHeadCarryImpact',t:0,duration:.42,angle:a,target:f};
-   damage(t,38,f,{stun:1.05,kx:dx*10,ky:dy*10-2,unblockable:true,big:true,ignoreInvuln:true,color:'#f34b63'});
+   if(!(onlineMode&&f===player&&seq.networkCaptured))damage(t,38,f,{stun:1.05,kx:dx*10,ky:dy*10-2,unblockable:true,big:true,ignoreInvuln:true,color:'#f34b63'});
    for(const other of tenTargets(f)){
     if(!other||other===t||other.dead||Math.hypot(other.x-impactX,other.y-impactY)>132)continue;
     const odx=other.x-impactX,ody=other.y-impactY,ol=Math.hypot(odx,ody)||1;
