@@ -89,6 +89,10 @@ test("server binds projectile kinds to their actual character moves",()=>{
  assert.equal(isProjectileKindAllowed("honored","gojoPurple","hollow"),true);
  assert.equal(isProjectileKindAllowed("ten","megumiNue","tenNue"),true);
  assert.equal(isProjectileKindAllowed("choso","chosoBombPlant","bloodBomb"),true);
+ assert.equal(isProjectileKindAllowed("vessel","sukunaFireArrowCast","sukunaFireArrow"),true);
+ assert.equal(isProjectileKindAllowed("vessel","sukunaFireArrowCast","hollow"),false);
+ assert.equal(isProjectileMoveAllowed("vessel","sukunaFireArrowCast"),true);
+ assert.equal(combatProfile("vessel","sukunaFireArrowCast",true).damage,18);
  assert.equal(isProjectileKindAllowed("vessel","trashCanThrow","trashCan"),true);
  assert.equal(isProjectileKindAllowed("vessel","gojoPurple","trashCan"),false);
  assert.equal(isProjectileKindAllowed("vessel","gojoRed","hollow"),false);
