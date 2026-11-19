@@ -27,7 +27,7 @@ export class CityRoom extends Room{
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
-  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:activity",c=>{if(this.state.players.has(c.sessionId))this.lastActivityAt.set(c.sessionId,Date.now())});this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-modify",(c,p)=>this.modifyProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("domain:request",(c,p)=>this.requestDomain(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
+  this.onMessage("player:update",(c,p)=>this.updatePlayer(c,p));this.onMessage("player:activity",c=>{if(this.state.players.has(c.sessionId))this.lastActivityAt.set(c.sessionId,Date.now())});this.onMessage("player:reset",c=>this.resetCharacter(c));this.onMessage("combat:hit",(c,p)=>this.combatHit(c,p));this.onMessage("combat:grab-start",(c,p)=>this.startSukunaHeadCarry(c,p));this.onMessage("combat:action",(c,p)=>this.combatAction(c,p));this.onMessage("combat:projectile",(c,p)=>this.spawnProjectile(c,p));this.onMessage("combat:projectile-modify",(c,p)=>this.modifyProjectile(c,p));this.onMessage("combat:projectile-detonate",(c,p)=>this.detonateProjectile(c,p));this.onMessage("domain:clash-hit",(c,p)=>this.domainClashHit(c,p));this.onMessage("domain:request",(c,p)=>this.requestDomain(c,p));this.onMessage("combat:awaken",c=>this.awakenPlayer(c));this.onMessage("world:building-hit",(c,p)=>this.hitBuilding(c,p));this.onMessage("world:prop-hit",(c,p)=>this.hitProp(c,p));this.onMessage("car:enter",(c,p)=>this.enterCar(c,p));this.onMessage("car:exit",c=>this.exitCar(c));this.onMessage("car:control",(c,p)=>this.driveCar(c,p));
   this.onMessage("network:ping",(client,payload={})=>{const sentAt=Number(payload.sentAt);if(Number.isFinite(sentAt))client.send("network:pong",{sentAt})});
   this.setSimulationInterval(ms=>this.tick(ms/1000),1000/20);
  }
@@ -108,7 +108,7 @@ export class CityRoom extends Room{
   if(previousMotion!==n.motionName)p.motionStartedAt=now;
   p.moveX=n.moveX;p.moveY=n.moveY;p.moveScale=n.moveScale;p.aimX=n.aimX;p.aimY=n.aimY;
   if(p.blueSuckedBy){p.moveX=0;p.moveY=0;p.vx=0;p.vy=0;p.motionName="gojoBlueSucked";p.motionDuration=.85;return}
-  if(p.grabbedBy||p.activeGrabTarget){p.moveX=0;p.moveY=0;return}
+  if(p.grabbedBy||(p.activeGrabTarget&&p.grabKind!=="sukunaHeadCarry")){p.moveX=0;p.moveY=0;return}
   if(p.stun>0){
    p.moveX=0;p.moveY=0;
    // Do not let a delayed client snapshot restore a skill after it was interrupted.
@@ -620,6 +620,18 @@ modifyProjectile(client,payload={}){
   if(kind==="bloodSupernova"){defender.invuln=Math.max(defender.invuln,.5);defender.convergenceOrbs=clamp((Number(defender.convergenceOrbs)||0)+1,0,4);hurt(attacker,14,.8,13);return true}
   return false;
  }
+ startSukunaHeadCarry(client,payload={}){
+  const ownerId=client.sessionId,owner=this.state.players.get(ownerId),targetId=String(payload.targetId||""),target=this.state.players.get(targetId),now=Date.now();
+  if(!owner||!target||owner===target||owner.dead||target.dead||owner.character!=="vessel"||!owner.awakened||owner.lastActionKind!=="3"||now-owner.lastActionAt>2200)return;
+  if(owner.activeGrabTarget||owner.grabbedBy||target.grabbedBy||target.activeGrabTarget||target.block||target.vehicleId||distance(owner,target)>185)return;
+  const settings=grabSettings(owner.character,"sukunaHeadCarryWindup");if(!settings)return;
+  owner.activeGrabTarget=targetId;owner.grabKind=settings.kind;owner.stun=0;owner.vx=0;owner.vy=0;
+  target.grabbedBy=ownerId;target.grabKind=settings.kind;target.grabRemaining=settings.duration;target.grabDuration=settings.duration;
+  target.grabTick=settings.tickInterval;target.grabTickInterval=settings.tickInterval;target.grabTickDamage=settings.tickDamage;target.grabFinishDamage=settings.finishDamage;target.grabKnockback=settings.knockback;
+  target.motionName="captured_sukunaHeadCarry";target.motionProgress=0;target.motionDuration=settings.duration;target.motionStartedAt=now;
+  target.attackAnim=settings.duration;target.attackType="grab";target.block=false;target.invuln=0;target.stun=.08;target.vx=0;target.vy=0;target.jump=0;
+  client.send("combat:grab-started",{targetId,kind:settings.kind,serverTime:now});
+ }
  combatHit(client,payload={}){
   const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id),move=String(payload.move||"").slice(0,48);
   const guaranteedRapidGrab=isGuaranteedRapidGrabAllowed(a?.character,move,a?.gojoRapidAt,Date.now(),payload.guaranteedContact===true,a?.awakened);
@@ -838,13 +850,33 @@ killPlayer(p){
   else if(target.grabKind==="rikaThrow"||target.grabKind==="yutaSecondWind"){const orbit=angle+progress*Math.PI*2;target.x=clamp(owner.x+Math.cos(orbit)*43,45,WORLD_WIDTH-45);target.y=clamp(owner.y+Math.sin(orbit)*28,45,WORLD_HEIGHT-45)}
   else if(target.grabKind==="toadPull"){target.x=clamp(owner.x+fx*50,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*50,45,WORLD_HEIGHT-45)}
   else{const offset=(target.grabKind==="yujiDrag"||target.grabKind==="gojoBlueRapid")?46:target.grabKind==="gojoFaceGrater"?48:target.grabKind==="sukunaCleave"?47:target.grabKind==="mahitoTransfigure"?43:target.grabKind==="bloodEdge"?42:52;target.x=clamp(owner.x+fx*offset,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*offset,45,WORLD_HEIGHT-45)}
+  if(target.grabKind==="sukunaHeadCarry"){
+   const elapsed=progress*target.grabDuration,sideX=-fy,sideY=fx;
+   if(elapsed<.84){
+    target.x=clamp(owner.x-fx*72+sideX*9,45,WORLD_WIDTH-45);target.y=clamp(owner.y-fy*72+sideY*9,45,WORLD_HEIGHT-45);
+    target.jump=0;target.motionName="captured_sukunaHeadCarry";target.motionProgress=clamp(elapsed/.84,0,1);
+   }else if(elapsed<1.02){
+    const q=clamp((elapsed-.84)/.18,0,1),ease=q*q*(3-2*q),behind=72-124*ease;
+    target.x=clamp(owner.x-fx*behind,45,WORLD_WIDTH-45);target.y=clamp(owner.y-fy*behind,45,WORLD_HEIGHT-45);
+    target.jump=.2+Math.sin(q*Math.PI)*4.6;target.motionName="captured_sukunaHeadCarryThrown";target.motionProgress=q;
+   }else if(elapsed<1.34){
+    const q=clamp((elapsed-1.02)/.32,0,1);
+    target.x=clamp(owner.x+fx*38,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*38,45,WORLD_HEIGHT-45);
+    target.jump=2.2+Math.sin(q*Math.PI)*2.7;target.motionName="captured_sukunaHeadCarryThrown";target.motionProgress=q;
+   }else{
+    const q=clamp((elapsed-1.34)/.32,0,1);
+    target.x=clamp(owner.x+fx*36,45,WORLD_WIDTH-45);target.y=clamp(owner.y+fy*36,45,WORLD_HEIGHT-45);
+    target.jump=4.5*(1-q);target.motionName="captured_sukunaHeadCarryThrown";target.motionProgress=q;
+   }
+  }
   target.face=angle+Math.PI;target.block=false;target.stun=Math.max(target.stun,.08);
-  target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
+  target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);if(target.grabKind!=="sukunaHeadCarry")target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
   if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabTickInterval||.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-target.grabTickDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
   if(target.hp<=0){this.killPlayer(target);continue}
   if(target.grabRemaining<=0){
-   const finish=target.grabKind==="sukunaCleave"?Math.max(10,target.hp*.4):target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
-   const hpBefore=target.hp;target.hp=Math.max(0,target.hp-finish);if(target.hp<hpBefore)target.hpRegenWait=4.5;target.stun=Math.max(target.stun,.82);target.invuln=Math.max(target.invuln,.16);
+   const finishedKind=target.grabKind,finish=finishedKind==="sukunaCleave"?Math.max(10,target.hp*.4):target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
+   const hpBefore=target.hp;target.hp=Math.max(0,target.hp-finish);if(target.hp<hpBefore)target.hpRegenWait=4.5;target.stun=Math.max(target.stun,finishedKind==="sukunaHeadCarry"?1.05:.82);target.invuln=Math.max(target.invuln,.16);
+   if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now;target.jump=.5;}
    target.x=clamp(target.x+fx*push,45,WORLD_WIDTH-45);target.y=clamp(target.y+fy*push,45,WORLD_HEIGHT-45);
    target.motionName="grabRelease";target.motionProgress=1;target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
    if(target.hp<=0)this.killPlayer(target);
