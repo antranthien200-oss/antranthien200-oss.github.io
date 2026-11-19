@@ -139,3 +139,9 @@ export function domainSettings(character,domainType){
  if(domainType==="trash")return{radius:fullMapRadius,duration:28};
  return null;
 }
+
+export function domainPulseSettings(domainType){
+ if(domainType==="shrine")return{interval:.11,damage:2,stun:.04,blockedDamage:.5,damageType:"domain",ignoreInvuln:true};
+ if(domainType==="void")return{interval:.35,damage:0,stun:.42,blockedDamage:0,damageType:"domain",ignoreInvuln:true};
+ return null;
+}
