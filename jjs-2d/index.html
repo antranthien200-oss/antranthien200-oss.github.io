@@ -5464,7 +5464,7 @@ if(f.attackCd>0)return;
    const angle=Math.atan2(target.y-f.y,target.x-f.x);
    f.face=angle;f.vx=0;f.vy=0;
    setMotion(f,'gojoLimitless',1.05,angle,target);
-   f.gojoLimitlessGlassFx={t:0,duration:1.48};
+   f.gojoLimitlessGlassFx={t:0,duration:2.1};
    f.gojoLimitlessAutoM1At=game.time+.30;f.gojoLimitlessAutoM1Target=target;
    f.attackCd=0;f.invuln=Math.max(f.invuln||0,.62);
    f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+1600;
@@ -9270,7 +9270,7 @@ function drawTrashManEffects(){
 function gojoLimitlessVisualShake(f){
  const fx=f&&f.gojoLimitlessGlassFx;
  if(!fx||f.char!=='honored')return {x:0,y:0};
- const progress=clamp(fx.t/Math.max(.08,fx.duration||1.48),0,1);
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||2.1),0,1);
  const charge=1-smoothstep01(clamp(progress/.2,0,1));
  const impact=Math.sin(Math.PI*clamp((progress-.22)/.36,0,1));
  const settle=1-smoothstep01(clamp((progress-.68)/.24,0,1));
@@ -9470,7 +9470,7 @@ function drawGojoGlassGrowingPath(path,amount){
 function drawGojoTeleportGlassBackdrop(f){
  const fx=f&&f.gojoLimitlessGlassFx;
  if(!fx||f.char!=='honored')return;
- const progress=clamp(fx.t/Math.max(.08,fx.duration||1.48),0,1);
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||2.1),0,1);
  const streakFade=1-smoothstep01(clamp((progress-.25)/.24,0,1));
  if(streakFade<=.005)return;
  const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-10+shake.y;
@@ -9486,11 +9486,11 @@ function drawGojoTeleportGlassBackdrop(f){
 function drawGojoTeleportGlassForeground(f){
  const fx=f&&f.gojoLimitlessGlassFx;
  if(!fx||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassSceneCanvas)return;
- const progress=clamp(fx.t/Math.max(.08,fx.duration||1.48),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||2.1),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
  const glassIn=smoothstep01(clamp(progress/.055,0,1));
  if(glassIn<=.001)return;
  const breakProgress=smoothstep01(clamp((progress-.22)/.20,0,1));
- const shardFade=1-smoothstep01(clamp((progress-.86)/.13,0,1));
+ const shardFade=1-smoothstep01(clamp((progress-.88)/.11,0,1));
  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
  // Keep every shard crisp: only its own clipped scene sample is refracted, never the full screen.
  ctx.filter='none';ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
@@ -9498,7 +9498,7 @@ function drawGojoTeleportGlassForeground(f){
  // Once cracks reach the edges, each facet separates and tumbles independently.
  if(gojoGlassPieces){
   for(const piece of gojoGlassPieces){
-   const release=smoothstep01(clamp((progress-(.59+piece.delay))/.34,0,1));
+   const release=smoothstep01(clamp((progress-(.50+piece.delay))/.28,0,1));
    const eased=1-Math.pow(1-release,2.25);
    const shardX=piece.centerX+piece.dx*eased,shardY=piece.centerY+piece.dy*eased;
    const rotation=piece.rotation*eased;
