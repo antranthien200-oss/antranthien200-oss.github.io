@@ -3603,6 +3603,7 @@ function applyOnlineRoomState(state){
 function updateOnlineRemotePlayers(dt){
  const now=performance.now(),renderTime=now-onlineRemoteInterpolationDelayMs;
  for(const remote of onlineRemotePlayers.values()){
+   if(remote.gojoLimitlessGlassFx){remote.gojoLimitlessGlassFx.t+=dt;if(remote.gojoLimitlessGlassFx.t>=remote.gojoLimitlessGlassFx.duration)remote.gojoLimitlessGlassFx=null}
   // Remote attack replays don't run the local fighter simulation, so expire their short white punch flash here.
   if(remote.cursedWhiteFlash>0)remote.cursedWhiteFlash=Math.max(0,remote.cursedWhiteFlash-dt);
   // Remote fighters do not run updateFighter(), so decay their hit flash here as well.
@@ -5463,6 +5464,11 @@ if(f.attackCd>0)return;
    const angle=Math.atan2(target.y-f.y,target.x-f.x);
    f.face=angle;f.vx=0;f.vy=0;
    setMotion(f,'gojoLimitless',1.05,angle,target);
+   f.gojoLimitlessGlassFx={t:0,duration:.98};
+   f.gojoLimitlessAutoM1At=game.time+.30;f.gojoLimitlessAutoM1Target=target;
+   f.attackCd=0;f.invuln=Math.max(f.invuln||0,.62);
+   f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+1600;
+   f.onlineActionAim={x:target.x,y:target.y};f.onlineActionAimUntil=performance.now()+1600;
    f.x=clamp(target.x-Math.cos(angle)*45,45,WORLD.w-45);
    f.y=clamp(target.y-Math.sin(angle)*45,45,WORLD.h-45);
    collideWorld(f);
@@ -6057,7 +6063,7 @@ function updateFighter(f,dt){if(f.dead)return;
  }
  if(onlineMode&&f.blueSuckedBy){f.vx=0;f.vy=0;return}
  if(f.gojoBlueOrb){f.gojoBlueOrb.life=Math.max(0,f.gojoBlueOrb.life-dt);if(f.gojoBlueOrb.life<=0)f.gojoBlueOrb=null}
- if(!onlineMode){f.hpRegenWait=Math.max(0,(f.hpRegenWait||0)-dt);if(!f.jackpot&&f.hp<f.maxHp&&f.hpRegenWait<=0&&!(game.domainClash&&game.domainClash.members.includes(f)))f.hp=Math.min(f.maxHp,f.hp+f.maxHp*.012*dt)}if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);if(f.dead)return;f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){
+ if(!onlineMode){f.hpRegenWait=Math.max(0,(f.hpRegenWait||0)-dt);if(!f.jackpot&&f.hp<f.maxHp&&f.hpRegenWait<=0&&!(game.domainClash&&game.domainClash.members.includes(f)))f.hp=Math.min(f.maxHp,f.hp+f.maxHp*.012*dt)}if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);if(f.dead)return;f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.gojoLimitlessGlassFx){f.gojoLimitlessGlassFx.t+=dt;if(f.gojoLimitlessGlassFx.t>=f.gojoLimitlessGlassFx.duration)f.gojoLimitlessGlassFx=null}if(f.gojoLimitlessAutoM1At>0&&game.time>=f.gojoLimitlessAutoM1At&&(!onlineMode||f===player)){const followTarget=f.gojoLimitlessAutoM1Target;f.gojoLimitlessAutoM1At=0;f.gojoLimitlessAutoM1Target=null;if(followTarget&&!followTarget.dead&&dist(f,followTarget)<175){f.onlineActionTarget=followTarget;f.onlineActionTargetUntil=performance.now()+800;f.onlineActionAim={x:followTarget.x,y:followTarget.y};f.onlineActionAimUntil=performance.now()+800;f.face=Math.atan2(followTarget.y-f.y,followTarget.x-f.x);f.attackCd=0;f.combo=0;f.comboTimer=0;useAttack(f,'m1');f.onlineActionTarget=null;f.onlineActionTargetUntil=0;f.onlineActionAim=null;f.onlineActionAimUntil=0}}if(f.motion){
   f.motion.t+=dt;
   if(f.motion.name==='gojoRapidSpin'&&!f.gojoRapidSpinHitTarget&&!(onlineMode&&f.onlineSessionId)){
    // The full 360-degree hand sweep uses a forgiving 150-unit melee contact radius.
@@ -9262,12 +9268,12 @@ function drawTrashManEffects(){
  }
 }
 function gojoLimitlessVisualShake(f){
- const m=f&&f.motion;
- if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return {x:0,y:0};
- const progress=clamp(m.t/Math.max(.08,m.duration||1.05),0,1);
- const charge=1-smoothstep01(clamp(progress/.30,0,1));
- const impact=Math.sin(Math.PI*clamp((progress-.37)/.42,0,1));
- const settle=1-smoothstep01(clamp((progress-.78)/.22,0,1));
+ const fx=f&&f.gojoLimitlessGlassFx;
+ if(!fx||f.char!=='honored')return {x:0,y:0};
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1);
+ const charge=1-smoothstep01(clamp(progress/.2,0,1));
+ const impact=Math.sin(Math.PI*clamp((progress-.22)/.36,0,1));
+ const settle=1-smoothstep01(clamp((progress-.68)/.24,0,1));
  return {
   x:Math.sin(game.time*43+.4)*(.7*charge+1.0*impact*settle)-1.4*impact,
   y:Math.cos(game.time*37+1.1)*(.5*charge+.7*impact*settle)+.8*impact
@@ -9311,78 +9317,88 @@ function clipGojoGlassCell(poly,seedA,seedB){
  return result;
 }
 function buildGojoGlassCells(width,height,blurCanvas,impactX,impactY,random){
- const mobile=isMobileDevice,cols=mobile?5:6,rows=mobile?4:5,seeds=[];
- for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
-  const cellW=width/cols,cellH=height/rows;
-  seeds.push({x:(col+.5+(random()-.5)*.72)*cellW,y:(row+.5+(random()-.5)*.72)*cellH});
+ const mobile=isMobileDevice,rayCount=mobile?20:30,perimeter=2*(width+height),center={x:width*.5,y:height*.5},rays=[];
+ const pointAtPerimeter=value=>{
+  let t=((value%perimeter)+perimeter)%perimeter;
+  if(t<=width)return{x:t,y:0};
+  t-=width;if(t<=height)return{x:width,y:t};
+  t-=height;if(t<=width)return{x:width-t,y:height};
+  t-=width;return{x:0,y:height-t};
+ };
+ for(let i=0;i<rayCount;i++){
+  const angle=-Math.PI/2+(i+(random()-.5)*.26)*Math.PI*2/rayCount,dx=Math.cos(angle),dy=Math.sin(angle);
+  let distance=Infinity;
+  if(dx>0)distance=Math.min(distance,(width-center.x)/dx);else if(dx<0)distance=Math.min(distance,(0-center.x)/dx);
+  if(dy>0)distance=Math.min(distance,(height-center.y)/dy);else if(dy<0)distance=Math.min(distance,(0-center.y)/dy);
+  const x=clamp(center.x+dx*distance,0,width),y=clamp(center.y+dy*distance,0,height);
+  let t;
+  if(y<=.01)t=x;
+  else if(x>=width-.01)t=width+y;
+  else if(y>=height-.01)t=width+height+(width-x);
+  else t=2*width+height+(height-y);
+  rays.push({x,y,t});
  }
- const pieces=[],minDimension=Math.min(width,height),piecePadding=Math.max(3,Math.round(4*dpr));
- for(let i=0;i<seeds.length;i++){
-  let poly=[{x:0,y:0},{x:width,y:0},{x:width,y:height},{x:0,y:height}];
-  for(let j=0;j<seeds.length&&poly.length>=3;j++)if(i!==j)poly=clipGojoGlassCell(poly,seeds[i],seeds[j]);
-  if(poly.length<3)continue;
+ rays.sort((a,b)=>a.t-b.t);
+ const corners=[width,width+height,2*width+height,perimeter],pieces=[],padding=Math.max(3,Math.round(4*dpr)),minDimension=Math.min(width,height);
+ for(let i=0;i<rays.length;i++){
+  const a=rays[i],b=rays[(i+1)%rays.length],endT=b.t+(i===rays.length-1?perimeter:0),poly=[center,{x:a.x,y:a.y}];
+  for(const corner of corners){
+   let t=corner;while(t<=a.t)t+=perimeter;
+   if(t>a.t+.01&&t<endT-.01)poly.push(pointAtPerimeter(t));
+  }
+  poly.push({x:b.x,y:b.y});
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
   for(const point of poly){minX=Math.min(minX,point.x);minY=Math.min(minY,point.y);maxX=Math.max(maxX,point.x);maxY=Math.max(maxY,point.y)}
   const boxWidth=Math.max(1,Math.ceil(maxX-minX)),boxHeight=Math.max(1,Math.ceil(maxY-minY));
-  const texture=document.createElement('canvas');
-  texture.width=boxWidth+piecePadding*2;texture.height=boxHeight+piecePadding*2;
-  const textureCtx=texture.getContext('2d');
-  if(!textureCtx)continue;
+  const texture=document.createElement('canvas');texture.width=boxWidth+padding*2;texture.height=boxHeight+padding*2;
+  const textureCtx=texture.getContext('2d');if(!textureCtx)continue;
   textureCtx.save();textureCtx.beginPath();
-  for(let p=0;p<poly.length;p++){const point=poly[p],px=point.x-minX+piecePadding,py=point.y-minY+piecePadding;if(p===0)textureCtx.moveTo(px,py);else textureCtx.lineTo(px,py)}
+  for(let p=0;p<poly.length;p++){
+   const point=poly[p],px=point.x-minX+padding,py=point.y-minY+padding;
+   if(p===0)textureCtx.moveTo(px,py);else textureCtx.lineTo(px,py);
+  }
   textureCtx.closePath();textureCtx.clip();
-  const refractionX=(random()-.5)*Math.max(4,10*dpr),refractionY=(random()-.5)*Math.max(4,10*dpr);
-  textureCtx.drawImage(blurCanvas,piecePadding-minX-gojoGlassBlurPad+refractionX,piecePadding-minY-gojoGlassBlurPad+refractionY);
-  const tint=textureCtx.createLinearGradient(piecePadding,piecePadding,piecePadding+boxWidth,piecePadding+boxHeight);
+  const offsetX=(random()-.5)*Math.max(5,12*dpr),offsetY=(random()-.5)*Math.max(5,12*dpr);
+  textureCtx.drawImage(blurCanvas,padding-minX-gojoGlassBlurPad+offsetX,padding-minY-gojoGlassBlurPad+offsetY);
+  const tint=textureCtx.createLinearGradient(padding,padding,padding+boxWidth,padding+boxHeight);
   tint.addColorStop(0,'rgba(232,249,255,.035)');tint.addColorStop(.55,'rgba(151,211,242,.012)');tint.addColorStop(1,'rgba(224,244,255,.045)');
-  textureCtx.fillStyle=tint;textureCtx.fillRect(piecePadding,piecePadding,boxWidth,boxHeight);
-  textureCtx.restore();
-  const centerX=(minX+maxX)*.5,centerY=(minY+maxY)*.5;
-  let angle=Math.atan2(centerY-impactY,centerX-impactX);
-  if(Math.hypot(centerX-impactX,centerY-impactY)<minDimension*.075)angle+=(random()-.5)*Math.PI*2;
-  angle+=(random()-.5)*.58;
-  const distance=Math.hypot(centerX-impactX,centerY-impactY),travel=minDimension*(.025+random()*.105)+Math.min(distance*.055,minDimension*.045),tangent=(random()-.5)*minDimension*.045;
-  const directionX=Math.cos(angle),directionY=Math.sin(angle);
-  pieces.push({
-   texture,centerX,centerY,
-   dx:directionX*travel-Math.sin(angle)*tangent,
-   dy:directionY*travel+Math.cos(angle)*tangent,
-   rotation:(random()-.5)*(1.25+random()*.55),
-   delay:random()*.045
-  });
+  textureCtx.fillStyle=tint;textureCtx.fillRect(padding,padding,boxWidth,boxHeight);textureCtx.restore();
+  const cx=(minX+maxX)*.5,cy=(minY+maxY)*.5,dx=cx-impactX,dy=cy-impactY,len=Math.hypot(dx,dy)||1;
+  const travel=minDimension*(.055+random()*.11),tangent=(random()-.5)*minDimension*.035;
+  pieces.push({texture,centerX:cx,centerY:cy,dx:dx/len*travel-dy/len*tangent,dy:dy/len*travel+dx/len*tangent,rotation:(random()-.5)*1.22,delay:random()*.025});
  }
  return pieces;
 }
 function buildGojoGlassCracks(width,height,impactX,impactY,random){
- const cracks=[],minimum=Math.min(width,height),rayCount=15;
+ const cracks=[],minimum=Math.min(width,height),rayCount=20;
  for(let i=0;i<rayCount;i++){
-  const angle=(Math.PI*2*i/rayCount)+(random()-.5)*.16,dx=Math.cos(angle),dy=Math.sin(angle),perpX=-dy,perpY=dx;
+  const angle=(Math.PI*2*i/rayCount)+(random()-.5)*.12,dx=Math.cos(angle),dy=Math.sin(angle),perpX=-dy,perpY=dx;
   let distance=Infinity;
   if(dx>0)distance=Math.min(distance,(width-impactX)/dx);else if(dx<0)distance=Math.min(distance,(0-impactX)/dx);
   if(dy>0)distance=Math.min(distance,(height-impactY)/dy);else if(dy<0)distance=Math.min(distance,(0-impactY)/dy);
-  distance*=.72+random()*.27;
-  const points=[{x:impactX,y:impactY}],segments=5+Math.floor(random()*3),bend=(random()-.5)*minimum*.012;
+  distance*=.79+random()*.20;
+  const points=[{x:impactX,y:impactY}],segments=5+Math.floor(random()*3),bend=(random()-.5)*minimum*.01;
   for(let step=1;step<=segments;step++){
-   const t=step/segments,side=Math.sin(t*Math.PI)*bend+(random()-.5)*minimum*.006;
+   const t=step/segments,side=Math.sin(t*Math.PI)*bend+(random()-.5)*minimum*.004;
    points.push({x:impactX+dx*distance*t+perpX*side,y:impactY+dy*distance*t+perpY*side});
   }
-  cracks.push({points,delay:random()*.045});
-  const branches=1+(random()>.44?1:0);
+  cracks.push({points,delay:random()*.012});
+  const branches=1+(random()>.38?1:0);
   for(let branch=0;branch<branches;branch++){
    const startIndex=1+Math.floor(random()*(points.length-2)),origin=points[startIndex],sign=random()>.5?1:-1;
-   const branchAngle=angle+sign*(.62+random()*.95),length=minimum*(.075+random()*.12),bdx=Math.cos(branchAngle),bdy=Math.sin(branchAngle),bpx=-bdy,bpy=bdx;
+   const branchAngle=angle+sign*(.68+random()*.88),length=minimum*(.07+random()*.14),bdx=Math.cos(branchAngle),bdy=Math.sin(branchAngle),bpx=-bdy,bpy=bdx;
    const branchPoints=[origin];
    for(let step=1;step<=3;step++){
-    const t=step/3,side=(random()-.5)*minimum*.009;
+    const t=step/3,side=(random()-.5)*minimum*.006;
     branchPoints.push({x:origin.x+bdx*length*t+bpx*side,y:origin.y+bdy*length*t+bpy*side});
    }
-   cracks.push({points:branchPoints,delay:random()*.10});
+   cracks.push({points:branchPoints,delay:random()*.035});
   }
  }
  return cracks;
 }
 function prepareGojoGlassBackdrop(fighters){
- const active=fighters.find(f=>f&&!f.dead&&f.char==='honored'&&f.motion&&f.motion.name==='gojoLimitless');
+ const active=fighters.find(f=>f&&!f.dead&&f.char==='honored'&&f.gojoLimitlessGlassFx);
  if(!active){
   gojoGlassBackdropReady=false;gojoGlassBlurCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey='';gojoGlassImpactPoint=null;
   return;
@@ -9390,21 +9406,16 @@ function prepareGojoGlassBackdrop(fighters){
  const source=ctx.canvas,sizeKey=source.width+'x'+source.height;
  if(gojoGlassSizeKey!==sizeKey){gojoGlassBackdropReady=false;gojoGlassBlurCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey=sizeKey}
  if(gojoGlassBackdropReady)return;
- const backdrop=captureGojoGlassBackdrop();
- if(!backdrop)return;
- const transform=ctx.getTransform(),localX=sx(active.x),localY=sy(active.y)-active.jump*3-10;
- const impactX=clamp(transform.a*localX+transform.c*localY+transform.e,source.width*.08,source.width*.92);
- const impactY=clamp(transform.b*localX+transform.d*localY+transform.f,source.height*.08,source.height*.92);
+ const backdrop=captureGojoGlassBackdrop();if(!backdrop)return;
+ const impactX=source.width*.5,impactY=source.height*.5;
  gojoGlassImpactPoint={x:impactX,y:impactY};
  const blurRadius=Math.max(12,14*dpr);
  gojoGlassBlurPad=Math.ceil(blurRadius*2.5+4);
  gojoGlassBlurCanvas=document.createElement('canvas');
  gojoGlassBlurCanvas.width=source.width+gojoGlassBlurPad*2;gojoGlassBlurCanvas.height=source.height+gojoGlassBlurPad*2;
- const blurCtx=gojoGlassBlurCanvas.getContext('2d');
- if(!blurCtx)return;
+ const blurCtx=gojoGlassBlurCanvas.getContext('2d');if(!blurCtx)return;
  blurCtx.setTransform(1,0,0,1,0,0);blurCtx.globalAlpha=1;blurCtx.globalCompositeOperation='source-over';blurCtx.filter='blur('+blurRadius+'px)';
- blurCtx.drawImage(backdrop,gojoGlassBlurPad,gojoGlassBlurPad);
- blurCtx.filter='none';
+ blurCtx.drawImage(backdrop,gojoGlassBlurPad,gojoGlassBlurPad);blurCtx.filter='none';
  const random=gojoGlassRandom(20261120);
  gojoGlassPieces=buildGojoGlassCells(source.width,source.height,gojoGlassBlurCanvas,impactX,impactY,random);
  gojoGlassCracks=buildGojoGlassCracks(source.width,source.height,impactX,impactY,random);
@@ -9424,9 +9435,9 @@ function drawGojoGlassGrowingPath(path,amount){
  ctx.stroke();
 }
 function drawGojoTeleportGlassBackdrop(f){
- const m=f&&f.motion;
- if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
- const progress=clamp(m.t/Math.max(.08,m.duration||1.05),0,1);
+ const fx=f&&f.gojoLimitlessGlassFx;
+ if(!fx||f.char!=='honored')return;
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1);
  const streakFade=1-smoothstep01(clamp((progress-.25)/.24,0,1));
  if(streakFade<=.005)return;
  const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-10+shake.y;
@@ -9440,14 +9451,14 @@ function drawGojoTeleportGlassBackdrop(f){
  ctx.restore();
 }
 function drawGojoTeleportGlassForeground(f){
- const m=f&&f.motion;
- if(!m||m.name!=='gojoLimitless'||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassBlurCanvas)return;
- const progress=clamp(m.t/Math.max(.08,m.duration||1.05),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
- const glassIn=smoothstep01(clamp((progress-.17)/.19,0,1));
+ const fx=f&&f.gojoLimitlessGlassFx;
+ if(!fx||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassBlurCanvas)return;
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
+ const glassIn=smoothstep01(clamp(progress/.055,0,1));
  if(glassIn<=.001)return;
- const breakProgress=smoothstep01(clamp((progress-.52)/.31,0,1));
+ const breakProgress=smoothstep01(clamp((progress-.22)/.20,0,1));
  const paneAlpha=glassIn*(1-breakProgress);
- const shardFade=1-smoothstep01(clamp((progress-.89)/.11,0,1));
+ const shardFade=1-smoothstep01(clamp((progress-.78)/.20,0,1));
  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
  if(paneAlpha>.001){
   const waveX=Math.sin(game.time*3.8)*2*dpr,waveY=Math.cos(game.time*3.1)*1.5*dpr;
@@ -9455,11 +9466,11 @@ function drawGojoTeleportGlassForeground(f){
   ctx.drawImage(gojoGlassBlurCanvas,gojoGlassBlurPad+waveX,gojoGlassBlurPad+waveY,width,height,0,0,width,height);
   ctx.globalAlpha=paneAlpha*.025;ctx.fillStyle='rgba(207,237,250,1)';ctx.fillRect(0,0,width,height);
  }
- const crackFade=glassIn*(1-smoothstep01(clamp((progress-.61)/.12,0,1)));
+ const crackFade=glassIn*(1-smoothstep01(clamp((progress-.39)/.13,0,1)));
  if(crackFade>.001&&gojoGlassCracks){
-  ctx.strokeStyle='rgba(231,245,255,.82)';ctx.lineWidth=Math.max(1,.85*dpr);ctx.lineCap='round';ctx.lineJoin='round';
+  ctx.strokeStyle='rgba(231,245,255,.88)';ctx.lineWidth=Math.max(1,.95*dpr);ctx.lineCap='square';ctx.lineJoin='miter';ctx.miterLimit=6;
   for(const crack of gojoGlassCracks){
-   const reveal=smoothstep01(clamp((progress-(.31+crack.delay))/.29,0,1));
+   const reveal=smoothstep01(clamp((progress-(.045+crack.delay))/.13,0,1));
    if(reveal<=.001)continue;
    ctx.globalAlpha=crackFade*(.52+reveal*.35);
    drawGojoGlassGrowingPath(crack.points,reveal);
@@ -9467,9 +9478,9 @@ function drawGojoTeleportGlassForeground(f){
  }
  if(shardFade>.001&&gojoGlassPieces){
   for(const piece of gojoGlassPieces){
-   const release=smoothstep01(clamp((progress-(.535+piece.delay))/.32,0,1));
+   const release=smoothstep01(clamp((progress-(.24+piece.delay))/.22,0,1));
    if(release<=.001)continue;
-   const eased=1-Math.pow(1-release,3),pieceAlpha=glassIn*shardFade*(.98-.10*release);
+   const eased=1-Math.pow(1-release,2.25),pieceAlpha=glassIn*shardFade*(.98-.10*release);
    ctx.save();ctx.translate(piece.centerX+piece.dx*eased,piece.centerY+piece.dy*eased);ctx.rotate(piece.rotation*eased);
    ctx.globalAlpha=pieceAlpha;ctx.drawImage(piece.texture,-piece.texture.width*.5,-piece.texture.height*.5);
    ctx.restore();
