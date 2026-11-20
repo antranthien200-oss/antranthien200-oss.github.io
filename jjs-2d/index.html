@@ -9498,7 +9498,7 @@ function getDomainPopupArtwork(f,stripHeight){
 function drawDomainHandsignCutin(f,p,accent){
  const t=clamp(p,0,1),cx=W*.5,cy=H*.465;
  const theme=getFighterTheme(f),compact=W/H<1.15,wide=W/H>2;
- const enter=clamp(t/.14,0,1),enterEase=1-Math.pow(1-enter,3);
+ const enter=clamp(t/.28,0,1),enterEase=enter*enter*(3-2*enter);
  const exit=clamp((t-.72)/.28,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
@@ -9513,7 +9513,7 @@ function drawDomainHandsignCutin(f,p,accent){
  const panelScaleY=Math.max(.004,(.08+.92*enterEase)*(1-fold));
  ctx.save();
  // Darken the arena once for the cut-in; let the background return as the panel closes.
- ctx.globalAlpha=.5*(1-.9*fold);ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+ ctx.globalAlpha=.5*enterEase*(1-.9*fold);ctx.fillStyle='#080d14';ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
  ctx.save();
  ctx.translate(cx,cy);
  ctx.rotate(cutinAngle);
