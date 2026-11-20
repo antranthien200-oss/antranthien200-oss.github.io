@@ -3605,6 +3605,9 @@ function updateOnlineRemotePlayers(dt){
  for(const remote of onlineRemotePlayers.values()){
   // Remote attack replays don't run the local fighter simulation, so expire their short white punch flash here.
   if(remote.cursedWhiteFlash>0)remote.cursedWhiteFlash=Math.max(0,remote.cursedWhiteFlash-dt);
+  // Remote fighters do not run updateFighter(), so decay their hit flash here as well.
+  if(remote.flash>0)remote.flash=Math.max(0,remote.flash-dt);
+  if(remote.blockImpact>0)remote.blockImpact=Math.max(0,remote.blockImpact-dt);
   // Counter animations are client-triggered and aren't included in normal server motion snapshots.
   // Advance the temporary remote override so both alternating punches actually play for other clients.
   if(remote.counterMotionOverrideUntil>now&&remote.motion){
@@ -8590,7 +8593,9 @@ function drawHeadHands(f,deferMotionVfx=false){
  const teleportShake=gojoLimitlessVisualShake(f);
  const x=sx(f.x)+teleportShake.x,y=sy(f.y)-f.jump*3+teleportShake.y,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
- const liveTarget=isPlayer?aimWorld():(player?{x:player.x,y:player.y-23}:aimWorld());
+ // Online opponents must animate their hands along their own replicated facing direction.
+ const remoteFacing=Number.isFinite(f.face)?f.face:0;
+ const liveTarget=isPlayer?aimWorld():(onlineMode&&f.onlineSessionId?{x:f.x+Math.cos(remoteFacing)*120,y:f.y-23+Math.sin(remoteFacing)*120}:(player?{x:player.x,y:player.y-23}:aimWorld()));
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
  const lockShrineM1=!!(m&&f.char==='vessel'&&f.awakened&&name.startsWith('m1_')&&Number.isFinite(m.angle));
  const useMotionAim=!!(m&&name&&Number.isFinite(m.angle)&&((!name.startsWith('m1_')&&!name.startsWith('yutaM1_'))||lockShrineM1));
