@@ -42,8 +42,8 @@ export function counterSettings(character,action,awakened=false){
  if(character==="trashman"&&action==="special")return{kind:"trashSwap",window:.42,cooldown:9.5};
  if(character==="vessel"&&action==="special"&&awakened)return{kind:"sukunaCleaveCounter",window:.65,cooldown:15};
  if(character==="restless"&&action==="special"&&!awakened)return{kind:"door",window:.6,cooldown:16};
- if(character==="honored"&&action==="4"&&!awakened)return{kind:"gojoTwofoldCounter",window:.6,cooldown:20};
- if(character==="vessel"&&action==="4"&&!awakened)return{kind:"manji",window:.6,cooldown:20};
+ if(character==="honored"&&action==="4"&&!awakened)return{kind:"gojoTwofoldCounter",window:.9,cooldown:20};
+ if(character==="vessel"&&action==="4"&&!awakened)return{kind:"manji",window:.9,cooldown:20};
  if(character==="todo"&&action==="3")return{kind:"todoDream",window:.7,cooldown:18};
  if(character==="todo"&&action==="4")return{kind:"todoBrothers",window:.85,cooldown:35};
  if(character==="choso"&&action==="3"&&!awakened)return{kind:"bloodSupernova",window:.62,cooldown:18};
