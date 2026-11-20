@@ -584,7 +584,7 @@ modifyProjectile(client,payload={}){
   const kind=defender.counterKind;
   if(!kind||defender.counterWindow<=0)return false;
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
-  if(Math.abs(facing)>1.18)return false;
+  if(Math.abs(facing)>(kind==="gojoTwofoldCounter"?1.42:1.18))return false;
   const projectile=["bullet","projectile"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
   const hurt=(target,amount,stun,push,directionX=nx,directionY=ny)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+directionX*push,-60,60);target.vy=clamp((Number(target.vy)||0)+directionY*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
   defender.counterKind="";defender.counterWindow=0;
@@ -631,9 +631,9 @@ modifyProjectile(client,payload={}){
    return true;
   }
   if(kind==="gojoTwofoldCounter"){
-    defender.invuln=Math.max(defender.invuln,.95);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
+    defender.invuln=Math.max(defender.invuln,.8);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
     attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
-    attacker.stun=Math.max(attacker.stun,.5);attacker.vx=0;attacker.vy=0;attacker.motionName="";attacker.motionProgress=0;attacker.motionDuration=1;attacker.attackAnim=0;attacker.attackType="";
+    attacker.stun=Math.max(attacker.stun,.42);attacker.vx=0;attacker.vy=0;attacker.motionName="";attacker.motionProgress=0;attacker.motionDuration=1;attacker.attackAnim=0;attacker.attackType="";
     let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
     if(!resolvedAttackerId||!resolvedDefenderId){
      for(const [playerId,player] of this.state.players){
@@ -644,29 +644,29 @@ modifyProjectile(client,payload={}){
     if(resolvedAttackerId&&resolvedDefenderId){
      const started=Date.now();
      // Stage 1: Gojo's quick jab replaces only Yuji's block.
-     defender.motionName="gojoCounterJab";defender.motionProgress=0;defender.motionDuration=.34;defender.motionStartedAt=started;defender.attackAnim=.34;defender.attackType="skill";
+     defender.motionName="gojoCounterJab";defender.motionProgress=0;defender.motionDuration=.24;defender.motionStartedAt=started;defender.attackAnim=.24;defender.attackType="skill";
      this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:started});
      setTimeout(()=>{
       const jabDefender=this.state.players.get(resolvedDefenderId),jabAttacker=this.state.players.get(resolvedAttackerId);
       if(!jabDefender||!jabAttacker||jabDefender.dead||jabAttacker.dead)return;
-      hurt(jabAttacker,2.5,.16,0);
-     },160);
-     // Stage 2: use the same Manji counter punch used by Yuji, with a longer readable follow-through.
+      hurt(jabAttacker,2.5,.14,0);
+     },120);
+     // Stage 2: Yuji's shared Manji punch, shortened without changing its hand or pose.
      setTimeout(()=>{
       const currentDefender=this.state.players.get(resolvedDefenderId),currentAttacker=this.state.players.get(resolvedAttackerId);
       if(!currentDefender||!currentAttacker||currentDefender.dead||currentAttacker.dead)return;
       const strikeAngle=Math.atan2(currentAttacker.y-currentDefender.y,currentAttacker.x-currentDefender.x);
-      currentDefender.face=strikeAngle;currentDefender.motionName="yujiManjiCounter";currentDefender.motionProgress=0;currentDefender.motionDuration=.55;currentDefender.motionStartedAt=Date.now();currentDefender.attackAnim=.55;currentDefender.attackType="skill";
+      currentDefender.face=strikeAngle;currentDefender.motionName="yujiManjiCounter";currentDefender.motionProgress=0;currentDefender.motionDuration=.42;currentDefender.motionStartedAt=Date.now();currentDefender.attackAnim=.42;currentDefender.attackType="skill";
       currentAttacker.counterKind="";currentAttacker.counterWindow=0;currentAttacker.block=false;currentAttacker.invuln=0;
-      currentAttacker.stun=Math.max(currentAttacker.stun,.3);currentAttacker.vx=0;currentAttacker.vy=0;
+      currentAttacker.stun=Math.max(currentAttacker.stun,.24);currentAttacker.vx=0;currentAttacker.vy=0;
       setTimeout(()=>{
        const finishDefender=this.state.players.get(resolvedDefenderId),finishAttacker=this.state.players.get(resolvedAttackerId);
        if(!finishDefender||!finishAttacker||finishDefender.dead||finishAttacker.dead)return;
        const finalDx=finishAttacker.x-finishDefender.x,finalDy=finishAttacker.y-finishDefender.y,finalLength=Math.hypot(finalDx,finalDy)||1;
        finishAttacker.counterKind="";finishAttacker.counterWindow=0;finishAttacker.block=false;finishAttacker.invuln=0;
        hurt(finishAttacker,8.5,.68,10,finalDx/finalLength,finalDy/finalLength);
-      },380);
-     },360);
+      },270);
+     },260);
     }
     return true;
    }
