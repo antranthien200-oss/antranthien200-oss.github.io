@@ -3829,7 +3829,7 @@ function bindOnlineRoom(client,room){
   remote.onlineActionReplay=true;
   try{useAttack(remote,actionKind,true)}finally{remote.onlineActionReplay=false}
   if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
-  if(actionKind==='special'&&remote.char==='honored'&&Number.isFinite(Number(data.flashStepFromX))&&Number.isFinite(Number(data.flashStepFromY)))remote.gojoFlashStepFx={fromX:Number(data.flashStepFromX),fromY:Number(data.flashStepFromY),toX:Number(data.flashStepToX),toY:Number(data.flashStepToY),startedAt:performance.now(),duration:.48};
+  if(actionKind==='special'&&remote.char==='honored'&&Number.isFinite(Number(data.flashStepFromX))&&Number.isFinite(Number(data.flashStepFromY)))remote.gojoFlashStepFx={fromX:Number(data.flashStepFromX),fromY:Number(data.flashStepFromY),toX:Number(data.flashStepToX),toY:Number(data.flashStepToY),startedAt:performance.now(),duration:.62};
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
  room.onMessage('combat:grab-started',data=>{
@@ -5462,7 +5462,7 @@ if(f.attackCd>0)return;
    const travelAngle=Math.atan2(f.y-fromY,f.x-fromX);
    f.face=targetFacing;f.vx=0;f.vy=0;f.jump=0;f.block=false;
    setMotion(f,'gojoFlashStep',.46,travelAngle,target);
-   f.gojoFlashStepFx={fromX,fromY,toX:f.x,toY:f.y,startedAt:performance.now(),duration:.48};
+   f.gojoFlashStepFx={fromX,fromY,toX:f.x,toY:f.y,startedAt:performance.now(),duration:.62};
    f.attackCd=0;f.invuln=Math.max(f.invuln||0,.22);
    f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+650;
    f.onlineActionAim={x:target.x,y:target.y};f.onlineActionAimUntil=performance.now()+650;
@@ -7195,22 +7195,7 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
 }
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m||m==='gojoCounterMiss')return;
- if(m==='gojoFlashStep'){
-  const fade=(1-smoothstep01(clamp(p/.92,0,1)))*vfxFade;
-  const fx=f.gojoFlashStepFx;
-  const angle=fx&&Number.isFinite(fx.fromX)&&Number.isFinite(fx.fromY)&&Number.isFinite(fx.toX)&&Number.isFinite(fx.toY)?Math.atan2(fx.toY-fx.fromY,fx.toX-fx.fromX):(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
-  ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
-  const streaks=[[-76,-19,2.8],[-66,-9,2.2],[-82,2,2.5],[-63,13,1.8],[-54,-25,1.6],[-48,22,1.5]];
-  for(let i=0;i<streaks.length;i++){
-   const [length,y,width]=streaks[i];
-   ctx.globalAlpha=fade*(.54+(i%3)*.13);
-   ctx.strokeStyle=i%2?'#69cfff':'#e9faff';ctx.lineWidth=width;
-   ctx.beginPath();ctx.moveTo(length,y);ctx.quadraticCurveTo(length*.48,y*.72,-8,y*.12);ctx.stroke();
-  }
-  ctx.globalAlpha=fade*.82;ctx.fillStyle='#f1fcff';ctx.shadowColor='#8edcff';ctx.shadowBlur=isMobileDevice?0:7;
-  ctx.beginPath();ctx.arc(0,0,3.2,0,Math.PI*2);ctx.fill();
-  ctx.restore();return;
- }
+ if(m==='gojoFlashStep')return;
  if(m==='gojoRed'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   const charge=smoothstep01(clamp(p/.42,0,1)),pulse=.5+.5*Math.sin(game.time*21),radius=8+charge*6;
@@ -9280,63 +9265,60 @@ function drawFighter(f){
 }
 function drawGojoFlashStepPath(f,fx,age){
  if(!f||!fx)return;
- const duration=Math.max(.24,Number(fx.duration)||.48),progress=clamp(age/duration,0,1);
- const fade=1-smoothstep01(clamp((progress-.48)/.52,0,1));
+ const duration=Math.max(.24,Number(fx.duration)||.62),progress=clamp(age/duration,0,1);
+ const fade=1-smoothstep01(clamp((progress-.68)/.32,0,1));
  if(fade<=.005)return;
  const x1=sx(fx.fromX),y1=sy(fx.fromY)-23;
  const x2=sx(fx.toX),y2=sy(fx.toY)-23;
  const dx=x2-x1,dy=y2-y1,length=Math.hypot(dx,dy);
  if(length<5)return;
- const angle=Math.atan2(dy,dx),reveal=smoothstep01(clamp(progress/.58,0,1));
- // Draw faint full-character echoes at positions along the route.
- for(let i=0;i<3;i++){
-  const along=[.22,.48,.74][i],back=1-smoothstep01(clamp(progress/(.40+i*.045),0,1));
-  const ghostX=lerp(fx.fromX,fx.toX,along),ghostY=lerp(fx.fromY,fx.toY,along);
-  if(back<=.015)continue;
-  const ghost={...f,x:ghostX,y:ghostY,face:angle,motion:null,motionHandPose:null,block:false,vehicle:null,vehicleTransition:null,gojoFlashStepFx:null,attackAnim:0};
-  ctx.save();ctx.globalAlpha=fade*(.15-i*.03)*back;ctx.globalCompositeOperation='screen';
-  drawHeadHands(ghost,true);ctx.restore();
- }
- // Draw a wide tapered energy wake from the departure point to the arrival point.
+ const angle=Math.atan2(dy,dx);
+
+ // Keep the travel wake narrow and directional; the character echoes are the main effect.
  ctx.save();ctx.translate(x1,y1);ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
- const ribbon=ctx.createLinearGradient(0,0,length,0);
- ribbon.addColorStop(0,'rgba(62,177,255,0)');
- ribbon.addColorStop(.12,'rgba(72,190,255,.22)');
- ribbon.addColorStop(.54,'rgba(112,218,255,.58)');
- ribbon.addColorStop(.88,'rgba(218,248,255,.9)');
- ribbon.addColorStop(1,'rgba(255,255,255,.12)');
- ctx.globalAlpha=fade*.95;ctx.strokeStyle=ribbon;ctx.lineWidth=19*(1-.25*reveal);
- ctx.beginPath();ctx.moveTo(0,0);ctx.bezierCurveTo(length*.28,-13,length*.72,12,length,0);ctx.stroke();
- // Thin offset speed lines split away from the central wake.
- for(let i=0;i<7;i++){
-  const y=(i-3)*5.2,phase=(game.time*13+i*1.7)%1;
-  const lineStart=length*(.04+phase*.13),lineEnd=Math.min(length,lineStart+length*(.17+(i%3)*.045));
-  if(lineEnd<=lineStart)continue;
-  ctx.globalAlpha=fade*(.35+(i%3)*.12);
-  ctx.strokeStyle=i%2?'#69cfff':'#effcff';ctx.lineWidth=i%3===0?2.1:1.25;
-  ctx.beginPath();ctx.moveTo(lineStart,y*.62);ctx.quadraticCurveTo((lineStart+lineEnd)*.5,y*1.3,lineEnd,y*.28);ctx.stroke();
- }
- // Departure ring collapses quickly, while the arrival ring expands around Gojo.
- const departureFade=1-smoothstep01(clamp(progress/.23,0,1));
- if(departureFade>.01){
-  ctx.globalAlpha=fade*departureFade*.75;ctx.strokeStyle='#72d9ff';ctx.lineWidth=2.3;
-  ctx.beginPath();ctx.ellipse(0,0,12+progress*20,24+progress*8,0,0,Math.PI*2);ctx.stroke();
- }
- const arrival=smoothstep01(clamp((progress-.10)/.32,0,1)),arrivalFade=1-smoothstep01(clamp((progress-.42)/.42,0,1));
- if(arrivalFade>.01){
-  ctx.save();ctx.translate(length,0);ctx.globalAlpha=fade*arrivalFade*.82;ctx.strokeStyle='#e5faff';ctx.lineWidth=2.4;
-  const radius=10+arrival*31;ctx.beginPath();ctx.ellipse(0,0,radius,radius*.58,0,0,Math.PI*2);ctx.stroke();
-  ctx.globalAlpha=fade*arrivalFade*.48;ctx.strokeStyle='#55caff';ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.ellipse(0,0,radius*.68,radius*.4,0,0,Math.PI*2);ctx.stroke();ctx.restore();
- }
- // Bright particles race from the old position to the new one.
- for(let i=0;i<10;i++){
-  const travel=(progress*1.65+i/10)%1,px=length*travel;
-  const pulse=.55+.45*Math.sin(game.time*32+i*2.1),radius=(1.35+(i%3)*.6)*pulse;
-  ctx.globalAlpha=fade*(.3+(i%4)*.12);ctx.fillStyle=i%2?'#8fe3ff':'#ffffff';
-  ctx.beginPath();ctx.arc(px,Math.sin(travel*Math.PI)*4,radius,0,Math.PI*2);ctx.fill();
- }
+ const wake=ctx.createLinearGradient(0,0,length,0);
+ wake.addColorStop(0,'rgba(75,180,255,0)');
+ wake.addColorStop(.14,'rgba(90,190,255,.22)');
+ wake.addColorStop(.56,'rgba(145,220,255,.48)');
+ wake.addColorStop(.9,'rgba(225,248,255,.72)');
+ wake.addColorStop(1,'rgba(255,255,255,0)');
+ ctx.globalAlpha=fade*.82;ctx.strokeStyle=wake;ctx.lineWidth=7;
+ ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(length*.48,-2,length,0);ctx.stroke();
+ ctx.globalAlpha=fade*.36;ctx.strokeStyle='#8bdcff';ctx.lineWidth=1.5;
+ ctx.beginPath();ctx.moveTo(length*.04,-7);ctx.quadraticCurveTo(length*.5,-8,length*.94,-2);ctx.stroke();
+ ctx.beginPath();ctx.moveTo(length*.02,7);ctx.quadraticCurveTo(length*.52,8,length*.9,2);ctx.stroke();
  ctx.restore();
+
+ // A chain of solid, readable character afterimages follows Gojo's exact dash path.
+ const maxEchoes=isMobileDevice?6:9;
+ const echoCount=Math.max(3,Math.min(maxEchoes,Math.ceil(length/42)));
+ for(let i=0;i<echoCount;i++){
+  const ratio=echoCount===1?.5:i/(echoCount-1);
+  const along=.09+ratio*.77;
+  const reveal=smoothstep01(clamp((progress-along*.28)/.2,0,1));
+  const alpha=fade*reveal*(.22+ratio*.13);
+  if(alpha<.012)continue;
+  const ghost={
+   ...f,
+   x:lerp(fx.fromX,fx.toX,along),
+   y:lerp(fx.fromY,fx.toY,along),
+   face:angle,
+   motion:{name:'gojoFlashStep',t:.14,duration:.46,activeDuration:.46,angle},
+   motionHandPose:null,
+   block:false,
+   vehicle:null,
+   vehicleTransition:null,
+   gojoFlashStepFx:null,
+   attackAnim:0
+  };
+  ctx.save();
+  ctx.globalAlpha=Math.min(.4,alpha);
+  ctx.globalCompositeOperation='source-over';
+  ctx.shadowColor='rgba(88,195,255,.62)';
+  ctx.shadowBlur=isMobileDevice?0:4;
+  drawHeadHands(ghost,true);
+  ctx.restore();
+ }
 }
 function drawFighterMotionOverlays(f){
  if(!f||f.dead||f.vehicleTransition)return;
