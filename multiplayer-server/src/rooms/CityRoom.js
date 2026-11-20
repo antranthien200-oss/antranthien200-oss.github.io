@@ -144,13 +144,13 @@ export class CityRoom extends Room{
 combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),kind=String(payload.kind||"");
   const flameArrowAction=!!p&&kind==="2"&&p.character==="vessel"&&p.awakened&&p.stun<=.16;
-  const gojoLimitlessAction=!!p&&kind==="special"&&p.character==="honored";
+  const gojoFlashStepAction=!!p&&kind==="special"&&p.character==="honored";
   if(!p||p.dead||p.vehicleId||(p.stun>0&&kind!=="dash"&&!flameArrowAction)||p.grabbedBy||p.activeGrabTarget||p.blueSuckedBy)return;
   if(!["m1","dash","special","awaken","domain02","1","2","3","4"].includes(kind))return;
   if(kind==="domain02"&&(p.character!=="honored"||(p.awakened===false&&p.meter<100)))return;
   const counter=counterSettings(p.character,kind,p.awakened);
   const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten"),wasAwakened=p.awakened;
-  const cooldown=kind==="domain02"?24:modeToggle?.08:(gojoLimitlessAction?15:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42)));
+  const cooldown=kind==="domain02"?24:modeToggle?.08:(gojoFlashStepAction?15:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42)));
   const now=Date.now(),times=this.lastActionAt.get(id)||new Map(),blackFlashState=this.blackFlashFollowUps.get(id);
   const blackFlashFollowUp=kind==="3"&&p.character==="vessel"&&!p.awakened&&payload.blackFlashFollowUp===true&&blackFlashState&&!blackFlashState.used&&now-blackFlashState.startedAt>=160&&now-blackFlashState.startedAt<=2000;
   if(!blackFlashFollowUp&&now-(times.get(kind)||0)<cooldown*1000)return;
@@ -166,7 +166,8 @@ combatAction(client,payload={}){
   const requestedAimX=Number(payload.aimX),requestedAimY=Number(payload.aimY);
   let actionAimX=clamp(Number.isFinite(requestedAimX)?requestedAimX:(Number(p.aimX)||p.x),45,WORLD_WIDTH-45);
   let actionAimY=clamp(Number.isFinite(requestedAimY)?requestedAimY:(Number(p.aimY)||p.y),45,WORLD_HEIGHT-45);
-  if(gojoLimitlessAction){
+  let flashStep=null;
+  if(gojoFlashStepAction){
    let target=actionTargetId?this.state.players.get(actionTargetId):null;
    if(!target||target===p||target.dead){
     target=null;let best=Infinity;
@@ -177,12 +178,15 @@ combatAction(client,payload={}){
     }
    }
    if(!target)return;
-   const angle=Math.atan2(target.y-p.y,target.x-p.x);
-   p.face=angle;p.x=clamp(target.x-Math.cos(angle)*45,45,WORLD_WIDTH-45);
-   p.y=clamp(target.y-Math.sin(angle)*45,45,WORLD_HEIGHT-45);
-   p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.jump=0;p.block=false;p.invuln=Math.max(p.invuln,.62);
+   const fromX=p.x,fromY=p.y;
+   const targetFacing=Number.isFinite(target.face)?target.face:Math.atan2(target.y-p.y,target.x-p.x);
+   p.face=targetFacing;
+   p.x=clamp(target.x-Math.cos(targetFacing)*58,45,WORLD_WIDTH-45);
+   p.y=clamp(target.y-Math.sin(targetFacing)*58,45,WORLD_HEIGHT-45);
+   p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.jump=0;p.block=false;p.invuln=Math.max(p.invuln,.22);
    p.attackAnim=0;p.attackType="";
-   p.motionName="gojoLimitless";p.motionProgress=0;p.motionDuration=1.05;p.motionStartedAt=now;
+   p.motionName="gojoFlashStep";p.motionProgress=0;p.motionDuration=.2;p.motionStartedAt=now;
+   flashStep={flashStepFromX:fromX,flashStepFromY:fromY,flashStepToX:p.x,flashStepToY:p.y};
    actionAimX=target.x;actionAimY=target.y;
   }
   p.aimX=actionAimX;p.aimY=actionAimY;
@@ -216,7 +220,7 @@ combatAction(client,payload={}){
   }
   times.set(kind,now);this.lastActionAt.set(id,times);p.lastActionKind=kind;p.lastActionAt=now;if(kind==="3"&&p.character==="honored"&&!p.awakened)p.gojoRapidAt=now;
   if(counter){p.counterKind=counter.kind;p.counterWindow=counter.window}
-  this.broadcast("combat:action",{sessionId:id,kind,blackFlashFollowUp,character:p.character,awakened:p.awakened,modeToggle,awakenedJustNow:kind==="awaken"&&!modeToggle&&!wasAwakened&&p.awakened,serverTime:now,face:p.face,targetId:actionTargetId,aimX:actionAimX,aimY:actionAimY,jackpot:boolState("jackpot"),awakeMode:textState("awakeMode",24),awakeFuel:numberState("awakeFuel",100),tenBase:boolState("tenBase"),rikaMode:boolState("rikaMode"),rikaSummoned:boolState("rikaSummoned"),soulMode:numberState("soulMode",2),yutaCopyIndex:numberState("yutaCopyIndex",10),convergenceOrbs:numberState("convergenceOrbs",4),reserveBallWindow:numberState("reserveBallWindow",3),tenDogActive:boolState("tenDogActive"),tenDogCharges:numberState("tenDogCharges",3),tenDogTimer:numberState("tenDogTimer",30),tenGardenTimer:numberState("tenGardenTimer",999),shadowTimer:numberState("shadowTimer",30),sukunaFireCast:numberState("sukunaFireCast",5),...(blueSuction||{})});
+  this.broadcast("combat:action",{sessionId:id,kind,blackFlashFollowUp,character:p.character,awakened:p.awakened,modeToggle,awakenedJustNow:kind==="awaken"&&!modeToggle&&!wasAwakened&&p.awakened,serverTime:now,face:p.face,targetId:actionTargetId,aimX:actionAimX,aimY:actionAimY,jackpot:boolState("jackpot"),awakeMode:textState("awakeMode",24),awakeFuel:numberState("awakeFuel",100),tenBase:boolState("tenBase"),rikaMode:boolState("rikaMode"),rikaSummoned:boolState("rikaSummoned"),soulMode:numberState("soulMode",2),yutaCopyIndex:numberState("yutaCopyIndex",10),convergenceOrbs:numberState("convergenceOrbs",4),reserveBallWindow:numberState("reserveBallWindow",3),tenDogActive:boolState("tenDogActive"),tenDogCharges:numberState("tenDogCharges",3),tenDogTimer:numberState("tenDogTimer",30),tenGardenTimer:numberState("tenGardenTimer",999),shadowTimer:numberState("shadowTimer",30),sukunaFireCast:numberState("sukunaFireCast",5),...(blueSuction||{}),...(flashStep||{})});
  }
  requestDomain(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),requested=String(payload.domainType||"");
