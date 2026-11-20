@@ -182,7 +182,7 @@ combatAction(client,payload={}){
    p.y=clamp(target.y-Math.sin(angle)*45,45,WORLD_HEIGHT-45);
    p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.jump=0;p.block=false;
    p.attackAnim=0;p.attackType="";
-   p.motionName="gojoLimitless";p.motionProgress=0;p.motionDuration=.58;p.motionStartedAt=now;
+   p.motionName="gojoLimitless";p.motionProgress=0;p.motionDuration=1.05;p.motionStartedAt=now;
    actionAimX=target.x;actionAimY=target.y;
   }
   p.aimX=actionAimX;p.aimY=actionAimY;
