@@ -3590,11 +3590,11 @@ function applyOnlineRoomState(state){
  }
  const localClashId=String(local&&local.domainClashId||'');
  if(localClashId&&player){
-  const opponents=entries.filter(([id,net])=>id!==onlineSessionId&&String(net.domainClashId||'')===localClashId).map(([id])=>onlineRemotePlayers.get(id)).filter(Boolean);
+  const opponents=entries.filter(([id,net])=>id!==onlineSessionId&&String(net.domainClashId||'')===localClashId).map(([id])=>onlineRemotePlayers.get(id)).filter(Boolean).slice(0,1);
   if(opponents.length){
    if(!game.domainClash||game.domainClash.id!==localClashId){
     game.domainClash={id:localClashId,members:[player,...opponents],time:15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};
-    updateDomainClashHud();showToast(opponents.length>1?'MULTI DOMAIN CLASH · LAND HITS TO WIN':'DOMAIN CLASH · LAND HITS TO WIN',1300);
+    updateDomainClashHud();showToast('DOMAIN CLASH · LAND HITS TO WIN',1300);
    }else game.domainClash.members=[player,...opponents];
   }
  }
@@ -3886,8 +3886,8 @@ function bindOnlineRoom(client,room){
   });
   room.onMessage('domain:clash:start',data=>{
   if(!data||!Array.isArray(data.participants)||!data.participants.includes(onlineSessionId))return;
-  const opponents=data.participants.filter(id=>id!==onlineSessionId).map(id=>onlineRemotePlayers.get(id)).filter(Boolean);
-  if(opponents.length&&player){game.domainClash={id:String(data.id),members:[player,...opponents],time:Number(data.time)||15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};updateDomainClashHud();showToast(opponents.length>1?'MULTI DOMAIN CLASH · LAND HITS TO WIN':'DOMAIN CLASH · LAND HITS TO WIN',1300)}
+  const opponents=data.participants.filter(id=>id!==onlineSessionId).slice(0,1).map(id=>onlineRemotePlayers.get(id)).filter(Boolean);
+  if(opponents.length&&player){game.domainClash={id:String(data.id),members:[player,...opponents],time:Number(data.time)||15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};updateDomainClashHud();showToast('DOMAIN CLASH · LAND HITS TO WIN',1300)}
  });
  room.onMessage('domain:clash:score',data=>{
   const q=game.domainClash;if(!q||!q.serverAuthoritative||q.id!==String(data.id))return;
