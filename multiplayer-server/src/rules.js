@@ -1,4 +1,6 @@
-export const MAX_PLAYERS=16,WORLD_WIDTH=3300,WORLD_HEIGHT=2000,TRAIN_TRACK_Y=1810,PLAYER_RESPAWN_POINT=Object.freeze({x:1250,y:765});
+export const MAX_PLAYERS=16,MAX_DOMAIN_CLASH_PARTICIPANTS=2,WORLD_WIDTH=3300,WORLD_HEIGHT=2000,TRAIN_TRACK_Y=1810,PLAYER_RESPAWN_POINT=Object.freeze({x:1250,y:765});
+export function canAddDomainClashParticipant(participants,sessionId){return Array.isArray(participants)&&participants.length===MAX_DOMAIN_CLASH_PARTICIPANTS-1&&!!sessionId&&!participants.includes(String(sessionId))&&new Set(participants).size===participants.length}
+export function isValidDomainClashParticipants(participants){return Array.isArray(participants)&&participants.length===MAX_DOMAIN_CLASH_PARTICIPANTS&&new Set(participants).size===MAX_DOMAIN_CLASH_PARTICIPANTS}
 export const CHARACTER_IDS=Object.freeze(["honored","vessel","restless","ten","perfection","todo","choso","yuta","trashman"]);
 export const CHARACTER_HP=Object.freeze({honored:100,vessel:85,restless:100,ten:85,perfection:100,todo:110,choso:100,yuta:90,trashman:105});
 export const DOMAIN_BY_CHARACTER=Object.freeze({honored:["void","void02"],vessel:["shrine"],restless:["hakari"],perfection:["soul"],yuta:["yuta"],trashman:["trash"]});
