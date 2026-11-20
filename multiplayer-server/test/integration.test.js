@@ -21,3 +21,57 @@ test("all inline game scripts parse before deployment", () => {
     );
   }
 });
+
+
+test("a new domain clashes with an older already-open domain anywhere in the arena", async () => {
+  const { CityRoom } = await import("../src/rooms/CityRoom.js");
+  const room = Object.create(CityRoom.prototype);
+  const now = Date.now();
+  const owner = {
+    x: 2500, y: 1800, dead: false, domainType: "shrine",
+    domainTimer: 9, domainWindup: 0, domainCastAt: now - 12000,
+    domainRadius: 100, domainClashId: ""
+  };
+  const challenger = {
+    x: 100, y: 100, dead: false, domainType: "void",
+    domainTimer: 0, domainWindup: 1.1, domainCastAt: now,
+    domainRadius: 100, domainClashId: ""
+  };
+  room.state = { players: new Map([["owner", owner], ["challenger", challenger]]) };
+  room.domainClashes = new Map();
+  const messages = [];
+  room.broadcast = (type, payload) => messages.push({ type, payload });
+
+  assert.equal(room.tryStartDomainClash("challenger", challenger, now), true);
+  assert.equal(room.domainClashes.size, 1);
+  assert.equal(owner.domainClashId, challenger.domainClashId);
+  assert.equal(owner.domainTimer, 0);
+  assert.equal(challenger.domainWindup, 0);
+  assert.ok(messages.some(message =>
+    message.type === "domain:clash:start" &&
+    message.payload.participants.includes("owner") &&
+    message.payload.participants.includes("challenger")
+  ));
+});
+
+test("domains that are neither open nor being cast recently do not start a clash", async () => {
+  const { CityRoom } = await import("../src/rooms/CityRoom.js");
+  const room = Object.create(CityRoom.prototype);
+  const now = Date.now();
+  const owner = {
+    x: 200, y: 200, dead: false, domainType: "shrine",
+    domainTimer: 0, domainWindup: 0, domainCastAt: now - 15000,
+    domainRadius: 500, domainClashId: ""
+  };
+  const challenger = {
+    x: 210, y: 210, dead: false, domainType: "void",
+    domainTimer: 0, domainWindup: 1, domainCastAt: now,
+    domainRadius: 500, domainClashId: ""
+  };
+  room.state = { players: new Map([["owner", owner], ["challenger", challenger]]) };
+  room.domainClashes = new Map();
+  room.broadcast = () => {};
+
+  assert.equal(room.tryStartDomainClash("challenger", challenger, now), false);
+  assert.equal(room.domainClashes.size, 0);
+});
