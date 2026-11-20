@@ -2953,7 +2953,7 @@ $('menuSubClose').addEventListener('click',closeMenuSub);
 $('menuSubDone').addEventListener('click',closeMenuSub);
 updateMenuSummary();
 
-let game={started:false,paused:false,over:false,shake:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
+let game={started:false,paused:false,over:false,shake:0,shakeTime:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
 const scheduledTasks=[];
 let activeSkillScheduleOwner=null;
 function schedule(fn,delayMs){
@@ -6384,7 +6384,7 @@ function mixHealthColor(a,b,t){const parse=h=>[parseInt(h.slice(1,3),16),parseIn
 function updateHealthBar(id,f){const fill=$(id);if(!fill||!f)return;const pct=clamp((Number(f.hp)||0)/(Number(f.maxHp)||1),0,1),color=pct>=.5?mixHealthColor('#e9d33e','#28d66d',(pct-.5)*2):mixHealthColor('#ed393f','#e9d33e',pct*2),dark=mixHealthColor(color,'#101820',.24),light=mixHealthColor(color,'#ffffff',.2);fill.style.width=(pct*100)+'%';fill.style.background='linear-gradient(90deg,'+dark+','+color+' 72%,'+light+')';fill.style.boxShadow='0 0 12px '+color+'77'}
 function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;updateHealthBar('pHealth',player);updateHealthBar('eHealth',enemy);$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100);$('ultFill').style.width=awakeningPct+'%';$('ultFill').classList.toggle('draining',player.awakened);$('ultLabel').textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':'AWAKENING · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();}
 
-function update(dt){if(game.cutsceneTimer>0){
+function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>0){
  const cutscene=$('awakeningCutscene'),speaker=cutscene&&cutscene._speaker;
  if(speaker&&speaker.char==='vessel'&&(cutscene._phase==='dialogue'||cutscene._phase==='awakening-motion')){
   speaker.sukunaAwakeningCameraTime=Math.min(1.55,(speaker.sukunaAwakeningCameraTime||0)+dt);
@@ -10621,7 +10621,7 @@ function draw(){
   canvas.style.transform='';
  }
  ctx.clearRect(0,0,W,H);ctx.save();
- if(game.shake>0)ctx.translate(Math.sin(game.time*71)*game.shake,Math.cos(game.time*59)*game.shake*.62);
+ if(game.shake>0)ctx.translate(Math.sin(game.shakeTime*71)*game.shake,Math.cos(game.shakeTime*59)*game.shake*.62);
  const cameraScale=1/cameraViewScale();ctx.translate(W/2,H/2);ctx.scale(cameraScale,cameraScale);ctx.translate(-W/2,-H/2);
  drawDomainBackdrops();
  if(onlineMode)drawOnlineRemoteDomains();
