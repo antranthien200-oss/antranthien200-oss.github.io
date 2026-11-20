@@ -3603,7 +3603,7 @@ function applyOnlineRoomState(state){
 function updateOnlineRemotePlayers(dt){
  const now=performance.now(),renderTime=now-onlineRemoteInterpolationDelayMs;
  for(const remote of onlineRemotePlayers.values()){
-   if(remote.gojoLimitlessGlassFx){remote.gojoLimitlessGlassFx.t+=dt;if(remote.gojoLimitlessGlassFx.t>=remote.gojoLimitlessGlassFx.duration)remote.gojoLimitlessGlassFx=null}
+   
   // Remote attack replays don't run the local fighter simulation, so expire their short white punch flash here.
   if(remote.cursedWhiteFlash>0)remote.cursedWhiteFlash=Math.max(0,remote.cursedWhiteFlash-dt);
   // Remote fighters do not run updateFighter(), so decay their hit flash here as well.
@@ -3829,6 +3829,7 @@ function bindOnlineRoom(client,room){
   remote.onlineActionReplay=true;
   try{useAttack(remote,actionKind,true)}finally{remote.onlineActionReplay=false}
   if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
+  if(actionKind==='special'&&remote.char==='honored'&&Number.isFinite(Number(data.flashStepFromX))&&Number.isFinite(Number(data.flashStepFromY)))remote.gojoFlashStepFx={fromX:Number(data.flashStepFromX),fromY:Number(data.flashStepFromY),toX:Number(data.flashStepToX),toY:Number(data.flashStepToY)};
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
  room.onMessage('combat:grab-started',data=>{
@@ -4584,7 +4585,7 @@ function targetOf(f){
  if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
  return f===player?enemy:player;
 }
-function gojoLimitlessTarget(f){
+function gojoFlashStepTarget(f){
  if(f===player&&onlineMode){
   const targets=[...onlineRemotePlayers.values()].filter(t=>t&&!t.dead&&t!==f);
   targets.sort((a,b)=>dist(f,a)-dist(f,b));
@@ -5276,19 +5277,19 @@ function useAttack(f,kind,networkReplay=false){
  if(f.skillInputLocked&&f.motion&&kind!=='special'&&!timedComboFollowUp)return;
  // Buffer an early second press so players do not have to hit the exact midpoint frame.
  if(yujiBlackFlashFollowUp&&!(f.blackFlashWindow>0)){f.yujiDivergentAttack.buffered=true;return}
- const gojoLimitlessTargetRef=f.char==='honored'&&kind==='special'?gojoLimitlessTarget(f):null;
- if(!networkReplay&&onlineMode&&f===player&&f.char==='honored'&&kind==='special'&&!gojoLimitlessTargetRef){showToast('LIMITLESS · NO OTHER PLAYER ONLINE',900);return}
- if(f.char==='honored'&&kind==='special'&&gojoLimitlessTargetRef)f.face=Math.atan2(gojoLimitlessTargetRef.y-f.y,gojoLimitlessTargetRef.x-f.x);
+ const gojoFlashStepTargetRef=f.char==='honored'&&kind==='special'?gojoFlashStepTarget(f):null;
+ if(!networkReplay&&onlineMode&&f===player&&f.char==='honored'&&kind==='special'&&!gojoFlashStepTargetRef){showToast('LIMITLESS · NO OTHER PLAYER ONLINE',900);return}
+ if(f.char==='honored'&&kind==='special'&&gojoFlashStepTargetRef)f.face=Number.isFinite(gojoFlashStepTargetRef.face)?gojoFlashStepTargetRef.face:Math.atan2(gojoFlashStepTargetRef.y-f.y,gojoFlashStepTargetRef.x-f.x);
  f.skillCastSerial=(f.skillCastSerial||0)+1;
  const previousSkillScheduleOwner=activeSkillScheduleOwner;activeSkillScheduleOwner={fighter:f,serial:f.skillCastSerial};
  try{
  if(kind==='dash'&&!(onlineMode&&f!==player)){const dashAim=aimedAt(f);f.face=Math.atan2(dashAim.y-f.y,dashAim.x-f.x)}
  if(onlineMode&&f===player&&onlineRoom){try{
   if(f.char==='honored'&&!f.awakened&&(kind==='1'||kind==='2')){const skillAim=aimedAt(f);f.face=Math.atan2(skillAim.y-f.y,skillAim.x-f.x)}
-  const actionTarget=(kind==='special'&&f.char==='honored')?(gojoLimitlessTargetRef||gojoLimitlessTarget(f)):targetOf(f),actionAim=aimedAt(f);
+  const actionTarget=(kind==='special'&&f.char==='honored')?(gojoFlashStepTargetRef||gojoFlashStepTarget(f)):targetOf(f),actionAim=aimedAt(f);
   onlineRoom.send('combat:action',{kind:String(kind),blackFlashFollowUp:!!yujiBlackFlashFollowUp,face:Number(f.face)||0,targetId:actionTarget&&actionTarget.onlineSessionId||'',aimX:Number(actionAim.x)||0,aimY:Number(actionAim.y)||0,awakened:!!f.awakened,jackpot:!!f.jackpot,awakeMode:String(f.awakeMode||''),awakeFuel:Number(f.awakeFuel)||0,tenBase:!!f.tenBase,rikaMode:!!f.rikaMode,rikaSummoned:!!f.rikaSummoned,soulMode:Number(f.soulMode)||0,yutaCopyIndex:Number(f.yutaCopyIndex)||0,convergenceOrbs:Number(f.convergenceOrbs)||0,reserveBallWindow:Number(f.reserveBallWindow)||0,tenDogActive:!!f.tenDogActive,tenDogCharges:Number(f.tenDogCharges)||0,tenDogTimer:Number(f.tenDogTimer)||0,tenGardenTimer:Number(f.tenGardenTimer)||0,shadowTimer:Number(f.shadowTimer)||0,sukunaFireCast:Number(f.sukunaFireCast)||0});
  }catch(e){}}
- const c=CHARS[f.char],t=(kind==='special'&&f.char==='honored')?(gojoLimitlessTargetRef||gojoLimitlessTarget(f)):targetOf(f);
+ const c=CHARS[f.char],t=(kind==='special'&&f.char==='honored')?(gojoFlashStepTargetRef||gojoFlashStepTarget(f)):targetOf(f);
  if(kind==='dash'){if(f.rooted>0)return;if(f.char==='ten'&&f.shadowTimer>0)return;if(f.dashCd>0)return;const dashAim=onlineMode&&f!==player?{x:f.x+Math.cos(f.face)*1000,y:f.y+Math.sin(f.face)*1000}:aimedAt(f),dx=dashAim.x-f.x,dy=dashAim.y-f.y,l=Math.hypot(dx,dy)||1,da=Math.atan2(dy,dx);if(f.stun>0){f.stun=0;f.invuln=.24}setMotion(f,'dashGesture',.28,da,t);f.vx+=dx/l*13;f.vy+=dy/l*13;if(onlineMode&&f===player)f.onlineDashPredictionUntil=performance.now()+145;f.dashCd=1.1;f.invuln=.22;burst(f.x,f.y,'#d7e8fa',7,3);return}
  if(f.stun>0&&!networkReplay)return;
  if(!networkReplay&&f.char==='ten'&&f.shadowTimer>0&&kind==='dash')return;
@@ -5449,36 +5450,23 @@ if(f.attackCd>0)return;
    showToast('SKILL CANCEL · AWAKEN +10',650);return;
   }
   if(f.specialCd>0)return;
-  // Gojo: Limitless. R locks onto a living opponent anywhere in the server and warps behind them.
+  // Gojo: Flash Step. Cross the gap instantly and stop directly behind the opponent.
   if(f.char==='honored'){
    const target=t;
-   if(!target||target===f||target.dead){if(!networkReplay)showToast('LIMITLESS · NO OTHER PLAYER ONLINE',900);return}
-   // Preserve the old Face Grater follow-up offline; multiplayer R is always the guaranteed teleport.
-   if(!onlineMode&&f.gojoRapidFinishUntil>game.time){
-    const closeAngle=Math.atan2(target.y-f.y,target.x-f.x);
-    if(dist(f,target)<=230&&beginGrab(f,target,'gojoFaceGrater',.5,closeAngle,'#d8f3ff',16)){
-     f.gojoRapidFinishUntil=0;f.meter=Math.max(0,f.meter-6);f.specialCd=18;showToast('FACE GRATER',650);return;
-    }
-   }
-   f.gojoRapidFinishUntil=0;
-   const angle=Math.atan2(target.y-f.y,target.x-f.x);
-   f.face=angle;f.vx=0;f.vy=0;
-   setMotion(f,'gojoLimitless',1.05,angle,target);
-   f.gojoLimitlessGlassFx={t:0,duration:2.1};
-   f.gojoLimitlessAutoM1At=game.time+.30;f.gojoLimitlessAutoM1Target=target;
-   f.attackCd=0;f.invuln=Math.max(f.invuln||0,.62);
-   f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+1600;
-   f.onlineActionAim={x:target.x,y:target.y};f.onlineActionAimUntil=performance.now()+1600;
-   f.x=clamp(target.x-Math.cos(angle)*45,45,WORLD.w-45);
-   f.y=clamp(target.y-Math.sin(angle)*45,45,WORLD.h-45);
+   if(!target||target===f||target.dead){if(!networkReplay)showToast('FLASH STEP · NO OTHER PLAYER',900);return}
+   const fromX=f.x,fromY=f.y;
+   const targetFacing=Number.isFinite(target.face)?target.face:Math.atan2(target.y-f.y,target.x-f.x);
+   f.x=clamp(target.x-Math.cos(targetFacing)*58,45,WORLD.w-45);
+   f.y=clamp(target.y-Math.sin(targetFacing)*58,45,WORLD.h-45);
    collideWorld(f);
-   burst(target.x,target.y,'#d8f3ff',24,5);
-   if(target.jump>.25){
-    damage(target,8,f,{stun:.5,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,unblockable:true,color:'#cbeaff'});
-    popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15);
-   }else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13);
-   game.shake=Math.max(game.shake,7);
-   schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoLimitless')game.shake=Math.max(game.shake,4.5)},330);
+   const travelAngle=Math.atan2(f.y-fromY,f.x-fromX);
+   f.face=targetFacing;f.vx=0;f.vy=0;f.jump=0;f.block=false;
+   setMotion(f,'gojoFlashStep',.2,travelAngle,target);
+   f.gojoFlashStepFx={fromX,fromY,toX:f.x,toY:f.y};
+   f.attackCd=0;f.invuln=Math.max(f.invuln||0,.22);
+   f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+650;
+   f.onlineActionAim={x:target.x,y:target.y};f.onlineActionAimUntil=performance.now()+650;
+   burst(fromX,fromY,'#d8f3ff',5,2.1);burst(f.x,f.y,'#e9faff',9,2.8);
    f.specialCd=15;return;
   }
   if(f.char==='vessel'&&f.awakened){
@@ -6063,7 +6051,7 @@ function updateFighter(f,dt){if(f.dead)return;
  }
  if(onlineMode&&f.blueSuckedBy){f.vx=0;f.vy=0;return}
  if(f.gojoBlueOrb){f.gojoBlueOrb.life=Math.max(0,f.gojoBlueOrb.life-dt);if(f.gojoBlueOrb.life<=0)f.gojoBlueOrb=null}
- if(!onlineMode){f.hpRegenWait=Math.max(0,(f.hpRegenWait||0)-dt);if(!f.jackpot&&f.hp<f.maxHp&&f.hpRegenWait<=0&&!(game.domainClash&&game.domainClash.members.includes(f)))f.hp=Math.min(f.maxHp,f.hp+f.maxHp*.012*dt)}if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);if(f.dead)return;f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.gojoLimitlessGlassFx){f.gojoLimitlessGlassFx.t+=dt;if(f.gojoLimitlessGlassFx.t>=f.gojoLimitlessGlassFx.duration)f.gojoLimitlessGlassFx=null}if(f.gojoLimitlessAutoM1At>0&&game.time>=f.gojoLimitlessAutoM1At&&(!onlineMode||f===player)){const followTarget=f.gojoLimitlessAutoM1Target;f.gojoLimitlessAutoM1At=0;f.gojoLimitlessAutoM1Target=null;if(followTarget&&!followTarget.dead&&dist(f,followTarget)<175){f.onlineActionTarget=followTarget;f.onlineActionTargetUntil=performance.now()+800;f.onlineActionAim={x:followTarget.x,y:followTarget.y};f.onlineActionAimUntil=performance.now()+800;f.face=Math.atan2(followTarget.y-f.y,followTarget.x-f.x);f.attackCd=0;f.combo=0;f.comboTimer=0;useAttack(f,'m1');f.onlineActionTarget=null;f.onlineActionTargetUntil=0;f.onlineActionAim=null;f.onlineActionAimUntil=0}}if(f.motion){
+ if(!onlineMode){f.hpRegenWait=Math.max(0,(f.hpRegenWait||0)-dt);if(!f.jackpot&&f.hp<f.maxHp&&f.hpRegenWait<=0&&!(game.domainClash&&game.domainClash.members.includes(f)))f.hp=Math.min(f.maxHp,f.hp+f.maxHp*.012*dt)}if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);if(f.dead)return;f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){
   f.motion.t+=dt;
   if(f.motion.name==='gojoRapidSpin'&&!f.gojoRapidSpinHitTarget&&!(onlineMode&&f.onlineSessionId)){
    // The full 360-degree hand sweep uses a forgiving 150-unit melee contact radius.
@@ -7099,7 +7087,7 @@ function drawPixelSkillVfx(f,m,p,c){
  // Gojo's missed attacks use the shared red stun streaks, not the generic pixel marker.
  if(m==='gojoRapidMiss'||m==='gojoCounterMiss')return true;
  if(!m||m==='trashCanPickup'||m==='trashCanThrow'||m.startsWith('m1_')||m.startsWith('yutaM1_')||m==='blockGesture'||m==='dashGesture')return false;
- if(m==='gojoLimitless')return true;
+ if(m==='gojoFlashStep')return true;
  if((f.char==='vessel'&&!f.awakened)&&['yujiCursedDrag','yujiCursedDragEnd','yujiCrush','yujiDivergent','yujiBlackFlash','yujiManjiBlock','yujiManjiCounter'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
  if(f.char==='honored'&&['yujiManjiBlock','yujiManjiCounter','gojoCounterJab','gojoCounterFinish'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m==='gojoCounterFinish'?'yujiManjiCounter':m,p);
  const beat=Math.sin(Math.PI*clamp(p,0,1));
@@ -7207,6 +7195,21 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
 }
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m||m==='gojoCounterMiss')return;
+ if(m==='gojoFlashStep'){
+  const fade=(1-smoothstep01(clamp(p/.96,0,1)))*vfxFade;
+  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
+  ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
+  const streaks=[[-76,-19,2.8],[-66,-9,2.2],[-82,2,2.5],[-63,13,1.8],[-54,-25,1.6],[-48,22,1.5]];
+  for(let i=0;i<streaks.length;i++){
+   const [length,y,width]=streaks[i];
+   ctx.globalAlpha=fade*(.54+(i%3)*.13);
+   ctx.strokeStyle=i%2?'#69cfff':'#e9faff';ctx.lineWidth=width;
+   ctx.beginPath();ctx.moveTo(length,y);ctx.quadraticCurveTo(length*.48,y*.72,-8,y*.12);ctx.stroke();
+  }
+  ctx.globalAlpha=fade*.82;ctx.fillStyle='#f1fcff';ctx.shadowColor='#8edcff';ctx.shadowBlur=isMobileDevice?0:7;
+  ctx.beginPath();ctx.arc(0,0,3.2,0,Math.PI*2);ctx.fill();
+  ctx.restore();return;
+ }
  if(m==='gojoRed'){
   const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
   const charge=smoothstep01(clamp(p/.42,0,1)),pulse=.5+.5*Math.sin(game.time*21),radius=8+charge*6;
@@ -8613,8 +8616,7 @@ function drawStunRain(f,x,y){
  ctx.restore();
 }
 function drawHeadHands(f,deferMotionVfx=false){
- const teleportShake=gojoLimitlessVisualShake(f);
- const x=sx(f.x)+teleportShake.x,y=sy(f.y)-f.jump*3+teleportShake.y,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -8853,14 +8855,6 @@ function drawHeadHands(f,deferMotionVfx=false){
     else{handA=P(forward,16,-3);handB=P(9,-19,4);handAScale=1.22;handBScale=.92}
    }else if(name==='gojoTwofold'){
     handA=P(38+16*pulse,25-9*pulse,-12+10*progress);handB=P(38+16*pulse,-25+9*pulse,-12+10*progress);handAScale=1.15;handBScale=1.15;
-   }else if(name==='gojoLimitless'){
-    const load=smoothstep01(clamp(progress/.24,0,1)),thrust=smoothstep01(clamp((progress-.24)/.27,0,1)),settle=smoothstep01(clamp((progress-.68)/.32,0,1));
-    const leadForward=progress<.24?lerp(18,4,load):progress<.51?lerp(4,72,thrust):lerp(72,31,settle);
-    const leadSide=progress<.24?lerp(-18,-26,load):progress<.51?lerp(-26,-11,thrust):lerp(-11,-17,settle);
-    const leadLift=progress<.24?lerp(1,-16,load):progress<.51?lerp(-16,-5,thrust):lerp(-5,0,settle);
-    handB=P(leadForward,leadSide,leadLift);
-    handA=P(progress<.24?lerp(15,29,load):progress<.51?lerp(29,43,thrust):lerp(43,19,settle),progress<.51?lerp(20,17,thrust):lerp(17,18,settle),progress<.51?lerp(-3,-9,thrust):lerp(-9,0,settle));
-    handAScale=1.16;handBScale=1.28;handBAngle=angle-.18;handAAngle=angle+.12;
    }else if(name.startsWith('yuji')||name.startsWith('sukuna')){
     if(name==='sukunaHeadCarryWindup'){
      const load=smoothstep01(progress/.58),snap=smoothstep01(progress);
@@ -9266,298 +9260,6 @@ function drawTrashManEffects(){
    ctx.globalAlpha=.65;ctx.strokeStyle='#9ec66e';ctx.lineWidth=2;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(x,y,r*.82+Math.sin(game.time*4)*5,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
   }
  }
-}
-function gojoLimitlessVisualShake(f){
- const fx=f&&f.gojoLimitlessGlassFx;
- if(!fx||f.char!=='honored')return {x:0,y:0};
- const progress=clamp(fx.t/Math.max(.08,fx.duration||2.1),0,1);
- const charge=1-smoothstep01(clamp(progress/.2,0,1));
- const impact=Math.sin(Math.PI*clamp((progress-.22)/.36,0,1));
- const settle=1-smoothstep01(clamp((progress-.68)/.24,0,1));
- return {
-  x:Math.sin(game.time*43+.4)*(.7*charge+1.0*impact*settle)-1.4*impact,
-  y:Math.cos(game.time*37+1.1)*(.5*charge+.7*impact*settle)+.8*impact
- };
-}
-let gojoGlassBackdropCanvas=null,gojoGlassBackdropReady=false,gojoGlassSceneCanvas=null,gojoGlassTexturePad=0,gojoGlassPieces=null,gojoGlassCracks=null,gojoGlassSizeKey='',gojoGlassImpactPoint=null;
-function captureGojoGlassBackdrop(){
- const source=ctx.canvas;
- if(!source||!source.width||!source.height)return null;
- if(!gojoGlassBackdropCanvas||gojoGlassBackdropCanvas.width!==source.width||gojoGlassBackdropCanvas.height!==source.height){
-  gojoGlassBackdropCanvas=document.createElement('canvas');
-  gojoGlassBackdropCanvas.width=source.width;gojoGlassBackdropCanvas.height=source.height;
- }
- const backdropCtx=gojoGlassBackdropCanvas.getContext('2d');
- if(!backdropCtx)return null;
- backdropCtx.setTransform(1,0,0,1,0,0);backdropCtx.globalAlpha=1;backdropCtx.globalCompositeOperation='source-over';backdropCtx.filter='none';
- backdropCtx.clearRect(0,0,source.width,source.height);backdropCtx.drawImage(source,0,0);
- return gojoGlassBackdropCanvas;
-}
-function gojoGlassRandom(seed){
- let value=seed>>>0;
- return ()=>{value=(value*1664525+1013904223)>>>0;return value/4294967296};
-}
-function clipGojoGlassCell(poly,seedA,seedB){
- const dx=seedB.x-seedA.x,dy=seedB.y-seedA.y,mx=(seedA.x+seedB.x)*.5,my=(seedA.y+seedB.y)*.5;
- const result=[];
- for(let i=0;i<poly.length;i++){
-  const current=poly[i],next=poly[(i+1)%poly.length];
-  const dc=(current.x-mx)*dx+(current.y-my)*dy,dn=(next.x-mx)*dx+(next.y-my)*dy;
-  const currentInside=dc<=.0001,nextInside=dn<=.0001;
-  if(currentInside&&nextInside)result.push(next);
-  else if(currentInside&&!nextInside){
-   const t=dc/(dc-dn);
-   result.push({x:current.x+(next.x-current.x)*t,y:current.y+(next.y-current.y)*t});
-  }else if(!currentInside&&nextInside){
-   const t=dc/(dc-dn);
-   result.push({x:current.x+(next.x-current.x)*t,y:current.y+(next.y-current.y)*t});
-   result.push(next);
-  }
- }
- return result;
-}
-function buildGojoGlassCells(width,height,sceneCanvas,impactX,impactY,random){
- const mobile=isMobileDevice,cols=mobile?6:8,rows=mobile?5:6,seeds=[];
- for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
-  const cellW=width/cols,cellH=height/rows;
-  seeds.push({x:(col+.5+(random()-.5)*.46)*cellW,y:(row+.5+(random()-.5)*.46)*cellH});
- }
- let centerSeed=0,bestCenter=Infinity;
- for(let i=0;i<seeds.length;i++){const d=Math.hypot(seeds[i].x-impactX,seeds[i].y-impactY);if(d<bestCenter){bestCenter=d;centerSeed=i}}
- seeds[centerSeed]={x:impactX,y:impactY};
- const pieces=[],padding=Math.max(4,Math.round(5*dpr));
- for(let i=0;i<seeds.length;i++){
-  let poly=[{x:0,y:0},{x:width,y:0},{x:width,y:height},{x:0,y:height}];
-  for(let j=0;j<seeds.length&&poly.length>=3;j++)if(i!==j)poly=clipGojoGlassCell(poly,seeds[i],seeds[j]);
-  if(poly.length<3)continue;
-  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
-  for(const point of poly){minX=Math.min(minX,point.x);minY=Math.min(minY,point.y);maxX=Math.max(maxX,point.x);maxY=Math.max(maxY,point.y)}
-  const boxWidth=Math.max(1,Math.ceil(maxX-minX)),boxHeight=Math.max(1,Math.ceil(maxY-minY));
-  const texture=document.createElement('canvas');texture.width=boxWidth+padding*2;texture.height=boxHeight+padding*2;
-  const textureCtx=texture.getContext('2d');if(!textureCtx)continue;
-  textureCtx.filter='none';textureCtx.imageSmoothingEnabled=true;textureCtx.imageSmoothingQuality='high';
-  const localCX=padding+(minX+maxX)*.5-minX,localCY=padding+(minY+maxY)*.5-minY;
-  textureCtx.save();textureCtx.beginPath();
-  for(let p=0;p<poly.length;p++){
-   const point=poly[p],px=point.x-minX+padding,py=point.y-minY+padding;
-   if(p===0)textureCtx.moveTo(px,py);else textureCtx.lineTo(px,py);
-  }
-  textureCtx.closePath();textureCtx.clip();
-  // Each cell samples the original sharp scene through a slightly different lens angle.
-  // Tiny independent scale, shear, rotation and source offsets create faceted refraction.
-  const lensAngle=(random()-.5)*.36,scaleX=.94+random()*.12,scaleY=.94+random()*.12;
-  const shearX=(random()-.5)*.16,shearY=(random()-.5)*.16;
-  const offsetX=(random()-.5)*Math.max(8,Math.min(width,height)*.032);
-  const offsetY=(random()-.5)*Math.max(8,Math.min(width,height)*.032);
-  textureCtx.translate(localCX+offsetX,localCY+offsetY);
-  textureCtx.rotate(lensAngle);
-  textureCtx.transform(1,shearY,shearX,1,0,0);
-  textureCtx.scale(scaleX,scaleY);
-  textureCtx.translate(-localCX-gojoGlassTexturePad,-localCY-gojoGlassTexturePad);
-  textureCtx.drawImage(sceneCanvas,0,0);
-  textureCtx.restore();
-  // A faint, broad facet reflection; no edge stroke or opaque fill.
-  textureCtx.save();textureCtx.beginPath();
-  for(let p=0;p<poly.length;p++){const point=poly[p],px=point.x-minX+padding,py=point.y-minY+padding;if(p===0)textureCtx.moveTo(px,py);else textureCtx.lineTo(px,py)}
-  textureCtx.closePath();textureCtx.clip();
-  const sheenAngle=random()*Math.PI*2,sheenX=Math.cos(sheenAngle)*boxWidth*.6,sheenY=Math.sin(sheenAngle)*boxHeight*.6;
-  const sheen=textureCtx.createLinearGradient(localCX-sheenX,localCY-sheenY,localCX+sheenX,localCY+sheenY);
-  sheen.addColorStop(0,'rgba(229,248,255,0)');
-  sheen.addColorStop(.48,'rgba(229,248,255,.025)');
-  sheen.addColorStop(.56,'rgba(255,255,255,.085)');
-  sheen.addColorStop(1,'rgba(229,248,255,0)');
-  textureCtx.globalCompositeOperation='screen';textureCtx.fillStyle=sheen;textureCtx.fillRect(padding,padding,boxWidth,boxHeight);
-  textureCtx.restore();
-  const cx=(minX+maxX)*.5,cy=(minY+maxY)*.5,dx=cx-impactX,dy=cy-impactY,len=Math.hypot(dx,dy)||1;
-  const travel=Math.min(width,height)*(.055+random()*.12),tangent=(random()-.5)*Math.min(width,height)*.04;
-  pieces.push({texture,centerX:cx,centerY:cy,dx:dx/len*travel-dy/len*tangent,dy:dy/len*travel+dx/len*tangent,rotation:(random()-.5)*.42,delay:random()*.025,poly:poly.map(point=>({x:point.x-minX+padding,y:point.y-minY+padding})),padding,boxWidth,boxHeight,localCX,localCY,lensAngle,scaleX,scaleY,shearX,shearY,offsetX,offsetY,phase:random()*Math.PI*2});
- }
- return pieces;
-}
-function buildGojoGlassCracks(width,height,impactX,impactY,random){
- const cracks=[],minimum=Math.min(width,height),center={x:impactX,y:impactY};
- // Uneven radial fractures: long, mostly straight stress lines with restrained kinks.
- const rayCount=11,angles=[];
- for(let i=0;i<rayCount;i++)angles.push((Math.PI*2*i/rayCount)+(random()-.5)*.34);
- angles.sort((a,b)=>a-b);
- const edgeDistance=angle=>{
-  const dx=Math.cos(angle),dy=Math.sin(angle);let distance=Infinity;
-  if(dx>0)distance=Math.min(distance,(width-center.x)/dx);else if(dx<0)distance=Math.min(distance,(0-center.x)/dx);
-  if(dy>0)distance=Math.min(distance,(height-center.y)/dy);else if(dy<0)distance=Math.min(distance,(0-center.y)/dy);
-  return distance;
- };
- const addCrack=(points,delay,weight=1,alpha=1)=>cracks.push({points,delay,weight,alpha});
- const starRadius=minimum*(.012+random()*.009);
- for(let i=0;i<8;i++){
-  const angle=i*Math.PI/4+(random()-.5)*.18,r=starRadius*(.82+random()*.42);
-  addCrack([center,{x:center.x+Math.cos(angle)*r,y:center.y+Math.sin(angle)*r}],random()*.025,.82,.85);
- }
- for(let i=0;i<rayCount;i++){
-  const angle=angles[i],dx=Math.cos(angle),dy=Math.sin(angle),perpX=-dy,perpY=dx;
-  const distance=edgeDistance(angle)*(.66+random()*.32);
-  const kinkA=(random()-.5)*minimum*.012,kinkB=(random()-.5)*minimum*.016;
-  const points=[
-   center,
-   {x:center.x+dx*distance*.29+perpX*kinkA,y:center.y+dy*distance*.29+perpY*kinkA},
-   {x:center.x+dx*distance*.67+perpX*kinkB,y:center.y+dy*distance*.67+perpY*kinkB},
-   {x:center.x+dx*distance,y:center.y+dy*distance}
-  ];
-  addCrack(points,random()*.045,1,.95);
-  if(random()>.28){
-   const t=.32+random()*.42,origin={x:center.x+dx*distance*t+perpX*kinkA*(1-t),y:center.y+dy*distance*t+perpY*kinkA*(1-t)};
-   const sign=random()>.5?1:-1,branchAngle=angle+sign*(.48+random()*.38),branchLength=minimum*(.065+random()*.12);
-   const bx=Math.cos(branchAngle),by=Math.sin(branchAngle),bpX=-by,bpY=bx,curve=(random()-.5)*minimum*.008;
-   addCrack([
-    origin,
-    {x:origin.x+bx*branchLength*.48+bpX*curve,y:origin.y+by*branchLength*.48+bpY*curve},
-    {x:origin.x+bx*branchLength,y:origin.y+by*branchLength}
-   ],.035+random()*.11,.66,.78);
-  }
-  if(random()>.62){
-   const t=.58+random()*.24,origin={x:center.x+dx*distance*t+perpX*kinkB*(1-t),y:center.y+dy*distance*t+perpY*kinkB*(1-t)};
-   const sign=random()>.5?1:-1,branchAngle=angle+sign*(.78+random()*.42),length=minimum*(.035+random()*.065);
-   addCrack([origin,{x:origin.x+Math.cos(branchAngle)*length*.55,y:origin.y+Math.sin(branchAngle)*length*.55},{x:origin.x+Math.cos(branchAngle)*length,y:origin.y+Math.sin(branchAngle)*length}],.08+random()*.12,.5,.68);
-  }
- }
- for(let ring=0;ring<3;ring++){
-  const radius=minimum*(.105+ring*.105+random()*.025),startAngle=random()*Math.PI*2,arcLength=.58+random()*.82,count=7,points=[];
-  for(let i=0;i<=count;i++){
-   const angle=startAngle+arcLength*i/count,wobble=(random()-.5)*minimum*.008;
-   points.push({x:center.x+Math.cos(angle)*(radius+wobble),y:center.y+Math.sin(angle)*(radius+wobble)});
-  }
-  addCrack(points,.13+ring*.045,.62,.7);
- }
- return cracks;
-}
-function prepareGojoGlassBackdrop(fighters){
- const active=fighters.find(f=>f&&!f.dead&&f.char==='honored'&&f.gojoLimitlessGlassFx);
- if(!active){
-  gojoGlassBackdropReady=false;gojoGlassSceneCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey='';gojoGlassImpactPoint=null;
-  return;
- }
- const source=ctx.canvas,sizeKey=source.width+'x'+source.height;
- if(gojoGlassSizeKey!==sizeKey){gojoGlassBackdropReady=false;gojoGlassSceneCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey=sizeKey}
- const backdrop=captureGojoGlassBackdrop();if(!backdrop)return;
- if(gojoGlassBackdropReady){
-  const liveSceneCtx=gojoGlassSceneCanvas&&gojoGlassSceneCanvas.getContext('2d');
-  if(liveSceneCtx){liveSceneCtx.setTransform(1,0,0,1,0,0);liveSceneCtx.globalAlpha=1;liveSceneCtx.globalCompositeOperation='source-over';liveSceneCtx.filter='none';liveSceneCtx.clearRect(0,0,gojoGlassSceneCanvas.width,gojoGlassSceneCanvas.height);liveSceneCtx.drawImage(backdrop,gojoGlassTexturePad,gojoGlassTexturePad)}
-  return;
- }
- const impactX=source.width*.5,impactY=source.height*.5;
- gojoGlassImpactPoint={x:impactX,y:impactY};
- // Preserve a crisp copy of the whole scene; the glass refracts it rather than blurring it.
- gojoGlassTexturePad=Math.ceil(10*dpr+6);
- gojoGlassSceneCanvas=document.createElement('canvas');
- gojoGlassSceneCanvas.width=source.width+gojoGlassTexturePad*2;
- gojoGlassSceneCanvas.height=source.height+gojoGlassTexturePad*2;
- const sceneCtx=gojoGlassSceneCanvas.getContext('2d');if(!sceneCtx)return;
- sceneCtx.setTransform(1,0,0,1,0,0);sceneCtx.globalAlpha=1;sceneCtx.globalCompositeOperation='source-over';sceneCtx.filter='none';
- sceneCtx.drawImage(backdrop,gojoGlassTexturePad,gojoGlassTexturePad);
- const random=gojoGlassRandom(20261120);
- gojoGlassPieces=buildGojoGlassCells(source.width,source.height,gojoGlassSceneCanvas,impactX,impactY,random);
- gojoGlassCracks=buildGojoGlassCracks(source.width,source.height,impactX,impactY,random);
- gojoGlassBackdropReady=!!(gojoGlassSceneCanvas&&gojoGlassPieces&&gojoGlassPieces.length);
-}
-function refreshGojoGlassPieceTextures(progress){
- if(!gojoGlassBackdropReady||!gojoGlassSceneCanvas||!gojoGlassPieces)return;
- const texturePad=gojoGlassTexturePad;
- for(const piece of gojoGlassPieces){
-  const release=smoothstep01(clamp((progress-(.50+piece.delay))/.28,0,1));
-  const eased=1-Math.pow(1-release,2.25);
-  const shardX=piece.centerX+piece.dx*eased,shardY=piece.centerY+piece.dy*eased;
-  const rotation=piece.rotation*eased;
-  piece.renderX=shardX;piece.renderY=shardY;piece.renderRotation=rotation;
-  const textureCtx=piece.texture.getContext('2d');if(!textureCtx)continue;
-  textureCtx.setTransform(1,0,0,1,0,0);textureCtx.globalAlpha=1;textureCtx.globalCompositeOperation='source-over';textureCtx.filter='none';
-  textureCtx.clearRect(0,0,piece.texture.width,piece.texture.height);
-  textureCtx.save();textureCtx.beginPath();
-  for(let i=0;i<piece.poly.length;i++){const point=piece.poly[i];if(i===0)textureCtx.moveTo(point.x,point.y);else textureCtx.lineTo(point.x,point.y)}
-  textureCtx.closePath();textureCtx.clip();
-  // Re-sample the live scene at this shard's current screen position.
-  // Its lens angle follows its rotation, so refraction changes as the shard tumbles.
-  const drift=Math.sin(game.time*5.4+piece.phase)*.014*eased;
-  const lensAngle=piece.lensAngle+rotation+drift;
-  const lensOffsetX=piece.offsetX+Math.cos(game.time*4.1+piece.phase)*2.2*dpr*eased;
-  const lensOffsetY=piece.offsetY+Math.sin(game.time*4.7+piece.phase)*2.2*dpr*eased;
-  const sourceLeft=shardX-piece.boxWidth*.5,sourceTop=shardY-piece.boxHeight*.5;
-  textureCtx.translate(piece.localCX+lensOffsetX,piece.localCY+lensOffsetY);
-  textureCtx.rotate(lensAngle);
-  textureCtx.transform(1,piece.shearY,piece.shearX,1,0,0);
-  textureCtx.scale(piece.scaleX,piece.scaleY);
-  textureCtx.translate(-piece.localCX,-piece.localCY);
-  textureCtx.translate(piece.padding-texturePad-sourceLeft,piece.padding-texturePad-sourceTop);
-  textureCtx.drawImage(gojoGlassSceneCanvas,0,0);
-  textureCtx.restore();
- }
-}
-function drawGojoGlassGrowingPath(path,amount){
- if(!path||path.length<2||amount<=0)return;
- const lengths=[];let total=0;
- for(let i=1;i<path.length;i++){const len=Math.hypot(path[i].x-path[i-1].x,path[i].y-path[i-1].y);lengths.push(len);total+=len}
- let remaining=total*clamp(amount,0,1);
- ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);
- for(let i=1;i<path.length&&remaining>0;i++){
-  const a=path[i-1],b=path[i],length=lengths[i-1];
-  if(remaining>=length){ctx.lineTo(b.x,b.y);remaining-=length}
-  else{const t=remaining/Math.max(.001,length);ctx.lineTo(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t);remaining=0}
- }
- ctx.stroke();
-}
-function drawGojoTeleportGlassBackdrop(f){
- const fx=f&&f.gojoLimitlessGlassFx;
- if(!fx||f.char!=='honored')return;
- const progress=clamp(fx.t/Math.max(.08,fx.duration||2.1),0,1);
- const streakFade=1-smoothstep01(clamp((progress-.25)/.24,0,1));
- if(streakFade<=.005)return;
- const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-10+shake.y;
- ctx.save();ctx.translate(x,y);ctx.globalAlpha=.78*streakFade;
- const streaks=[[-23,-30,37,2],[-9,-22,43,2],[-28,-12,29,1.8],[-18,-3,46,2.2],[-3,7,34,1.8],[5,16,39,2],[-20,24,31,1.8],[3,31,32,1.7]];
- ctx.fillStyle='rgba(3,5,10,.94)';
- for(let i=0;i<streaks.length;i++){
-  const [sx0,sy0,w,h]=streaks[i],slide=Math.sin(game.time*24+i*1.6)*(1.1+(i%3)*.65);
-  ctx.fillRect(sx0+slide,sy0,w,h);
- }
- ctx.restore();
-}
-function drawGojoTeleportGlassForeground(f){
- const fx=f&&f.gojoLimitlessGlassFx;
- if(!fx||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassSceneCanvas)return;
- const progress=clamp(fx.t/Math.max(.08,fx.duration||2.1),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
- const glassIn=smoothstep01(clamp(progress/.055,0,1));
- if(glassIn<=.001)return;
- const breakProgress=smoothstep01(clamp((progress-.22)/.20,0,1));
- refreshGojoGlassPieceTextures(progress);
- const shardFade=1-smoothstep01(clamp((progress-.88)/.11,0,1));
- ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
- // Keep every shard crisp: only its own clipped scene sample is refracted, never the full screen.
- ctx.filter='none';ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';
- // The intact pane is already split into independently refracting optical facets.
- // Once cracks reach the edges, each facet separates and tumbles independently.
- if(gojoGlassPieces){
-  for(const piece of gojoGlassPieces){
-   const release=smoothstep01(clamp((progress-(.50+piece.delay))/.28,0,1));
-   const eased=1-Math.pow(1-release,2.25);
-   const shardX=piece.renderX??piece.centerX,shardY=piece.renderY??piece.centerY;
-   const rotation=piece.renderRotation??0;
-   const alpha=glassIn*shardFade*(1-.08*release);
-   if(alpha<=.001)continue;
-   ctx.save();ctx.translate(shardX,shardY);ctx.rotate(rotation);
-   ctx.globalAlpha=alpha;
-   ctx.drawImage(piece.texture,-piece.texture.width*.5,-piece.texture.height*.5);
-   ctx.restore();
-  }
- }
- const crackFade=glassIn*(1-smoothstep01(clamp((progress-.53)/.17,0,1)));
- if(crackFade>.001&&gojoGlassCracks){
-  ctx.strokeStyle='rgba(217,231,244,.68)';ctx.lineWidth=Math.max(.8,.78*dpr);ctx.lineCap='round';ctx.lineJoin='round';ctx.miterLimit=3;
-  for(const crack of gojoGlassCracks){
-   const reveal=smoothstep01(clamp((progress-(.055+crack.delay))/.34,0,1));
-   if(reveal<=.001)continue;
-   ctx.globalAlpha=crackFade*crack.alpha*(.54+reveal*.24);ctx.lineWidth=Math.max(.65,.78*dpr*crack.weight);
-   drawGojoGlassGrowingPath(crack.points,reveal);
-  }
- }
- ctx.restore();
 }
 function drawFighter(f){
  if(f.dead||f.isTrainingDummy||!worldRectVisible(f.x-80,f.y-110,160,150,48))return;
@@ -10762,10 +10464,7 @@ function draw(){
  // Character hands are the top combat layer, above the skill VFX and the opponent.
  if(player)drawFighterHandsForeground(player);if(enemy)drawFighterHandsForeground(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighterHandsForeground(remote)}
  if(game.domainClash)drawDomainClashFighterMarkers();
- const glassFighters=[player,enemy,...mobileRemoteRender.detailed];
- prepareGojoGlassBackdrop(glassFighters);
- const glassFighter=glassFighters.find(f=>f&&!f.dead&&f.char==='honored'&&f.motion&&f.motion.name==='gojoLimitless');
- if(glassFighter)drawGojoTeleportGlassForeground(glassFighter);
+ 
  ctx.restore();
  positionVesselAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
