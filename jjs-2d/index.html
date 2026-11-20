@@ -9370,7 +9370,7 @@ function buildGojoGlassCells(width,height,sceneCanvas,impactX,impactY,random){
   textureCtx.restore();
   const cx=(minX+maxX)*.5,cy=(minY+maxY)*.5,dx=cx-impactX,dy=cy-impactY,len=Math.hypot(dx,dy)||1;
   const travel=Math.min(width,height)*(.055+random()*.12),tangent=(random()-.5)*Math.min(width,height)*.04;
-  pieces.push({texture,centerX:cx,centerY:cy,dx:dx/len*travel-dy/len*tangent,dy:dy/len*travel+dx/len*tangent,rotation:(random()-.5)*.42,delay:random()*.025});
+  pieces.push({texture,centerX:cx,centerY:cy,dx:dx/len*travel-dy/len*tangent,dy:dy/len*travel+dx/len*tangent,rotation:(random()-.5)*.42,delay:random()*.025,poly:poly.map(point=>({x:point.x-minX+padding,y:point.y-minY+padding})),padding,boxWidth,boxHeight,localCX,localCY,lensAngle,scaleX,scaleY,shearX,shearY,offsetX,offsetY,phase:random()*Math.PI*2});
  }
  return pieces;
 }
@@ -9437,8 +9437,12 @@ function prepareGojoGlassBackdrop(fighters){
  }
  const source=ctx.canvas,sizeKey=source.width+'x'+source.height;
  if(gojoGlassSizeKey!==sizeKey){gojoGlassBackdropReady=false;gojoGlassSceneCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey=sizeKey}
- if(gojoGlassBackdropReady)return;
  const backdrop=captureGojoGlassBackdrop();if(!backdrop)return;
+ if(gojoGlassBackdropReady){
+  const liveSceneCtx=gojoGlassSceneCanvas&&gojoGlassSceneCanvas.getContext('2d');
+  if(liveSceneCtx){liveSceneCtx.setTransform(1,0,0,1,0,0);liveSceneCtx.globalAlpha=1;liveSceneCtx.globalCompositeOperation='source-over';liveSceneCtx.filter='none';liveSceneCtx.clearRect(0,0,gojoGlassSceneCanvas.width,gojoGlassSceneCanvas.height);liveSceneCtx.drawImage(backdrop,gojoGlassTexturePad,gojoGlassTexturePad)}
+  return;
+ }
  const impactX=source.width*.5,impactY=source.height*.5;
  gojoGlassImpactPoint={x:impactX,y:impactY};
  // Preserve a crisp copy of the whole scene; the glass refracts it rather than blurring it.
@@ -9453,6 +9457,38 @@ function prepareGojoGlassBackdrop(fighters){
  gojoGlassPieces=buildGojoGlassCells(source.width,source.height,gojoGlassSceneCanvas,impactX,impactY,random);
  gojoGlassCracks=buildGojoGlassCracks(source.width,source.height,impactX,impactY,random);
  gojoGlassBackdropReady=!!(gojoGlassSceneCanvas&&gojoGlassPieces&&gojoGlassPieces.length);
+}
+function refreshGojoGlassPieceTextures(progress){
+ if(!gojoGlassBackdropReady||!gojoGlassSceneCanvas||!gojoGlassPieces)return;
+ const texturePad=gojoGlassTexturePad;
+ for(const piece of gojoGlassPieces){
+  const release=smoothstep01(clamp((progress-(.50+piece.delay))/.28,0,1));
+  const eased=1-Math.pow(1-release,2.25);
+  const shardX=piece.centerX+piece.dx*eased,shardY=piece.centerY+piece.dy*eased;
+  const rotation=piece.rotation*eased;
+  piece.renderX=shardX;piece.renderY=shardY;piece.renderRotation=rotation;
+  const textureCtx=piece.texture.getContext('2d');if(!textureCtx)continue;
+  textureCtx.setTransform(1,0,0,1,0,0);textureCtx.globalAlpha=1;textureCtx.globalCompositeOperation='source-over';textureCtx.filter='none';
+  textureCtx.clearRect(0,0,piece.texture.width,piece.texture.height);
+  textureCtx.save();textureCtx.beginPath();
+  for(let i=0;i<piece.poly.length;i++){const point=piece.poly[i];if(i===0)textureCtx.moveTo(point.x,point.y);else textureCtx.lineTo(point.x,point.y)}
+  textureCtx.closePath();textureCtx.clip();
+  // Re-sample the live scene at this shard's current screen position.
+  // Its lens angle follows its rotation, so refraction changes as the shard tumbles.
+  const drift=Math.sin(game.time*5.4+piece.phase)*.014*eased;
+  const lensAngle=piece.lensAngle+rotation+drift;
+  const lensOffsetX=piece.offsetX+Math.cos(game.time*4.1+piece.phase)*2.2*dpr*eased;
+  const lensOffsetY=piece.offsetY+Math.sin(game.time*4.7+piece.phase)*2.2*dpr*eased;
+  const sourceLeft=shardX-piece.boxWidth*.5,sourceTop=shardY-piece.boxHeight*.5;
+  textureCtx.translate(piece.localCX+lensOffsetX,piece.localCY+lensOffsetY);
+  textureCtx.rotate(lensAngle);
+  textureCtx.transform(1,piece.shearY,piece.shearX,1,0,0);
+  textureCtx.scale(piece.scaleX,piece.scaleY);
+  textureCtx.translate(-piece.localCX,-piece.localCY);
+  textureCtx.translate(piece.padding-texturePad-sourceLeft,piece.padding-texturePad-sourceTop);
+  textureCtx.drawImage(gojoGlassSceneCanvas,0,0);
+  textureCtx.restore();
+ }
 }
 function drawGojoGlassGrowingPath(path,amount){
  if(!path||path.length<2||amount<=0)return;
@@ -9490,6 +9526,7 @@ function drawGojoTeleportGlassForeground(f){
  const glassIn=smoothstep01(clamp(progress/.055,0,1));
  if(glassIn<=.001)return;
  const breakProgress=smoothstep01(clamp((progress-.22)/.20,0,1));
+ refreshGojoGlassPieceTextures(progress);
  const shardFade=1-smoothstep01(clamp((progress-.88)/.11,0,1));
  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
  // Keep every shard crisp: only its own clipped scene sample is refracted, never the full screen.
@@ -9500,8 +9537,8 @@ function drawGojoTeleportGlassForeground(f){
   for(const piece of gojoGlassPieces){
    const release=smoothstep01(clamp((progress-(.50+piece.delay))/.28,0,1));
    const eased=1-Math.pow(1-release,2.25);
-   const shardX=piece.centerX+piece.dx*eased,shardY=piece.centerY+piece.dy*eased;
-   const rotation=piece.rotation*eased;
+   const shardX=piece.renderX??piece.centerX,shardY=piece.renderY??piece.centerY;
+   const rotation=piece.renderRotation??0;
    const alpha=glassIn*shardFade*(1-.08*release);
    if(alpha<=.001)continue;
    ctx.save();ctx.translate(shardX,shardY);ctx.rotate(rotation);
