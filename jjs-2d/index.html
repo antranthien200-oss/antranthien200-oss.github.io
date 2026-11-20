@@ -9274,7 +9274,7 @@ function drawFighter(f){
   const scale=transition.mode==='enter'?1-.22*eased:.74+.26*eased;
   const visual={...f,x:px,y:py,face:transition.face,vehicle:null,motion:{name:transition.mode==='enter'?'carEnter':'carExit',t:transition.elapsed,duration:transition.duration,activeDuration:transition.duration,angle:transition.face,target:null}};
   ctx.save();ctx.globalAlpha=alpha;ctx.translate(sx(px),sy(py));ctx.scale(scale,scale);ctx.translate(-sx(px),-sy(py));drawHeadHands(visual,true);ctx.restore();
- }else{drawGojoTeleportGlassBackdrop(f);drawHeadHands(f,true);}
+ }else{drawHeadHands(f,true);}
  if(!transition&&f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
 }
