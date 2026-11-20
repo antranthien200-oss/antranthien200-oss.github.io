@@ -781,6 +781,28 @@ html.manual-screen-rotated #menu .menu-art-stage{
 #awakeningCutscene.vessel-awakening-zoom .awaken-backdrop-lines,
 #awakeningCutscene.vessel-awakening-zoom .awaken-flash,
 #awakeningCutscene.vessel-awakening-zoom .awaken-content{display:none!important}
+#awakeningCutscene.gojo-dialogue{
+ position:fixed;inset:0;z-index:1000;display:block!important;overflow:hidden;
+ pointer-events:none;animation:none!important;background:transparent;
+}
+#awakeningCutscene.gojo-dialogue.active{display:block;animation:none!important}
+#awakeningCutscene.gojo-dialogue:before,#awakeningCutscene.gojo-dialogue:after{display:none!important;content:none!important}
+#awakeningCutscene.gojo-dialogue .awaken-backdrop-lines,
+#awakeningCutscene.gojo-dialogue .awaken-flash,
+#awakeningCutscene.gojo-dialogue .awaken-content{display:none!important}
+.gojo-awakening-dialogue{
+ display:none;position:absolute;box-sizing:border-box;align-items:center;justify-content:center;
+ min-height:clamp(27px,5.5vh,38px);padding:5px 8px;
+ background:#f7f7f3;color:#080808;border:2px solid #101010;border-radius:0;
+ box-shadow:2px 2px 0 rgba(0,0,0,.52);
+ font:italic 1000 clamp(8px,1.45vw,11px)/1.08 "Arial Black","Comic Sans MS",Impact,sans-serif;
+ letter-spacing:.035em;text-align:center;text-transform:uppercase;white-space:nowrap;
+ -webkit-text-stroke:.15px currentColor;text-shadow:none;
+}
+#awakeningCutscene.gojo-dialogue.active .gojo-awakening-dialogue{
+ display:flex;animation:vesselDialogueIn .16s cubic-bezier(.18,.82,.24,1) both;
+}
+#gojoAwakeningDialogueBottom{animation-delay:.055s!important}
 
 /* Unified translucent glass finish for all mobile controls (paint only). */
 #mobileControls #mobileJoystick{
@@ -1935,7 +1957,7 @@ html.manual-screen-rotated #menu .menu-art-stage{
 </head>
 <body>
 <canvas id="game"></canvas><div id="vignette"></div><div id="hitFlash"></div>
-<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div></div>
+<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue">LET'S GET...</div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">A LITTLE CRAZY.</div></div>
 <div class="hud" id="hud" style="display:none">
   <div class="toprow">
     <div class="fighter-card">
@@ -4091,25 +4113,32 @@ function registerPlayerHit(target,source,amount){
 }
 function updatePlayerHitStreak(dt){if(game.playerHitTimer<=0)return;game.playerHitTimer=Math.max(0,game.playerHitTimer-dt);if(game.playerHitTimer===0){game.playerHitStreak=0;const panel=$('comboDisplay');if(panel){panel.classList.remove('active','pop','hot');clearComboRanks(panel)}}}
 function playAwakeningCutscene(f){
- const c=CHARS[f.char],el=$('awakeningCutscene'),isVessel=f.char==='vessel';
- $('awakenCutsceneName').textContent=isVessel?'':c.awakening;
- $('awakenCutsceneSubtitle').textContent=isVessel?'':c.awakeName+' · AWAKENED';
+ const c=CHARS[f.char],el=$('awakeningCutscene'),isVessel=f.char==='vessel',isGojo=f.char==='honored';
+ $('awakenCutsceneName').textContent=isVessel||isGojo?'':c.awakening;
+ $('awakenCutsceneSubtitle').textContent=isVessel||isGojo?'':c.awakeName+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
- el.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');
- el._speaker=f;el._phase=isVessel?'dialogue':'single';
+ el.classList.remove('active','vessel-dialogue','gojo-dialogue','vessel-awakening-zoom');
+ el._speaker=f;el._phase=isVessel?'dialogue':isGojo?'gojo-dialogue':'single';
  if(isVessel){
   // Skip the centered title popup entirely; show only the existing manga dialogue.
   f.motion=null;f.attackAnim=0;f.attackType='';f.sukunaAwakeningCameraTime=0;
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
+ if(isGojo){
+  // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
+  f.motion=null;f.attackAnim=0;f.attackType='';
+  f.gojoAwakeningVisualPending=true;f.gojoAwakeningCameraTime=0;
+ }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
- if(isVessel){
-  el.classList.add('vessel-dialogue','vessel-awakening-zoom');
-  // Apply the vignette inline so it cannot be overridden by the dialogue panel's transparent background.
+ if(isVessel||isGojo){
+  el.classList.add(isVessel?'vessel-dialogue':'gojo-dialogue','vessel-awakening-zoom');
+  // Keep the fighter visible while the screen edges darken into a manga-style close-up.
   el.style.background='radial-gradient(ellipse 62% 62% at center,rgba(0,0,0,0) 22%,rgba(0,0,0,.22) 52%,rgba(0,0,0,.62) 82%,rgba(0,0,0,.92) 120%)';
  }
- game.cutsceneTimer=isVessel?1.55:.19375;f.invuln=Math.max(f.invuln,1.6);game.shake=isVessel?0:15;
+ game.cutsceneTimer=isVessel||isGojo?1.55:.19375;
+ f.invuln=Math.max(f.invuln,isGojo?3.2:1.6);
+ game.shake=isVessel||isGojo?0:15;
 }
 function domainName(type){return ({void:'INFINITE VOID',shrine:'MALEVOLENT SHRINE',soul:'EMBODIMENT OF SELF PERFECTION',hakari:'IDLE DEATH GAMBLE',yuta:'AUTHENTIC MUTUAL LOVE',trash:'LANDFILL'})[type]||'DOMAIN EXPANSION'}
 function damageBuildingAlongRay(f,angle,maxRange=1000){
@@ -6360,10 +6389,13 @@ function update(dt){if(game.cutsceneTimer>0){
  if(speaker&&speaker.char==='vessel'&&(cutscene._phase==='dialogue'||cutscene._phase==='awakening-motion')){
   speaker.sukunaAwakeningCameraTime=Math.min(1.55,(speaker.sukunaAwakeningCameraTime||0)+dt);
  }
- if(speaker&&speaker.char==='vessel'&&speaker.motion&&speaker.motion.name==='sukunaAwaken'){
+ if(speaker&&speaker.char==='honored'&&(cutscene._phase==='gojo-dialogue'||cutscene._phase==='gojo-awakening-motion')){
+  speaker.gojoAwakeningCameraTime=Math.min(1.55,(speaker.gojoAwakeningCameraTime||0)+dt);
+ }
+ if(speaker&&((speaker.char==='vessel'&&speaker.motion&&speaker.motion.name==='sukunaAwaken')||(speaker.char==='honored'&&speaker.motion&&speaker.motion.name==='gojoAwaken'))){
   const step=Math.min(dt,game.cutsceneTimer);
   speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
-  speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
+  if(speaker.char==='vessel')speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
  }
  game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);
@@ -6374,8 +6406,13 @@ function update(dt){if(game.cutsceneTimer>0){
    cutscene.classList.remove('active','vessel-dialogue');cutscene._phase='awakening-motion';
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
+  }else if(speaker&&speaker.char==='honored'&&cutscene._phase==='gojo-dialogue'){
+   // The dialogue panels clear, then Gojo physically draws the blindfold down to his neck.
+   cutscene.classList.remove('active','gojo-dialogue');cutscene._phase='gojo-awakening-motion';
+   speaker.gojoAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
+   setMotion(speaker,'gojoAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else{
-   cutscene.classList.remove('active','vessel-dialogue','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
+   cutscene.classList.remove('active','vessel-dialogue','gojo-dialogue','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
   }
  }
  return
@@ -7714,6 +7751,7 @@ function getFighterTheme(f){
  if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
  if(f.char==='vessel'&&f.awakened)return {main:'#9f3046',accent:'#f05c70',shadow:'#571c30'};
+ if(f.char==='honored'&&f.awakened)return {main:'#f7f8fc',accent:'#ffffff',shadow:'#cbd3e1'};
  if(f.char==='restless'&&f.jackpot)return {main:'#55c987',accent:'#b3ffd0',shadow:'#236744'};
  if(f.char==='perfection'&&f.awakened)return {main:'#9239cc',accent:'#e2adff',shadow:'#45156b'};
  return p;
@@ -8433,6 +8471,16 @@ function drawSukunaSmileFace(alpha=1){
  ctx.fillStyle='#160910';ctx.fillText(':)',0,0);
  ctx.restore();
 }
+function drawGojoNeutralFace(alpha=1){
+ if(alpha<=.01)return;
+ ctx.save();ctx.globalAlpha=alpha;
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 15px monospace';
+ // The two eyes are blue text glyphs; the small underscore stays dark.
+ ctx.fillStyle='#238fff';ctx.fillText('.',-7,-1);
+ ctx.fillStyle='#142033';ctx.fillText('_',0,2.2);
+ ctx.fillStyle='#238fff';ctx.fillText('.',7,-1);
+ ctx.restore();
+}
 function drawFloatingHand(x,y,angle,theme,scale=1){
  // Original small floating pixel-circle fist used by every character.
  ctx.save();
@@ -8632,6 +8680,8 @@ function drawHeadHands(f,deferMotionVfx=false){
  const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep-.04*gojoBlueSlapRecoil+gojoSpinHeadLean;
  const gojoBlueHeadShiftX=px*gojoSpinWave*2.2,gojoBlueHeadShiftY=py*gojoSpinWave*2.2;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
+ const gojoAwakeningProgress=f.char==='honored'?(name==='gojoAwaken'?smoothstep01(clamp(progress,0,1)):(f.awakened&&!f.gojoAwakeningVisualPending?1:0)):0;
+ const gojoFaceReveal=smoothstep01(clamp((gojoAwakeningProgress-.22)/.62,0,1));
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  const gojoSpinHand=(phase,forwardRadius,sideRadius,vertical=0)=>{
   const theta=gojoSpinTurn+phase,forward=Math.cos(theta)*forwardRadius,side=Math.sin(theta)*sideRadius;
@@ -8654,6 +8704,18 @@ function drawHeadHands(f,deferMotionVfx=false){
   const brace=0.5+0.5*Math.sin(game.time*7);handA=P(13+brace*4,22,-10-brace*3);handB=P(13+brace*4,-22,-10-brace*3);handAScale=1.16;handBScale=1.16;
  }else if(name==='dashGesture'){
   const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
+ }else if(name==='gojoAwaken'){
+  // Both hands catch the blindfold at eye level, pull it down, then relax at the neck.
+  const reachIn=smoothstep01(clamp(progress/.18,0,1));
+  const pullDown=smoothstep01(clamp((progress-.16)/.56,0,1));
+  const release=smoothstep01(clamp((progress-.76)/.24,0,1));
+  const vertical=lerp(-5,15,pullDown)*(1-release)+14*release;
+  const forward=lerp(7,18,reachIn)*(1-.35*release);
+  const side=lerp(23,15,reachIn);
+  handA=P(forward,side,vertical-2);
+  handB=P(forward,-side,vertical-2);
+  handAScale=1.08;handBScale=1.08;
+  handAAngle=angle+.18;handBAngle=angle-.18;
  }else if(name==='sukunaAwaken'){
   // Yuji's hands sink as he loses control, then snap outward as Sukuna takes over.
   const slump=smoothstep01(clamp(progress/.34,0,1));
@@ -9137,11 +9199,13 @@ function drawHeadHands(f,deferMotionVfx=false){
  }
  if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);
  drawAccessoryOverlays(f,0,0);
- // Gojo's fixed black blindfold: keep it in the head transform, outside the
- // selectable accessory renderer so it cannot affect accessory handling.
+ if(f.char==='honored'&&gojoFaceReveal>0)drawGojoNeutralFace(gojoFaceReveal);
+ // Gojo's blindfold stays separate from the accessory system and slides down to his neck.
  if(f.char==='honored'){
+  const coverY=lerp(-5.3,13.6,gojoAwakeningProgress);
+  const coverHeight=lerp(9.6,2.6,gojoAwakeningProgress);
   ctx.fillStyle='#000000';
-  ctx.fillRect(-16.5,-5.3,33,9.6);
+  ctx.fillRect(-16.5,coverY,33,coverHeight);
  }
  ctx.restore();
  if(!deferHands&&f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
@@ -10511,11 +10575,33 @@ function positionVesselAwakeningDialogue(){
  box.style.left=left+'px';box.style.top=top+'px';
 }
 
+function positionGojoAwakeningDialogue(){
+ const overlay=$('awakeningCutscene');
+ if(!overlay||!overlay.classList.contains('active')||!overlay.classList.contains('gojo-dialogue'))return;
+ const f=overlay._speaker,topBox=$('gojoAwakeningDialogueTop'),bottomBox=$('gojoAwakeningDialogueBottom');
+ if(!f||f.dead||!topBox||!bottomBox)return;
+ const viewScale=cameraViewScale();
+ let headX=W*.5+(f.x-camera.x)/viewScale;
+ let headY=H*.5+(f.y-f.jump*3-23-camera.y)/viewScale;
+ const cameraProgress=clamp((f.gojoAwakeningCameraTime||0)/1.55,0,1),ease=cameraProgress*cameraProgress*(3-2*cameraProgress),zoom=1+.45*ease;
+ const focusX=W*.5+(f.x-camera.x)/viewScale,focusY=H*.5+(f.y-camera.y)/viewScale;
+ headX=focusX+(headX-focusX)*zoom;headY=focusY+(headY-focusY)*zoom;
+ let viewW=W,viewH=H;
+ if(isManualScreenRotated()){const gx=headX;headX=innerWidth-headY;headY=gx;viewW=innerWidth;viewH=innerHeight}
+ const topW=topBox.offsetWidth||132,topH=topBox.offsetHeight||34;
+ const bottomW=bottomBox.offsetWidth||158,bottomH=bottomBox.offsetHeight||36;
+ topBox.style.left=clamp(headX+22,8,Math.max(8,viewW-topW-8))+'px';
+ topBox.style.top=clamp(headY-65,8,Math.max(8,viewH-topH-8))+'px';
+ bottomBox.style.left=clamp(headX-bottomW-22,8,Math.max(8,viewW-bottomW-8))+'px';
+ bottomBox.style.top=clamp(headY+27,8,Math.max(8,viewH-bottomH-8))+'px';
+}
+
 function draw(){
  const mobileRemoteRender=onlineMode?getMobileRemoteRenderSets():{detailed:[],simple:[]};
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
  if(zoomFighter&&!zoomFighter.dead){
-  const progress=clamp((zoomFighter.sukunaAwakeningCameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease,viewScale=cameraViewScale();
+  const cameraTime=zoomFighter.char==='vessel'?zoomFighter.sukunaAwakeningCameraTime:zoomFighter.gojoAwakeningCameraTime;
+  const progress=clamp((cameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease,viewScale=cameraViewScale();
   const focusX=W*.5+(zoomFighter.x-camera.x)/viewScale,focusY=H*.5+(zoomFighter.y-camera.y)/viewScale;
   // Scale the canvas element around the fighter's actual screen position for a reliable cinematic close-up.
   canvas.style.transformOrigin=focusX+'px '+focusY+'px';
@@ -10542,6 +10628,7 @@ function draw(){
  
  ctx.restore();
  positionVesselAwakeningDialogue();
+ positionGojoAwakeningDialogue();
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
  if(game.started){for(const f of domainFighters()){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||f.domainWindup||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  if(!game.started){camera.x=1100;camera.y=750;drawMenuBackdrop()}else if(!mobileControlsEnabled){ctx.save();ctx.translate(mouse.x,mouse.y);ctx.strokeStyle='#eaf7ffcc';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.moveTo(-14,0);ctx.lineTo(-5,0);ctx.moveTo(5,0);ctx.lineTo(14,0);ctx.moveTo(0,-14);ctx.lineTo(0,-5);ctx.moveTo(0,5);ctx.lineTo(0,14);ctx.stroke();ctx.restore()}else if(mobileControlsEnabled){drawMobileEnemyPointer()}
