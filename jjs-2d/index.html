@@ -9291,8 +9291,7 @@ function drawGojoFlashStepPath(f,fx,age){
  ctx.restore();
 
  // A chain of solid, readable character afterimages follows Gojo's exact dash path.
- const maxEchoes=isMobileDevice?6:9;
- const echoCount=Math.max(3,Math.min(maxEchoes,Math.ceil(length/42)));
+ const echoCount=5;
  for(let i=0;i<echoCount;i++){
   const ratio=echoCount===1?.5:i/(echoCount-1);
   const along=.09+ratio*.77;
