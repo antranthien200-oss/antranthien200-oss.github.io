@@ -631,35 +631,41 @@ modifyProjectile(client,payload={}){
    return true;
   }
   if(kind==="gojoTwofoldCounter"){
-   defender.invuln=Math.max(defender.invuln,.72);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
-   attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
-   attacker.stun=Math.max(attacker.stun,.42);attacker.vx=0;attacker.vy=0;
-   // The first quick yellow-energy jab replaces Yuji's initial block beat.
-   hurt(attacker,2.5,.16,0);
-   let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
-   if(!resolvedAttackerId||!resolvedDefenderId){
-    for(const [playerId,player] of this.state.players){
-     if(player===attacker)resolvedAttackerId=playerId;
-     if(player===defender)resolvedDefenderId=playerId;
+    defender.invuln=Math.max(defender.invuln,.72);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
+    attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
+    attacker.stun=Math.max(attacker.stun,.42);attacker.vx=0;attacker.vy=0;attacker.motionName="";attacker.motionProgress=0;attacker.motionDuration=1;attacker.attackAnim=0;attacker.attackType="";
+    // Replace Yuji's first block beat with Gojo's quick yellow-energy jab.
+    hurt(attacker,2.5,.16,0);
+    let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
+    if(!resolvedAttackerId||!resolvedDefenderId){
+     for(const [playerId,player] of this.state.players){
+      if(player===attacker)resolvedAttackerId=playerId;
+      if(player===defender)resolvedDefenderId=playerId;
+     }
     }
-   }
-   if(resolvedAttackerId&&resolvedDefenderId){
-    this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:Date.now()});
-    setTimeout(()=>{
-     const currentDefender=this.state.players.get(resolvedDefenderId),currentAttacker=this.state.players.get(resolvedAttackerId);
-     if(!currentDefender||!currentAttacker||currentDefender.dead||currentAttacker.dead)return;
-     currentAttacker.stun=Math.max(currentAttacker.stun,.22);currentAttacker.vx=0;currentAttacker.vy=0;
+    if(resolvedAttackerId&&resolvedDefenderId){
+     const started=Date.now();
+     defender.motionName="gojoCounterJab";defender.motionProgress=0;defender.motionDuration=.2;defender.motionStartedAt=started;defender.attackAnim=.2;defender.attackType="skill";
+     this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:started});
      setTimeout(()=>{
-      const finishDefender=this.state.players.get(resolvedDefenderId),finishAttacker=this.state.players.get(resolvedAttackerId);
-      if(!finishDefender||!finishAttacker||finishDefender.dead||finishAttacker.dead)return;
-      const finalDx=finishAttacker.x-finishDefender.x,finalDy=finishAttacker.y-finishDefender.y,finalLength=Math.hypot(finalDx,finalDy)||1;
-      hurt(finishAttacker,8.5,.68,10,finalDx/finalLength,finalDy/finalLength);
-     },110);
-    },170);
+      const currentDefender=this.state.players.get(resolvedDefenderId),currentAttacker=this.state.players.get(resolvedAttackerId);
+      if(!currentDefender||!currentAttacker||currentDefender.dead||currentAttacker.dead)return;
+      const strikeAngle=Math.atan2(currentAttacker.y-currentDefender.y,currentAttacker.x-currentDefender.x);
+      currentDefender.face=strikeAngle;currentDefender.motionName="gojoCounterFinish";currentDefender.motionProgress=0;currentDefender.motionDuration=.3;currentDefender.motionStartedAt=Date.now();currentDefender.attackAnim=.3;currentDefender.attackType="skill";
+      currentAttacker.counterKind="";currentAttacker.counterWindow=0;currentAttacker.block=false;currentAttacker.invuln=0;
+      currentAttacker.stun=Math.max(currentAttacker.stun,.22);currentAttacker.vx=0;currentAttacker.vy=0;
+      setTimeout(()=>{
+       const finishDefender=this.state.players.get(resolvedDefenderId),finishAttacker=this.state.players.get(resolvedAttackerId);
+       if(!finishDefender||!finishAttacker||finishDefender.dead||finishAttacker.dead)return;
+       const finalDx=finishAttacker.x-finishDefender.x,finalDy=finishAttacker.y-finishDefender.y,finalLength=Math.hypot(finalDx,finalDy)||1;
+       finishAttacker.counterKind="";finishAttacker.counterWindow=0;finishAttacker.block=false;finishAttacker.invuln=0;
+       hurt(finishAttacker,8.5,.68,10,finalDx/finalLength,finalDy/finalLength);
+      },110);
+     },170);
+    }
+    return true;
    }
-   return true;
-  }
-  if(kind==="manji"){defender.invuln=Math.max(defender.invuln,.72);hurt(attacker,8.5,.68,10);return true}
+   if(kind==="manji"){defender.invuln=Math.max(defender.invuln,.72);hurt(attacker,8.5,.68,10);return true}
   if(kind==="todoDream"){defender.invuln=Math.max(defender.invuln,.45);hurt(attacker,13,.8,12);return true}
   if(kind==="todoBrothers"){defender.invuln=Math.max(defender.invuln,.6);hurt(attacker,28,1,17);return true}
   if(kind==="bloodSupernova"){defender.invuln=Math.max(defender.invuln,.5);defender.convergenceOrbs=clamp((Number(defender.convergenceOrbs)||0)+1,0,4);hurt(attacker,14,.8,13);return true}
@@ -855,7 +861,7 @@ killPlayer(p){
   }
  }
 
- tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const [playerId,lastActive] of this.lastActivityAt){const inactivePlayer=this.state.players.get(playerId);if(!inactivePlayer){this.lastActivityAt.delete(playerId);continue}if(!inactivePlayer.connected||now-lastActive<300000)continue;const inactiveClient=this.clients.find(c=>c.sessionId===playerId);if(inactiveClient){this.lastActivityAt.set(playerId,now);inactiveClient.leave(4008,"AFK_TIMEOUT")}}for(const [id,building] of this.state.world.buildings){if(building.collapsed){building.respawnTimer=Math.max(0,building.respawnTimer-dt);if(building.respawnTimer===0){building.stage=0;building.collapsed=false}}}for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);const expiredCounterKind=p.counterKind,previousCounterWindow=p.counterWindow;p.counterWindow=Math.max(0,p.counterWindow-dt);if(previousCounterWindow>0&&p.counterWindow===0&&expiredCounterKind==="gojoTwofoldCounter"&&p.character==="honored"&&!p.dead){p.counterKind="";p.motionName="gojoCounterMiss";p.motionProgress=0;p.motionDuration=.34;p.motionStartedAt=now;p.attackAnim=.34;p.attackType="skill";this.broadcast("combat:counter-miss",{sessionId:id,kind:"gojoCounterMiss",serverTime:now})}else if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);p.hpRegenWait=Math.max(0,p.hpRegenWait-dt);if(!p.dead&&!p.jackpot&&!p.domainClashId&&p.hp<p.maxHp&&p.hpRegenWait<=0)p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.012*dt);if(p.jackpot&&!p.dead&&!p.domainClashId)p.hp=Math.min(p.maxHp,p.hp+4*dt);if(p.domainWindup>0){if(p.stun>0){p.domainType="";p.domainRequestType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainStunGuaranteed=false}else{p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0){p.domainTimer=p.domainDuration||0;if(p.character==="restless"&&p.domainType==="hakari"&&p.domainStunGuaranteed){let nearest=null,best=Infinity;for(const [otherId,other] of this.state.players){if(otherId===id||other.dead)continue;const d=distance(p,other);if(d<best){best=d;nearest=other}}if(nearest&&best<600){nearest.stun=Math.max(nearest.stun,.7);nearest.invuln=0}p.domainStunGuaranteed=false}}}}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRequestType="";p.domainWindupStart=0;p.domainRadius=0;p.domainCastAt=0;p.domainStunGuaranteed=false}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){p.x=PLAYER_RESPAWN_POINT.x;p.y=PLAYER_RESPAWN_POINT.y;p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.moveScale=1;p.aimX=p.x;p.aimY=p.y;p.walk=0;p.jump=0;p.attackAnim=0;p.attackType="";p.motionName="";p.motionProgress=0;p.motionDuration=1;p.hp=p.maxHp;p.hpRegenWait=0;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.domainStunGuaranteed=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
+ tick(dt){const w=this.state.world;w.worldSeconds+=dt;const since=w.worldSeconds-18;if(since<0){w.trainWarning=false;w.trainX=-9999}else{const cycle=since%62,elapsed=cycle-2.2;w.trainWarning=cycle<9.5;w.trainX=elapsed>=0&&elapsed<6.3?-80+elapsed*620:-9999}const now=Date.now();for(const [playerId,lastActive] of this.lastActivityAt){const inactivePlayer=this.state.players.get(playerId);if(!inactivePlayer){this.lastActivityAt.delete(playerId);continue}if(!inactivePlayer.connected||now-lastActive<300000)continue;const inactiveClient=this.clients.find(c=>c.sessionId===playerId);if(inactiveClient){this.lastActivityAt.set(playerId,now);inactiveClient.leave(4008,"AFK_TIMEOUT")}}for(const [id,building] of this.state.world.buildings){if(building.collapsed){building.respawnTimer=Math.max(0,building.respawnTimer-dt);if(building.respawnTimer===0){building.stage=0;building.collapsed=false}}}for(const prop of this.state.world.props.values()){if(!prop.alive){prop.respawnTimer=Math.max(0,prop.respawnTimer-dt);if(prop.respawnTimer===0){prop.alive=true;prop.hp=3}}}for(const [id,car] of this.state.world.cars){if(car.destroyed){car.respawnTimer=Math.max(0,car.respawnTimer-dt);if(car.respawnTimer===0){const spawn=CAR_SPAWNS.find(x=>String(x.id)===id);if(spawn){car.x=spawn.x;car.y=spawn.y;car.angle=0;car.vx=0;car.vy=0;car.speed=0;car.destroyed=false;car.occupiedBy=""}}}}for(const [id,p] of this.state.players){p.stun=Math.max(0,p.stun-dt);p.invuln=Math.max(0,p.invuln-dt);p.counterWindow=Math.max(0,p.counterWindow-dt);if(p.counterWindow===0)p.counterKind="";p.attackAnim=Math.max(0,p.attackAnim-dt);p.hpRegenWait=Math.max(0,p.hpRegenWait-dt);if(!p.dead&&!p.jackpot&&!p.domainClashId&&p.hp<p.maxHp&&p.hpRegenWait<=0)p.hp=Math.min(p.maxHp,p.hp+p.maxHp*.012*dt);if(p.jackpot&&!p.dead&&!p.domainClashId)p.hp=Math.min(p.maxHp,p.hp+4*dt);if(p.domainWindup>0){if(p.stun>0){p.domainType="";p.domainRequestType="";p.domainWindup=0;p.domainTimer=0;p.domainDuration=0;p.domainRadius=0;p.domainStunGuaranteed=false}else{p.domainWindup=Math.max(0,p.domainWindup-dt);if(p.domainWindup===0){p.domainTimer=p.domainDuration||0;if(p.character==="restless"&&p.domainType==="hakari"&&p.domainStunGuaranteed){let nearest=null,best=Infinity;for(const [otherId,other] of this.state.players){if(otherId===id||other.dead)continue;const d=distance(p,other);if(d<best){best=d;nearest=other}}if(nearest&&best<600){nearest.stun=Math.max(nearest.stun,.7);nearest.invuln=0}p.domainStunGuaranteed=false}}}}if(p.domainTimer>0){p.domainTimer=Math.max(0,p.domainTimer-dt);if(p.domainTimer===0){p.domainType="";p.domainRequestType="";p.domainWindupStart=0;p.domainRadius=0;p.domainCastAt=0;p.domainStunGuaranteed=false}}if(p.dead){p.respawnTimer=Math.max(0,p.respawnTimer-dt);if(p.respawnTimer===0){p.x=PLAYER_RESPAWN_POINT.x;p.y=PLAYER_RESPAWN_POINT.y;p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.moveScale=1;p.aimX=p.x;p.aimY=p.y;p.walk=0;p.jump=0;p.attackAnim=0;p.attackType="";p.motionName="";p.motionProgress=0;p.motionDuration=1;p.hp=p.maxHp;p.hpRegenWait=0;p.dead=false;p.invuln=1.25;p.stun=0;p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.domainStunGuaranteed=false;p.block=false;p.domainType="";p.domainTimer=0;p.domainRadius=0}}if(!p.dead&&p.attackAnim>0){for(const src of PROP_SPAWNS){const prop=w.props.get(String(src.id));if(!prop||!prop.alive)continue;const center={x:src.x+src.w/2,y:src.y+src.h/2},dx=center.x-p.x,dy=center.y-p.y,a=Math.atan2(dy,dx),faceDelta=Math.atan2(Math.sin(a-p.face),Math.cos(a-p.face));if(Math.hypot(dx,dy)>58||Math.abs(faceDelta)>1.2)continue;const key=id+":"+src.id;if(now-(this.lastPropHitAt.get(key)||0)<300)continue;this.lastPropHitAt.set(key,now);prop.hp=Math.max(0,prop.hp-1);if(prop.hp<=0){prop.alive=false;prop.respawnTimer=15}}}}for(const [targetId,target] of this.state.players){
   if(!target.blueSuckedBy)continue;
   const owner=this.state.players.get(target.blueSuckedBy);
   if(!owner||owner.dead||target.dead){
