@@ -3885,8 +3885,8 @@ function bindOnlineRoom(client,room){
    showToast(String(data.reason||'DOMAIN UNAVAILABLE'),1000);updateHud(true);
   });
   room.onMessage('domain:clash:start',data=>{
-  if(!data||!Array.isArray(data.participants)||!data.participants.includes(onlineSessionId))return;
-  const opponents=data.participants.filter(id=>id!==onlineSessionId).slice(0,1).map(id=>onlineRemotePlayers.get(id)).filter(Boolean);
+  if(!data||!Array.isArray(data.participants)||data.participants.length!==2||new Set(data.participants).size!==2||!data.participants.includes(onlineSessionId))return;
+  const opponents=data.participants.filter(id=>id!==onlineSessionId).map(id=>onlineRemotePlayers.get(id)).filter(Boolean).slice(0,1);
   if(opponents.length&&player){game.domainClash={id:String(data.id),members:[player,...opponents],time:Number(data.time)||15,maxTime:15,scores:{player:0,enemy:0},startedAt:game.time,serverAuthoritative:true};updateDomainClashHud();showToast('DOMAIN CLASH · LAND HITS TO WIN',1300)}
  });
  room.onMessage('domain:clash:score',data=>{
