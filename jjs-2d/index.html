@@ -6396,6 +6396,10 @@ function update(dt){if(game.cutsceneTimer>0){
   const step=Math.min(dt,game.cutsceneTimer);
   speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
   if(speaker.char==='vessel')speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
+  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&speaker.motion.t>=speaker.motion.duration*.78){
+   // Only turn Gojo's skin bright after the blindfold has reached his neck; keep it for the full awakening.
+   speaker.gojoSkinAwakened=true;
+  }
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
  }
  game.cutsceneTimer=Math.max(0,game.cutsceneTimer-dt);
@@ -7751,7 +7755,7 @@ function getFighterTheme(f){
  if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
  if(f.char==='vessel'&&f.awakened)return {main:'#9f3046',accent:'#f05c70',shadow:'#571c30'};
- if(f.char==='honored'&&f.awakened)return {main:'#f7f8fc',accent:'#ffffff',shadow:'#cbd3e1'};
+ if(f.char==='honored'&&f.awakened&&f.gojoSkinAwakened)return {main:'#f7f8fc',accent:'#ffffff',shadow:'#cbd3e1'};
  if(f.char==='restless'&&f.jackpot)return {main:'#55c987',accent:'#b3ffd0',shadow:'#236744'};
  if(f.char==='perfection'&&f.awakened)return {main:'#9239cc',accent:'#e2adff',shadow:'#45156b'};
  return p;
