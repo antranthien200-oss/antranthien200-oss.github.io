@@ -52,6 +52,7 @@ test("counter windows are limited to intended character actions",()=>{
  assert.equal(counterSettings("honored","special",false),null);
  const yuji=counterSettings("vessel","4",false),gojo=counterSettings("honored","4",false);
  assert.equal(gojo.window,yuji.window);
+ assert.equal(gojo.window,.9);
  assert.equal(gojo.cooldown,yuji.cooldown);
  assert.equal(gojo.cooldown,20);
 });
