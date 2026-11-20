@@ -5464,7 +5464,7 @@ if(f.attackCd>0)return;
    const angle=Math.atan2(target.y-f.y,target.x-f.x);
    f.face=angle;f.vx=0;f.vy=0;
    setMotion(f,'gojoLimitless',1.05,angle,target);
-   f.gojoLimitlessGlassFx={t:0,duration:.98};
+   f.gojoLimitlessGlassFx={t:0,duration:1.48};
    f.gojoLimitlessAutoM1At=game.time+.30;f.gojoLimitlessAutoM1Target=target;
    f.attackCd=0;f.invuln=Math.max(f.invuln||0,.62);
    f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+1600;
@@ -9270,7 +9270,7 @@ function drawTrashManEffects(){
 function gojoLimitlessVisualShake(f){
  const fx=f&&f.gojoLimitlessGlassFx;
  if(!fx||f.char!=='honored')return {x:0,y:0};
- const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1);
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||1.48),0,1);
  const charge=1-smoothstep01(clamp(progress/.2,0,1));
  const impact=Math.sin(Math.PI*clamp((progress-.22)/.36,0,1));
  const settle=1-smoothstep01(clamp((progress-.68)/.24,0,1));
@@ -9374,30 +9374,57 @@ function buildGojoGlassCells(width,height,sceneCanvas,impactX,impactY,random){
  return pieces;
 }
 function buildGojoGlassCracks(width,height,impactX,impactY,random){
- const cracks=[],minimum=Math.min(width,height),rayCount=20;
+ const cracks=[],minimum=Math.min(width,height),center={x:impactX,y:impactY};
+ // Uneven radial fractures: long, mostly straight stress lines with restrained kinks.
+ const rayCount=11,angles=[];
+ for(let i=0;i<rayCount;i++)angles.push((Math.PI*2*i/rayCount)+(random()-.5)*.34);
+ angles.sort((a,b)=>a-b);
+ const edgeDistance=angle=>{
+  const dx=Math.cos(angle),dy=Math.sin(angle);let distance=Infinity;
+  if(dx>0)distance=Math.min(distance,(width-center.x)/dx);else if(dx<0)distance=Math.min(distance,(0-center.x)/dx);
+  if(dy>0)distance=Math.min(distance,(height-center.y)/dy);else if(dy<0)distance=Math.min(distance,(0-center.y)/dy);
+  return distance;
+ };
+ const addCrack=(points,delay,weight=1,alpha=1)=>cracks.push({points,delay,weight,alpha});
+ const starRadius=minimum*(.012+random()*.009);
+ for(let i=0;i<8;i++){
+  const angle=i*Math.PI/4+(random()-.5)*.18,r=starRadius*(.82+random()*.42);
+  addCrack([center,{x:center.x+Math.cos(angle)*r,y:center.y+Math.sin(angle)*r}],random()*.025,.82,.85);
+ }
  for(let i=0;i<rayCount;i++){
-  const angle=(Math.PI*2*i/rayCount)+(random()-.5)*.12,dx=Math.cos(angle),dy=Math.sin(angle),perpX=-dy,perpY=dx;
-  let distance=Infinity;
-  if(dx>0)distance=Math.min(distance,(width-impactX)/dx);else if(dx<0)distance=Math.min(distance,(0-impactX)/dx);
-  if(dy>0)distance=Math.min(distance,(height-impactY)/dy);else if(dy<0)distance=Math.min(distance,(0-impactY)/dy);
-  distance*=.79+random()*.20;
-  const points=[{x:impactX,y:impactY}],segments=5+Math.floor(random()*3),bend=(random()-.5)*minimum*.01;
-  for(let step=1;step<=segments;step++){
-   const t=step/segments,side=Math.sin(t*Math.PI)*bend+(random()-.5)*minimum*.004;
-   points.push({x:impactX+dx*distance*t+perpX*side,y:impactY+dy*distance*t+perpY*side});
+  const angle=angles[i],dx=Math.cos(angle),dy=Math.sin(angle),perpX=-dy,perpY=dx;
+  const distance=edgeDistance(angle)*(.66+random()*.32);
+  const kinkA=(random()-.5)*minimum*.012,kinkB=(random()-.5)*minimum*.016;
+  const points=[
+   center,
+   {x:center.x+dx*distance*.29+perpX*kinkA,y:center.y+dy*distance*.29+perpY*kinkA},
+   {x:center.x+dx*distance*.67+perpX*kinkB,y:center.y+dy*distance*.67+perpY*kinkB},
+   {x:center.x+dx*distance,y:center.y+dy*distance}
+  ];
+  addCrack(points,random()*.045,1,.95);
+  if(random()>.28){
+   const t=.32+random()*.42,origin={x:center.x+dx*distance*t+perpX*kinkA*(1-t),y:center.y+dy*distance*t+perpY*kinkA*(1-t)};
+   const sign=random()>.5?1:-1,branchAngle=angle+sign*(.48+random()*.38),branchLength=minimum*(.065+random()*.12);
+   const bx=Math.cos(branchAngle),by=Math.sin(branchAngle),bpX=-by,bpY=bx,curve=(random()-.5)*minimum*.008;
+   addCrack([
+    origin,
+    {x:origin.x+bx*branchLength*.48+bpX*curve,y:origin.y+by*branchLength*.48+bpY*curve},
+    {x:origin.x+bx*branchLength,y:origin.y+by*branchLength}
+   ],.035+random()*.11,.66,.78);
   }
-  cracks.push({points,delay:random()*.012});
-  const branches=1+(random()>.38?1:0);
-  for(let branch=0;branch<branches;branch++){
-   const startIndex=1+Math.floor(random()*(points.length-2)),origin=points[startIndex],sign=random()>.5?1:-1;
-   const branchAngle=angle+sign*(.68+random()*.88),length=minimum*(.07+random()*.14),bdx=Math.cos(branchAngle),bdy=Math.sin(branchAngle),bpx=-bdy,bpy=bdx;
-   const branchPoints=[origin];
-   for(let step=1;step<=3;step++){
-    const t=step/3,side=(random()-.5)*minimum*.006;
-    branchPoints.push({x:origin.x+bdx*length*t+bpx*side,y:origin.y+bdy*length*t+bpy*side});
-   }
-   cracks.push({points:branchPoints,delay:random()*.035});
+  if(random()>.62){
+   const t=.58+random()*.24,origin={x:center.x+dx*distance*t+perpX*kinkB*(1-t),y:center.y+dy*distance*t+perpY*kinkB*(1-t)};
+   const sign=random()>.5?1:-1,branchAngle=angle+sign*(.78+random()*.42),length=minimum*(.035+random()*.065);
+   addCrack([origin,{x:origin.x+Math.cos(branchAngle)*length*.55,y:origin.y+Math.sin(branchAngle)*length*.55},{x:origin.x+Math.cos(branchAngle)*length,y:origin.y+Math.sin(branchAngle)*length}],.08+random()*.12,.5,.68);
   }
+ }
+ for(let ring=0;ring<3;ring++){
+  const radius=minimum*(.105+ring*.105+random()*.025),startAngle=random()*Math.PI*2,arcLength=.58+random()*.82,count=7,points=[];
+  for(let i=0;i<=count;i++){
+   const angle=startAngle+arcLength*i/count,wobble=(random()-.5)*minimum*.008;
+   points.push({x:center.x+Math.cos(angle)*(radius+wobble),y:center.y+Math.sin(angle)*(radius+wobble)});
+  }
+  addCrack(points,.13+ring*.045,.62,.7);
  }
  return cracks;
 }
@@ -9442,7 +9469,7 @@ function drawGojoGlassGrowingPath(path,amount){
 function drawGojoTeleportGlassBackdrop(f){
  const fx=f&&f.gojoLimitlessGlassFx;
  if(!fx||f.char!=='honored')return;
- const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1);
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||1.48),0,1);
  const streakFade=1-smoothstep01(clamp((progress-.25)/.24,0,1));
  if(streakFade<=.005)return;
  const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-10+shake.y;
@@ -9458,17 +9485,17 @@ function drawGojoTeleportGlassBackdrop(f){
 function drawGojoTeleportGlassForeground(f){
  const fx=f&&f.gojoLimitlessGlassFx;
  if(!fx||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassSceneCanvas)return;
- const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
+ const progress=clamp(fx.t/Math.max(.08,fx.duration||1.48),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
  const glassIn=smoothstep01(clamp(progress/.055,0,1));
  if(glassIn<=.001)return;
  const breakProgress=smoothstep01(clamp((progress-.22)/.20,0,1));
- const shardFade=1-smoothstep01(clamp((progress-.78)/.20,0,1));
+ const shardFade=1-smoothstep01(clamp((progress-.86)/.13,0,1));
  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
  // The intact pane is already split into subtly misaligned optical facets.
  // Once cracks reach the edges, each facet separates and tumbles independently.
  if(gojoGlassPieces){
   for(const piece of gojoGlassPieces){
-   const release=smoothstep01(clamp((progress-(.24+piece.delay))/.22,0,1));
+   const release=smoothstep01(clamp((progress-(.59+piece.delay))/.34,0,1));
    const eased=1-Math.pow(1-release,2.25);
    const shardX=piece.centerX+piece.dx*eased,shardY=piece.centerY+piece.dy*eased;
    const rotation=piece.rotation*eased;
@@ -9480,13 +9507,13 @@ function drawGojoTeleportGlassForeground(f){
    ctx.restore();
   }
  }
- const crackFade=glassIn*(1-smoothstep01(clamp((progress-.39)/.13,0,1)));
+ const crackFade=glassIn*(1-smoothstep01(clamp((progress-.53)/.17,0,1)));
  if(crackFade>.001&&gojoGlassCracks){
-  ctx.strokeStyle='rgba(231,245,255,.82)';ctx.lineWidth=Math.max(1,.85*dpr);ctx.lineCap='square';ctx.lineJoin='miter';ctx.miterLimit=6;
+  ctx.strokeStyle='rgba(217,231,244,.68)';ctx.lineWidth=Math.max(.8,.78*dpr);ctx.lineCap='round';ctx.lineJoin='round';ctx.miterLimit=3;
   for(const crack of gojoGlassCracks){
-   const reveal=smoothstep01(clamp((progress-(.045+crack.delay))/.13,0,1));
+   const reveal=smoothstep01(clamp((progress-(.055+crack.delay))/.34,0,1));
    if(reveal<=.001)continue;
-   ctx.globalAlpha=crackFade*(.50+reveal*.32);
+   ctx.globalAlpha=crackFade*crack.alpha*(.54+reveal*.24);ctx.lineWidth=Math.max(.65,.78*dpr*crack.weight);
    drawGojoGlassGrowingPath(crack.points,reveal);
   }
  }
