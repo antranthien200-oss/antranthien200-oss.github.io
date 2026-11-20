@@ -252,11 +252,15 @@ combatAction(client,payload={}){
  tryStartDomainClash(sessionId,player,now=Date.now()){
   if(!player||!CLASHABLE_DOMAINS.has(player.domainType)||player.domainClashId)return false;
   const castAt=Number(player.domainCastAt)||now;
-  if(now-castAt>2700)return false;
+  const recentCast=other=>{
+   const otherCast=Number(other.domainCastAt)||0;
+   return !!otherCast&&Math.abs(castAt-otherCast)<=2700;
+  };
+  // A new domain can also join an active clash if it was cast at the same time.
   for(const clash of this.domainClashes.values()){
    if(!clash.participants.some(id=>{
     const other=this.state.players.get(id);
-    return other&&!other.dead&&CLASHABLE_DOMAINS.has(other.domainType)&&Math.abs(castAt-(Number(other.domainCastAt)||0))<=2700&&distance(player,other)<=Math.max(160,(player.domainRadius||600)+(other.domainRadius||600));
+    return other&&!other.dead&&CLASHABLE_DOMAINS.has(other.domainType)&&recentCast(other)&&distance(player,other)<=Math.max(160,(player.domainRadius||600)+(other.domainRadius||600));
    }))continue;
    clash.participants.push(sessionId);clash.scores.set(sessionId,0);player.domainClashId=clash.id;
    player.domainWindup=0;player.domainTimer=0;
@@ -266,14 +270,18 @@ combatAction(client,payload={}){
   }
   for(const [otherId,other] of this.state.players){
    if(otherId===sessionId||other.dead||!CLASHABLE_DOMAINS.has(other.domainType)||other.domainClashId)continue;
-   const otherCast=Number(other.domainCastAt)||0;
-   if(!otherCast||Math.abs(castAt-otherCast)>2700)continue;
-   if(distance(player,other)>Math.max(160,(player.domainRadius||600)+(other.domainRadius||600)))continue;
+   const alreadyOpen=Number(other.domainTimer)>0;
+   const bothCasting=Number(other.domainWindup)>0&&recentCast(other);
+   if(!alreadyOpen&&!bothCasting&&!recentCast(other))continue;
+   // Domains fill the whole arena, so an already-open domain contains every fighter.
+   // Only the original simultaneous-cast case keeps the old overlap-distance guard.
+   if(!alreadyOpen&&distance(player,other)>Math.max(160,(player.domainRadius||600)+(other.domainRadius||600)))continue;
    const id=[sessionId,otherId].sort().join("|");
    const clash={id,participants:[sessionId,otherId],time:15,maxTime:15,scores:new Map([[sessionId,0],[otherId,0]]),lastHitAt:new Map(),lastBroadcast:now};
    this.domainClashes.set(id,clash);player.domainClashId=id;other.domainClashId=id;
    player.domainWindup=0;other.domainWindup=0;player.domainTimer=0;other.domainTimer=0;
    this.broadcast("domain:clash:start",{id,participants:clash.participants,time:clash.time,serverTime:now});
+   this.broadcast("domain:clash:score",{id,participants:clash.participants,scores:Object.fromEntries(clash.scores),time:clash.time,serverTime:now});
    return true;
   }
   return false;
