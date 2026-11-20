@@ -2124,7 +2124,7 @@ canvas.addEventListener('pointermove',e=>{const p=screenPointToGame(e.clientX,e.
 canvas.addEventListener('mousedown',e=>{if(e.button===0){const p=screenPointToGame(e.clientX,e.clientY);mouse.x=p.x;mouse.y=p.y;mouse.down=true;mouse.pending=true;mouse.buffer=.72}});addEventListener('mouseup',e=>{if(e.button===0)mouse.down=false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 const CHARS={
- honored:{name:'THE HONORED ONE',desc:'Satoru Gojo. Use Limitless to pull, repel, rush down, and control space. Awakening: Six Eyes.',color:'#318bff',hair:'#d8ecff',coat:'#123c79',accent:'#50baff',skin:'#f1c7a9',hp:100,
+ honored:{name:'THE HONORED ONE',desc:'Satoru Gojo. Use Blue, Red, and Purple to control space, then Flash Step behind your opponent. Awakening: Six Eyes.',color:'#318bff',hair:'#d8ecff',coat:'#123c79',accent:'#50baff',skin:'#f1c7a9',hp:100,
   moves:[['LAPSE BLUE','Create a small Blue sphere that pulls a foe in before a 360° spin slap'],['REVERSAL RED','A repulsive orb that explodes on impact'],['RAPID PUNCHES','A spinning kick into a long punch barrage'],['TWO-FOLD COUNTER','Counter an incoming hit with a quick yellow cursed punch, then a stronger follow-up punch']],
   awakeMoves:[['LAPSE BLUE MAX','Controllable vortex that pulls and damages nearby enemies'],['REVERSAL RED MAX','Charged, piercing repulsion blast'],['HOLLOW PURPLE','A devastating imaginary-mass projectile'],['INFINITE VOID','Domain expansion that stuns trapped enemies']],
   special:'FLASH STEP',specialDesc:'Instantly moves behind the opponent, facing the same direction.',awakeSpecial:'FLASH STEP',awakeSpecialDesc:'Instantly moves behind the opponent; G+R still triggers the 0.2-second domain variant.',awakening:'SIX EYES',awakeName:'SIX EYES'},
@@ -7197,7 +7197,8 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m||m==='gojoCounterMiss')return;
  if(m==='gojoFlashStep'){
   const fade=(1-smoothstep01(clamp(p/.96,0,1)))*vfxFade;
-  const angle=Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face;
+  const fx=f.gojoFlashStepFx;
+  const angle=fx&&Number.isFinite(fx.fromX)&&Number.isFinite(fx.fromY)&&Number.isFinite(fx.toX)&&Number.isFinite(fx.toY)?Math.atan2(fx.toY-fx.fromY,fx.toX-fx.fromX):(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
   ctx.save();ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
   const streaks=[[-76,-19,2.8],[-66,-9,2.2],[-82,2,2.5],[-63,13,1.8],[-54,-25,1.6],[-48,22,1.5]];
   for(let i=0;i<streaks.length;i++){
