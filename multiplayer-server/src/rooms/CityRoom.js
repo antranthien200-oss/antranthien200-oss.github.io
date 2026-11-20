@@ -258,6 +258,7 @@ combatAction(client,payload={}){
   };
   // A new domain can also join an active clash if it was cast at the same time.
   for(const clash of this.domainClashes.values()){
+   if(clash.participants.length>=2)continue;
    if(!clash.participants.some(id=>{
     const other=this.state.players.get(id);
     return other&&!other.dead&&CLASHABLE_DOMAINS.has(other.domainType)&&recentCast(other)&&distance(player,other)<=Math.max(160,(player.domainRadius||600)+(other.domainRadius||600));
