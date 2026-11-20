@@ -54,6 +54,36 @@ test("a new domain clashes with an older already-open domain anywhere in the are
   ));
 });
 
+test("a domain clash never accepts a third participant", async () => {
+  const { CityRoom } = await import("../src/rooms/CityRoom.js");
+  const room = new CityRoom();
+  const now = Date.now();
+  const makePlayer = (domainType, domainClashId = "") => ({
+    x: 200, y: 200, dead: false, domainType,
+    domainTimer: 0, domainWindup: 1, domainCastAt: now,
+    domainRadius: 500, domainClashId
+  });
+  const first = makePlayer("shrine", "existing-clash");
+  const second = makePlayer("void", "existing-clash");
+  const challenger = makePlayer("hakari");
+  room.state = { players: new Map([
+    ["first", first], ["second", second], ["challenger", challenger]
+  ]) };
+  room.domainClashes = new Map([["existing-clash", {
+    id: "existing-clash",
+    participants: ["first", "second"],
+    scores: new Map([["first", 0], ["second", 0]]),
+    time: 15, maxTime: 15, lastHitAt: new Map(), lastBroadcast: now
+  }]]);
+  const messages = [];
+  room.broadcast = (type, payload) => messages.push({ type, payload });
+
+  assert.equal(room.tryStartDomainClash("challenger", challenger, now), false);
+  assert.deepEqual(room.domainClashes.get("existing-clash").participants, ["first", "second"]);
+  assert.equal(challenger.domainClashId, "");
+  assert.equal(messages.some(message => message.type === "domain:clash:start"), false);
+});
+
 test("domains that are neither open nor being cast recently do not start a clash", async () => {
   const { CityRoom } = await import("../src/rooms/CityRoom.js");
   const room = new CityRoom();
