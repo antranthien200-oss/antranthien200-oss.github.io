@@ -4127,7 +4127,7 @@ function playAwakeningCutscene(f){
  if(isGojo){
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
-  f.gojoAwakeningVisualPending=true;f.gojoAwakeningCameraTime=0;
+  f.gojoAwakeningVisualPending=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
@@ -6394,11 +6394,15 @@ function update(dt){if(game.cutsceneTimer>0){
  }
  if(speaker&&((speaker.char==='vessel'&&speaker.motion&&speaker.motion.name==='sukunaAwaken')||(speaker.char==='honored'&&speaker.motion&&speaker.motion.name==='gojoAwaken'))){
   const step=Math.min(dt,game.cutsceneTimer);
+  const previousMotionProgress=speaker.motion.t/speaker.motion.duration;
   speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
+  const motionProgress=speaker.motion.t/speaker.motion.duration;
   if(speaker.char==='vessel')speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
-  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&speaker.motion.t>=speaker.motion.duration*.78){
-   // Only turn Gojo's skin bright after the blindfold has reached his neck; keep it for the full awakening.
+  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoHandsClashed&&previousMotionProgress<.84&&motionProgress>=.84){
+   // The fists meet after the blindfold is down; this exact impact turns his skin bright and shakes the screen.
+   speaker.gojoHandsClashed=true;
    speaker.gojoSkinAwakened=true;
+   game.shake=Math.max(game.shake,12);
   }
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
  }
@@ -8709,17 +8713,20 @@ function drawHeadHands(f,deferMotionVfx=false){
  }else if(name==='dashGesture'){
   const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
  }else if(name==='gojoAwaken'){
-  // Both hands catch the blindfold at eye level, pull it down, then relax at the neck.
+  // He reaches for the blindfold, pulls it to his neck, then drives both fists together.
   const reachIn=smoothstep01(clamp(progress/.18,0,1));
   const pullDown=smoothstep01(clamp((progress-.16)/.56,0,1));
-  const release=smoothstep01(clamp((progress-.76)/.24,0,1));
-  const vertical=lerp(-5,15,pullDown)*(1-release)+14*release;
-  const forward=lerp(7,18,reachIn)*(1-.35*release);
-  const side=lerp(23,15,reachIn);
+  const handsMeet=smoothstep01(clamp((progress-.72)/.12,0,1));
+  const handsRelease=smoothstep01(clamp((progress-.91)/.09,0,1));
+  const pullForward=lerp(7,18,reachIn);
+  const side=lerp(lerp(15,4,handsMeet),15,handsRelease);
+  const forward=lerp(lerp(pullForward,27,handsMeet),18,handsRelease);
+  const vertical=lerp(lerp(13,9,handsMeet),14,handsRelease);
+  const impactPose=handsMeet*(1-handsRelease);
   handA=P(forward,side,vertical-2);
-  handB=P(forward,-side,vertical-2);
-  handAScale=1.08;handBScale=1.08;
-  handAAngle=angle+.18;handBAngle=angle-.18;
+  handB=P(forward,-side,vertical);
+  handAScale=1.08+.18*impactPose;handBScale=1.08+.18*impactPose;
+  handAAngle=angle+.18+.42*impactPose;handBAngle=angle-.18-.42*impactPose;
  }else if(name==='sukunaAwaken'){
   // Yuji's hands sink as he loses control, then snap outward as Sukuna takes over.
   const slump=smoothstep01(clamp(progress/.34,0,1));
