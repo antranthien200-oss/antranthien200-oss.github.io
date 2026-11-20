@@ -4403,21 +4403,24 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
  interruptSkillCast(attacker);
  if(defender.onlineSessionId)defender.counterMotionOverrideUntil=performance.now()+620;
  // Gojo replaces Yuji's first blocking beat with a fast punch from one hand.
- setMotion(defender,'gojoCounterJab',.17,angle,attacker);
+ setMotion(defender,'gojoCounterJab',.2,angle,attacker);
  burst(defender.x,defender.y-23,'#ffc83c',22,5.8);burst(attacker.x,attacker.y-23,'#fff8cf',10,4.1);
  if(applyDamage)damage(attacker,2.5,defender,{stun:.16,kx:0,ky:0,color:'#ffdc58',unblockable:true,ignoreInvuln:true});
  scheduledTasks.push({at:game.time+.17,fn:()=>{
   if(defender.dead||attacker.dead||defender.gojoTwofoldCounterSerial!==serial)return;
   const hitAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+  defender.face=hitAngle;defender.rooted=Math.max(defender.rooted||0,.22);
+  attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
   attacker.stun=Math.max(attacker.stun||0,.22);attacker.rooted=Math.max(attacker.rooted||0,.22);attacker.vx=0;attacker.vy=0;
   setMotion(defender,'gojoCounterFinish',.3,hitAngle,attacker);
   scheduledTasks.push({at:game.time+.11,fn:()=>{
    if(defender.dead||attacker.dead||defender.gojoTwofoldCounterSerial!==serial)return;
    const finishAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x);
+   attacker.counterWindow=0;attacker.counterKind='';attacker.block=false;attacker.invuln=0;
    if(applyDamage)damage(attacker,8.5,defender,{stun:.68,kx:Math.cos(finishAngle)*10,ky:Math.sin(finishAngle)*10,unblockable:true,big:true,ignoreInvuln:true,color:'#f3bb67'});
-   burst(defender.x,defender.y-22,'#ffc83c',30,7.2);burst(attacker.x,attacker.y-22,'#fff8cf',22,6.1);
+   burst(defender.x,defender.y-22,'#ffc83c',24,5.8);burst(attacker.x,attacker.y-22,'#fff8cf',18,4.8);
    burst(attacker.x,attacker.y-28,'#ffffff',5,2.8);
-   game.hitStop=Math.max(game.hitStop,.045);game.shake=Math.max(game.shake,5.5);
+   game.hitStop=Math.max(game.hitStop,.035);game.shake=Math.max(game.shake,4);
    popText(attacker.x,attacker.y-58,'TWO-FOLD COUNTER','#fff0a3',14);
   }});
  }});
@@ -6065,7 +6068,7 @@ function updateFighter(f,dt){if(f.dead)return;
    game.shake=Math.max(game.shake,4.5+2.5*shakePulse);
   }
   if(f.motion.t>=f.motion.duration)f.motion=null;
- }advanceVehicleTransition(f,dt);if(f.vehicleTransition&&f.vehicleTransition.mode==='exit'){f.vx=0;f.vy=0;updateDomainContainment(f);return}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);const expiredCounterKind=f.counterKind,previousCounterWindow=f.counterWindow;f.counterWindow=Math.max(0,f.counterWindow-dt);if(!onlineMode&&previousCounterWindow>0&&f.counterWindow===0&&expiredCounterKind==='gojoTwofoldCounter'){f.counterKind='';if(f.char==='honored'&&!f.dead){f.vx=0;f.vy=0;setMotion(f,'gojoCounterMiss',.34,f.face,null)}}f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+ }advanceVehicleTransition(f,dt);if(f.vehicleTransition&&f.vehicleTransition.mode==='exit'){f.vx=0;f.vy=0;updateDomainContainment(f);return}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);f.counterWindow=Math.max(0,f.counterWindow-dt);if(f.counterWindow===0)f.counterKind=''f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.vehicle){f.x=f.vehicle.x;f.y=f.vehicle.y;f.vx=f.vehicle.vx;f.vy=f.vehicle.vy;updateDomainContainment(f);return;}
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}const crushDash=f.yujiCrushDash,crushDashActive=!!(crushDash&&f.stun<=.02&&f.rooted<=0);
   if(crushDash&&!crushDashActive)f.yujiCrushDash=null;
