@@ -9317,18 +9317,28 @@ function drawGojoTeleportGlassForeground(f){
  const glassBackdrop=captureGojoGlassBackdrop(),backdropTransform=ctx.getTransform();
  ctx.save();ctx.translate(x,y);ctx.lineJoin='round';ctx.lineCap='round';
 
- // A compact glass lens forms around Gojo before its cracks spread outward.
- const paneAlpha=glassFade*(.42*(1-paneBreak)+.025);
+ // A frameless glass lens blurs the scene behind it before splitting into shards.
+ const panePoints=[[-29,-38],[-8,-41],[13,-35],[34,-25],[37,-4],[32,20],[13,38],[-12,35],[-34,22],[-37,-5]];
  const pane=ctx.createLinearGradient(-39,-43,39,43);
- pane.addColorStop(0,'rgba(225,249,255,.34)');
- pane.addColorStop(.42,'rgba(142,211,242,.20)');
- pane.addColorStop(.76,'rgba(219,244,255,.27)');
- pane.addColorStop(1,'rgba(119,190,228,.13)');
- ctx.globalAlpha=paneAlpha;ctx.fillStyle=pane;ctx.strokeStyle='rgba(240,252,255,.92)';ctx.lineWidth=1.5;
- ctx.beginPath();
- ctx.moveTo(-29,-38);ctx.lineTo(-8,-41);ctx.lineTo(13,-35);ctx.lineTo(34,-25);
- ctx.lineTo(37,-4);ctx.lineTo(32,20);ctx.lineTo(13,38);ctx.lineTo(-12,35);
- ctx.lineTo(-34,22);ctx.lineTo(-37,-5);ctx.closePath();ctx.fill();ctx.stroke();
+ pane.addColorStop(0,'rgba(225,249,255,.18)');
+ pane.addColorStop(.42,'rgba(142,211,242,.09)');
+ pane.addColorStop(.76,'rgba(219,244,255,.14)');
+ pane.addColorStop(1,'rgba(119,190,228,.07)');
+ if(glassBackdrop&&paneBreak<.995){
+  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.beginPath();
+  for(let point=0;point<panePoints.length;point++){
+   const local=panePoints[point],worldX=x+local[0],worldY=y+local[1];
+   const px=backdropTransform.a*worldX+backdropTransform.c*worldY+backdropTransform.e,py=backdropTransform.b*worldX+backdropTransform.d*worldY+backdropTransform.f;
+   if(point===0)ctx.moveTo(px,py);else ctx.lineTo(px,py);
+  }
+  ctx.closePath();ctx.clip();
+  ctx.globalAlpha=glassFade*.58*(1-paneBreak);
+  ctx.filter='blur('+(isMobileDevice?2.1:3.2)+'px)';ctx.drawImage(glassBackdrop,0,0);ctx.filter='none';
+  ctx.globalAlpha=glassFade*.055*(1-paneBreak);ctx.fillStyle='rgba(190,226,246,.18)';ctx.fillRect(0,0,glassBackdrop.width,glassBackdrop.height);
+  ctx.restore();
+ }
+ ctx.globalAlpha=glassFade*.13*(1-paneBreak);ctx.fillStyle=pane;
+ ctx.beginPath();ctx.moveTo(panePoints[0][0],panePoints[0][1]);for(let point=1;point<panePoints.length;point++)ctx.lineTo(panePoints[point][0],panePoints[point][1]);ctx.closePath();ctx.fill();
 
  const cracks=[
   [[-2,-3],[-12,-18],[-24,-29],[-36,-39]],
