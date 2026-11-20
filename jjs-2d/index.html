@@ -4151,7 +4151,8 @@ const CLASHABLE_DOMAINS=['void','shrine','soul','hakari','yuta','trash'];
 function canDomainClash(a,b){
  if(!a||!b||a.dead||b.dead||!CLASHABLE_DOMAINS.includes(a.domainType)||!CLASHABLE_DOMAINS.includes(b.domainType))return false;
  const at=Number.isFinite(a.domainCastStartedAt)?a.domainCastStartedAt:(a.domainOpenedAt||game.time),bt=Number.isFinite(b.domainCastStartedAt)?b.domainCastStartedAt:(b.domainOpenedAt||game.time);
- const timed=Math.abs(at-bt)<=2.7||Math.abs(game.time-(a.domainOpenedAt||0))<=2.4||Math.abs(game.time-(b.domainOpenedAt||0))<=2.4;
+ const bothDomainsOpen=a.domainTimer>0&&b.domainTimer>0;
+ const timed=bothDomainsOpen||Math.abs(at-bt)<=2.7||Math.abs(game.time-(a.domainOpenedAt||0))<=2.4||Math.abs(game.time-(b.domainOpenedAt||0))<=2.4;
  return timed;
 }
 function updateDomainClashHud(){
@@ -4228,7 +4229,7 @@ function releaseDomainOccupants(owner){
  const other=f===player?enemy:player;
  if(other&&(other.domainTimer>0||other.domainWindup>0)){
   const compatible=CLASHABLE_DOMAINS.includes(type)&&CLASHABLE_DOMAINS.includes(other.domainType),started=other.domainCastStartedAt||other.domainOpenedAt||game.time;
-  const close=other.domainWindup>0||game.time-started<=2.7;
+  const close=other.domainWindup>0||other.domainTimer>0||f.domainInsideOwner===other||game.time-started<=2.7;
   if(!compatible||!close){showToast('DOMAIN BARRIER ALREADY ACTIVE',800);return false}
  }
  f.domainType=type;f.domainState='forming';f.domainTimer=0;f.domainWindup=windup;f.domainWindupStart=windup;f.domainDuration=duration;f.domainTick=tick;f.domainRadius=Math.hypot(WORLD.w,WORLD.h);f.domainVisualRadius=Math.min(radius*2,860);f.domainCenterX=f.x;f.domainCenterY=f.y;f.domainInsideOwner=null;f.domainEscapedOwner=null;f.domainHitApplied=false;f.domainPower=power;f.domainFlashTimer=0;f.domainCastStartedAt=game.time;
