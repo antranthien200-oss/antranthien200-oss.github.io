@@ -5451,7 +5451,7 @@ if(f.attackCd>0)return;
    f.gojoRapidFinishUntil=0;
    const angle=Math.atan2(target.y-f.y,target.x-f.x);
    f.face=angle;f.vx=0;f.vy=0;
-   setMotion(f,'gojoLimitless',.58,angle,target);
+   setMotion(f,'gojoLimitless',1.05,angle,target);
    f.x=clamp(target.x-Math.cos(angle)*45,45,WORLD.w-45);
    f.y=clamp(target.y-Math.sin(angle)*45,45,WORLD.h-45);
    collideWorld(f);
@@ -5460,8 +5460,8 @@ if(f.attackCd>0)return;
     damage(target,8,f,{stun:.5,kx:Math.cos(angle)*7,ky:Math.sin(angle)*7,unblockable:true,color:'#cbeaff'});
     popText(target.x,target.y-60,'LIMITLESS KICK','#e9f8ff',15);
    }else popText(f.x,f.y-55,'LIMITLESS','#e9f8ff',13);
-   game.shake=Math.max(game.shake,18);
-   schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoLimitless')game.shake=Math.max(game.shake,13)},230);
+   game.shake=Math.max(game.shake,7);
+   schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoLimitless')game.shake=Math.max(game.shake,4.5)},330);
    f.specialCd=15;return;
   }
   if(f.char==='vessel'&&f.awakened){
@@ -8831,7 +8831,13 @@ function drawHeadHands(f,deferMotionVfx=false){
    }else if(name==='gojoTwofold'){
     handA=P(38+16*pulse,25-9*pulse,-12+10*progress);handB=P(38+16*pulse,-25+9*pulse,-12+10*progress);handAScale=1.15;handBScale=1.15;
    }else if(name==='gojoLimitless'){
-    handA=P(38+20*pulse,13,-4);handB=P(10,-20,5);handAScale=1.18;
+    const load=smoothstep01(clamp(progress/.24,0,1)),thrust=smoothstep01(clamp((progress-.24)/.27,0,1)),settle=smoothstep01(clamp((progress-.68)/.32,0,1));
+    const leadForward=progress<.24?lerp(18,4,load):progress<.51?lerp(4,72,thrust):lerp(72,31,settle);
+    const leadSide=progress<.24?lerp(-18,-26,load):progress<.51?lerp(-26,-11,thrust):lerp(-11,-17,settle);
+    const leadLift=progress<.24?lerp(1,-16,load):progress<.51?lerp(-16,-5,thrust):lerp(-5,0,settle);
+    handB=P(leadForward,leadSide,leadLift);
+    handA=P(progress<.24?lerp(15,29,load):progress<.51?lerp(29,43,thrust):lerp(43,19,settle),progress<.51?lerp(20,17,thrust):lerp(17,18,settle),progress<.51?lerp(-3,-9,thrust):lerp(-9,0,settle));
+    handAScale=1.16;handBScale=1.28;handBAngle=angle-.18;handAAngle=angle+.12;
    }else if(name.startsWith('yuji')||name.startsWith('sukuna')){
     if(name==='sukunaHeadCarryWindup'){
      const load=smoothstep01(progress/.58),snap=smoothstep01(progress);
@@ -9241,27 +9247,27 @@ function drawTrashManEffects(){
 function gojoLimitlessVisualShake(f){
  const m=f&&f.motion;
  if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return {x:0,y:0};
- const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
- const envelope=1-smoothstep01(clamp((progress-.66)/.31,0,1));
+ const progress=clamp(m.t/Math.max(.08,m.duration||1.05),0,1);
+ const charge=1-smoothstep01(clamp(progress/.30,0,1));
+ const impact=Math.sin(Math.PI*clamp((progress-.37)/.42,0,1));
+ const settle=1-smoothstep01(clamp((progress-.78)/.22,0,1));
  return {
-  x:(Math.sin(game.time*108)*9.5+Math.sin(game.time*181+.7)*3.2)*envelope,
-  y:(Math.cos(game.time*91)*3.5+Math.sin(game.time*157+1.2)*1.45)*envelope
+  x:Math.sin(game.time*43+.4)*(.7*charge+1.0*impact*settle)-1.4*impact,
+  y:Math.cos(game.time*37+1.1)*(.5*charge+.7*impact*settle)+.8*impact
  };
 }
 function drawGojoTeleportGlassBackdrop(f){
  const m=f&&f.motion;
  if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
- const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
- // The black horizontal cuts play first, during the side-to-side shake.
- const streakFade=1-smoothstep01(clamp(progress/.40,0,1));
+ const progress=clamp(m.t/Math.max(.08,m.duration||1.05),0,1);
+ const streakFade=1-smoothstep01(clamp((progress-.25)/.24,0,1));
  if(streakFade<=.005)return;
- const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-11+shake.y;
- ctx.save();ctx.translate(x,y);ctx.globalAlpha=.96*streakFade;
- const streaks=[[-31,-43,31,3],[-12,-32,55,3],[-38,-21,27,2.5],[-25,-10,67,3.2],[-4,1,43,2.7],[8,12,56,3],[-27,23,35,2.7],[5,34,43,2.5]];
- ctx.fillStyle='rgba(3,5,10,.96)';
+ const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-10+shake.y;
+ ctx.save();ctx.translate(x,y);ctx.globalAlpha=.78*streakFade;
+ const streaks=[[-23,-30,37,2],[-9,-22,43,2],[-28,-12,29,1.8],[-18,-3,46,2.2],[-3,7,34,1.8],[5,16,39,2],[-20,24,31,1.8],[3,31,32,1.7]];
+ ctx.fillStyle='rgba(3,5,10,.94)';
  for(let i=0;i<streaks.length;i++){
-  const [sx0,sy0,w,h]=streaks[i];
-  const slide=Math.sin(game.time*34+i*1.7)*(2.2+(i%3));
+  const [sx0,sy0,w,h]=streaks[i],slide=Math.sin(game.time*24+i*1.6)*(1.1+(i%3)*.65);
   ctx.fillRect(sx0+slide,sy0,w,h);
  }
  ctx.restore();
@@ -9269,89 +9275,103 @@ function drawGojoTeleportGlassBackdrop(f){
 function drawGojoTeleportGlassForeground(f){
  const m=f&&f.motion;
  if(!m||m.name!=='gojoLimitless'||f.char!=='honored')return;
- const progress=clamp(m.t/Math.max(.08,m.duration||.58),0,1);
- const glassIn=smoothstep01(clamp((progress-.34)/.18,0,1));
- const glassOut=1-smoothstep01(clamp((progress-.84)/.16,0,1));
+ const progress=clamp(m.t/Math.max(.08,m.duration||1.05),0,1);
+ const glassIn=smoothstep01(clamp((progress-.24)/.19,0,1));
+ const glassOut=1-smoothstep01(clamp((progress-.82)/.18,0,1));
  const glassFade=glassIn*glassOut;
  if(glassFade<=.005)return;
- const breakProgress=smoothstep01(clamp((progress-.42)/.48,0,1));
- const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-11+shake.y;
- ctx.save();ctx.translate(x,y);ctx.lineJoin='miter';ctx.lineCap='round';
+ const paneBreak=smoothstep01(clamp((progress-.47)/.24,0,1));
+ const shardFade=1-smoothstep01(clamp((progress-.82)/.16,0,1));
+ const shake=gojoLimitlessVisualShake(f),x=sx(f.x)+shake.x,y=sy(f.y)-f.jump*3-10+shake.y;
+ ctx.save();ctx.translate(x,y);ctx.lineJoin='round';ctx.lineCap='round';
 
- // A clear fractured pane flashes over the character before splitting into sharp shards.
- const paneAlpha=glassFade*(.52*(1-breakProgress)+.09);
- const pane=ctx.createLinearGradient(-58,-66,58,64);
- pane.addColorStop(0,'rgba(225,249,255,.40)');
- pane.addColorStop(.38,'rgba(142,211,242,.23)');
- pane.addColorStop(.72,'rgba(219,244,255,.32)');
- pane.addColorStop(1,'rgba(119,190,228,.16)');
- ctx.globalAlpha=paneAlpha;ctx.fillStyle=pane;ctx.strokeStyle='rgba(240,252,255,.98)';ctx.lineWidth=2.1;
+ // A compact glass lens forms around Gojo before its cracks spread outward.
+ const paneAlpha=glassFade*(.42*(1-paneBreak)+.025);
+ const pane=ctx.createLinearGradient(-39,-43,39,43);
+ pane.addColorStop(0,'rgba(225,249,255,.34)');
+ pane.addColorStop(.42,'rgba(142,211,242,.20)');
+ pane.addColorStop(.76,'rgba(219,244,255,.27)');
+ pane.addColorStop(1,'rgba(119,190,228,.13)');
+ ctx.globalAlpha=paneAlpha;ctx.fillStyle=pane;ctx.strokeStyle='rgba(240,252,255,.92)';ctx.lineWidth=1.5;
  ctx.beginPath();
- ctx.moveTo(-47,-58);ctx.lineTo(-19,-65);ctx.lineTo(8,-57);ctx.lineTo(34,-60);
- ctx.lineTo(54,-37);ctx.lineTo(48,-10);ctx.lineTo(58,15);ctx.lineTo(34,48);
- ctx.lineTo(8,43);ctx.lineTo(-18,57);ctx.lineTo(-49,34);ctx.lineTo(-55,5);ctx.lineTo(-50,-23);
- ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.moveTo(-29,-38);ctx.lineTo(-8,-41);ctx.lineTo(13,-35);ctx.lineTo(34,-25);
+ ctx.lineTo(37,-4);ctx.lineTo(32,20);ctx.lineTo(13,38);ctx.lineTo(-12,35);
+ ctx.lineTo(-34,22);ctx.lineTo(-37,-5);ctx.closePath();ctx.fill();ctx.stroke();
 
  const cracks=[
-  [[0,-7],[-13,-25],[-19,-44],[-47,-58]],
-  [[0,-7],[17,-25],[29,-43],[34,-60]],
-  [[0,-7],[27,-7],[48,-10],[58,15]],
-  [[0,-7],[18,13],[34,30],[34,48]],
-  [[0,-7],[-15,17],[-18,39],[-49,34]],
-  [[0,-7],[-27,-1],[-48,8],[-55,5]],
-  [[-19,-44],[-4,-36],[8,-29]],
-  [[29,-43],[18,-30],[23,-17]],
-  [[48,-10],[31,2],[23,17]],
-  [[34,30],[17,23],[8,43]],
-  [[-18,39],[-5,22],[-15,17]],
-  [[-48,8],[-31,-11],[-27,-1]]
+  [[0,-3],[-8,-17],[-16,-29],[-29,-38]],
+  [[0,-3],[11,-16],[22,-23],[34,-25]],
+  [[0,-3],[20,-4],[37,-4]],
+  [[0,-3],[14,13],[21,28],[13,38]],
+  [[0,-3],[-12,14],[-18,29],[-34,22]],
+  [[0,-3],[-19,-1],[-35,5],[-37,-5]],
+  [[-16,-29],[-5,-23],[8,-25]],
+  [[22,-23],[14,-13],[18,-3]],
+  [[21,28],[7,18],[-1,11]],
+  [[-18,29],[-8,16],[-12,14]]
  ];
- ctx.globalAlpha=glassFade*(.94-.38*breakProgress);
- ctx.strokeStyle='rgba(250,254,255,.98)';ctx.lineWidth=2.05;
- for(const path of cracks){ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);ctx.stroke()}
- ctx.globalAlpha=glassFade*(.82-.34*breakProgress);ctx.lineWidth=1;
+ const drawGrowingPath=(path,amount)=>{
+  const lengths=[];let total=0;
+  for(let i=1;i<path.length;i++){const len=Math.hypot(path[i][0]-path[i-1][0],path[i][1]-path[i-1][1]);lengths.push(len);total+=len}
+  let remaining=total*clamp(amount,0,1);ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);
+  for(let i=1;i<path.length&&remaining>0;i++){
+   const a=path[i-1],b=path[i],len=lengths[i-1];
+   if(remaining>=len){ctx.lineTo(b[0],b[1]);remaining-=len}
+   else{const q=remaining/Math.max(.001,len);ctx.lineTo(a[0]+(b[0]-a[0])*q,a[1]+(b[1]-a[1])*q);remaining=0}
+  }
+  ctx.stroke();
+ };
+ // Reveal each fracture from the impact point instead of drawing the entire web at once.
+ ctx.strokeStyle='rgba(250,254,255,.98)';ctx.lineWidth=1.45;
+ for(let i=0;i<cracks.length;i++){
+  const reveal=smoothstep01(clamp((progress-(.29+(i%3)*.025))/.29,0,1));
+  ctx.globalAlpha=glassFade*(.92-.35*paneBreak);
+  drawGrowingPath(cracks[i],reveal);
+ }
  const branches=[
-  [[-19,-44],[-32,-31],[-43,-28]],[[29,-43],[41,-29],[47,-24]],
-  [[48,-10],[37,-19],[35,-32]],[[34,30],[46,24],[52,17]],
-  [[-18,39],[-31,25],[-43,22]],[[-48,8],[-39,1],[-36,-11]],
-  [[-13,-25],[-2,-19],[9,-21]],[[17,-25],[5,-16],[-3,-7]]
+  [[-29,-38],[-21,-26],[-25,-18]],[[34,-25],[26,-17],[31,-10]],
+  [[37,-4],[27,3],[25,14]],[[13,38],[4,27],[8,20]],
+  [[-34,22],[-25,13],[-27,5]],[[-37,-5],[-27,-12],[-24,-22]]
  ];
- for(const path of branches){ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);for(let i=1;i<path.length;i++)ctx.lineTo(path[i][0],path[i][1]);ctx.stroke()}
+ ctx.strokeStyle='rgba(213,241,255,.9)';ctx.lineWidth=.85;
+ for(let i=0;i<branches.length;i++){
+  const reveal=smoothstep01(clamp((progress-(.40+(i%2)*.035))/.24,0,1));
+  ctx.globalAlpha=glassFade*.8;drawGrowingPath(branches[i],reveal);
+ }
 
- // Larger glass pieces separate and rotate outward from the impact point.
+ // Small triangular fragments break free, tumble and drift away from the head.
  const shards=[
-  {a:-2.55,r:37,w:21,h:39,rot:-.22},{a:-1.88,r:34,w:23,h:34,rot:.16},
-  {a:-1.22,r:39,w:19,h:41,rot:-.18},{a:-.55,r:37,w:24,h:36,rot:.24},
-  {a:.12,r:40,w:20,h:42,rot:-.16},{a:.78,r:38,w:24,h:35,rot:.19},
-  {a:1.42,r:35,w:20,h:40,rot:-.21},{a:2.08,r:39,w:24,h:36,rot:.17},
-  {a:2.72,r:36,w:21,h:39,rot:-.18},{a:3.35,r:31,w:18,h:32,rot:.22}
+  {a:-2.72,w:8,h:15,r:8,spin:-.72},{a:-2.02,w:9,h:13,r:9,spin:.66},
+  {a:-1.32,w:7,h:16,r:8,spin:-.82},{a:-.62,w:10,h:14,r:9,spin:.75},
+  {a:.08,w:8,h:15,r:8,spin:-.7},{a:.78,w:9,h:13,r:9,spin:.7},
+  {a:1.48,w:8,h:16,r:8,spin:-.8},{a:2.18,w:10,h:13,r:9,spin:.65},
+  {a:2.88,w:8,h:14,r:8,spin:-.76}
  ];
  for(let i=0;i<shards.length;i++){
-  const s=shards[i],travel=breakProgress*(34+(i%4)*12);
-  const cx=Math.cos(s.a)*s.r+Math.cos(s.a)*travel,cy=Math.sin(s.a)*s.r+Math.sin(s.a)*travel;
-  ctx.save();ctx.translate(cx,cy);ctx.rotate(s.a+Math.PI*.5+s.rot*breakProgress);
-  ctx.globalAlpha=glassFade*(.56+.34*breakProgress);
+  const s=shards[i],piece=smoothstep01(clamp((progress-(.48+i*.014))/.34,0,1));
+  const travel=piece*(13+(i%3)*4),cx=Math.cos(s.a)*(s.r+travel),cy=Math.sin(s.a)*(s.r+travel)+piece*5;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(s.a+Math.PI*.5+s.spin*piece);
+  ctx.globalAlpha=glassFade*shardFade*(.9-.22*piece);
   const shard=ctx.createLinearGradient(-s.w,-s.h*.5,s.w,s.h*.5);
-  shard.addColorStop(0,'rgba(236,250,255,.56)');shard.addColorStop(.52,'rgba(145,211,240,.28)');shard.addColorStop(1,'rgba(220,245,255,.50)');
-  ctx.fillStyle=shard;ctx.strokeStyle='rgba(249,254,255,.98)';ctx.lineWidth=1.8;
-  ctx.beginPath();ctx.moveTo(-s.w*.48,-s.h*.48);ctx.lineTo(s.w*.26,-s.h*.62);ctx.lineTo(s.w*.57,-s.h*.12);ctx.lineTo(s.w*.34,s.h*.48);ctx.lineTo(-s.w*.42,s.h*.22);ctx.closePath();ctx.fill();ctx.stroke();
-  ctx.globalAlpha=glassFade*(.52+.38*breakProgress);ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=1.15;
-  ctx.beginPath();ctx.moveTo(-s.w*.35,-s.h*.34);ctx.lineTo(s.w*.30,s.h*.31);ctx.stroke();
+  shard.addColorStop(0,'rgba(236,250,255,.62)');shard.addColorStop(.52,'rgba(145,211,240,.34)');shard.addColorStop(1,'rgba(220,245,255,.56)');
+  ctx.fillStyle=shard;ctx.strokeStyle='rgba(249,254,255,.96)';ctx.lineWidth=1.05;
+  ctx.beginPath();ctx.moveTo(-s.w*.48,-s.h*.45);ctx.lineTo(s.w*.27,-s.h*.58);ctx.lineTo(s.w*.56,-s.h*.08);ctx.lineTo(s.w*.22,s.h*.49);ctx.lineTo(-s.w*.43,s.h*.23);ctx.closePath();ctx.fill();ctx.stroke();
+  ctx.globalAlpha=glassFade*shardFade*.72;ctx.strokeStyle='rgba(255,255,255,.95)';ctx.lineWidth=.75;
+  ctx.beginPath();ctx.moveTo(-s.w*.28,-s.h*.30);ctx.lineTo(s.w*.28,s.h*.28);ctx.stroke();
   ctx.restore();
  }
 
- // Expanding ring and long splinters sell the break without blocky pixel specks.
- ctx.globalAlpha=glassFade*(1-breakProgress*.72);ctx.strokeStyle='rgba(248,254,255,.98)';ctx.lineWidth=3.2;
- ctx.beginPath();ctx.arc(0,-7,18+breakProgress*43,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=glassFade*(.85*(1-breakProgress)+.12);ctx.fillStyle='#f8fdff';
- ctx.beginPath();ctx.arc(0,-7,4+breakProgress*4,0,Math.PI*2);ctx.fill();
- for(let i=0;i<12;i++){
-  const a=-Math.PI+i*(Math.PI*2/12)+.13,travel=breakProgress*(55+(i%3)*15);
-  const px=Math.cos(a)*(37+travel),py=Math.sin(a)*(43+travel);
-  ctx.save();ctx.translate(px,py);ctx.rotate(a+.45);ctx.globalAlpha=glassFade*(.78-.18*(i%3));
+ // A tight shock ring and a few glints complete the break without filling the screen.
+ const ringProgress=smoothstep01(clamp((progress-.45)/.34,0,1));
+ ctx.globalAlpha=glassFade*(1-ringProgress*.45);ctx.strokeStyle='rgba(248,254,255,.96)';ctx.lineWidth=1.8;
+ ctx.beginPath();ctx.arc(0,-4,7+ringProgress*27,0,Math.PI*2);ctx.stroke();
+ ctx.globalAlpha=glassFade*(.72*(1-ringProgress)+.12);ctx.fillStyle='#f8fdff';
+ ctx.beginPath();ctx.arc(0,-4,2+ringProgress*2.2,0,Math.PI*2);ctx.fill();
+ for(let i=0;i<8;i++){
+  const a=-Math.PI+i*Math.PI/4+.12,travel=ringProgress*(17+(i%3)*4),px=Math.cos(a)*(17+travel),py=Math.sin(a)*(18+travel);
+  ctx.save();ctx.translate(px,py);ctx.rotate(a+.35);ctx.globalAlpha=glassFade*shardFade*.66;
   ctx.fillStyle=i%2?'rgba(232,250,255,.96)':'rgba(160,218,246,.88)';
-  ctx.beginPath();ctx.moveTo(-2,-7-(i%3)*2);ctx.lineTo(3,1);ctx.lineTo(-1,8+(i%2)*3);ctx.closePath();ctx.fill();
-  ctx.restore();
+  ctx.beginPath();ctx.moveTo(-1.2,-4);ctx.lineTo(1.7,0);ctx.lineTo(-.7,4);ctx.closePath();ctx.fill();ctx.restore();
  }
  ctx.restore();
 }
