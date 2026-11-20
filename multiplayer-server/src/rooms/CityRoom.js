@@ -631,11 +631,9 @@ modifyProjectile(client,payload={}){
    return true;
   }
   if(kind==="gojoTwofoldCounter"){
-    defender.invuln=Math.max(defender.invuln,.72);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
+    defender.invuln=Math.max(defender.invuln,.95);defender.stun=0;defender.block=false;defender.vx=0;defender.vy=0;
     attacker.counterKind="";attacker.counterWindow=0;attacker.block=false;attacker.invuln=0;
-    attacker.stun=Math.max(attacker.stun,.42);attacker.vx=0;attacker.vy=0;attacker.motionName="";attacker.motionProgress=0;attacker.motionDuration=1;attacker.attackAnim=0;attacker.attackType="";
-    // Replace Yuji's first block beat with Gojo's quick yellow-energy jab.
-    hurt(attacker,2.5,.16,0);
+    attacker.stun=Math.max(attacker.stun,.5);attacker.vx=0;attacker.vy=0;attacker.motionName="";attacker.motionProgress=0;attacker.motionDuration=1;attacker.attackAnim=0;attacker.attackType="";
     let resolvedAttackerId=attackerId,resolvedDefenderId=defenderId;
     if(!resolvedAttackerId||!resolvedDefenderId){
      for(const [playerId,player] of this.state.players){
@@ -645,23 +643,30 @@ modifyProjectile(client,payload={}){
     }
     if(resolvedAttackerId&&resolvedDefenderId){
      const started=Date.now();
-     defender.motionName="gojoCounterJab";defender.motionProgress=0;defender.motionDuration=.2;defender.motionStartedAt=started;defender.attackAnim=.2;defender.attackType="skill";
+     // Stage 1: Gojo's quick jab replaces only Yuji's block.
+     defender.motionName="gojoCounterJab";defender.motionProgress=0;defender.motionDuration=.34;defender.motionStartedAt=started;defender.attackAnim=.34;defender.attackType="skill";
      this.broadcast("combat:counter",{kind:"gojoTwofoldCounter",attackerId:resolvedAttackerId,defenderId:resolvedDefenderId,serverTime:started});
+     setTimeout(()=>{
+      const jabDefender=this.state.players.get(resolvedDefenderId),jabAttacker=this.state.players.get(resolvedAttackerId);
+      if(!jabDefender||!jabAttacker||jabDefender.dead||jabAttacker.dead)return;
+      hurt(jabAttacker,2.5,.16,0);
+     },160);
+     // Stage 2: use the same Manji counter punch used by Yuji, with a longer readable follow-through.
      setTimeout(()=>{
       const currentDefender=this.state.players.get(resolvedDefenderId),currentAttacker=this.state.players.get(resolvedAttackerId);
       if(!currentDefender||!currentAttacker||currentDefender.dead||currentAttacker.dead)return;
       const strikeAngle=Math.atan2(currentAttacker.y-currentDefender.y,currentAttacker.x-currentDefender.x);
-      currentDefender.face=strikeAngle;currentDefender.motionName="gojoCounterFinish";currentDefender.motionProgress=0;currentDefender.motionDuration=.3;currentDefender.motionStartedAt=Date.now();currentDefender.attackAnim=.3;currentDefender.attackType="skill";
+      currentDefender.face=strikeAngle;currentDefender.motionName="yujiManjiCounter";currentDefender.motionProgress=0;currentDefender.motionDuration=.55;currentDefender.motionStartedAt=Date.now();currentDefender.attackAnim=.55;currentDefender.attackType="skill";
       currentAttacker.counterKind="";currentAttacker.counterWindow=0;currentAttacker.block=false;currentAttacker.invuln=0;
-      currentAttacker.stun=Math.max(currentAttacker.stun,.22);currentAttacker.vx=0;currentAttacker.vy=0;
+      currentAttacker.stun=Math.max(currentAttacker.stun,.3);currentAttacker.vx=0;currentAttacker.vy=0;
       setTimeout(()=>{
        const finishDefender=this.state.players.get(resolvedDefenderId),finishAttacker=this.state.players.get(resolvedAttackerId);
        if(!finishDefender||!finishAttacker||finishDefender.dead||finishAttacker.dead)return;
        const finalDx=finishAttacker.x-finishDefender.x,finalDy=finishAttacker.y-finishDefender.y,finalLength=Math.hypot(finalDx,finalDy)||1;
        finishAttacker.counterKind="";finishAttacker.counterWindow=0;finishAttacker.block=false;finishAttacker.invuln=0;
        hurt(finishAttacker,8.5,.68,10,finalDx/finalLength,finalDy/finalLength);
-      },110);
-     },170);
+      },380);
+     },360);
     }
     return true;
    }
