@@ -9574,31 +9574,55 @@ function drawDomainClashArena(){
  ctx.save();ctx.translate(W/2,H/2);ctx.scale(viewScale,viewScale);ctx.translate(-W/2,-H/2);
  try{drawDomainClashArenaContent()}finally{ctx.restore()}
 }
+function drawDomainClashDomainBackdrop(f){
+ const domain={...f,domainTimer:Math.max(1,Number(f.domainDuration)||15),domainFlashTimer:0,domainWindup:0};
+ if(domain.domainType==='shrine'){
+  drawYujiDomainSmokeBackground();
+  drawYujiBlackWaterRipples(W,H,game.time);
+  drawShrineDomainSlashField(W,H,game.time);
+  drawSukunaPagoda(W,H);
+  return;
+ }
+ renderDomainArenaFrame(domain,true);
+}
 function drawDomainClashArenaContent(){
- const q=game.domainClash;if(!q)return;
- const a=q.members[0],b=q.members[1],cx=sx((a.x+b.x)*.5),cy=sy((a.y+b.y)*.5),r=860;
- if(cx+r<0||cy+r<0||cx-r>W||cy-r>H)return;
- const colors={void:'#7ea8ff',shrine:'#ff536b',soul:'#8fe0cc',hakari:'#d5a4ff',yuta:'#f0c9ee',trash:'#b2c98c'};
- const c1=colors[a.domainType]||'#78caff',c2=colors[b.domainType]||'#ff788e',pulse=1+Math.sin(game.time*7)*.025;
- ctx.save();
- const shell=ctx.createRadialGradient(cx-r*.25,cy-r*.34,8,cx,cy,r*1.08);
- shell.addColorStop(0,'#303543');shell.addColorStop(.3,'#10131d');shell.addColorStop(.75,'#030408');shell.addColorStop(1,'#000');
- ctx.fillStyle=shell;ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.fill();
- ctx.save();ctx.beginPath();ctx.arc(cx,cy,r-7,0,Math.PI*2);ctx.clip();
- const split=ctx.createLinearGradient(cx-r,cy,cx+r,cy);split.addColorStop(0,c1);split.addColorStop(.43,c1+'aa');split.addColorStop(.5,'#111522');split.addColorStop(.57,c2+'aa');split.addColorStop(1,c2);
- ctx.globalAlpha=.34;ctx.fillStyle=split;ctx.fillRect(cx-r,cy-r,r*2,r*2);
- const halo=ctx.createRadialGradient(cx,cy,10,cx,cy,r*.95);halo.addColorStop(0,'rgba(245,249,255,.42)');halo.addColorStop(.22,'rgba(170,190,255,.13)');halo.addColorStop(1,'rgba(0,0,0,.3)');
- ctx.globalAlpha=.85;ctx.fillStyle=halo;ctx.fillRect(cx-r,cy-r,r*2,r*2);
- ctx.save();ctx.translate(cx,cy);ctx.rotate(game.time*.12);
- for(let i=0;i<9;i++){ctx.globalAlpha=.16+(i%3)*.035;ctx.strokeStyle=i%2?c1:c2;ctx.lineWidth=2+i%3;ctx.beginPath();ctx.ellipse(0,0,(70+i*37)*pulse,(28+i*18)/pulse,0,0,Math.PI*2);ctx.stroke()}
- ctx.restore();
- ctx.globalAlpha=.85;ctx.strokeStyle='#f4f7ff';ctx.lineWidth=4;ctx.shadowBlur=isMobileDevice?0:(18);ctx.shadowColor='#fff';ctx.beginPath();ctx.moveTo(cx,cy-r);ctx.lineTo(cx+Math.sin(game.time*2.2)*22,cy-r*.36);ctx.lineTo(cx-Math.sin(game.time*1.8)*16,cy+r*.2);ctx.lineTo(cx,cy+r);ctx.stroke();
- ctx.restore();
- ctx.globalAlpha=.34;ctx.strokeStyle=c1;ctx.lineWidth=22;ctx.shadowBlur=isMobileDevice?0:(28);ctx.shadowColor=c1;ctx.beginPath();ctx.arc(cx,cy,r-8,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=.3;ctx.strokeStyle=c2;ctx.lineWidth=10;ctx.shadowColor=c2;ctx.beginPath();ctx.arc(cx,cy,r-13,Math.PI,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=.96;ctx.strokeStyle='#07080d';ctx.lineWidth=9;ctx.shadowBlur=isMobileDevice?0:(8);ctx.shadowColor='#000';ctx.beginPath();ctx.arc(cx,cy,r-3,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=.8;ctx.strokeStyle='#f2f4fa';ctx.lineWidth=1.6;ctx.shadowBlur=isMobileDevice?0:(0);ctx.beginPath();ctx.arc(cx,cy,r-15,0,Math.PI*2);ctx.stroke();
- ctx.restore();
+ const q=game.domainClash;if(!q||!Array.isArray(q.members)||q.members.length<2)return;
+ const a=q.members[0],b=q.members[1];if(!a||!b)return;
+ const scale=isMobileDevice?.82:1,fullW=W,halfW=fullW*.5;
+ const pixelWidth=Math.max(1,Math.ceil(fullW*scale)),pixelHeight=Math.max(1,Math.ceil(H*scale));
+ const cache=domainClashFrameCache;
+ const clashKey=String(q.id||'')+'|'+String(a.domainType||'')+'|'+String(b.domainType||'');
+ if(cache.width!==fullW||cache.height!==H||cache.scale!==scale||cache.clash!==clashKey){
+  cache.width=fullW;cache.height=H;cache.scale=scale;cache.clash=clashKey;
+  cache.canvas.width=pixelWidth;cache.canvas.height=pixelHeight;cache.last=-Infinity;
+ }
+ const interval=isMobileDevice?1/24:1/30;
+ if(game.time-cache.last>=interval||cache.last===-Infinity){
+  const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');
+  frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,fullW,H);ctx=frameCtx;
+  try{
+   W=halfW;
+   ctx.save();ctx.beginPath();ctx.rect(0,0,halfW,H);ctx.clip();
+   drawDomainClashDomainBackdrop(a);
+   ctx.restore();
+   ctx.save();ctx.translate(halfW,0);ctx.beginPath();ctx.rect(0,0,halfW,H);ctx.clip();
+   drawDomainClashDomainBackdrop(b);
+   ctx.restore();
+   W=fullW;
+   // A narrow, jagged seam makes the two competing environments read as separate halves.
+   const seamX=halfW;
+   ctx.save();
+   const seamGlow=ctx.createLinearGradient(seamX-16,0,seamX+16,0);
+   seamGlow.addColorStop(0,'rgba(5,8,16,0)');seamGlow.addColorStop(.5,'rgba(5,8,16,.88)');seamGlow.addColorStop(1,'rgba(5,8,16,0)');
+   ctx.fillStyle=seamGlow;ctx.fillRect(seamX-16,0,32,H);
+   ctx.strokeStyle='#f2f5ff';ctx.lineWidth=2;ctx.globalAlpha=.78;ctx.shadowColor='#eaf2ff';ctx.shadowBlur=isMobileDevice?0:8;
+   ctx.beginPath();ctx.moveTo(seamX,0);
+   for(let y=0;y<=H+48;y+=48)ctx.lineTo(seamX+Math.sin(y*.071+game.time*2.4)*7,y);
+   ctx.stroke();ctx.restore();
+  }finally{W=fullW;ctx=screenCtx}
+  cache.last=game.time;
+ }
+ ctx.drawImage(cache.canvas,0,0,fullW,H);
 }
 function drawDomainClashFighterMarkers(){
  const q=game.domainClash;if(!q)return;
@@ -10001,7 +10025,7 @@ function drawTrashDomainInterior(cx,cy,r){
  for(let i=0;i<22;i++){const x=cx-r+((i*73+game.time*(12+i%5))%(r*2)),y=cy-r*.3+((i*41+Math.sin(game.time*4+i)*15)%(r*1.2));ctx.globalAlpha=.42;ctx.fillStyle='#d0d4a4';ctx.fillRect(x,y,2,2);ctx.fillRect(x+4,y-2,2,2)}
  ctx.restore();
 }
-function renderDomainArenaFrame(f){
+function renderDomainArenaFrame(f,clashBackgroundOnly=false){
  const type=f.domainType;
  const focusX=W*.5,focusY=H*.5;
  if(f.domainWindup>0)return;
@@ -10015,7 +10039,7 @@ function renderDomainArenaFrame(f){
  ctx.save();
  // The active domain opens outward from the collapsed cut-in seal.
  if(f.domainFlashTimer>0){const reveal=clamp(1-f.domainFlashTimer/.92,0,1),ease=reveal*reveal*(3-2*reveal),radius=Math.max(2,Math.hypot(W,H)*1.15*ease);ctx.beginPath();ctx.arc(cx,cy,radius,0,Math.PI*2);ctx.clip();}
- // Five bespoke environments: every major landmark is composed from layered canvas geometry.
+ // Each domain keeps its own full environment inside its side of a clash.
  const domainR=f.domainVisualRadius||860;
  if(type==='shrine'){
   drawShrineDomainInterior(cx,cy,domainR);
@@ -10024,21 +10048,23 @@ function renderDomainArenaFrame(f){
  }
  if(type==='void')drawVoidDomainInterior(cx,cy,domainR);
   else if(type==='trash')drawTrashDomainInterior(cx,cy,domainR);
- else if(type==='shrine')drawShrineDomainInterior(cx,cy,domainR);
  else if(type==='hakari')drawHakariDomainInterior(cx,cy,domainR,f);
  else if(type==='yuta')drawYutaDomainInterior(cx,cy,domainR,f);
  else if(type==='soul')drawSoulDomainInterior(cx,cy,domainR);
- // The boundary rim is drawn in world space after the cached interior, not as an oval covering the screen.
- const accent=type==='void'?'#dce7ff':type==='shrine'?'#f14b62':type==='hakari'?'#ead6ff':type==='yuta'?'#f0c9ee':'#87d9c9';
- ctx.save();const hudW=Math.min(320,W-28),hudX=(W-hudW)/2;
- ctx.globalAlpha=.88;ctx.fillStyle='#05070ddd';ctx.fillRect(hudX,18,hudW,30);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(hudX,18,hudW,30);
- ctx.textAlign='center';ctx.fillStyle=accent;ctx.font='1000 10px system-ui';ctx.fillText(domainName(type),W/2,31);
- const left=Math.max(0,Math.min(1,f.domainTimer/(f.domainDuration||1)));ctx.fillStyle='#05070dcc';ctx.fillRect(hudX+12,39,hudW-24,4);ctx.fillStyle=accent;ctx.fillRect(hudX+12,39,(hudW-24)*left,4);
- ctx.restore();ctx.restore();
- if(type==='hakari')drawIdleDeathGamble(f);
- if(type==='soul'&&f.team==='player'){ctx.save();ctx.fillStyle='#061417dd';ctx.fillRect(W-214,132,196,45);ctx.strokeStyle='#93e5d3';ctx.strokeRect(W-214,132,196,45);ctx.fillStyle='#c9fff0';ctx.font='900 10px system-ui';ctx.fillText('SOUL TRANSMUTATION',W-203,150);ctx.fillStyle='#173937';ctx.fillRect(W-203,160,172,8);ctx.fillStyle='#91e6d2';ctx.fillRect(W-203,160,172*(targetOf(f).transfigureMeter||0)/100,8);ctx.restore()}
+ if(!clashBackgroundOnly){
+  const accent=type==='void'?'#dce7ff':type==='shrine'?'#f14b62':type==='hakari'?'#ead6ff':type==='yuta'?'#f0c9ee':'#87d9c9';
+  ctx.save();const hudW=Math.min(320,W-28),hudX=(W-hudW)/2;
+  ctx.globalAlpha=.88;ctx.fillStyle='#05070ddd';ctx.fillRect(hudX,18,hudW,30);ctx.strokeStyle=accent;ctx.lineWidth=1.5;ctx.strokeRect(hudX,18,hudW,30);
+  ctx.textAlign='center';ctx.fillStyle=accent;ctx.font='1000 10px system-ui';ctx.fillText(domainName(type),W/2,31);
+  const left=Math.max(0,Math.min(1,f.domainTimer/(f.domainDuration||1)));ctx.fillStyle='#05070dcc';ctx.fillRect(hudX+12,39,hudW-24,4);ctx.fillStyle=accent;ctx.fillRect(hudX+12,39,(hudW-24)*left,4);
+  ctx.restore();
+ }
+ ctx.restore();
+ if(!clashBackgroundOnly){
+  if(type==='hakari')drawIdleDeathGamble(f);
+  if(type==='soul'&&f.team==='player'){ctx.save();ctx.fillStyle='#061417dd';ctx.fillRect(W-214,132,196,45);ctx.strokeStyle='#93e5d3';ctx.strokeRect(W-214,132,196,45);ctx.fillStyle='#c9fff0';ctx.font='900 10px system-ui';ctx.fillText('SOUL TRANSMUTATION',W-203,150);ctx.fillStyle='#173937';ctx.fillRect(W-203,160,172,8);ctx.fillStyle='#91e6d2';ctx.fillRect(W-203,160,172*(targetOf(f).transfigureMeter||0)/100,8);ctx.restore()}
+ }
 }
-
 function drawBloodRain(f){
  const b=f.bloodRain;if(!b)return;const x=sx(b.x),y=sy(b.y),rainCount=isMobileDevice?14:28;ctx.save();ctx.globalAlpha=.18;ctx.fillStyle='#db3f5b';ctx.beginPath();ctx.arc(x,y,125,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.7;ctx.strokeStyle='#f06b80';ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.beginPath();ctx.arc(x,y,122+Math.sin(game.time*9)*5,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);for(let i=0;i<rainCount;i++){const xx=x+Math.sin(i*17.7+game.time*1.8)*112,yy=y-125+((game.time*170+i*39)%250);ctx.globalAlpha=.35+.3*Math.sin(i+game.time*5);ctx.strokeStyle='#f45d76';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(xx,yy);ctx.lineTo(xx-5,yy+14);ctx.stroke()}ctx.restore();
 }
