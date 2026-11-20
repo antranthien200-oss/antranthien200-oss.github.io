@@ -5600,7 +5600,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    }
    if(idx===3){
     f.counterWindow=.6;f.counterKind='gojoTwofoldCounter';f.skillCd[idx]=20;f.block=false;
-    setMotion(f,'gojoCounterReady',.55,angle,t);
+    setMotion(f,'yujiManjiBlock',.55,angle,t);
     burst(f.x,f.y-23,'#ffc83c',20,5.2);burst(f.x,f.y-23,'#fff4bd',9,3.6);
     popText(f.x,f.y-55,'TWO-FOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
    }
