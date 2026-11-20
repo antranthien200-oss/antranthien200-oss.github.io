@@ -1,6 +1,6 @@
 import { Room } from "colyseus";
 import { schema,t } from "@colyseus/schema";
-import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PLAYER_RESPAWN_POINT,PROP_SPAWNS,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainPulseSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isGuaranteedRapidGrabAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
+import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,MAX_DOMAIN_CLASH_PARTICIPANTS,PLAYER_RESPAWN_POINT,PROP_SPAWNS,canAddDomainClashParticipant,isValidDomainClashParticipants,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainPulseSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isGuaranteedRapidGrabAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
 const PlayerCombatState=schema({lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),gojoRapidAt:t.number().default(0),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickInterval:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerCombatState");
 const PlayerAbilityState=schema({sukunaFireCast:t.number().default(0),tenDogActive:t.boolean().default(false),tenDogCharges:t.number().default(0),tenDogTimer:t.number().default(0),tenGardenTimer:t.number().default(0),soulMode:t.number().default(0),convergenceOrbs:t.number().default(0),tenBase:t.boolean().default(false),shadowTimer:t.number().default(0),rikaSummoned:t.boolean().default(false),rikaMode:t.boolean().default(false),reserveBallWindow:t.number().default(0),yutaCopyIndex:t.number().default(0)},"PlayerAbilityState");
 const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),abilities:PlayerAbilityState,combat:PlayerCombatState},"PlayerState");
@@ -250,7 +250,8 @@ combatAction(client,payload={}){
   return true;
  }
  tryStartDomainClash(sessionId,player,now=Date.now()){
-  if(!player||!CLASHABLE_DOMAINS.has(player.domainType)||player.domainClashId)return false;
+  const isInAnyClash=id=>Array.from(this.domainClashes.values()).some(clash=>Array.isArray(clash.participants)&&clash.participants.includes(id));
+  if(!player||!CLASHABLE_DOMAINS.has(player.domainType)||player.domainClashId||isInAnyClash(sessionId))return false;
   const castAt=Number(player.domainCastAt)||now;
   const recentCast=other=>{
    const otherCast=Number(other.domainCastAt)||0;
@@ -258,11 +259,9 @@ combatAction(client,payload={}){
   };
   // A new domain can also join an active clash if it was cast at the same time.
   for(const clash of this.domainClashes.values()){
-   if(clash.participants.length>=2)continue;
-   if(!clash.participants.some(id=>{
-    const other=this.state.players.get(id);
-    return other&&!other.dead&&CLASHABLE_DOMAINS.has(other.domainType)&&recentCast(other)&&distance(player,other)<=Math.max(160,(player.domainRadius||600)+(other.domainRadius||600));
-   }))continue;
+   if(!canAddDomainClashParticipant(clash.participants,sessionId))continue;
+   const existingId=clash.participants[0],other=this.state.players.get(existingId);
+   if(!other||other.dead||!CLASHABLE_DOMAINS.has(other.domainType)||other.domainClashId!==clash.id||!recentCast(other)||distance(player,other)>Math.max(160,(player.domainRadius||600)+(other.domainRadius||600)))continue;
    clash.participants.push(sessionId);clash.scores.set(sessionId,0);player.domainClashId=clash.id;
    player.domainWindup=0;player.domainTimer=0;
    this.broadcast("domain:clash:start",{id:clash.id,participants:clash.participants,time:clash.time,serverTime:now});
@@ -270,15 +269,18 @@ combatAction(client,payload={}){
    return true;
   }
   for(const [otherId,other] of this.state.players){
-   if(otherId===sessionId||other.dead||!CLASHABLE_DOMAINS.has(other.domainType)||other.domainClashId)continue;
+   if(otherId===sessionId||other.dead||!CLASHABLE_DOMAINS.has(other.domainType)||other.domainClashId||isInAnyClash(otherId))continue;
    const alreadyOpen=Number(other.domainTimer)>0;
    const bothCasting=Number(other.domainWindup)>0&&recentCast(other);
    if(!alreadyOpen&&!bothCasting&&!recentCast(other))continue;
    // Domains fill the whole arena, so an already-open domain contains every fighter.
    // Only the original simultaneous-cast case keeps the old overlap-distance guard.
    if(!alreadyOpen&&distance(player,other)>Math.max(160,(player.domainRadius||600)+(other.domainRadius||600)))continue;
-   const id=[sessionId,otherId].sort().join("|");
-   const clash={id,participants:[sessionId,otherId],time:15,maxTime:15,scores:new Map([[sessionId,0],[otherId,0]]),lastHitAt:new Map(),lastBroadcast:now};
+   const participants=[sessionId,otherId];
+   if(!isValidDomainClashParticipants(participants))continue;
+   const id=participants.slice().sort().join("|");
+   if(this.domainClashes.has(id))continue;
+   const clash={id,participants,time:15,maxTime:15,scores:new Map([[sessionId,0],[otherId,0]]),lastHitAt:new Map(),lastBroadcast:now};
    this.domainClashes.set(id,clash);player.domainClashId=id;other.domainClashId=id;
    player.domainWindup=0;other.domainWindup=0;player.domainTimer=0;other.domainTimer=0;
    this.broadcast("domain:clash:start",{id,participants:clash.participants,time:clash.time,serverTime:now});
@@ -290,7 +292,7 @@ combatAction(client,payload={}){
  domainClashHit(client,payload={}){
   const id=client.sessionId,player=this.state.players.get(id),targetId=String(payload.targetId||""),target=this.state.players.get(targetId);
   const clash=player?.domainClashId?this.domainClashes.get(player.domainClashId):null;
-  if(!clash||!target||!clash.participants.includes(targetId)||player.dead||target.dead||player.stun>0||target.grabbedBy)return;
+  if(!clash||!isValidDomainClashParticipants(clash.participants)||!clash.participants.includes(id)||targetId===id||!target||!clash.participants.includes(targetId)||player.dead||target.dead||player.stun>0||target.grabbedBy)return;
   const now=Date.now(),requestedFace=Number(payload.face);
   if(Number.isFinite(requestedFace))player.face=clamp(requestedFace,-Math.PI,Math.PI);
   // Do not reject clash hits using packet timing, range, or client-facing estimates.
