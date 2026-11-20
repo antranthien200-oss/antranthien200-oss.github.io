@@ -9352,7 +9352,7 @@ function buildGojoGlassCells(width,height,sceneCanvas,impactX,impactY,random){
   textureCtx.rotate(lensAngle);
   textureCtx.transform(1,shearY,shearX,1,0,0);
   textureCtx.scale(scaleX,scaleY);
-  textureCtx.translate(-localCX,-localCY);
+  textureCtx.translate(-localCX-gojoGlassTexturePad,-localCY-gojoGlassTexturePad);
   textureCtx.drawImage(sceneCanvas,0,0);
   textureCtx.restore();
   // A faint, broad facet reflection; no edge stroke or opaque fill.
