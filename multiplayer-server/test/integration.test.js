@@ -25,7 +25,7 @@ test("all inline game scripts parse before deployment", () => {
 
 test("a new domain clashes with an older already-open domain anywhere in the arena", async () => {
   const { CityRoom } = await import("../src/rooms/CityRoom.js");
-  const room = Object.create(CityRoom.prototype);
+  const room = new CityRoom();
   const now = Date.now();
   const owner = {
     x: 2500, y: 1800, dead: false, domainType: "shrine",
@@ -56,7 +56,7 @@ test("a new domain clashes with an older already-open domain anywhere in the are
 
 test("domains that are neither open nor being cast recently do not start a clash", async () => {
   const { CityRoom } = await import("../src/rooms/CityRoom.js");
-  const room = Object.create(CityRoom.prototype);
+  const room = new CityRoom();
   const now = Date.now();
   const owner = {
     x: 200, y: 200, dead: false, domainType: "shrine",
