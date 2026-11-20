@@ -9279,7 +9279,7 @@ function gojoLimitlessVisualShake(f){
   y:Math.cos(game.time*37+1.1)*(.5*charge+.7*impact*settle)+.8*impact
  };
 }
-let gojoGlassBackdropCanvas=null,gojoGlassBackdropReady=false,gojoGlassBlurCanvas=null,gojoGlassBlurPad=0,gojoGlassPieces=null,gojoGlassCracks=null,gojoGlassSizeKey='',gojoGlassImpactPoint=null;
+let gojoGlassBackdropCanvas=null,gojoGlassBackdropReady=false,gojoGlassSceneCanvas=null,gojoGlassTexturePad=0,gojoGlassPieces=null,gojoGlassCracks=null,gojoGlassSizeKey='',gojoGlassImpactPoint=null;
 function captureGojoGlassBackdrop(){
  const source=ctx.canvas;
  if(!source||!source.width||!source.height)return null;
@@ -9316,56 +9316,60 @@ function clipGojoGlassCell(poly,seedA,seedB){
  }
  return result;
 }
-function buildGojoGlassCells(width,height,blurCanvas,impactX,impactY,random){
- const mobile=isMobileDevice,rayCount=mobile?20:30,perimeter=2*(width+height),center={x:width*.5,y:height*.5},rays=[];
- const pointAtPerimeter=value=>{
-  let t=((value%perimeter)+perimeter)%perimeter;
-  if(t<=width)return{x:t,y:0};
-  t-=width;if(t<=height)return{x:width,y:t};
-  t-=height;if(t<=width)return{x:width-t,y:height};
-  t-=width;return{x:0,y:height-t};
- };
- for(let i=0;i<rayCount;i++){
-  const angle=-Math.PI/2+(i+(random()-.5)*.26)*Math.PI*2/rayCount,dx=Math.cos(angle),dy=Math.sin(angle);
-  let distance=Infinity;
-  if(dx>0)distance=Math.min(distance,(width-center.x)/dx);else if(dx<0)distance=Math.min(distance,(0-center.x)/dx);
-  if(dy>0)distance=Math.min(distance,(height-center.y)/dy);else if(dy<0)distance=Math.min(distance,(0-center.y)/dy);
-  const x=clamp(center.x+dx*distance,0,width),y=clamp(center.y+dy*distance,0,height);
-  let t;
-  if(y<=.01)t=x;
-  else if(x>=width-.01)t=width+y;
-  else if(y>=height-.01)t=width+height+(width-x);
-  else t=2*width+height+(height-y);
-  rays.push({x,y,t});
+function buildGojoGlassCells(width,height,sceneCanvas,impactX,impactY,random){
+ const mobile=isMobileDevice,cols=mobile?5:6,rows=mobile?4:5,seeds=[];
+ for(let row=0;row<rows;row++)for(let col=0;col<cols;col++){
+  const cellW=width/cols,cellH=height/rows;
+  seeds.push({x:(col+.5+(random()-.5)*.46)*cellW,y:(row+.5+(random()-.5)*.46)*cellH});
  }
- rays.sort((a,b)=>a.t-b.t);
- const corners=[width,width+height,2*width+height,perimeter],pieces=[],padding=Math.max(3,Math.round(4*dpr)),minDimension=Math.min(width,height);
- for(let i=0;i<rays.length;i++){
-  const a=rays[i],b=rays[(i+1)%rays.length],endT=b.t+(i===rays.length-1?perimeter:0),poly=[center,{x:a.x,y:a.y}];
-  for(const corner of corners){
-   let t=corner;while(t<=a.t)t+=perimeter;
-   if(t>a.t+.01&&t<endT-.01)poly.push(pointAtPerimeter(t));
-  }
-  poly.push({x:b.x,y:b.y});
+ let centerSeed=0,bestCenter=Infinity;
+ for(let i=0;i<seeds.length;i++){const d=Math.hypot(seeds[i].x-impactX,seeds[i].y-impactY);if(d<bestCenter){bestCenter=d;centerSeed=i}}
+ seeds[centerSeed]={x:impactX,y:impactY};
+ const pieces=[],padding=Math.max(4,Math.round(5*dpr));
+ for(let i=0;i<seeds.length;i++){
+  let poly=[{x:0,y:0},{x:width,y:0},{x:width,y:height},{x:0,y:height}];
+  for(let j=0;j<seeds.length&&poly.length>=3;j++)if(i!==j)poly=clipGojoGlassCell(poly,seeds[i],seeds[j]);
+  if(poly.length<3)continue;
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
   for(const point of poly){minX=Math.min(minX,point.x);minY=Math.min(minY,point.y);maxX=Math.max(maxX,point.x);maxY=Math.max(maxY,point.y)}
   const boxWidth=Math.max(1,Math.ceil(maxX-minX)),boxHeight=Math.max(1,Math.ceil(maxY-minY));
   const texture=document.createElement('canvas');texture.width=boxWidth+padding*2;texture.height=boxHeight+padding*2;
   const textureCtx=texture.getContext('2d');if(!textureCtx)continue;
+  const localCX=padding+(minX+maxX)*.5-minX,localCY=padding+(minY+maxY)*.5-minY;
   textureCtx.save();textureCtx.beginPath();
   for(let p=0;p<poly.length;p++){
    const point=poly[p],px=point.x-minX+padding,py=point.y-minY+padding;
    if(p===0)textureCtx.moveTo(px,py);else textureCtx.lineTo(px,py);
   }
   textureCtx.closePath();textureCtx.clip();
-  const offsetX=(random()-.5)*Math.max(5,12*dpr),offsetY=(random()-.5)*Math.max(5,12*dpr);
-  textureCtx.drawImage(blurCanvas,padding-minX-gojoGlassBlurPad+offsetX,padding-minY-gojoGlassBlurPad+offsetY);
-  const tint=textureCtx.createLinearGradient(padding,padding,padding+boxWidth,padding+boxHeight);
-  tint.addColorStop(0,'rgba(232,249,255,.035)');tint.addColorStop(.55,'rgba(151,211,242,.012)');tint.addColorStop(1,'rgba(224,244,255,.045)');
-  textureCtx.fillStyle=tint;textureCtx.fillRect(padding,padding,boxWidth,boxHeight);textureCtx.restore();
+  // Each cell samples the original sharp scene through a slightly different lens angle.
+  // Tiny independent scale, shear, rotation and source offsets create faceted refraction.
+  const lensAngle=(random()-.5)*.22,scaleX=.91+random()*.18,scaleY=.91+random()*.18;
+  const shearX=(random()-.5)*.12,shearY=(random()-.5)*.12;
+  const offsetX=(random()-.5)*Math.max(10,Math.min(width,height)*.065);
+  const offsetY=(random()-.5)*Math.max(10,Math.min(width,height)*.065);
+  textureCtx.translate(localCX+offsetX,localCY+offsetY);
+  textureCtx.rotate(lensAngle);
+  textureCtx.transform(1,shearY,shearX,1,0,0);
+  textureCtx.scale(scaleX,scaleY);
+  textureCtx.translate(-localCX,-localCY);
+  textureCtx.drawImage(sceneCanvas,0,0);
+  textureCtx.restore();
+  // A faint, broad facet reflection; no edge stroke or opaque fill.
+  textureCtx.save();textureCtx.beginPath();
+  for(let p=0;p<poly.length;p++){const point=poly[p],px=point.x-minX+padding,py=point.y-minY+padding;if(p===0)textureCtx.moveTo(px,py);else textureCtx.lineTo(px,py)}
+  textureCtx.closePath();textureCtx.clip();
+  const sheenAngle=random()*Math.PI*2,sheenX=Math.cos(sheenAngle)*boxWidth*.6,sheenY=Math.sin(sheenAngle)*boxHeight*.6;
+  const sheen=textureCtx.createLinearGradient(localCX-sheenX,localCY-sheenY,localCX+sheenX,localCY+sheenY);
+  sheen.addColorStop(0,'rgba(229,248,255,0)');
+  sheen.addColorStop(.48,'rgba(229,248,255,.025)');
+  sheen.addColorStop(.56,'rgba(255,255,255,.085)');
+  sheen.addColorStop(1,'rgba(229,248,255,0)');
+  textureCtx.globalCompositeOperation='screen';textureCtx.fillStyle=sheen;textureCtx.fillRect(padding,padding,boxWidth,boxHeight);
+  textureCtx.restore();
   const cx=(minX+maxX)*.5,cy=(minY+maxY)*.5,dx=cx-impactX,dy=cy-impactY,len=Math.hypot(dx,dy)||1;
-  const travel=minDimension*(.055+random()*.11),tangent=(random()-.5)*minDimension*.035;
-  pieces.push({texture,centerX:cx,centerY:cy,dx:dx/len*travel-dy/len*tangent,dy:dy/len*travel+dx/len*tangent,rotation:(random()-.5)*1.22,delay:random()*.025});
+  const travel=Math.min(width,height)*(.045+random()*.095),tangent=(random()-.5)*Math.min(width,height)*.035;
+  pieces.push({texture,centerX:cx,centerY:cy,dx:dx/len*travel-dy/len*tangent,dy:dy/len*travel+dx/len*tangent,rotation:(random()-.5)*.34,delay:random()*.025});
  }
  return pieces;
 }
@@ -9400,26 +9404,27 @@ function buildGojoGlassCracks(width,height,impactX,impactY,random){
 function prepareGojoGlassBackdrop(fighters){
  const active=fighters.find(f=>f&&!f.dead&&f.char==='honored'&&f.gojoLimitlessGlassFx);
  if(!active){
-  gojoGlassBackdropReady=false;gojoGlassBlurCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey='';gojoGlassImpactPoint=null;
+  gojoGlassBackdropReady=false;gojoGlassSceneCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey='';gojoGlassImpactPoint=null;
   return;
  }
  const source=ctx.canvas,sizeKey=source.width+'x'+source.height;
- if(gojoGlassSizeKey!==sizeKey){gojoGlassBackdropReady=false;gojoGlassBlurCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey=sizeKey}
+ if(gojoGlassSizeKey!==sizeKey){gojoGlassBackdropReady=false;gojoGlassSceneCanvas=null;gojoGlassPieces=null;gojoGlassCracks=null;gojoGlassSizeKey=sizeKey}
  if(gojoGlassBackdropReady)return;
  const backdrop=captureGojoGlassBackdrop();if(!backdrop)return;
  const impactX=source.width*.5,impactY=source.height*.5;
  gojoGlassImpactPoint={x:impactX,y:impactY};
- const blurRadius=Math.max(12,14*dpr);
- gojoGlassBlurPad=Math.ceil(blurRadius*2.5+4);
- gojoGlassBlurCanvas=document.createElement('canvas');
- gojoGlassBlurCanvas.width=source.width+gojoGlassBlurPad*2;gojoGlassBlurCanvas.height=source.height+gojoGlassBlurPad*2;
- const blurCtx=gojoGlassBlurCanvas.getContext('2d');if(!blurCtx)return;
- blurCtx.setTransform(1,0,0,1,0,0);blurCtx.globalAlpha=1;blurCtx.globalCompositeOperation='source-over';blurCtx.filter='blur('+blurRadius+'px)';
- blurCtx.drawImage(backdrop,gojoGlassBlurPad,gojoGlassBlurPad);blurCtx.filter='none';
+ // Preserve a crisp copy of the whole scene; the glass refracts it rather than blurring it.
+ gojoGlassTexturePad=Math.ceil(10*dpr+6);
+ gojoGlassSceneCanvas=document.createElement('canvas');
+ gojoGlassSceneCanvas.width=source.width+gojoGlassTexturePad*2;
+ gojoGlassSceneCanvas.height=source.height+gojoGlassTexturePad*2;
+ const sceneCtx=gojoGlassSceneCanvas.getContext('2d');if(!sceneCtx)return;
+ sceneCtx.setTransform(1,0,0,1,0,0);sceneCtx.globalAlpha=1;sceneCtx.globalCompositeOperation='source-over';sceneCtx.filter='none';
+ sceneCtx.drawImage(backdrop,gojoGlassTexturePad,gojoGlassTexturePad);
  const random=gojoGlassRandom(20261120);
- gojoGlassPieces=buildGojoGlassCells(source.width,source.height,gojoGlassBlurCanvas,impactX,impactY,random);
+ gojoGlassPieces=buildGojoGlassCells(source.width,source.height,gojoGlassSceneCanvas,impactX,impactY,random);
  gojoGlassCracks=buildGojoGlassCracks(source.width,source.height,impactX,impactY,random);
- gojoGlassBackdropReady=!!(gojoGlassBlurCanvas&&gojoGlassPieces&&gojoGlassPieces.length);
+ gojoGlassBackdropReady=!!(gojoGlassSceneCanvas&&gojoGlassPieces&&gojoGlassPieces.length);
 }
 function drawGojoGlassGrowingPath(path,amount){
  if(!path||path.length<2||amount<=0)return;
@@ -9452,38 +9457,37 @@ function drawGojoTeleportGlassBackdrop(f){
 }
 function drawGojoTeleportGlassForeground(f){
  const fx=f&&f.gojoLimitlessGlassFx;
- if(!fx||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassBlurCanvas)return;
+ if(!fx||f.char!=='honored'||!gojoGlassBackdropReady||!gojoGlassSceneCanvas)return;
  const progress=clamp(fx.t/Math.max(.08,fx.duration||.98),0,1),width=ctx.canvas.width,height=ctx.canvas.height;
  const glassIn=smoothstep01(clamp(progress/.055,0,1));
  if(glassIn<=.001)return;
  const breakProgress=smoothstep01(clamp((progress-.22)/.20,0,1));
- const paneAlpha=glassIn*(1-breakProgress);
  const shardFade=1-smoothstep01(clamp((progress-.78)/.20,0,1));
  ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.globalCompositeOperation='source-over';
- if(paneAlpha>.001){
-  const waveX=Math.sin(game.time*3.8)*2*dpr,waveY=Math.cos(game.time*3.1)*1.5*dpr;
-  ctx.globalAlpha=paneAlpha;
-  ctx.drawImage(gojoGlassBlurCanvas,gojoGlassBlurPad+waveX,gojoGlassBlurPad+waveY,width,height,0,0,width,height);
-  ctx.globalAlpha=paneAlpha*.025;ctx.fillStyle='rgba(207,237,250,1)';ctx.fillRect(0,0,width,height);
+ // The intact pane is already split into subtly misaligned optical facets.
+ // Once cracks reach the edges, each facet separates and tumbles independently.
+ if(gojoGlassPieces){
+  for(const piece of gojoGlassPieces){
+   const release=smoothstep01(clamp((progress-(.24+piece.delay))/.22,0,1));
+   const eased=1-Math.pow(1-release,2.25);
+   const shardX=piece.centerX+piece.dx*eased,shardY=piece.centerY+piece.dy*eased;
+   const rotation=piece.rotation*eased;
+   const alpha=glassIn*shardFade*(1-.08*release);
+   if(alpha<=.001)continue;
+   ctx.save();ctx.translate(shardX,shardY);ctx.rotate(rotation);
+   ctx.globalAlpha=alpha;
+   ctx.drawImage(piece.texture,-piece.texture.width*.5,-piece.texture.height*.5);
+   ctx.restore();
+  }
  }
  const crackFade=glassIn*(1-smoothstep01(clamp((progress-.39)/.13,0,1)));
  if(crackFade>.001&&gojoGlassCracks){
-  ctx.strokeStyle='rgba(231,245,255,.88)';ctx.lineWidth=Math.max(1,.95*dpr);ctx.lineCap='square';ctx.lineJoin='miter';ctx.miterLimit=6;
+  ctx.strokeStyle='rgba(231,245,255,.82)';ctx.lineWidth=Math.max(1,.85*dpr);ctx.lineCap='square';ctx.lineJoin='miter';ctx.miterLimit=6;
   for(const crack of gojoGlassCracks){
    const reveal=smoothstep01(clamp((progress-(.045+crack.delay))/.13,0,1));
    if(reveal<=.001)continue;
-   ctx.globalAlpha=crackFade*(.52+reveal*.35);
+   ctx.globalAlpha=crackFade*(.50+reveal*.32);
    drawGojoGlassGrowingPath(crack.points,reveal);
-  }
- }
- if(shardFade>.001&&gojoGlassPieces){
-  for(const piece of gojoGlassPieces){
-   const release=smoothstep01(clamp((progress-(.24+piece.delay))/.22,0,1));
-   if(release<=.001)continue;
-   const eased=1-Math.pow(1-release,2.25),pieceAlpha=glassIn*shardFade*(.98-.10*release);
-   ctx.save();ctx.translate(piece.centerX+piece.dx*eased,piece.centerY+piece.dy*eased);ctx.rotate(piece.rotation*eased);
-   ctx.globalAlpha=pieceAlpha;ctx.drawImage(piece.texture,-piece.texture.width*.5,-piece.texture.height*.5);
-   ctx.restore();
   }
  }
  ctx.restore();
