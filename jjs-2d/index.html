@@ -683,11 +683,11 @@ body.mobile-controls-enabled.game-active .ult-track{
 }
 
 /* Compact main-menu screen orientation control. */
-#screenRotateBtn{position:absolute;z-index:9;right:clamp(8px,1.5vw,20px);bottom:clamp(8px,1.5vh,18px);left:auto;top:auto;width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#screenRotateBtn{position:absolute;z-index:9;left:clamp(8px,1.5vw,14px);top:clamp(8px,1.5vh,14px);right:auto;bottom:auto;width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #screenRotateBtn:hover,#screenRotateBtn:focus-visible{background:transparent!important;box-shadow:none!important;color:#dcecff}
 #screenRotateBtn .rotate-glyph{display:block;line-height:1;text-shadow:1px 2px 4px rgba(0,0,0,.9);transform:none!important;transition:none!important}
 #screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;left:auto;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
-@media(max-width:520px){#screenRotateBtn{right:5px;bottom:5px;width:40px;height:40px;font-size:36px}}
+@media(max-width:520px){#screenRotateBtn{left:5px;top:5px;right:auto;bottom:auto;width:40px;height:40px;font-size:36px}}
 
 
 /* Manual 90-degree game rotation: swap the logical viewport, then rotate the whole UI.
@@ -2431,9 +2431,11 @@ html.manual-screen-rotated #menu .selected-icon{font-size:15px!important}
 html.manual-screen-rotated #menu .selected-accessory-line{font-size:7px!important;margin-top:2px!important}
 html.manual-screen-rotated #menu .menu-bottomline{display:none!important}
 html.manual-screen-rotated #screenRotateBtn{
+ /* The body turns clockwise, so logical bottom-left stays at the physical top-left. */
  left:14px!important;bottom:14px!important;right:auto!important;top:auto!important;
  z-index:9999!important;
 }
+@media(max-width:520px){html.manual-screen-rotated #screenRotateBtn{left:5px!important;bottom:5px!important;right:auto!important;top:auto!important}}
 html.manual-screen-rotated #menuSub{
  position:absolute!important;inset:0!important;z-index:12!important;
  display:flex!important;flex-direction:column!important;
