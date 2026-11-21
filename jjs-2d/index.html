@@ -2562,6 +2562,40 @@ body.mobile-controls-enabled.game-active .awakening{
  }
 }
 
+
+/* Rotated preview correction: preserve the canvases' native drawing proportions.
+   The character showcase is 560:360 (14:9); the accessory avatar is 640:720 (8:9).
+   Avoid setting width and height independently after manual screen rotation. */
+html.manual-screen-rotated #menuSub.character-select-open #characterSelectCanvas{
+ display:block!important;
+ width:min(100%,320px)!important;
+ height:auto!important;
+ min-width:0!important;min-height:0!important;
+ max-width:100%!important;max-height:none!important;
+ aspect-ratio:14 / 9!important;
+ object-fit:contain!important;
+ flex:0 0 auto!important;
+ align-self:center!important;
+}
+html.manual-screen-rotated #menuSub.character-select-open .character-showcase{
+ min-width:0!important;min-height:0!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open #accessoryPreviewCanvas{
+ display:block!important;
+ width:min(100%,129px)!important;
+ height:auto!important;
+ min-width:0!important;min-height:0!important;
+ max-width:100%!important;max-height:none!important;
+ aspect-ratio:8 / 9!important;
+ object-fit:contain!important;
+ flex:0 1 auto!important;
+ align-self:center!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-panel{
+ min-width:0!important;min-height:0!important;
+ align-items:center!important;justify-content:center!important;
+}
+
 </style>
 </head>
 <body>
