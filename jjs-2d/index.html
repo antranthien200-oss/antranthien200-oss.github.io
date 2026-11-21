@@ -806,6 +806,8 @@ html.manual-screen-rotated #menu .menu-art-stage{
  display:flex;animation:vesselDialogueIn .16s cubic-bezier(.18,.82,.24,1) both;
 }
 #gojoAwakeningDialogueBottom{animation-delay:.055s!important}
+#gojoAwakeningDialogueTop{flex-direction:column;white-space:normal}
+#gojoAwakeningDialogueTop span{display:block;white-space:nowrap;word-break:keep-all;font-size:clamp(5.2px,1.25vw,6.2px);line-height:1.15}
 
 /* Unified translucent glass finish for all mobile controls (paint only). */
 #mobileControls #mobileJoystick{
@@ -1960,8 +1962,7 @@ html.manual-screen-rotated #menu .menu-art-stage{
 </head>
 <body>
 <canvas id="game"></canvas><div id="vignette"></div><div id="hitFlash"></div>
-<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue">LET'S
-GET...</div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">A
+<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue"><span>LET'S</span><span>GET...</span></div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">A
 LITTLE
 CRAZY.</div></div>
 <div class="hud" id="hud" style="display:none">
