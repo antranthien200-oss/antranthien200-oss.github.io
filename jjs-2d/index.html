@@ -10384,14 +10384,15 @@ function drawDomainClashArenaContent(){
   const screenCtx=ctx,frameCtx=cache.canvas.getContext('2d');
   frameCtx.setTransform(scale,0,0,scale,0,0);frameCtx.clearRect(0,0,fullW,H);ctx=frameCtx;
   try{
-   W=halfW;
+   // Render both environments in the same full-arena coordinate space.
+   // Only the clipping window changes: each side is a true half-view of its
+   // own domain, not a separate domain recentered inside a half-width canvas.
    ctx.save();ctx.beginPath();ctx.rect(0,0,halfW,H);ctx.clip();
    drawDomainClashDomainBackdrop(a);
    ctx.restore();
-   ctx.save();ctx.translate(halfW,0);ctx.beginPath();ctx.rect(0,0,halfW,H);ctx.clip();
+   ctx.save();ctx.beginPath();ctx.rect(halfW,0,halfW,H);ctx.clip();
    drawDomainClashDomainBackdrop(b);
    ctx.restore();
-   W=fullW;
    // A narrow, jagged seam makes the two competing environments read as separate halves.
    const seamX=halfW;
    ctx.save();
