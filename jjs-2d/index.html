@@ -2348,6 +2348,21 @@ html.manual-screen-rotated #menuSub.online-menu-open .online-fight-scene{
  html.manual-screen-rotated #screenRotateBtn{right:5px!important;top:5px!important;left:auto!important;bottom:auto!important}
 }
 
+
+/* Character chooser preview: keep the 560:360 canvas ratio on every viewport.
+   Earlier mobile rules forced a fixed height while stretching the canvas to the
+   available width, which made the character preview look squashed. */
+#menuSub.character-select-open #characterSelectCanvas{
+ display:block!important;
+ width:min(100%,497.78px)!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ aspect-ratio:14 / 9!important;
+ flex:0 0 auto!important;
+ align-self:center!important;
+}
+
 </style>
 </head>
 <body>
