@@ -9274,7 +9274,8 @@ function drawCharacterDesignFaceDetails(f,x=0,y=0,scale=1,visual={}){
  if(f.char==='honored'){
   if(gojoFaceAlpha>0)drawGojoNeutralFace(gojoFaceAlpha);
   // Gojo's eye cover is part of his character design, not a wearable accessory.
-  const coverY=lerp(-5.3,13.1,gojoProgress),coverHeight=lerp(9.6,3.6,gojoProgress);
+  // Lift the pulled-down cover slightly and make its final band 1.5x thicker.
+  const coverY=lerp(-5.3,11.1,gojoProgress),coverHeight=lerp(9.6,5.4,gojoProgress);
   ctx.fillStyle='#000000';ctx.fillRect(-16.5,coverY,33,coverHeight);
  }
  ctx.restore();
