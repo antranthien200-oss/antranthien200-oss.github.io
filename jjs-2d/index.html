@@ -4403,11 +4403,12 @@ function rotateMenuScreen(){
   const physicalHeight=Math.max(1,window.innerHeight||root.clientHeight||1);
   root.style.setProperty('--manual-screen-width',physicalHeight+'px');
   root.style.setProperty('--manual-screen-height',physicalWidth+'px');
+  root.classList.add('manual-screen-rotated');
  }else{
+  root.classList.remove('manual-screen-rotated');
   root.style.removeProperty('--manual-screen-width');
   root.style.removeProperty('--manual-screen-height');
  }
- root.classList.toggle('manual-screen-rotated',rotated);
  document.body.classList.toggle('manual-screen-rotated',rotated);
  button.classList.toggle('is-rotated',rotated);
  button.setAttribute('aria-pressed',rotated?'true':'false');
