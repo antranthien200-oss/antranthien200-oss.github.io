@@ -2978,7 +2978,7 @@ canvas.addEventListener('mousedown',e=>{if(e.button===0){const p=screenPointToGa
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 const CHARS={
  honored:{name:'THE HONORED ONE',desc:'Satoru Gojo. Use Blue, Red, and Purple to control space, then Flash Step behind your opponent. Awakening: Six Eyes.',color:'#318bff',hair:'#d8ecff',coat:'#123c79',accent:'#50baff',skin:'#f1c7a9',hp:100,
-  moves:[['LAPSE BLUE','Create a small Blue sphere that pulls a foe in before a 360° spin slap'],['REVERSAL RED','A repulsive orb that explodes on impact'],['RAPID PUNCHES','A spinning kick into a long punch barrage'],['TWO FOLD COUNTER','Counter an incoming hit with a quick yellow cursed punch, then a stronger follow-up punch']],
+  moves:[['LAPSE BLUE','Create a small Blue sphere that pulls a foe in before a 360° spin slap'],['REVERSAL RED','A repulsive orb that explodes on impact'],['RAPID PUNCHES','A spinning kick into a long punch barrage'],['TWOFOLD COUNTER','Counter an incoming hit with a quick yellow cursed punch, then a stronger follow-up punch']],
   awakeMoves:[['LAPSE BLUE MAX','Controllable vortex that pulls and damages nearby enemies'],['REVERSAL RED MAX','Charged, piercing repulsion blast'],['HOLLOW PURPLE','A devastating imaginary-mass projectile'],['INFINITE VOID','Domain expansion that stuns trapped enemies']],
   special:'LIMITLESS',specialDesc:'Instantly moves behind the opponent, facing the same direction.',awakeSpecial:'LIMITLESS',awakeSpecialDesc:'Instantly moves behind the opponent; G+R still triggers the 0.2-second domain variant.',awakening:'SIX EYES',awakeName:'SIX EYES'},
  vessel:{name:'VESSEL',desc:'Yuji Itadori. A close-range combo fighter with delayed cursed energy, counters, and Black Flash. Awakening: King of Curses (Sukuna).',color:'#f05d76',hair:'#ff879e',coat:'#511b31',accent:'#ff496b',skin:'#c98968',hp:85,
@@ -5321,7 +5321,7 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
    burst(defender.x,defender.y-22,'#ffc83c',22,5.3);burst(attacker.x,attacker.y-22,'#fff8cf',16,4.3);
    burst(attacker.x,attacker.y-28,'#ffffff',5,2.8);
    game.hitStop=Math.max(game.hitStop,.05);game.shake=Math.max(game.shake,4);
-   popText(attacker.x,attacker.y-58,'TWO FOLD COUNTER','#fff0a3',14);
+   popText(attacker.x,attacker.y-58,'TWOFOLD COUNTER','#fff0a3',14);
   }});
  }});
 }
@@ -6144,7 +6144,7 @@ function updateTrashManEffects(f,dt){
 function useAttack(f,kind,networkReplay=false){
  if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||(!networkReplay&&f.vehicle)||(!networkReplay&&game.cutsceneTimer>0))return;
- if(!networkReplay&&Number(f.skillLockUntil)>Date.now()&&(['1','2','3','4'].includes(kind)||kind==='special'))return;
+ if(!networkReplay&&Number(f.skillLockUntil)>Date.now()&&(['1','2','3','4'].includes(kind)||kind==='special'||kind==='m1'))return;
  if(!networkReplay&&f.grabbedBy)return;
  if(!networkReplay&&(f.blueSuckedBy||f.gojoBluePull))return;
  if(!networkReplay&&f.vesselAwakenSequence)return;
@@ -6496,7 +6496,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.counterWindow=.9;f.counterKind='gojoTwofoldCounter';f.skillCd[idx]=20;f.block=false;
     setMotion(f,'yujiManjiBlock',.65,angle,t);
     burst(f.x,f.y-23,'#ffc83c',20,5.2);burst(f.x,f.y-23,'#fff4bd',9,3.6);
-    popText(f.x,f.y-55,'TWO FOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
+    popText(f.x,f.y-55,'TWOFOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
    }
   }else{
    if(idx===0){projectiles.push({x:f.x+Math.cos(angle)*35,y:f.y+Math.sin(angle)*35,vx:0,vy:0,r:30,life:4,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2});f.skillCd[idx]=17;burst(f.x,f.y,'#55cfff',25,5);showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
