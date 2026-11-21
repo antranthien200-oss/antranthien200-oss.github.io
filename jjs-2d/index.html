@@ -4588,7 +4588,7 @@ function playAwakeningCutscene(f){
   // Lock Gojo's facing once, so the cutscene never swivels with the cursor.
   f.gojoAwakeningFacing=Number.isFinite(f.face)?f.face:0;
   // Keep his hands in the accessory-preview pose throughout the opening camera zoom.
-  setMotion(f,'gojoAwakenIntroPose',1.2,f.gojoAwakeningFacing,targetOf(f));
+  setMotion(f,'gojoAwakenIntroPose',1.55,f.gojoAwakeningFacing,targetOf(f));
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
@@ -4597,7 +4597,7 @@ function playAwakeningCutscene(f){
   // Keep the fighter visible while the screen edges darken into a manga-style close-up.
   el.style.background='radial-gradient(ellipse 62% 62% at center,rgba(0,0,0,0) 22%,rgba(0,0,0,.22) 52%,rgba(0,0,0,.62) 82%,rgba(0,0,0,.92) 120%)';
  }
- game.cutsceneTimer=isGojo?1.2:isVessel?1.55:.19375;
+ game.cutsceneTimer=isVessel||isGojo?1.55:.19375;
  f.invuln=Math.max(f.invuln,isGojo?3.2:1.6);
  game.shake=isVessel||isGojo?0:15;
 }
@@ -6851,7 +6851,7 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
   speaker.sukunaAwakeningCameraTime=Math.min(1.55,(speaker.sukunaAwakeningCameraTime||0)+dt);
  }
  if(speaker&&speaker.char==='honored'&&(cutscene._phase==='gojo-dialogue'||cutscene._phase==='gojo-awakening-motion')){
-  speaker.gojoAwakeningCameraTime=Math.min(1.2,(speaker.gojoAwakeningCameraTime||0)+dt);
+  speaker.gojoAwakeningCameraTime=Math.min(1.55,(speaker.gojoAwakeningCameraTime||0)+dt);
  }
  if(speaker&&((speaker.char==='vessel'&&speaker.motion&&speaker.motion.name==='sukunaAwaken')||(speaker.char==='honored'&&speaker.motion&&speaker.motion.name==='gojoAwaken'))){
   const step=Math.min(dt,game.cutsceneTimer);
@@ -6888,7 +6888,7 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
    speaker.gojoAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    // Keep the exact facing captured when the dialogue cutscene began for the full hand animation.
    speaker.face=Number.isFinite(speaker.gojoAwakeningFacing)?speaker.gojoAwakeningFacing:speaker.face;
-   setMotion(speaker,'gojoAwaken',1.2,speaker.gojoAwakeningFacing,targetOf(speaker));game.cutsceneTimer=1.2;game.shake=0;
+   setMotion(speaker,'gojoAwaken',1.55,speaker.gojoAwakeningFacing,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else{
    cutscene.classList.remove('active','vessel-dialogue','gojo-dialogue','gojo-impact-dialogue','gojo-impact-dialogue-visible','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
    if(speaker&&speaker.char==='honored')speaker.gojoAwakeningAimLocked=false;
@@ -11102,7 +11102,7 @@ function positionGojoAwakeningDialogue(){
  const viewScale=cameraViewScale();
  let headX=W*.5+(f.x-camera.x)/viewScale;
  let headY=H*.5+(f.y-f.jump*3-23-camera.y)/viewScale;
- const cameraProgress=clamp((f.gojoAwakeningCameraTime||0)/1.2,0,1),ease=cameraProgress*cameraProgress*(3-2*cameraProgress),zoom=1+.45*ease;
+ const cameraProgress=clamp((f.gojoAwakeningCameraTime||0)/1.55,0,1),ease=cameraProgress*cameraProgress*(3-2*cameraProgress),zoom=1+.45*ease;
  const focusX=W*.5+(f.x-camera.x)/viewScale,focusY=H*.5+(f.y-camera.y)/viewScale;
  headX=focusX+(headX-focusX)*zoom;headY=focusY+(headY-focusY)*zoom;
  // The overlay lives inside the same rotated body as the game canvas.
@@ -11130,7 +11130,7 @@ function draw(){
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
  if(zoomFighter&&!zoomFighter.dead){
   const cameraTime=zoomFighter.char==='vessel'?zoomFighter.sukunaAwakeningCameraTime:zoomFighter.gojoAwakeningCameraTime;
-  const progress=clamp((cameraTime||0)/1.2,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease,viewScale=cameraViewScale();
+  const progress=clamp((cameraTime||0)/1.55,0,1),ease=progress*progress*(3-2*progress),cinematicZoom=1+.45*ease,viewScale=cameraViewScale();
   const focusX=W*.5+(zoomFighter.x-camera.x)/viewScale,focusY=H*.5+(zoomFighter.y-camera.y)/viewScale;
   // Scale the canvas element around the fighter's actual screen position for a reliable cinematic close-up.
   canvas.style.transformOrigin=focusX+'px '+focusY+'px';
