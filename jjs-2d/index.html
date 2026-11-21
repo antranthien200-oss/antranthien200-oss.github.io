@@ -683,10 +683,9 @@ body.mobile-controls-enabled.game-active .ult-track{
 }
 
 /* Compact main-menu screen orientation control. */
-#screenRotateBtn{position:absolute;z-index:9;right:clamp(8px,1.5vw,20px);bottom:clamp(8px,1.5vh,18px);width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent}
+#screenRotateBtn{position:absolute;z-index:99;left:clamp(8px,1.5vw,20px);top:clamp(8px,1.5vh,18px);right:auto;bottom:auto;width:44px;height:44px;display:grid;place-items:center;padding:0;border:0;border-radius:0;background:transparent!important;color:#fff;box-shadow:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;font:400 39px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer;outline:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 #screenRotateBtn:hover,#screenRotateBtn:focus-visible{background:transparent!important;box-shadow:none!important;color:#dcecff}
-#screenRotateBtn .rotate-glyph{display:block;line-height:1;text-shadow:1px 2px 4px rgba(0,0,0,.9);transform:rotate(0deg);transition:transform .32s ease}
-#screenRotateBtn.is-rotated .rotate-glyph{transform:rotate(90deg)}
+#screenRotateBtn .rotate-glyph{display:block;line-height:1;text-shadow:1px 2px 4px rgba(0,0,0,.9);transform:none!important;transition:none!important}
 #screenRotateBtn[data-status]::after{content:attr(data-status);position:absolute;right:44px;left:auto;top:50%;transform:translateY(-50%);white-space:nowrap;padding:6px 8px;border:1px solid #ffffff38;border-radius:5px;background:rgba(4,9,18,.92);color:#eaf2ff;font:900 8px/1 ui-monospace,monospace;letter-spacing:.08em;box-shadow:0 4px 14px #0008}
 @media(max-width:520px){#screenRotateBtn{right:5px;bottom:5px;width:40px;height:40px;font-size:36px}}
 
@@ -712,7 +711,7 @@ html.manual-screen-rotated .fighter-card{width:clamp(160px,calc(var(--manual-scr
 html.manual-screen-rotated body.mobile-controls-enabled.game-active .bottom{
  bottom:calc(165px + env(safe-area-inset-bottom))!important;
 }
-html.manual-screen-rotated #screenRotateBtn{right:14px!important;top:14px!important;bottom:auto!important}
+html.manual-screen-rotated #screenRotateBtn{left:14px!important;right:auto!important;top:auto!important;bottom:14px!important}
 html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 @media(max-height:420px){
  html.manual-screen-rotated #menu .menu-main{max-height:calc(100vw - 12px)!important;width:min(360px,84vh)!important}
@@ -2275,6 +2274,80 @@ html.manual-screen-rotated #menu .menu-art-stage{
  #menuSub .character-select-card:hover{transform:none!important}
 }
 
+
+
+
+/* Manual rotation follow-up: keep the rotate control in the physical top-left
+   corner even though the page coordinate system is turned clockwise. */
+html.manual-screen-rotated body{
+ box-sizing:border-box!important;
+ margin:0!important;
+ will-change:transform;
+}
+html.manual-screen-rotated #screenRotateBtn{
+ left:14px!important;right:auto!important;top:auto!important;bottom:14px!important;
+ z-index:9999!important;
+}
+html.manual-screen-rotated #screenRotateBtn .rotate-glyph{
+ transform:none!important;
+}
+
+/* Reflow menu panels for the logical landscape viewport while device media
+   queries still report the phone's original portrait orientation. */
+html.manual-screen-rotated #menu .menu-art-stage{
+ position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+ aspect-ratio:auto!important;transform:none!important;
+}
+html.manual-screen-rotated #menu .menu-main{
+ top:50%!important;bottom:auto!important;left:50%!important;
+ transform:translate(-50%,-50%)!important;
+ width:min(420px,calc(100% - 28px))!important;
+ max-height:calc(100% - 20px)!important;
+ padding:8px!important;gap:7px!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+}
+html.manual-screen-rotated #menuSub{
+ align-items:flex-start!important;
+ justify-content:flex-start!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+ padding:8px 10px!important;
+}
+html.manual-screen-rotated #menuSub .menu-sub-panel{
+ width:100%!important;max-width:900px!important;
+ max-height:none!important;height:auto!important;
+ margin:0 auto!important;overflow:visible!important;
+ transform:none!important;
+}
+html.manual-screen-rotated #menuSub.character-select-open .character-select-layout{
+ grid-template-columns:minmax(210px,.85fr) minmax(0,1.15fr)!important;
+ gap:10px!important;
+}
+html.manual-screen-rotated #menuSub.character-select-open .character-showcase{order:0!important}
+html.manual-screen-rotated #menuSub.character-select-open .character-showcase-canvas{
+ height:clamp(115px,34dvh,190px)!important;min-height:110px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-layout{
+ display:grid!important;grid-template-columns:minmax(150px,.75fr) minmax(0,1.25fr)!important;
+ align-items:stretch!important;gap:8px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-panel{
+ flex:initial!important;min-height:0!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open #accessoryPreviewCanvas{
+ width:auto!important;height:min(32dvh,170px)!important;max-height:170px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items{
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ max-height:calc(100dvh - 130px)!important;overflow-y:auto!important;
+}
+html.manual-screen-rotated #menuSub.online-menu-open .online-fight-scene{
+ height:clamp(90px,22dvh,150px)!important;min-height:80px!important;
+}
+@media(max-width:520px){
+ #screenRotateBtn{left:5px!important;top:5px!important;right:auto!important;bottom:auto!important}
+ html.manual-screen-rotated #screenRotateBtn{left:5px!important;top:auto!important;right:auto!important;bottom:5px!important}
+}
+
 </style>
 </head>
 <body>
@@ -2391,7 +2464,29 @@ const MAX_DPR=isMobileDevice ? 1.25 : 1.75;
 const $=id=>document.getElementById(id);
 let W=innerWidth,H=innerHeight,dpr=isMobileDevice?Math.min(devicePixelRatio||1,MOBILE_BASE_DPR):Math.min(devicePixelRatio||1,MAX_DPR),canvasNeedsDraw=true;
 function isManualScreenRotated(){return document.documentElement.classList.contains('manual-screen-rotated')}
-function resize(){const rotated=isManualScreenRotated(),root=document.documentElement;if(rotated){root.style.setProperty('--manual-screen-width',innerHeight+'px');root.style.setProperty('--manual-screen-height',innerWidth+'px')}else{root.style.removeProperty('--manual-screen-width');root.style.removeProperty('--manual-screen-height')}W=rotated?innerHeight:innerWidth;H=rotated?innerWidth:innerHeight;canvasNeedsDraw=true;dpr=isMobileDevice?Math.min(devicePixelRatio||1,MOBILE_BASE_DPR):Math.min(devicePixelRatio||1,MAX_DPR);canvas.width=Math.max(1,Math.floor(W*dpr));canvas.height=Math.max(1,Math.floor(H*dpr));canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(dpr,0,0,dpr,0,0);ctx.imageSmoothingEnabled=false}
+let viewportWidth=Math.max(1,window.innerWidth),viewportHeight=Math.max(1,window.innerHeight);
+function resize(){
+ const rotated=isManualScreenRotated(),root=document.documentElement;
+ viewportWidth=Math.max(1,window.innerWidth||root.clientWidth||1);
+ viewportHeight=Math.max(1,window.innerHeight||root.clientHeight||1);
+ W=rotated?viewportHeight:viewportWidth;
+ H=rotated?viewportWidth:viewportHeight;
+ if(rotated){
+  root.style.setProperty('--manual-screen-width',W+'px');
+  root.style.setProperty('--manual-screen-height',H+'px');
+ }else{
+  root.style.removeProperty('--manual-screen-width');
+  root.style.removeProperty('--manual-screen-height');
+ }
+ canvasNeedsDraw=true;
+ dpr=isMobileDevice?Math.min(devicePixelRatio||1,MOBILE_BASE_DPR):Math.min(devicePixelRatio||1,MAX_DPR);
+ canvas.width=Math.max(1,Math.floor(W*dpr));
+ canvas.height=Math.max(1,Math.floor(H*dpr));
+ canvas.style.width=W+'px';
+ canvas.style.height=H+'px';
+ ctx.setTransform(dpr,0,0,dpr,0,0);
+ ctx.imageSmoothingEnabled=false;
+}
 let mobileRenderAverage=16,mobileSlowFrames=0,mobileFastFrames=0;
 function applyMobileRenderScale(nextDpr){
  const next=Math.max(MOBILE_MIN_DPR,Math.min(MAX_DPR,nextDpr));
@@ -2410,7 +2505,7 @@ function tuneMobileRenderScale(renderMs,updateMs=0){
  if(mobileSlowFrames>=2){applyMobileRenderScale(Math.max(MOBILE_MIN_DPR,dpr*.76));mobileSlowFrames=0;mobileFastFrames=0}
  else if(mobileFastFrames>=180&&dpr<MAX_DPR){applyMobileRenderScale(Math.min(MAX_DPR,dpr+.025));mobileFastFrames=0}
 }
-function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:innerWidth-x}:{x,y}}
+function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:viewportWidth-x}:{x,y}}
 function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
 addEventListener('resize',resize);if(window.visualViewport)visualViewport.addEventListener('resize',resize);resize();
 const WORLD={w:3300,h:2000};
@@ -4301,13 +4396,19 @@ $('startBtn').onclick=startGame;
 function rotateMenuScreen(){
  const root=document.documentElement,button=$('screenRotateBtn'),rotated=!root.classList.contains('manual-screen-rotated');
  root.classList.toggle('manual-screen-rotated',rotated);
+ document.body.classList.toggle('manual-screen-rotated',rotated);
  button.classList.toggle('is-rotated',rotated);
  button.setAttribute('aria-pressed',rotated?'true':'false');
  button.setAttribute('aria-label',rotated?'Restore original game orientation':'Rotate game screen');
  button.title=rotated?'Restore original game orientation':'Rotate game screen';
  if(typeof stopMobileJoystick==='function')stopMobileJoystick();
- resize();
- canvasNeedsDraw=true;
+ // Wait for the transformed body to take its new viewport dimensions before
+ // rebuilding the canvas. This avoids one-frame stale sizing on mobile browsers.
+ requestAnimationFrame(()=>{
+  resize();
+  canvasNeedsDraw=true;
+  if(typeof scheduleMenuFit==='function')scheduleMenuFit();
+ });
 }
 $('screenRotateBtn').addEventListener('click',rotateMenuScreen);
 
