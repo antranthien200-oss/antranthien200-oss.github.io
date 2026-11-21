@@ -2392,11 +2392,11 @@ html.manual-screen-rotated #menu .menu-logo{
 }
 html.manual-screen-rotated #menu .menu-kicker{font-size:8px!important;letter-spacing:.24em!important}
 html.manual-screen-rotated #menu .menu-title{
- font-size:clamp(42px,calc(var(--manual-screen-width) * .095),76px)!important;
+ font-size:clamp(42px,8dvh,76px)!important;
  line-height:.82!important;letter-spacing:-.09em!important;
 }
 html.manual-screen-rotated #menu .menu-subtitle{
- margin-top:8px!important;font-size:clamp(9px,calc(var(--manual-screen-height) * .035),13px)!important;
+ margin-top:8px!important;font-size:clamp(9px,2.5dvh,13px)!important;
  letter-spacing:.24em!important;
 }
 html.manual-screen-rotated #menu .menu-title-rule{margin-top:7px!important;font-size:7px!important}
@@ -2451,7 +2451,7 @@ html.manual-screen-rotated #menuSub .menu-sub-panel{
  overflow:visible!important;transform:none!important;
 }
 html.manual-screen-rotated #menuSub .menu-sub-head{margin-bottom:8px!important}
-html.manual-screen-rotated #menuSub .menu-sub-head h2{font-size:clamp(18px,calc(var(--manual-screen-height) * .065),25px)!important}
+html.manual-screen-rotated #menuSub .menu-sub-head h2{font-size:clamp(18px,3dvh,25px)!important}
 html.manual-screen-rotated #menuSub .menu-sub-cards{gap:8px!important}
 html.manual-screen-rotated #menuSub.character-select-open .character-select-layout{
  display:grid!important;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)!important;
@@ -2459,7 +2459,7 @@ html.manual-screen-rotated #menuSub.character-select-open .character-select-layo
 }
 html.manual-screen-rotated #menuSub.character-select-open .character-showcase{order:0!important;min-width:0!important}
 html.manual-screen-rotated #menuSub.character-select-open .character-showcase-canvas{
- width:100%!important;height:min(calc(var(--manual-screen-height) * .40),150px)!important;
+ width:100%!important;height:clamp(95px,22dvh,150px)!important;
  min-height:95px!important;max-height:150px!important;
 }
 html.manual-screen-rotated #menuSub.character-select-open .character-select-roster{
@@ -2476,7 +2476,7 @@ html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-pan
  flex:initial!important;min-width:0!important;min-height:0!important;
 }
 html.manual-screen-rotated #menuSub.accessory-editor-open #accessoryPreviewCanvas{
- width:auto!important;height:min(calc(var(--manual-screen-height) * .38),145px)!important;
+ width:auto!important;height:clamp(90px,20dvh,145px)!important;
  max-height:145px!important;
 }
 html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items{
@@ -2488,7 +2488,7 @@ html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-ite
  min-height:0!important;height:auto!important;aspect-ratio:1/1!important;
 }
 html.manual-screen-rotated #menuSub.online-menu-open .online-fight-scene{
- height:min(calc(var(--manual-screen-height) * .28),100px)!important;min-height:75px!important;
+ height:clamp(75px,12dvh,100px)!important;min-height:75px!important;
 }
 @media(max-height:420px){
  html.manual-screen-rotated #menu .menu-main{padding-top:36px!important;padding-bottom:8px!important}
