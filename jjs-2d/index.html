@@ -4395,6 +4395,18 @@ $('startBtn').onclick=startGame;
 
 function rotateMenuScreen(){
  const root=document.documentElement,button=$('screenRotateBtn'),rotated=!root.classList.contains('manual-screen-rotated');
+ // Set the swapped dimensions before activating the fixed/rotated body.
+ // Otherwise its width and height temporarily resolve to auto (the menu and
+ // canvas are both fixed-position children), which can collapse the whole page.
+ if(rotated){
+  const physicalWidth=Math.max(1,window.innerWidth||root.clientWidth||1);
+  const physicalHeight=Math.max(1,window.innerHeight||root.clientHeight||1);
+  root.style.setProperty('--manual-screen-width',physicalHeight+'px');
+  root.style.setProperty('--manual-screen-height',physicalWidth+'px');
+ }else{
+  root.style.removeProperty('--manual-screen-width');
+  root.style.removeProperty('--manual-screen-height');
+ }
  root.classList.toggle('manual-screen-rotated',rotated);
  document.body.classList.toggle('manual-screen-rotated',rotated);
  button.classList.toggle('is-rotated',rotated);
@@ -4402,13 +4414,9 @@ function rotateMenuScreen(){
  button.setAttribute('aria-label',rotated?'Restore original game orientation':'Rotate game screen');
  button.title=rotated?'Restore original game orientation':'Rotate game screen';
  if(typeof stopMobileJoystick==='function')stopMobileJoystick();
- // Wait for the transformed body to take its new viewport dimensions before
- // rebuilding the canvas. This avoids one-frame stale sizing on mobile browsers.
- requestAnimationFrame(()=>{
-  resize();
-  canvasNeedsDraw=true;
-  if(typeof scheduleMenuFit==='function')scheduleMenuFit();
- });
+ resize();
+ canvasNeedsDraw=true;
+ if(typeof scheduleMenuFit==='function')scheduleMenuFit();
 }
 $('screenRotateBtn').addEventListener('click',rotateMenuScreen);
 
@@ -11019,8 +11027,9 @@ function positionVesselAwakeningDialogue(){
  const cinematicProgress=clamp((f.sukunaAwakeningCameraTime||0)/1.55,0,1),cinematicEase=cinematicProgress*cinematicProgress*(3-2*cinematicProgress),cinematicZoom=1+.45*cinematicEase;
  const focusX=W*.5+(f.x-camera.x)/zoom,focusY=H*.5+(f.y-camera.y)/zoom;
  px=focusX+(px-focusX)*cinematicZoom;py=focusY+(py-focusY)*cinematicZoom;
- let viewW=W,viewH=H;
- if(isManualScreenRotated()){const gx=px;px=innerWidth-py;py=gx;viewW=innerWidth;viewH=innerHeight}
+ // The dialogue is inside the rotated body, so its coordinates remain
+ // in the same logical W x H space as the canvas; do not rotate them twice.
+ const viewW=W,viewH=H;
  const boxW=box.offsetWidth||Math.min(78,viewW*.22);
  const boxH=box.offsetHeight||Math.min(120,viewH*.34);
  const left=clamp(px-boxW-28,8,Math.max(8,viewW-boxW-8));
