@@ -2599,10 +2599,17 @@ html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-pan
  align-items:center!important;justify-content:center!important;
 }
 
-/* Keep the mobile-mode awakening meter near the screen bottom at every viewport size,
-   including desktop browsers where mobile controls are enabled. */
-html body.mobile-controls-enabled.game-active .bottom{
- bottom:calc(18px + env(safe-area-inset-bottom))!important;
+/* Anchor the mobile-mode awakening meter directly to the visible viewport.
+   This also handles desktop browsers with Mobile Mode enabled. */
+html body.mobile-controls-enabled.game-active #hud .bottom{
+ position:fixed!important;
+ top:auto!important;
+ right:auto!important;
+ bottom:calc(12px + env(safe-area-inset-bottom))!important;
+ left:50%!important;
+ transform:translateX(-50%)!important;
+ z-index:10!important;
+ margin:0!important;
 }
 
 </style>
