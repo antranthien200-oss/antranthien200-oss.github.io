@@ -3009,6 +3009,7 @@ function drawAccessoryPreview(itemId=null,now=0){
   ctx.save();ctx.translate(0,headBob);ctx.rotate(headSway);
   drawCuteHead(previewFighter,CHARS[previewChar],theme);
   drawAccessoryOverlays(previewFighter,0,0);
+  drawCharacterDesignFaceDetails(previewFighter);
   ctx.restore();
   ctx.restore();
   ctx.fillStyle='#0009';ctx.beginPath();ctx.ellipse(cx,296+headBob*.55,100,15,0,0,Math.PI*2);ctx.fill();
@@ -3459,7 +3460,8 @@ function drawCharacterSelectPreview(now=0){
   drawCharacterIdleHand(pose.right,theme);
   ctx.save();ctx.translate(0,pose.headBob);ctx.rotate(pose.headSway);
   drawCuteHead(previewFighter,character,theme);
-  ctx.save();ctx.translate(0,Math.sin(time*2.8)*.42);ctx.rotate(Math.sin(time*1.75+pose.effect)*.022);drawAccessoryOverlays(previewFighter,0,0);ctx.restore();
+  ctx.save();ctx.translate(0,Math.sin(time*2.8)*.42);ctx.rotate(Math.sin(time*1.75+pose.effect)*.022);drawAccessoryOverlays(previewFighter,0,0);
+  drawCharacterDesignFaceDetails(previewFighter);ctx.restore();
   drawCharacterAccessoryMotion(previewFighter,time,accent,pose);
   ctx.restore();ctx.restore();
   ctx.save();ctx.globalAlpha=.46*entranceAlpha;
@@ -3484,6 +3486,7 @@ function drawCharacterCardArt(canvas,charKey){
   drawAccessoryAura(previewFighter,0,0,.9);
   drawFloatingHand(-18,16,-.18,theme,1.05);drawFloatingHand(18,16,.18,theme,1.05);
   drawCuteHead(previewFighter,character,theme);drawAccessoryOverlays(previewFighter,0,0);
+  drawCharacterDesignFaceDetails(previewFighter);
   ctx.restore();
  }finally{ctx=oldContext}
 }
@@ -9193,6 +9196,21 @@ function drawGojoNeutralFace(alpha=1){
  ctx.fillStyle='#142033';ctx.fillText('_',0,2.2);
  ctx.restore();
 }
+function drawCharacterDesignFaceDetails(f,x=0,y=0,scale=1,visual={}){
+ if(!f)return;
+ const sukunaAlpha=Number.isFinite(visual.sukunaFaceAlpha)?clamp(visual.sukunaFaceAlpha,0,1):(f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?1:0);
+ const gojoProgress=Number.isFinite(visual.gojoAwakeningProgress)?clamp(visual.gojoAwakeningProgress,0,1):(f.awakened&&!f.gojoAwakeningVisualPending?1:0);
+ const gojoFaceAlpha=Number.isFinite(visual.gojoFaceAlpha)?clamp(visual.gojoFaceAlpha,0,1):gojoProgress;
+ ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
+ if(f.char==='vessel'&&sukunaAlpha>0)drawSukunaSmileFace(sukunaAlpha);
+ if(f.char==='honored'){
+  if(gojoFaceAlpha>0)drawGojoNeutralFace(gojoFaceAlpha);
+  // Gojo's eye cover is part of his character design, not a wearable accessory.
+  const coverY=lerp(-5.3,13.6,gojoProgress),coverHeight=lerp(9.6,2.6,gojoProgress);
+  ctx.fillStyle='#000000';ctx.fillRect(-16.5,coverY,33,coverHeight);
+ }
+ ctx.restore();
+}
 function drawFloatingHand(x,y,angle,theme,scale=1){
  // Original small floating pixel-circle fist used by every character.
  ctx.save();
@@ -9950,16 +9968,12 @@ function drawHeadHands(f,deferMotionVfx=false){
   }
   ctx.restore();
  }
- if(sukunaMarkReveal>0)drawSukunaSmileFace(sukunaMarkReveal);
  drawAccessoryOverlays(f,0,0);
- if(f.char==='honored'&&gojoFaceReveal>0)drawGojoNeutralFace(gojoFaceReveal);
- // Gojo's blindfold stays separate from the accessory system and slides down to his neck.
- if(f.char==='honored'){
-  const coverY=lerp(-5.3,13.6,gojoAwakeningProgress);
-  const coverHeight=lerp(9.6,2.6,gojoAwakeningProgress);
-  ctx.fillStyle='#000000';
-  ctx.fillRect(-16.5,coverY,33,coverHeight);
- }
+ drawCharacterDesignFaceDetails(f,0,0,1,{
+  sukunaFaceAlpha:sukunaMarkReveal,
+  gojoFaceAlpha:gojoFaceReveal,
+  gojoAwakeningProgress
+ });
  ctx.restore();
  if(!deferHands&&f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
  drawStunRain(f,x,y);
@@ -10364,6 +10378,7 @@ function drawDomainHandsignCutin(f,p,accent){
  drawAccessoryAura(f,avatarX,avatarY,headScale);
  drawPixelatedCircle(avatarX,avatarY,headR*spring,theme,Math.max(2.4,headR/6));
  drawAccessoryOverlays(f,avatarX,avatarY,headScale);
+ drawCharacterDesignFaceDetails(f,avatarX,avatarY,headScale);
  drawDomainHandsignPose(f,avatarX,avatarY,headR*spring,theme,poseProgress);
  ctx.textBaseline='middle';ctx.fillStyle='#172025';ctx.textAlign='center';
  const titleSize=clamp(W*.024*1.25,27.5,38.75);
