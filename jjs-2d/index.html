@@ -8954,10 +8954,12 @@ function drawGojoNeutralFace(alpha=1){
  if(alpha<=.01)return;
  ctx.save();ctx.globalAlpha=alpha;
  ctx.textAlign='center';ctx.textBaseline='middle';ctx.font='bold 15px monospace';
- // The two eyes are blue text glyphs; the small underscore stays dark.
- ctx.fillStyle='#238fff';ctx.fillText('.',-7,-1);
+ // Give only the two blue eye dots a soft electric-blue glow; keep the underscore dark.
+ ctx.shadowColor='#168fff';ctx.shadowBlur=isMobileDevice?7:12;
+ ctx.fillStyle='#54c8ff';ctx.fillText('.',-7,-1);
+ ctx.fillText('.',7,-1);
+ ctx.shadowBlur=0;ctx.shadowColor='transparent';
  ctx.fillStyle='#142033';ctx.fillText('_',0,2.2);
- ctx.fillStyle='#238fff';ctx.fillText('.',7,-1);
  ctx.restore();
 }
 function drawFloatingHand(x,y,angle,theme,scale=1){
