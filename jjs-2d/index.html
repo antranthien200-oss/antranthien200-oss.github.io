@@ -1964,6 +1964,317 @@ html.manual-screen-rotated #menu .menu-art-stage{
   grid-template-columns:repeat(4,minmax(0,1fr))!important;
  }
 }
+
+
+
+/* Mobile menu layout repair.
+   The menu stage must cover the real viewport, and submenu panels must reflow
+   instead of scaling fixed desktop-sized layouts down to unreadable sizes. */
+@media(max-width:900px),(max-height:600px){
+ #menu .menu-art-stage{
+  position:absolute!important;
+  inset:0!important;
+  top:0!important;
+  left:0!important;
+  width:100%!important;
+  height:100%!important;
+  aspect-ratio:auto!important;
+  transform:none!important;
+ }
+ #menu .menu-art-stage>.menu-main{
+  position:absolute!important;
+  top:50%!important;
+  bottom:auto!important;
+  left:50%!important;
+  transform:translate(-50%,-50%)!important;
+  width:min(390px,calc(100% - 24px))!important;
+  max-width:390px!important;
+  height:auto!important;
+  max-height:calc(100% - 24px)!important;
+  min-height:0!important;
+  box-sizing:border-box!important;
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:center!important;
+  justify-content:flex-start!important;
+  gap:8px!important;
+  padding:8px 8px!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+ #menu .menu-actions,
+ #menu .mobile-setup-wrap,
+ #menu .menu-selected{
+  width:100%!important;
+  max-width:330px!important;
+  flex:0 0 auto!important;
+ }
+ #menu .menu-actions{gap:7px!important}
+ #menu .menu-button,
+ #menu .mobile-setup-button{
+  min-height:44px!important;
+  height:44px!important;
+  max-height:44px!important;
+ }
+ #menu .menu-selected{padding:8px 10px!important}
+ #menuSub[hidden]{display:none!important}
+ #menuSub{
+  position:absolute!important;
+  inset:0!important;
+  z-index:12!important;
+  display:flex!important;
+  align-items:flex-start!important;
+  justify-content:flex-start!important;
+  box-sizing:border-box!important;
+  width:100%!important;
+  height:100%!important;
+  padding:12px 10px calc(12px + env(safe-area-inset-bottom))!important;
+  overflow-x:hidden!important;
+  overflow-y:auto!important;
+  overscroll-behavior:contain!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+ #menuSub .menu-sub-panel,
+ #menuSub.online-menu-open .menu-sub-panel,
+ #menuSub.character-select-open .menu-sub-panel,
+ #menuSub.accessory-editor-open .menu-sub-panel{
+  position:relative!important;
+  flex:none!important;
+  width:100%!important;
+  max-width:780px!important;
+  min-width:0!important;
+  height:auto!important;
+  max-height:none!important;
+  margin:0 auto!important;
+  padding:12px!important;
+  box-sizing:border-box!important;
+  overflow:visible!important;
+  transform:none!important;
+  transform-origin:center center!important;
+ }
+ #menuSub .menu-sub-head{
+  gap:10px!important;
+  margin-bottom:12px!important;
+ }
+ #menuSub .menu-sub-head h2{
+  font-size:clamp(19px,5.5vw,27px)!important;
+  line-height:1.12!important;
+ }
+ #menuSub .menu-close{
+  flex:0 0 34px!important;
+  width:34px!important;
+  height:34px!important;
+  touch-action:manipulation!important;
+ }
+ #menuSub .menu-sub-footer{
+  gap:8px!important;
+  align-items:center!important;
+  flex-wrap:wrap!important;
+  margin-top:12px!important;
+  padding-top:10px!important;
+ }
+ #menuSub .menu-sub-footer>span{
+  min-width:0!important;
+  overflow-wrap:anywhere!important;
+ }
+ #menuSub .menu-done{
+  min-height:38px!important;
+  padding:9px 14px!important;
+  touch-action:manipulation!important;
+ }
+
+ /* Character selection: stack the preview and roster in one scrollable column. */
+ #menuSub.character-select-open .menu-sub-panel{
+  width:100%!important;
+  padding:11px!important;
+ }
+ #menuSub.character-select-open .character-select-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+  min-width:0!important;
+ }
+ #menuSub.character-select-open .character-showcase{
+  order:-1!important;
+  min-width:0!important;
+  padding:9px!important;
+ }
+ #menuSub.character-select-open .character-showcase-canvas{
+  width:100%!important;
+  height:clamp(145px,24dvh,205px)!important;
+  min-height:140px!important;
+ }
+ #menuSub.character-select-open .character-select-roster{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+ }
+ #menuSub.character-select-open .character-select-card{
+  min-height:0!important;
+  padding:5px!important;
+ }
+ #menuSub.character-select-open .character-card-art{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:8/5!important;
+ }
+ #menuSub.character-select-open .character-card-name{
+  font-size:clamp(6px,1.8vw,8px)!important;
+  white-space:normal!important;
+  overflow-wrap:anywhere!important;
+ }
+ #menuSub.character-select-open .character-card-hp{
+  font-size:6px!important;
+ }
+
+ /* Accessories: put the avatar above a square, multi-column tile grid. */
+ #menuSub.accessory-editor-open .menu-sub-panel{
+  width:100%!important;
+  height:auto!important;
+  padding:11px!important;
+  overflow:visible!important;
+ }
+ #menuSub.accessory-editor-open #menuSubCards{
+  display:block!important;
+  flex:none!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+ }
+ #menuSub.accessory-editor-open .accessory-preview-layout{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr)!important;
+  gap:10px!important;
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  overflow:visible!important;
+ }
+ #menuSub.accessory-editor-open .accessory-preview-panel{
+  display:flex!important;
+  flex:none!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:0!important;
+  height:auto!important;
+  padding:8px!important;
+  overflow:visible!important;
+ }
+ #menuSub.accessory-editor-open #accessoryPreviewCanvas{
+  width:auto!important;
+  height:clamp(120px,22dvh,175px)!important;
+  max-width:100%!important;
+  max-height:175px!important;
+  aspect-ratio:8/9!important;
+  margin:0 auto!important;
+ }
+ #menuSub.accessory-editor-open .accessory-preview-items{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:auto!important;
+  align-content:start!important;
+  align-items:start!important;
+  gap:7px!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  min-height:0!important;
+  padding:0!important;
+  overflow:visible!important;
+ }
+ #menuSub.accessory-editor-open .accessory-preview-items .menu-option,
+ #menuSub.accessory-editor-open .accessory-preview-items .menu-option:hover{
+  width:100%!important;
+  height:auto!important;
+  min-height:0!important;
+  aspect-ratio:1/1!important;
+  padding:5px!important;
+  transform:none!important;
+ }
+ #menuSub.accessory-editor-open .accessory-preview-items .accessory-art{
+  width:88%!important;
+  height:88%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+ }
+ #menuSub.accessory-editor-open .menu-sub-footer{
+  display:flex!important;
+  flex:none!important;
+  justify-content:space-between!important;
+  flex-direction:row!important;
+ }
+
+ /* Multiplayer: let the form and animated preview flow at phone width. */
+ #menuSub.online-menu-open .menu-sub-panel{
+  width:100%!important;
+  padding:11px!important;
+ }
+ #menuSub.online-menu-open .online-panel-card{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+  padding:11px!important;
+  gap:10px!important;
+ }
+ #menuSub.online-menu-open .online-fight-scene{
+  width:100%!important;
+  height:clamp(110px,20dvh,165px)!important;
+  min-height:100px!important;
+ }
+ #menuSub.online-menu-open .online-server-field input{
+  box-sizing:border-box!important;
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  font-size:16px!important;
+ }
+ #menuSub.online-menu-open .online-join{
+  min-height:42px!important;
+  touch-action:manipulation!important;
+ }
+}
+@media(max-width:420px){
+ #menuSub.accessory-editor-open .accessory-preview-items{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:6px!important;
+ }
+ #menuSub.character-select-open .character-select-roster{
+  gap:5px!important;
+ }
+}
+@media(orientation:landscape) and (max-height:600px){
+ #menu .menu-art-stage>.menu-main{
+  max-height:calc(100% - 16px)!important;
+ }
+ #menuSub{
+  padding:8px 10px!important;
+ }
+ #menuSub.character-select-open .character-showcase-canvas{
+  height:130px!important;
+  min-height:120px!important;
+ }
+ #menuSub.accessory-editor-open #accessoryPreviewCanvas{
+  height:100px!important;
+  max-height:100px!important;
+ }
+ #menuSub.online-menu-open .online-fight-scene{
+  height:90px!important;
+  min-height:80px!important;
+ }
+}
+@media(hover:none) and (pointer:coarse){
+ #menu button,#menuSub button{touch-action:manipulation!important;-webkit-tap-highlight-color:transparent}
+ #menu .menu-option:hover,
+ #menuSub .menu-option:hover,
+ #menuSub .character-select-card:hover{transform:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -2300,6 +2611,12 @@ function fitMenuLayouts(){
  const sub=document.getElementById('menuSub');
  const panel=sub&&sub.querySelector('.menu-sub-panel');
  if(sub&&panel&&!sub.hidden){
+  // Mobile menus use responsive layouts and scrolling; shrinking a fixed desktop
+  // panel to fit made every menu tiny and hard to tap on phones.
+  if(isMobileDevice||window.innerWidth<=900||window.innerHeight<=600){
+   panel.style.setProperty('--menu-sub-fit-scale','1');
+   return;
+  }
   panel.style.setProperty('--menu-sub-fit-scale','1');
   const width=panel.offsetWidth||1;
   const height=panel.offsetHeight||1;
