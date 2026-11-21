@@ -5321,7 +5321,7 @@ function playGojoTwofoldCounterResponse(defender,attacker,applyDamage=true){
    burst(defender.x,defender.y-22,'#ffc83c',22,5.3);burst(attacker.x,attacker.y-22,'#fff8cf',16,4.3);
    burst(attacker.x,attacker.y-28,'#ffffff',5,2.8);
    game.hitStop=Math.max(game.hitStop,.05);game.shake=Math.max(game.shake,4);
-   popText(attacker.x,attacker.y-58,'TWO-FOLD COUNTER','#fff0a3',14);
+   popText(attacker.x,attacker.y-58,'TWO FOLD COUNTER','#fff0a3',14);
   }});
  }});
 }
@@ -6496,7 +6496,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.counterWindow=.9;f.counterKind='gojoTwofoldCounter';f.skillCd[idx]=20;f.block=false;
     setMotion(f,'yujiManjiBlock',.65,angle,t);
     burst(f.x,f.y-23,'#ffc83c',20,5.2);burst(f.x,f.y-23,'#fff4bd',9,3.6);
-    popText(f.x,f.y-55,'TWO-FOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
+    popText(f.x,f.y-55,'TWO FOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
    }
   }else{
    if(idx===0){projectiles.push({x:f.x+Math.cos(angle)*35,y:f.y+Math.sin(angle)*35,vx:0,vy:0,r:30,life:4,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2});f.skillCd[idx]=17;burst(f.x,f.y,'#55cfff',25,5);showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
