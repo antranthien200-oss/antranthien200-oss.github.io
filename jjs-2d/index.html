@@ -52,9 +52,9 @@
   #comboDisplay.pop .combo-count{animation:comboPulse .2s cubic-bezier(.2,.9,.2,1)}
   @keyframes comboPulse{0%{transform:scale(.76)}65%{transform:scale(1.22)}100%{transform:scale(1)}}
   .bottom{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);width:min(680px,94vw);display:flex;flex-direction:column;align-items:center;gap:9px}
-  .awakening{width:min(455px,84vw);text-align:center}
+  .awakening{width:min(430px,80vw);text-align:center}
   .awakening-label{font-size:10px;font-weight:900;letter-spacing:.28em;color:#f3d6df;margin-bottom:5px}
-  .ult-track{height:11px;background:#080b13;border:1px solid #ffffff55;transform:skewX(-10deg);overflow:hidden;box-shadow:0 3px 12px #0007}
+  .ult-track{height:13px;background:#080b13;border:1px solid #ffffff55;transform:skewX(-10deg);overflow:hidden;box-shadow:0 3px 12px #0007}
   #ultFill{height:100%;width:0;background:linear-gradient(90deg,#f03e5f,#ffad65,#fff0b2);box-shadow:0 0 15px #ff446b;transition:width .12s}#ultFill.draining{background:linear-gradient(90deg,#55cfff,#5e8dff,#c18aff);box-shadow:0 0 15px #65aaff}
   .slots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
   .slot{width:76px;height:62px;border:1px solid #ffffff38;background:linear-gradient(145deg,rgba(26,32,45,.96),rgba(10,14,22,.96));border-radius:6px;position:relative;box-shadow:0 5px 15px #0008;display:flex;flex-direction:column;justify-content:center;align-items:center}
@@ -295,7 +295,7 @@ body.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:abs
 body.mobile-controls-enabled.game-active .slots{display:none!important}
 body.mobile-controls-enabled.game-active .bottom{
   left:50%;
-  width:min(224px,42vw);
+  width:min(210px,40vw);
   bottom:calc(235px + env(safe-area-inset-bottom));
   gap:0;
   align-items:center;
@@ -308,23 +308,23 @@ body.mobile-controls-enabled.game-active .awakening-label{
   letter-spacing:.16em;
 }
 body.mobile-controls-enabled.game-active .ult-track{
-  height:7px;
+  height:9px;
   transform:skewX(-8deg);
   box-shadow:0 2px 7px #0008;
 }
 @media(max-width:360px){
   body.mobile-controls-enabled.game-active .bottom{
-    width:min(192px,44vw);
+    width:min(180px,42vw);
     bottom:calc(245px + env(safe-area-inset-bottom));
   }
 }
 @media(orientation:landscape) and (max-height:520px){
   body.mobile-controls-enabled.game-active .bottom{
-    width:min(182px,32vw);
+    width:min(170px,30vw);
     bottom:calc(196px + env(safe-area-inset-bottom));
   }
   body.mobile-controls-enabled.game-active .awakening-label{font-size:7px}
-  body.mobile-controls-enabled.game-active .ult-track{height:6px}
+  body.mobile-controls-enabled.game-active .ult-track{height:8px}
 }
 
 /* Domain clash HUD */
