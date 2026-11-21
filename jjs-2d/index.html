@@ -792,14 +792,17 @@ html.manual-screen-rotated #menu .menu-art-stage{
 #awakeningCutscene.gojo-dialogue .awaken-content{display:none!important}
 .gojo-awakening-dialogue{
  display:none;position:absolute;box-sizing:border-box;align-items:center;justify-content:center;
- min-height:clamp(27px,5.5vh,38px);padding:5px 8px;
- background:#f7f7f3;color:#080808;border:2px solid #101010;border-radius:0;
- box-shadow:2px 2px 0 rgba(0,0,0,.52);
- font:italic 1000 clamp(8px,1.45vw,11px)/1.08 "Arial Black","Comic Sans MS",Impact,sans-serif;
- letter-spacing:.035em;text-align:center;text-transform:uppercase;white-space:nowrap;
- -webkit-text-stroke:.15px currentColor;text-shadow:none;
+ width:clamp(34px,8vw,42px);min-height:clamp(56px,15.5vw,68px);
+ padding:3px 1px;
+ background:#f5f5f3;color:#080808;border:2px solid #111;border-radius:0;
+ box-shadow:2px 2px 0 rgba(0,0,0,.42);
+ font:italic 1000 clamp(6.4px,1.6vw,7.2px)/1.12 "Arial Black","Comic Sans MS",Impact,sans-serif;
+ -webkit-text-stroke:.25px currentColor;
+ letter-spacing:-.09em;text-align:center;text-transform:uppercase;
+ text-shadow:none;white-space:pre-line;transform:none;
 }
-#awakeningCutscene.gojo-dialogue.active .gojo-awakening-dialogue{
+#awakeningCutscene.gojo-dialogue.active #gojoAwakeningDialogueTop,
+#awakeningCutscene.gojo-impact-dialogue.active.gojo-impact-dialogue-visible #gojoAwakeningDialogueBottom{
  display:flex;animation:vesselDialogueIn .16s cubic-bezier(.18,.82,.24,1) both;
 }
 #gojoAwakeningDialogueBottom{animation-delay:.055s!important}
@@ -1957,7 +1960,10 @@ html.manual-screen-rotated #menu .menu-art-stage{
 </head>
 <body>
 <canvas id="game"></canvas><div id="vignette"></div><div id="hitFlash"></div>
-<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue">LET'S GET...</div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">A LITTLE CRAZY.</div></div>
+<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue">LET'S
+GET...</div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">A
+LITTLE
+CRAZY.</div></div>
 <div class="hud" id="hud" style="display:none">
   <div class="toprow">
     <div class="fighter-card">
@@ -4117,7 +4123,7 @@ function playAwakeningCutscene(f){
  $('awakenCutsceneName').textContent=isVessel||isGojo?'':c.awakening;
  $('awakenCutsceneSubtitle').textContent=isVessel||isGojo?'':c.awakeName+' · AWAKENED';
  el.style.setProperty('--awaken-color',c.accent||'#79dfff');
- el.classList.remove('active','vessel-dialogue','gojo-dialogue','vessel-awakening-zoom');
+ el.classList.remove('active','vessel-dialogue','gojo-dialogue','gojo-impact-dialogue','gojo-impact-dialogue-visible','vessel-awakening-zoom');
  el._speaker=f;el._phase=isVessel?'dialogue':isGojo?'gojo-dialogue':'single';
  if(isVessel){
   // Skip the centered title popup entirely; show only the existing manga dialogue.
@@ -4127,7 +4133,7 @@ function playAwakeningCutscene(f){
  if(isGojo){
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
-  f.gojoAwakeningVisualPending=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;
+  f.gojoAwakeningVisualPending=true;f.gojoAwakeningAimLocked=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;
   // Lock Gojo's facing once, so the cutscene hand rig never swivels with the cursor.
   f.gojoAwakeningFacing=Number.isFinite(f.face)?f.face:0;
  }
@@ -6404,6 +6410,8 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
    // The fists meet after the blindfold is down; this exact impact turns his skin bright and shakes the screen.
    speaker.gojoHandsClashed=true;
    speaker.gojoSkinAwakened=true;
+   const gojoCutscene=$('awakeningCutscene');
+   if(gojoCutscene&&gojoCutscene._speaker===speaker&&gojoCutscene._phase==='gojo-awakening-motion')gojoCutscene.classList.add('gojo-impact-dialogue-visible');
    game.shake=Math.max(game.shake,12);
   }
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
@@ -6417,14 +6425,16 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
    speaker.sukunaAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    setMotion(speaker,'sukunaAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else if(speaker&&speaker.char==='honored'&&cutscene._phase==='gojo-dialogue'){
-   // The dialogue panels clear, then Gojo physically draws the blindfold down to his neck.
-   cutscene.classList.remove('active','gojo-dialogue');cutscene._phase='gojo-awakening-motion';
+   // Swap the opening line for the impact line during Gojo's blindfold pull.
+   cutscene.classList.remove('gojo-dialogue','gojo-impact-dialogue-visible');
+   cutscene.classList.add('gojo-impact-dialogue');cutscene._phase='gojo-awakening-motion';
    speaker.gojoAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
    // Keep the exact facing captured when the dialogue cutscene began for the full hand animation.
    speaker.face=Number.isFinite(speaker.gojoAwakeningFacing)?speaker.gojoAwakeningFacing:speaker.face;
    setMotion(speaker,'gojoAwaken',1.55,speaker.gojoAwakeningFacing,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else{
-   cutscene.classList.remove('active','vessel-dialogue','gojo-dialogue','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
+   cutscene.classList.remove('active','vessel-dialogue','gojo-dialogue','gojo-impact-dialogue','gojo-impact-dialogue-visible','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
+   if(speaker&&speaker.char==='honored')speaker.gojoAwakeningAimLocked=false;
   }
  }
  return
@@ -8667,7 +8677,8 @@ function drawHeadHands(f,deferMotionVfx=false){
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
- const liveTarget=isPlayer?aimWorld():(onlineMode&&f.onlineSessionId?{x:f.x+Math.cos(remoteFacing)*120,y:f.y-23+Math.sin(remoteFacing)*120}:(player?{x:player.x,y:player.y-23}:aimWorld()));
+ const gojoLockedAngle=Number.isFinite(f.gojoAwakeningFacing)?f.gojoAwakeningFacing:remoteFacing;
+ const liveTarget=f.char==='honored'&&f.gojoAwakeningAimLocked?{x:f.x+Math.cos(gojoLockedAngle)*120,y:f.y-23+Math.sin(gojoLockedAngle)*120}:isPlayer?aimWorld():(onlineMode&&f.onlineSessionId?{x:f.x+Math.cos(remoteFacing)*120,y:f.y-23+Math.sin(remoteFacing)*120}:(player?{x:player.x,y:player.y-23}:aimWorld()));
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
  const lockShrineM1=!!(m&&f.char==='vessel'&&f.awakened&&name.startsWith('m1_')&&Number.isFinite(m.angle));
  const useMotionAim=!!(m&&name&&Number.isFinite(m.angle)&&((!name.startsWith('m1_')&&!name.startsWith('yutaM1_'))||lockShrineM1));
@@ -10594,7 +10605,7 @@ function positionVesselAwakeningDialogue(){
 
 function positionGojoAwakeningDialogue(){
  const overlay=$('awakeningCutscene');
- if(!overlay||!overlay.classList.contains('active')||!overlay.classList.contains('gojo-dialogue'))return;
+ if(!overlay||!overlay.classList.contains('active')||!(overlay.classList.contains('gojo-dialogue')||overlay.classList.contains('gojo-impact-dialogue')))return;
  const f=overlay._speaker,topBox=$('gojoAwakeningDialogueTop'),bottomBox=$('gojoAwakeningDialogueBottom');
  if(!f||f.dead||!topBox||!bottomBox)return;
  const viewScale=cameraViewScale();
@@ -10605,8 +10616,8 @@ function positionGojoAwakeningDialogue(){
  headX=focusX+(headX-focusX)*zoom;headY=focusY+(headY-focusY)*zoom;
  let viewW=W,viewH=H;
  if(isManualScreenRotated()){const gx=headX;headX=innerWidth-headY;headY=gx;viewW=innerWidth;viewH=innerHeight}
- const topW=topBox.offsetWidth||132,topH=topBox.offsetHeight||34;
- const bottomW=bottomBox.offsetWidth||158,bottomH=bottomBox.offsetHeight||36;
+ const topW=topBox.offsetWidth||42,topH=topBox.offsetHeight||68;
+ const bottomW=bottomBox.offsetWidth||42,bottomH=bottomBox.offsetHeight||68;
  topBox.style.left=clamp(headX+22,8,Math.max(8,viewW-topW-8))+'px';
  topBox.style.top=clamp(headY-65,8,Math.max(8,viewH-topH-8))+'px';
  bottomBox.style.left=clamp(headX-bottomW-22,8,Math.max(8,viewW-bottomW-8))+'px';
