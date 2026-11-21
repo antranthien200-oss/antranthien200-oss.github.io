@@ -6859,13 +6859,13 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
   speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
   const motionProgress=speaker.motion.t/speaker.motion.duration;
   if(speaker.char==='vessel')speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
-  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoBlindfoldPulledDown&&previousMotionProgress<.42&&motionProgress>=.42){
+  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoBlindfoldPulledDown&&previousMotionProgress<.48&&motionProgress>=.48){
    // The blindfold's slide completes at progress .42; reveal the second manga panel at that exact moment.
    speaker.gojoBlindfoldPulledDown=true;
    const gojoCutscene=$('awakeningCutscene');
    if(gojoCutscene&&gojoCutscene._speaker===speaker&&gojoCutscene._phase==='gojo-awakening-motion')gojoCutscene.classList.add('gojo-impact-dialogue-visible');
   }
-  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoHandsClashed&&previousMotionProgress<.84&&motionProgress>=.84){
+  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoHandsClashed&&previousMotionProgress<.93&&motionProgress>=.93){
    // The fists still meet later; keep the skin flash and screen shake tied to this impact.
    speaker.gojoHandsClashed=true;
    speaker.gojoSkinAwakened=true;
@@ -9163,7 +9163,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  const gojoBlueHeadShiftX=px*gojoSpinWave*2.2,gojoBlueHeadShiftY=py*gojoSpinWave*2.2;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
  // Blindfold movement is tied to the pull phase, not the full awakening animation.
- const gojoAwakeningProgress=f.char==='honored'?(name==='gojoAwaken'?smoothstep01(clamp((progress-.13)/.29,0,1)):(f.awakened&&!f.gojoAwakeningVisualPending?1:0)):0;
+ const gojoAwakeningProgress=f.char==='honored'?(name==='gojoAwaken'?smoothstep01(clamp((progress-.17)/.31,0,1)):(f.awakened&&!f.gojoAwakeningVisualPending?1:0)):0;
  const gojoFaceReveal=smoothstep01(clamp((gojoAwakeningProgress-.06)/.72,0,1));
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  const gojoSpinHand=(phase,forwardRadius,sideRadius,vertical=0)=>{
@@ -9195,48 +9195,50 @@ function drawHeadHands(f,deferMotionVfx=false){
   handAScale=1.2;handBScale=1.2;
   handAAngle=.18;handBAngle=-.18;
  }else if(name==='gojoAwaken'){
-  // Phase A: the screen-left hand reaches for the blindfold, then pulls it
-  // down to the neck while the opposite hand remains in the accessory pose.
-  const leftReach=smoothstep01(clamp(progress/.12,0,1));
-  const leftPull=smoothstep01(clamp((progress-.12)/.28,0,1));
-  const leftReturn=smoothstep01(clamp((progress-.40)/.12,0,1));
-  let leftX,leftY,leftAngle;
-  if(progress<.12){
-   leftX=lerp(-18,-12,leftReach);
-   leftY=lerp(16,-5,leftReach);
-   leftAngle=lerp(-.18,-.58,leftReach);
-  }else if(progress<.40){
-   leftX=-12;
-   leftY=lerp(-5,13,leftPull);
-   leftAngle=lerp(-.58,-.12,leftPull);
-  }else if(progress<.52){
-   leftX=lerp(-12,-18,leftReturn);
-   leftY=lerp(13,16,leftReturn);
-   leftAngle=lerp(-.12,-.18,leftReturn);
-  }else{
-   leftX=-18;leftY=16;leftAngle=-.18;
-  }
+   // Phase A: hold the preview pose for a beat, reach deliberately, then take
+   // a slower, continuous pull. Pause with the blindfold at the neck before returning.
+   const leftReach=smoothstep01(clamp((progress-.06)/.11,0,1));
+   const leftPull=smoothstep01(clamp((progress-.17)/.31,0,1));
+   const leftReturn=smoothstep01(clamp((progress-.53)/.10,0,1));
+   let leftX,leftY,leftAngle;
+   if(progress<.17){
+    leftX=lerp(-18,-12,leftReach);
+    leftY=lerp(16,-5,leftReach);
+    leftAngle=lerp(-.18,-.58,leftReach);
+   }else if(progress<.48){
+    leftX=-12;
+    leftY=lerp(-5,13,leftPull);
+    leftAngle=lerp(-.58,-.12,leftPull);
+   }else if(progress<.53){
+    leftX=-12;leftY=13;leftAngle=-.12;
+   }else if(progress<.63){
+    leftX=lerp(-12,-18,leftReturn);
+    leftY=lerp(13,16,leftReturn);
+    leftAngle=lerp(-.12,-.18,leftReturn);
+   }else{
+    leftX=-18;leftY=16;leftAngle=-.18;
+   }
 
-  // Phase B: after the left hand has fully returned to its preview pose,
-  // both hands spread away from each other, then punch inward to meet.
-  const handsSpread=smoothstep01(clamp((progress-.54)/.14,0,1));
-  const handsMeet=smoothstep01(clamp((progress-.68)/.16,0,1));
-  const handsSettle=smoothstep01(clamp((progress-.92)/.08,0,1));
-  const spreadLeft=lerp(-18,-38,handsSpread);
-  const spreadRight=lerp(18,38,handsSpread);
-  const impactLeft=lerp(spreadLeft,-4,handsMeet);
-  const impactRight=lerp(spreadRight,4,handsMeet);
-  const pairLeft=lerp(impactLeft,-18,handsSettle);
-  const pairRight=lerp(impactRight,18,handsSettle);
-  const pairY=lerp(16,7,handsMeet);
-  const settledY=lerp(pairY,16,handsSettle);
+   // Phase B: let the hands settle back into the preview pose, pause,
+   // spread apart, hold that tension, then bring both fists together slowly.
+   const handsSpread=smoothstep01(clamp((progress-.68)/.12,0,1));
+   const handsMeet=smoothstep01(clamp((progress-.84)/.09,0,1));
+   const handsSettle=smoothstep01(clamp((progress-.97)/.03,0,1));
+   const spreadLeft=lerp(-18,-38,handsSpread);
+   const spreadRight=lerp(18,38,handsSpread);
+   const impactLeft=lerp(spreadLeft,-4,handsMeet);
+   const impactRight=lerp(spreadRight,4,handsMeet);
+   const pairLeft=lerp(impactLeft,-18,handsSettle);
+   const pairRight=lerp(impactRight,18,handsSettle);
+   const pairY=lerp(16,7,handsMeet);
+   const settledY=lerp(pairY,16,handsSettle);
 
-  handB={x:x+(progress<.54?leftX:pairLeft),y:headY+(progress<.54?leftY:settledY)};
-  handA={x:x+(progress<.54?18:pairRight),y:headY+(progress<.54?16:settledY)};
-  handAScale=1.2;handBScale=1.2;
-  handAAngle=.18;
-  handBAngle=progress<.54?leftAngle:-.18;
- }else if(name==='sukunaAwaken'){
+   handB={x:x+(progress<.68?leftX:pairLeft),y:headY+(progress<.68?leftY:settledY)};
+   handA={x:x+(progress<.68?18:pairRight),y:headY+(progress<.68?16:settledY)};
+   handAScale=1.2;handBScale=1.2;
+   handAAngle=.18;
+   handBAngle=progress<.68?leftAngle:-.18;
+  }else if(name==='sukunaAwaken'){
   // Yuji's hands sink as he loses control, then snap outward as Sukuna takes over.
   const slump=smoothstep01(clamp(progress/.34,0,1));
   const takeover=smoothstep01(clamp((progress-.48)/.30,0,1));
