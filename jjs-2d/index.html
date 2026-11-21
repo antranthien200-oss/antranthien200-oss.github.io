@@ -781,15 +781,21 @@ html.manual-screen-rotated #menu .menu-art-stage{
 #awakeningCutscene.vessel-awakening-zoom .awaken-backdrop-lines,
 #awakeningCutscene.vessel-awakening-zoom .awaken-flash,
 #awakeningCutscene.vessel-awakening-zoom .awaken-content{display:none!important}
-#awakeningCutscene.gojo-dialogue{
+#awakeningCutscene.gojo-dialogue,
+#awakeningCutscene.gojo-impact-dialogue{
  position:fixed;inset:0;z-index:1000;display:block!important;overflow:hidden;
  pointer-events:none;animation:none!important;background:transparent;
 }
-#awakeningCutscene.gojo-dialogue.active{display:block;animation:none!important}
-#awakeningCutscene.gojo-dialogue:before,#awakeningCutscene.gojo-dialogue:after{display:none!important;content:none!important}
+#awakeningCutscene.gojo-dialogue.active,
+#awakeningCutscene.gojo-impact-dialogue.active{display:block;animation:none!important}
+#awakeningCutscene.gojo-dialogue:before,#awakeningCutscene.gojo-dialogue:after,
+#awakeningCutscene.gojo-impact-dialogue:before,#awakeningCutscene.gojo-impact-dialogue:after{display:none!important;content:none!important}
 #awakeningCutscene.gojo-dialogue .awaken-backdrop-lines,
 #awakeningCutscene.gojo-dialogue .awaken-flash,
-#awakeningCutscene.gojo-dialogue .awaken-content{display:none!important}
+#awakeningCutscene.gojo-dialogue .awaken-content,
+#awakeningCutscene.gojo-impact-dialogue .awaken-backdrop-lines,
+#awakeningCutscene.gojo-impact-dialogue .awaken-flash,
+#awakeningCutscene.gojo-impact-dialogue .awaken-content{display:none!important}
 .gojo-awakening-dialogue{
  display:none;position:absolute;box-sizing:border-box;align-items:center;justify-content:center;
  width:clamp(34px,8vw,42px);min-height:clamp(56px,15.5vw,68px);
@@ -7163,7 +7169,7 @@ function drawPixelSkillVfx(f,m,p,c){
  }else if(m.startsWith('gojoRed')){
   // Reversal Red's main sphere and orbiting trails are drawn in drawMotionVfx.
   // Skip this duplicate sprite/spoke layer so the wind-up stays compact and readable.
- }else if(m==='gojoPurple'||m==='gojoAwaken'||m==='gojoDomain02'){
+ }else if(m==='gojoPurple'||m==='gojoDomain02'){
   drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],41,-16,4,{B:'#433b85',M:'#8c78ed',H:'#f1eaff'});
   for(let i=0;i<6;i++){const x=14+i*10;cell(x,-38+(i%2)*8,3,12,'#c4b7ff')}
  }else if(m==='gojoRapid'||m.startsWith('gojo02Rush')||m==='gojoTwofold'||m==='gojoFaceGrater'){
@@ -10619,10 +10625,15 @@ function positionGojoAwakeningDialogue(){
  if(isManualScreenRotated()){const gx=headX;headX=innerWidth-headY;headY=gx;viewW=innerWidth;viewH=innerHeight}
  const topW=topBox.offsetWidth||42,topH=topBox.offsetHeight||68;
  const bottomW=bottomBox.offsetWidth||42,bottomH=bottomBox.offsetHeight||68;
- topBox.style.left=clamp(headX+22,8,Math.max(8,viewW-topW-8))+'px';
- topBox.style.top=clamp(headY-65,8,Math.max(8,viewH-topH-8))+'px';
- bottomBox.style.left=clamp(headX-bottomW-22,8,Math.max(8,viewW-bottomW-8))+'px';
- bottomBox.style.top=clamp(headY+27,8,Math.max(8,viewH-bottomH-8))+'px';
+ const safe=clamp(Math.min(viewW,viewH)*.018,6,12);
+ const horizontalGap=clamp(viewW*.025,12,22);
+ const verticalGap=clamp(viewH*.025,8,18);
+ // Keep the opening panel above/right of Gojo and the impact panel below/left.
+ // Position from the same head anchor, with viewport-safe bounds on every aspect ratio.
+ topBox.style.left=clamp(headX+horizontalGap,safe,Math.max(safe,viewW-topW-safe))+'px';
+ topBox.style.top=clamp(headY-topH-verticalGap,safe,Math.max(safe,viewH-topH-safe))+'px';
+ bottomBox.style.left=clamp(headX-bottomW-horizontalGap,safe,Math.max(safe,viewW-bottomW-safe))+'px';
+ bottomBox.style.top=clamp(headY+verticalGap,safe,Math.max(safe,viewH-bottomH-safe))+'px';
 }
 
 function draw(){
