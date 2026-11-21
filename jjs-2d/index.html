@@ -797,14 +797,15 @@ html.manual-screen-rotated #menu .menu-art-stage{
 #awakeningCutscene.gojo-impact-dialogue .awaken-content{display:none!important}
 .gojo-awakening-dialogue{
  display:none;position:absolute;box-sizing:border-box;align-items:center;justify-content:center;
- width:clamp(34px,8vw,42px);min-height:clamp(56px,15.5vw,68px);
- padding:3px 1px;
+ width:clamp(34px,8vw,42px);height:clamp(68px,15.5vw,84px);min-height:clamp(68px,15.5vw,84px);
+ flex:none;padding:3px 1px;
  background:#f5f5f3;color:#080808;border:2px solid #111;border-radius:0;
  box-shadow:2px 2px 0 rgba(0,0,0,.42);
+ /* Match Sukuna's manga dialogue lettering exactly. */
  font:italic 1000 clamp(6.4px,1.6vw,7.2px)/1.12 "Arial Black","Comic Sans MS",Impact,sans-serif;
  -webkit-text-stroke:.25px currentColor;
  letter-spacing:-.09em;text-align:center;text-transform:uppercase;
- text-shadow:none;white-space:pre;overflow-wrap:normal;word-break:keep-all;transform:none;
+ text-shadow:none;white-space:pre-line;overflow-wrap:normal;word-break:keep-all;transform:none;
 }
 #awakeningCutscene.gojo-dialogue.active #gojoAwakeningDialogueTop,
 #awakeningCutscene.gojo-impact-dialogue.active #gojoAwakeningDialogueTop,
@@ -813,7 +814,7 @@ html.manual-screen-rotated #menu .menu-art-stage{
 }
 #gojoAwakeningDialogueBottom{animation-delay:.055s!important}
 #gojoAwakeningDialogueTop{flex-direction:column;white-space:normal}
-#gojoAwakeningDialogueTop span{display:block;white-space:nowrap;word-break:keep-all;font-size:clamp(5.2px,1.25vw,6.2px);line-height:1.15}
+#gojoAwakeningDialogueTop span{display:block;white-space:nowrap;word-break:keep-all}
 
 /* Unified translucent glass finish for all mobile controls (paint only). */
 #mobileControls #mobileJoystick{
@@ -2368,7 +2369,7 @@ html.manual-screen-rotated #menuSub.online-menu-open .online-fight-scene{
 </head>
 <body>
 <canvas id="game"></canvas><div id="vignette"></div><div id="hitFlash"></div>
-<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue"><span>LET'S</span><span>GET</span><span>...</span></div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">A
+<div id="awakeningCutscene" aria-hidden="true"><div class="awaken-backdrop-lines"></div><div class="awaken-flash"></div><div class="awaken-content"><div class="awaken-kicker">CURSED ENERGY SURGE</div><div id="awakenCutsceneName">AWAKENING</div><div id="awakenCutsceneSubtitle">LIMIT BREAK</div><div class="awaken-rule"></div></div><div id="vesselAwakeningDialogue" class="vessel-awakening-dialogue">You're such an annoying brat...</div><div id="gojoAwakeningDialogueTop" class="gojo-awakening-dialogue"><span>LET'S</span><span>GET</span></div><div id="gojoAwakeningDialogueBottom" class="gojo-awakening-dialogue">...A
 LITTLE
 CRAZY.</div></div>
 <div class="hud" id="hud" style="display:none">
@@ -11071,7 +11072,7 @@ function positionGojoAwakeningDialogue(){
  const viewW=W,viewH=H;
  // Match the CSS clamp sizes even while a panel is display:none (offset size is then zero).
  const fallbackBoxW=clamp(innerWidth*.08,34,42);
- const fallbackBoxH=clamp(innerWidth*.155,56,68);
+ const fallbackBoxH=clamp(innerWidth*.155,68,84);
  const topW=topBox.offsetWidth||fallbackBoxW,topH=topBox.offsetHeight||fallbackBoxH;
  const bottomW=bottomBox.offsetWidth||fallbackBoxW,bottomH=bottomBox.offsetHeight||fallbackBoxH;
  const safe=clamp(Math.min(viewW,viewH)*.018,6,12);
