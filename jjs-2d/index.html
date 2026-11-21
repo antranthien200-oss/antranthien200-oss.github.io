@@ -8034,116 +8034,20 @@ function drawVesselBaseSmoothSkillVfx(f,m,p){
  }
  ctx.restore();return true;
 }
-function drawPixelSkillVfx(f,m,p,c){
- // Gojo's missed attacks use the shared red stun streaks, not the generic pixel marker.
- if(m==='gojoRapidMiss'||m==='gojoCounterMiss')return true;
+function drawPixelSkillVfx(f,m,p,c,vfxFade=1){
+ // Keep non-skill hand/item animations and already-smooth special cases unchanged.
  if(!m||m==='trashCanPickup'||m==='trashCanThrow'||m.startsWith('m1_')||m.startsWith('yutaM1_')||m==='blockGesture'||m==='dashGesture')return false;
- if(m==='gojoFlashStep')return true;
+ if(m==='gojoRapidMiss'||m==='gojoCounterMiss'||m==='gojoFlashStep')return true;
  if((f.char==='vessel'&&!f.awakened)&&['yujiCursedDrag','yujiCursedDragEnd','yujiCrush','yujiDivergent','yujiBlackFlash','yujiManjiBlock','yujiManjiCounter'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
  if(f.char==='honored'&&['yujiManjiBlock','yujiManjiCounter','gojoCounterJab','gojoCounterFinish'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m==='gojoCounterFinish'?'yujiManjiCounter':m,p);
- const beat=Math.sin(Math.PI*clamp(p,0,1));
- const cell=(x,y,w,h,color)=>{ctx.fillStyle=color;ctx.fillRect(Math.round(x/3)*3,Math.round(y/3)*3,Math.max(3,Math.ceil(w/3)*3),Math.max(3,Math.ceil(h/3)*3))};
- const line=(x1,y1,x2,y2,color,thick=3)=>{const steps=Math.max(2,Math.ceil(Math.hypot(x2-x1,y2-y1)/5));for(let i=0;i<=steps;i++){const t=i/steps;cell(x1+(x2-x1)*t-thick/2,y1+(y2-y1)*t-thick/2,thick,thick,color)}};
- const orb=['...BBBBB...','..BMMHMMB..','.BMMHHHMMB.','BMMHHHHHMMB','BMMHHHHHMMB','BMMHHHHHMMB','.BMMHHHMMB.','..BMMHMMB..','...BBBBB...'];
- const blue={B:'#174f78',M:'#39b9e8',H:'#d9fbff'};
- ctx.save();ctx.globalAlpha=.35+.6*beat;
- if(m.startsWith('gojoBlue')){
-  drawPixelSpriteGrid(orb,34,-17,3.4,blue);
-  for(let i=0;i<4;i++){const yy=-31+Math.floor(i/2)*27;cell(55+((i*7)%9),yy,6,6,'#d9fbff');cell(7,yy+4,6,6,'#39b9e8')}
- }else if(m.startsWith('gojoRed')){
-  // Reversal Red's main sphere and orbiting trails are drawn in drawMotionVfx.
-  // Skip this duplicate sprite/spoke layer so the wind-up stays compact and readable.
- }else if(m==='gojoPurple'||m==='gojoDomain02'){
-  drawPixelSpriteGrid(['....BBBB....','..BBMMMMBB..','.BMMHHHHMMB.','BMMHHHHHHMMB','BMMHHHHHHMMB','.BMMHHHHMMB.','..BBMMMMBB..','....BBBB....'],41,-16,4,{B:'#433b85',M:'#8c78ed',H:'#f1eaff'});
-  for(let i=0;i<6;i++){const x=14+i*10;cell(x,-38+(i%2)*8,3,12,'#c4b7ff')}
- }else if(m==='gojoRapid'||m.startsWith('gojo02Rush')||m==='gojoTwofold'||m==='gojoFaceGrater'){
-  for(let i=0;i<5;i++){const yy=-29+i*12,offset=(i%2)*8;cell(7+offset,yy,38,3,'#dff7ff');cell(36+offset,yy+3,14,3,'#8edfff')}
- }else if(m==='yujiCrush'){
-  ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
-  for(let i=0;i<5;i++){const yy=-3+i*8,lead=clamp(p*24,0,24);line(-54+lead,yy,-13+lead*.35,yy+3,'#17648a',9);line(-49+lead,yy-1,-17+lead*.35,yy+1,i%2?'#39c9f5':'#a9f2ff',3)}
-  drawPixelSpriteGrid(['...BB...','..BMMB..','.BMMHMMB.','BMMHHHMMB','.BMMHMMB.','..BMMB..','...BB...'],20,20,3,{B:'#15527c',M:'#32bce9',H:'#e5fbff'});
-  line(5,31,34,38,'#baf6ff',4);line(13,38,42,44,'#39c9f5',3);ctx.restore();
- }else if(m==='yujiDivergent'){
-   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
-   const punch=clamp((p-.32)/.24,0,1),eased=punch*punch*(3-2*punch);
-   for(let i=0;i<4;i++){const yy=-20+i*11,shift=eased*34;line(-48+shift,yy,-13+shift*.35,yy+3,'#12527e',8);line(-44+shift,yy-1,-16+shift*.35,yy+1,i%2?'#32bdec':'#d7faff',3)}
-   cell(36+eased*19,-13,12,12,'#38c9f4');cell(45+eased*19,-4,6,6,'#e4fcff');ctx.restore();
-  }else if(m==='yujiBlackFlash'){
-   ctx.save();ctx.rotate(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:f.face);
-   const pts=[[13,-29],[25,-17],[20,-7],[39,2],[31,12],[45,25]];
-   for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#ed304b',10);
-   for(let i=0;i<pts.length-1;i++)line(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],'#08090d',5);ctx.restore();
-  }else if(m==='yujiManjiHit'||m==='yujiDropkick'){
-   line(8,-34,20,-22,'#202331',9);line(20,-22,12,-11,'#202331',9);line(12,-11,31,1,'#202331',9);line(31,1,24,14,'#202331',9);
-   line(8,-34,20,-22,'#ffb56d',3);line(20,-22,12,-11,'#ffb56d',3);line(12,-11,31,1,'#ffb56d',3);line(31,1,24,14,'#ffb56d',3);
- }else if(m.startsWith('sukuna')){
-  for(let i=0;i<3;i++){const y=-25+i*17;line(14,y,63,y-18,'#761d35',9);line(17,y-2,65,y-20,'#f14f68',3);cell(56,y-24,9,3,'#ffe0e5')}
-  if(m==='sukunaOpen'||m==='sukunaShrine'){drawPixelSpriteGrid(['...BB...','..BMMB..','.BMMMMB.','BMMMMMMB','.BMMMMB.','..BMMB..','...BB...'],37,-15,3,{B:'#9d2c42',M:'#ff794b'})}
- }else if(m.startsWith('hakari')){
-  const col=f.jackpot?'#83ffc0':'#d9b1ff';
-  for(let i=0;i<8;i++){const x=8+i*8,y=-34+(i%3)*25;cell(x,y,5,5,col);cell(x+4,y+5,5,3,'#fff0ba')}
-  cell(27,-24,24,24,'#372d57');cell(30,-21,18,18,col);cell(36,-27,6,6,'#fff4c7');
- }else if(m.startsWith('megumi')){
-  if(m.includes('Rabbit'))drawPixelSpriteGrid(['..BB..BB..','..BMB.BMB.','..BMB.BMB.','.BMMMMMMB.','BMMHHHHMMB','.BMMMMMMB.','..BMMMB...','...BMB....'],40,-18,2.8,{B:'#566781',M:'#d8e4f7',H:'#ffffff'});
-  else if(m.includes('Toad'))drawPixelSpriteGrid(['..BBBBBB..','.BMMMMMMB.','BMMHHHHMMB','BMMMMMMMMB','.BBMMMMBB..','...B..B....'],42,-10,3.2,{B:'#29443c',M:'#83b49a',H:'#e1f5df'});
-  else if(m.includes('Nue'))drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],42,-18,3.2,{B:'#34445e',M:'#b5cbe8'});
-  else if(m.includes('Elephant'))drawPixelSpriteGrid(['..BBBBBB...','BBMMMMMMBB.','BMMMMMMMMMB','..BMMMMMBB.','..BB...BB..','..B.....B..'],42,-9,3.2,{B:'#394355',M:'#8c9dbb'});
-  else{for(let i=0;i<7;i++){const x=10+i*7,y=-27+(i%2)*15;cell(x,y,5,5,'#b7c9ed');cell(x+3,y+5,4,4,'#e9f0ff')}}
- }else if(m.startsWith('mahito')){
-  if(m.includes('Spikes')||m.includes('Domain')){for(let i=0;i<5;i++){const x=12+i*9,h=18+(i%3)*9;cell(x,8-h,6,h,'#315e5b');cell(x+3,4-h,3,5,'#9ee5d2')}}
-  else{drawPixelSpriteGrid(['...BB...','..BMMB..','.BMMMMB.','BMMHHMMB','.BMMMMB.','..BMMB..','...BB...'],38,-16,3.2,{B:'#376d67',M:'#82c9b7',H:'#ddfff1'})}
- }else if(m.startsWith('todo')){
-  for(let i=0;i<4;i++){const x=14+i*13;cell(x,-24,6,21,'#f2d38a');cell(x-3,-27,12,4,'#fff0c1')}
-  cell(26,-3,24,6,'#a78345');cell(34,3,9,6,'#f5dca0');
- }else if(m.startsWith('choso')){
-  for(let i=0;i<4;i++){const x=16+i*10;cell(x,-18+(i%2)*5,7,16,'#8b203c');cell(x+3,-15+(i%2)*5,3,10,'#ff8196')}
-  drawPixelSpriteGrid(['...BB...','..BMMB..','.BMMMMB.','BMMHHMMB','.BMMMMB.','..BMMB..','...BB...'],50,-16,3,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});
- }else if(m.startsWith('trashMan')||m.startsWith('trash')||f.char==='trashman'){
-  drawPixelSpriteGrid(['..BBBBBB..','.BMMMMMMB.','BMMHHHHMMB','BMMMMMMMMB','BMMB..BMMB','.BBBBBBBB.'],42,-8,3,{B:'#26343a',M:'#778b90',H:'#cbd8d9'});
-  for(let i=0;i<4;i++){const x=11+i*12,y=-37+(i%2)*8;cell(x,y,5,6,'#a5c77b');cell(x+4,y-5,4,4,'#d8eaa3')}
- }else if(m.startsWith('yuta')||m.startsWith('rika')){
-  drawPixelSpriteGrid(['...BBBB...','..BMMMMB..','.BMMMMMMB.','BMMHHHHMMB','BMMMMMMMMB','.BMMMMMMB.','..BMMMMB..','...BBBB...'],40,-16,3.2,{B:'#503d67',M:'#c4a8df',H:'#f7eaff'});
-  cell(18,-37,6,6,'#f5d9ff');cell(59,2,6,6,'#f5d9ff');
- }else{
-  cell(23,-25,9,9,'#fff0c7');cell(14,-16,6,6,c&&c.accent?c.accent:'#dceaff');cell(36,-7,6,6,'#ffffff');
-  line(18,-28,8,-39,'#e7f3ff',3);line(38,-28,48,-39,'#e7f3ff',3);
- }
- ctx.restore();
+
+ // Any remaining fallback that previously drew pixel sprites, blocks or pixel trails
+ // now uses the same red stun-streak effect already used by captured/missed attacks.
+ const pulse=.72+.28*Math.sin(Math.PI*clamp(p,0,1));
+ drawStunRain(f,0,0,{forceRed:true,fade:clamp(Number.isFinite(vfxFade)?vfxFade:1,0,1),strength:pulse});
  return true;
 }
 
-function drawRedGradientSphere(x,y,r,opacity=1){
- ctx.save();ctx.globalAlpha*=opacity;
- const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
- // Keep the fill even through the outlined center so the ring has no separate-looking disk.
- gradient.addColorStop(0,"#ff9bab");
- gradient.addColorStop(.48,"#ff9bab");
- gradient.addColorStop(.58,"#ff9bab");
- gradient.addColorStop(.78,"#ed4563");
- gradient.addColorStop(1,"#b52b49");
- ctx.globalAlpha=1;
- ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
- // A separate hollow circle sits inside the opaque sphere; only its white outline is drawn.
- ctx.beginPath();ctx.arc(x,y,r*.62,0,Math.PI*2);
- ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
- ctx.restore();
-}
-function drawBlueGradientSphere(x,y,r,opacity=1){
- ctx.save();ctx.globalAlpha*=opacity;
- const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
- // Match Reversal Red's smooth gradient and keep the color continuous under the hollow ring.
- gradient.addColorStop(0,"#b8efff");
- gradient.addColorStop(.48,"#b8efff");
- gradient.addColorStop(.58,"#b8efff");
- gradient.addColorStop(.78,"#62c9f2");
- gradient.addColorStop(1,"#267eb9");
- ctx.globalAlpha=1;
- ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
- // Outline only: the inner circle has no separate fill or color break.
- ctx.beginPath();ctx.arc(x,y,r*.62,0,Math.PI*2);
- ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
- ctx.restore();
-}
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m||m==='gojoCounterMiss')return;
  if(m==='gojoFlashStep')return;
@@ -8472,7 +8376,7 @@ if(m==='gojoBlueSpin'){
  }
  // Captured victims already receive the stun streak effect; avoid the generic pixel-dot fallback.
  if(m.startsWith('captured_')&&m!=='captured_sukunaFlurry')return;
- if(drawPixelSkillVfx(f,m,p,c))return;
+ if(drawPixelSkillVfx(f,m,p,c,vfxFade))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
   const beat=Math.sin(p*Math.PI),combo=Number(m.slice(3))||1;
@@ -9562,15 +9466,17 @@ function isGojoAwakeningCutscene(f){
  const overlay=$('awakeningCutscene');
  return !!(f&&f.char==='honored'&&overlay&&overlay._speaker===f&&overlay.classList.contains('active')&&(overlay.classList.contains('gojo-dialogue')||overlay.classList.contains('gojo-impact-dialogue')));
 }
-function drawStunRain(f,x,y){
+function drawStunRain(f,x,y,options=null){
  if(!f||isGojoAwakeningCutscene(f))return;
+ const forceRed=!!(options&&options.forceRed);
+ const effectFade=forceRed?clamp(Number.isFinite(options.fade)?options.fade:1,0,1):1;
  const motionName=f.motion&&typeof f.motion.name==='string'?f.motion.name:'';
  const vesselSkillOne=f.char==='vessel'&&!f.awakened&&(motionName==='yujiCursedDrag'||motionName==='yujiCursedDragEnd');
  const sukunaRushMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaHeadCarryMiss';
  const gojoRapidMiss=f.char==='honored'&&motionName==='gojoRapidMiss';
  const gojoCounterMiss=f.char==='honored'&&motionName==='gojoCounterMiss';
- if(f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss&&!gojoRapidMiss&&!gojoCounterMiss)return;
- const strength=vesselSkillOne||sukunaRushMiss||gojoRapidMiss||gojoCounterMiss?1:clamp(f.stun/.28,.35,1);
+ if(!forceRed&&f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss&&!gojoRapidMiss&&!gojoCounterMiss)return;
+ const strength=(forceRed?clamp(Number.isFinite(options.strength)?options.strength:1,0,1):(vesselSkillOne||sukunaRushMiss||gojoRapidMiss||gojoCounterMiss?1:clamp(f.stun/.28,.35,1)))*effectFade;
  const captured=vesselSkillOne||sukunaRushMiss||gojoRapidMiss||gojoCounterMiss||motionName.startsWith('captured_'),blueCaptured=motionName==='captured_gojoBlueRapid';
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=isMobileDevice?0:(0);
  for(let i=0;i<9;i++){
@@ -9580,12 +9486,13 @@ function drawStunRain(f,x,y){
   const endY=Math.min(y-16,startY+length);
   if(endY<=startY)continue;
   const lineX=Math.round(x+(i-4)*7+Math.sin(game.time*2+i)*1.1)+.5;
-  ctx.strokeStyle=blueCaptured?(i%3===0?'rgba(224,250,255,.96)':'rgba(71,185,242,.86)'):captured?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
+  ctx.strokeStyle=forceRed?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):blueCaptured?(i%3===0?'rgba(224,250,255,.96)':'rgba(71,185,242,.86)'):captured?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
   ctx.lineWidth=i%3===0?1.25:1;
   ctx.beginPath();ctx.moveTo(lineX,startY);ctx.lineTo(lineX,endY);ctx.stroke();
  }
  ctx.restore();
 }
+
 function drawHeadHands(f,deferMotionVfx=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
