@@ -4982,20 +4982,33 @@ function playAwakeningCutscene(f){
   $('vesselAwakeningDialogue').textContent="YOU'RE\nSUCH AN\nANNOYING\nBRAT.";
  }
  if(isGojo){
-  // Remove leftover dash echoes and Blue sparks before the awakening close-up.
-  // These effects otherwise freeze while the cutscene timer pauses world updates.
+  // Cancel every leftover Gojo miss/Blue effect before the awakening freeze-frame.
   f.gojoFlashStepFx=null;
   f.gojoBlueSparks=[];
   f.gojoBlueSparkUpdateAt=game.time;
   f.gojoBlueTrailPose=null;
   f.gojoBlueSharpTrailState=null;
   f.gojoRapidTrailPhaseKey='';
-  // Blue flow particles are stored in the shared world pool, so clear only
-  // nearby Gojo particles rather than disturbing effects elsewhere in the arena.
+  f.stun=0;
+  // Gojo Rapid Punches miss uses burst(), which stores ordinary square/circle
+  // particles. The cutscene pauses particle updates, so clear the nearby pool now.
+  const cleanupX=f.x,cleanupY=f.y-23,cleanupRadius=240;
   for(let i=particles.length-1;i>=0;i--){
    const p=particles[i];
-   if(p&&p.shape==='gojoFlow'&&Math.hypot(p.x-f.x,p.y-(f.y-23))<260)particles.splice(i,1);
+   if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.hypot(p.x-cleanupX,p.y-cleanupY)<cleanupRadius)particles.splice(i,1);
   }
+  // Miss effects may also leave small debris or short trail strokes nearby.
+  for(let i=debris.length-1;i>=0;i--){
+   const p=debris[i];
+   if(p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&Math.hypot(p.x-cleanupX,p.y-cleanupY)<cleanupRadius)debris.splice(i,1);
+  }
+  for(let i=trailStrokes.length-1;i>=0;i--){
+   const t=trailStrokes[i];
+   if(!t)continue;
+   const mx=(t.x1+t.x2)*.5,my=(t.y1+t.y2)*.5;
+   if(Math.hypot(mx-cleanupX,my-cleanupY)<cleanupRadius)trailStrokes.splice(i,1);
+  }
+  f.motionHandPose=null;
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
   f.gojoAwakeningVisualPending=true;f.gojoAwakeningAimLocked=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;f.gojoBlindfoldPulledDown=false;
