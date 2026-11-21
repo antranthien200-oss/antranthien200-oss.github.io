@@ -4585,8 +4585,10 @@ function playAwakeningCutscene(f){
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
   f.gojoAwakeningVisualPending=true;f.gojoAwakeningAimLocked=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;
-  // Lock Gojo's facing once, so the cutscene hand rig never swivels with the cursor.
+  // Lock Gojo's facing once, so the cutscene never swivels with the cursor.
   f.gojoAwakeningFacing=Number.isFinite(f.face)?f.face:0;
+  // Keep his hands in the accessory-preview pose throughout the opening camera zoom.
+  setMotion(f,'gojoAwakenIntroPose',1.55,f.gojoAwakeningFacing,targetOf(f));
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
@@ -9154,8 +9156,9 @@ function drawHeadHands(f,deferMotionVfx=false){
  const gojoBlueHeadTilt=-.045*gojoBlueSpinPrep-.04*gojoBlueSlapRecoil+gojoSpinHeadLean;
  const gojoBlueHeadShiftX=px*gojoSpinWave*2.2,gojoBlueHeadShiftY=py*gojoSpinWave*2.2;
  const sukunaMarkReveal=f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?(name==='sukunaAwaken'?smoothstep01(clamp((progress-.45)/.25,0,1)):1):0;
- const gojoAwakeningProgress=f.char==='honored'?(name==='gojoAwaken'?smoothstep01(clamp(progress,0,1)):(f.awakened&&!f.gojoAwakeningVisualPending?1:0)):0;
- const gojoFaceReveal=smoothstep01(clamp((gojoAwakeningProgress-.22)/.62,0,1));
+ // Blindfold movement is tied to the pull phase, not the full awakening animation.
+ const gojoAwakeningProgress=f.char==='honored'?(name==='gojoAwaken'?smoothstep01(clamp((progress-.13)/.29,0,1)):(f.awakened&&!f.gojoAwakeningVisualPending?1:0)):0;
+ const gojoFaceReveal=smoothstep01(clamp((gojoAwakeningProgress-.06)/.72,0,1));
  const P=(forward,side,vertical=0)=>({x:x+nx*forward+px*side,y:headY+ny*forward+py*side+vertical});
  const gojoSpinHand=(phase,forwardRadius,sideRadius,vertical=0)=>{
   const theta=gojoSpinTurn+phase,forward=Math.cos(theta)*forwardRadius,side=Math.sin(theta)*sideRadius;
@@ -9178,23 +9181,55 @@ function drawHeadHands(f,deferMotionVfx=false){
   const brace=0.5+0.5*Math.sin(game.time*7);handA=P(13+brace*4,22,-10-brace*3);handB=P(13+brace*4,-22,-10-brace*3);handAScale=1.16;handBScale=1.16;
  }else if(name==='dashGesture'){
   const tuck=Math.sin(Math.PI*progress);handA=P(9+18*tuck,18,-6-8*tuck);handB=P(9+18*tuck,-18,-6-8*tuck);handAScale=1.17;handBScale=1.17;
+ }else if(name==='gojoAwakenIntroPose'){
+  // During the first camera zoom, hold the exact relaxed two-hand layout
+  // used by the accessory preview: hands level with each other beside the head.
+  handB={x:x-18,y:headY+16};
+  handA={x:x+18,y:headY+16};
+  handAScale=1.2;handBScale=1.2;
+  handAAngle=.18;handBAngle=-.18;
  }else if(name==='gojoAwaken'){
-  // He reaches for the blindfold, pulls it to his neck, then drives both fists together.
-  const reachIn=smoothstep01(clamp(progress/.18,0,1));
-  const pullDown=smoothstep01(clamp((progress-.16)/.56,0,1));
-  const handsMeet=smoothstep01(clamp((progress-.72)/.12,0,1));
-  const handsRelease=smoothstep01(clamp((progress-.91)/.09,0,1));
-  const pullForward=lerp(7,18,reachIn);
-  const pullVertical=lerp(-5,15,pullDown);
-  const pullSide=lerp(23,15,reachIn);
-  const side=lerp(lerp(pullSide,4,handsMeet),15,handsRelease);
-  const forward=lerp(lerp(pullForward,27,handsMeet),18,handsRelease);
-  const vertical=lerp(lerp(pullVertical,9,handsMeet),14,handsRelease);
-  const impactPose=handsMeet*(1-handsRelease);
-  handA=P(forward,side,vertical-2);
-  handB=P(forward,-side,vertical);
-  handAScale=1.08+.18*impactPose;handBScale=1.08+.18*impactPose;
-  handAAngle=angle+.18+.42*impactPose;handBAngle=angle-.18-.42*impactPose;
+  // Phase A: the screen-left hand reaches for the blindfold, then pulls it
+  // down to the neck while the opposite hand remains in the accessory pose.
+  const leftReach=smoothstep01(clamp(progress/.12,0,1));
+  const leftPull=smoothstep01(clamp((progress-.12)/.28,0,1));
+  const leftReturn=smoothstep01(clamp((progress-.40)/.12,0,1));
+  let leftX,leftY,leftAngle;
+  if(progress<.12){
+   leftX=lerp(-18,-12,leftReach);
+   leftY=lerp(16,-5,leftReach);
+   leftAngle=lerp(-.18,-.58,leftReach);
+  }else if(progress<.40){
+   leftX=-12;
+   leftY=lerp(-5,13,leftPull);
+   leftAngle=lerp(-.58,-.12,leftPull);
+  }else if(progress<.52){
+   leftX=lerp(-12,-18,leftReturn);
+   leftY=lerp(13,16,leftReturn);
+   leftAngle=lerp(-.12,-.18,leftReturn);
+  }else{
+   leftX=-18;leftY=16;leftAngle=-.18;
+  }
+
+  // Phase B: after the left hand has fully returned to its preview pose,
+  // both hands spread away from each other, then punch inward to meet.
+  const handsSpread=smoothstep01(clamp((progress-.54)/.14,0,1));
+  const handsMeet=smoothstep01(clamp((progress-.68)/.16,0,1));
+  const handsSettle=smoothstep01(clamp((progress-.92)/.08,0,1));
+  const spreadLeft=lerp(-18,-38,handsSpread);
+  const spreadRight=lerp(18,38,handsSpread);
+  const impactLeft=lerp(spreadLeft,-4,handsMeet);
+  const impactRight=lerp(spreadRight,4,handsMeet);
+  const pairLeft=lerp(impactLeft,-18,handsSettle);
+  const pairRight=lerp(impactRight,18,handsSettle);
+  const pairY=lerp(16,7,handsMeet);
+  const settledY=lerp(pairY,16,handsSettle);
+
+  handB={x:x+(progress<.54?leftX:pairLeft),y:headY+(progress<.54?leftY:settledY)};
+  handA={x:x+(progress<.54?18:pairRight),y:headY+(progress<.54?16:settledY)};
+  handAScale=1.2;handBScale=1.2;
+  handAAngle=.18;
+  handBAngle=progress<.54?leftAngle:-.18;
  }else if(name==='sukunaAwaken'){
   // Yuji's hands sink as he loses control, then snap outward as Sukuna takes over.
   const slump=smoothstep01(clamp(progress/.34,0,1));
