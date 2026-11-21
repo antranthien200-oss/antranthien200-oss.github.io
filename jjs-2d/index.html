@@ -5009,6 +5009,11 @@ function playAwakeningCutscene(f){
    if(Math.hypot(mx-cleanupX,my-cleanupY)<cleanupRadius)trailStrokes.splice(i,1);
   }
   f.motionHandPose=null;
+  f.gojoBlueOrb=null;f.gojoBluePull=null;
+  for(let i=projectiles.length-1;i>=0;i--){
+   const p=projectiles[i];
+   if(p&&p.owner===f&&Math.hypot(p.x-cleanupX,p.y-cleanupY)<420)projectiles.splice(i,1);
+  }
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
   f.gojoAwakeningVisualPending=true;f.gojoAwakeningAimLocked=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;f.gojoBlindfoldPulledDown=false;
@@ -9553,8 +9558,12 @@ function drawGojoBlueSparks(f){
  ctx.restore();
 }
 function smoothstep01(v){v=clamp(v,0,1);return v*v*(3-2*v)}
+function isGojoAwakeningCutscene(f){
+ const overlay=$('awakeningCutscene');
+ return !!(f&&f.char==='honored'&&overlay&&overlay._speaker===f&&overlay.classList.contains('active')&&(overlay.classList.contains('gojo-dialogue')||overlay.classList.contains('gojo-impact-dialogue')));
+}
 function drawStunRain(f,x,y){
- if(!f)return;
+ if(!f||isGojoAwakeningCutscene(f))return;
  const motionName=f.motion&&typeof f.motion.name==='string'?f.motion.name:'';
  const vesselSkillOne=f.char==='vessel'&&!f.awakened&&(motionName==='yujiCursedDrag'||motionName==='yujiCursedDragEnd');
  const sukunaRushMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaHeadCarryMiss';
@@ -10349,7 +10358,7 @@ function drawGojoFlashStepPath(f,fx,age){
  }
 }
 function drawFighterMotionOverlays(f){
- if(!f||f.dead||f.vehicleTransition)return;
+ if(!f||f.dead||f.vehicleTransition||isGojoAwakeningCutscene(f))return;
  const fx=f.gojoFlashStepFx,fxAge=fx?Math.max(0,(performance.now()-(Number(fx.startedAt)||performance.now()))/1000):Infinity;
  const flashStepActive=!!fx&&fxAge<Math.max(.24,Number(fx.duration)||.48);
  const fighterVisible=worldRectVisible(f.x-260,f.y-300,520,600,80);
