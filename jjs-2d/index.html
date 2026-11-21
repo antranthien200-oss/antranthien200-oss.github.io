@@ -10346,8 +10346,8 @@ function getDomainPopupArtwork(f,stripHeight){
 function drawDomainHandsignCutin(f,p,accent){
  const t=clamp(p,0,1),cx=W*.5,cy=H*.465;
  const theme=getFighterTheme(f),compact=W/H<1.15,wide=W/H>2;
- const enter=clamp(t/.18,0,1),enterEase=enter*enter*(3-2*enter);
- const exit=clamp((t-.82)/.18,0,1),fold=exit*exit*(3-2*exit);
+ const enter=clamp(t/.21,0,1),enterEase=enter*enter*(3-2*enter);
+ const exit=clamp((t-.79)/.21,0,1),fold=exit*exit*(3-2*exit);
  // A compact, angled cut-in with the fighter centered in the panel.
  // Stretch the banner beyond the screen edges so its short end caps are not visible.
  const panelH=compact?H*.68:wide?H*.32:H*.50;
