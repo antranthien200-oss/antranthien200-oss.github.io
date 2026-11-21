@@ -153,7 +153,7 @@ combatAction(client,payload={}){
   const cooldown=kind==="domain02"?24:modeToggle?.08:(gojoFlashStepAction?15:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42)));
   const now=Date.now(),times=this.lastActionAt.get(id)||new Map(),blackFlashState=this.blackFlashFollowUps.get(id);
   const blackFlashFollowUp=kind==="3"&&p.character==="vessel"&&!p.awakened&&payload.blackFlashFollowUp===true&&blackFlashState&&!blackFlashState.used&&now-blackFlashState.startedAt>=160&&now-blackFlashState.startedAt<=2000;
-  if(p.skillLockUntil>now&&(['1','2','3','4'].includes(kind)||kind==='special'))return;
+  if(p.skillLockUntil>now&&(['1','2','3','4'].includes(kind)||kind==='special'||kind==='m1'))return;
    if(!blackFlashFollowUp&&now-(times.get(kind)||0)<cooldown*1000)return;
   if(kind==="3"&&p.character==="vessel"&&!p.awakened){
    if(blackFlashFollowUp)blackFlashState.used=true;
@@ -708,7 +708,7 @@ modifyProjectile(client,payload={}){
  combatHit(client,payload={}){
   const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id),move=String(payload.move||"").slice(0,48);
   const guaranteedRapidGrab=isGuaranteedRapidGrabAllowed(a?.character,move,a?.gojoRapidAt,Date.now(),payload.guaranteedContact===true,a?.awakened);
-  if(!a||!target||a===target||a.dead||target.dead||(a.stun>0&&!guaranteedRapidGrab)||a.activeGrabTarget||(target.grabbedBy&&!guaranteedRapidGrab))return;
+  if(!a||!target||a===target||a.dead||target.dead||(a.stun>0&&!guaranteedRapidGrab)||a.activeGrabTarget||(target.grabbedBy&&!guaranteedRapidGrab)||(Number(a.skillLockUntil)>Date.now()&&/m1(?:_|$)/i.test(move)))return;
   const profile=combatProfile(a.character,move,a.awakened);
   const incomingType=String(payload.damageType||"melee").slice(0,24);
   const amountValue=Number(payload.amount),amount=Number.isFinite(amountValue)?clamp(amountValue,0,250):profile.damage;
