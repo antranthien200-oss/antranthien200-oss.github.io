@@ -2612,6 +2612,154 @@ html body.mobile-controls-enabled.game-active #hud .bottom{
  margin:0!important;
 }
 
+/* Avatar editor: rebuild the rotated layout as a bounded landscape workspace.
+   The generic rotated menu panel uses auto height, which breaks the editor's
+   flex sizing and prevents the avatar and item catalogue from sharing the screen. */
+html.manual-screen-rotated #menuSub.accessory-editor-open{
+ align-items:stretch!important;
+ justify-content:center!important;
+ overflow:hidden!important;
+ padding:38px 10px 10px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .menu-sub-panel{
+ display:flex!important;
+ flex:1 1 auto!important;
+ flex-direction:column!important;
+ box-sizing:border-box!important;
+ width:min(1120px,100%)!important;
+ max-width:1120px!important;
+ height:100%!important;
+ max-height:100%!important;
+ min-height:0!important;
+ margin:0 auto!important;
+ padding:9px!important;
+ overflow:hidden!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .menu-sub-head{
+ flex:0 0 auto!important;
+ margin:0 0 6px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-slot-tabs{
+ display:flex!important;
+ flex:0 0 auto!important;
+ flex-wrap:nowrap!important;
+ gap:6px!important;
+ margin:0 0 7px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-tab{
+ flex:1 1 0!important;
+ min-width:0!important;
+ min-height:28px!important;
+ padding:5px 6px!important;
+ font-size:8px!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open #menuSubCards{
+ display:flex!important;
+ flex:1 1 0!important;
+ width:100%!important;
+ min-height:0!important;
+ overflow:hidden!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-layout{
+ display:grid!important;
+ flex:1 1 0!important;
+ grid-template-columns:minmax(170px,.72fr) minmax(0,1.28fr)!important;
+ align-items:stretch!important;
+ gap:8px!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ overflow:hidden!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-panel{
+ display:flex!important;
+ flex-direction:column!important;
+ flex:initial!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ padding:5px!important;
+ overflow:hidden!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open #accessoryPreviewCanvas{
+ display:block!important;
+ flex:0 1 auto!important;
+ width:auto!important;
+ height:min(66%,220px)!important;
+ max-width:100%!important;
+ max-height:calc(var(--manual-screen-height) - 170px)!important;
+ min-width:0!important;
+ min-height:0!important;
+ aspect-ratio:8 / 9!important;
+ object-fit:contain!important;
+ margin:auto!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items{
+ display:grid!important;
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ grid-auto-rows:clamp(48px,11cqi,94px)!important;
+ align-content:start!important;
+ align-items:stretch!important;
+ gap:6px!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ max-height:100%!important;
+ padding:0 3px 4px 0!important;
+ overflow-x:hidden!important;
+ overflow-y:auto!important;
+ overscroll-behavior:contain!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items .menu-option,
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items .menu-option:hover{
+ display:grid!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ max-width:none!important;
+ max-height:none!important;
+ aspect-ratio:auto!important;
+ padding:4px!important;
+ overflow:hidden!important;
+ transform:none!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items .accessory-art{
+ width:88%!important;
+ height:88%!important;
+ max-width:100%!important;
+ max-height:100%!important;
+ object-fit:contain!important;
+ margin:auto!important;
+}
+html.manual-screen-rotated #menuSub.accessory-editor-open .menu-sub-footer{
+ display:flex!important;
+ flex:0 0 auto!important;
+ margin-top:5px!important;
+ padding-top:6px!important;
+}
+@media(max-height:420px){
+ html.manual-screen-rotated #menuSub.accessory-editor-open .menu-sub-panel{padding:6px!important}
+ html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-layout{
+  grid-template-columns:minmax(140px,.7fr) minmax(0,1.3fr)!important;
+  gap:6px!important;
+ }
+ html.manual-screen-rotated #menuSub.accessory-editor-open #accessoryPreviewCanvas{
+  height:min(64%,170px)!important;
+  max-height:calc(var(--manual-screen-height) - 155px)!important;
+ }
+ html.manual-screen-rotated #menuSub.accessory-editor-open .accessory-preview-items{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  grid-auto-rows:clamp(42px,10cqi,78px)!important;
+  gap:4px!important;
+ }
+}
+
 </style>
 </head>
 <body>
