@@ -710,8 +710,8 @@ html.manual-screen-rotated #menu .menu-sub-panel{
 }
 html.manual-screen-rotated .fighter-card{width:clamp(160px,calc(var(--manual-screen-width) * .26),240px)!important}
 html.manual-screen-rotated body.mobile-controls-enabled.game-active .bottom{
- bottom:calc(165px + env(safe-area-inset-bottom))!important;
-}
+  bottom:calc(18px + env(safe-area-inset-bottom))!important;
+ }
 html.manual-screen-rotated #screenRotateBtn{right:14px!important;left:auto!important;top:14px!important;bottom:auto!important}
 html.manual-screen-rotated #screenRotateBtn.is-landscape svg{transform:none}
 @media(max-height:420px){
@@ -2560,10 +2560,10 @@ body.mobile-controls-enabled.game-active .awakening{
  }
 }
 @media(orientation:landscape) and (max-height:520px){
- body.mobile-controls-enabled.game-active .bottom{
-  bottom:calc(200px + env(safe-area-inset-bottom))!important;
+  body.mobile-controls-enabled.game-active .bottom{
+   bottom:calc(18px + env(safe-area-inset-bottom))!important;
+  }
  }
-}
 
 
 /* Rotated preview correction: preserve the canvases' native drawing proportions.
