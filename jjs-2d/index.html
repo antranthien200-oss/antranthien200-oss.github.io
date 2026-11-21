@@ -4584,7 +4584,7 @@ function playAwakeningCutscene(f){
  if(isGojo){
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
-  f.gojoAwakeningVisualPending=true;f.gojoAwakeningAimLocked=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;
+  f.gojoAwakeningVisualPending=true;f.gojoAwakeningAimLocked=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;f.gojoBlindfoldPulledDown=false;
   // Lock Gojo's facing once, so the cutscene never swivels with the cursor.
   f.gojoAwakeningFacing=Number.isFinite(f.face)?f.face:0;
   // Keep his hands in the accessory-preview pose throughout the opening camera zoom.
@@ -6859,12 +6859,16 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
   speaker.motion.t=Math.min(speaker.motion.duration,speaker.motion.t+step);
   const motionProgress=speaker.motion.t/speaker.motion.duration;
   if(speaker.char==='vessel')speaker.sukunaAwakeningVisualTime=(speaker.sukunaAwakeningVisualTime??game.time)+step;
-  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoHandsClashed&&previousMotionProgress<.84&&motionProgress>=.84){
-   // The fists meet after the blindfold is down; this exact impact turns his skin bright and shakes the screen.
-   speaker.gojoHandsClashed=true;
-   speaker.gojoSkinAwakened=true;
+  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoBlindfoldPulledDown&&previousMotionProgress<.42&&motionProgress>=.42){
+   // The blindfold's slide completes at progress .42; reveal the second manga panel at that exact moment.
+   speaker.gojoBlindfoldPulledDown=true;
    const gojoCutscene=$('awakeningCutscene');
    if(gojoCutscene&&gojoCutscene._speaker===speaker&&gojoCutscene._phase==='gojo-awakening-motion')gojoCutscene.classList.add('gojo-impact-dialogue-visible');
+  }
+  if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoHandsClashed&&previousMotionProgress<.84&&motionProgress>=.84){
+   // The fists still meet later; keep the skin flash and screen shake tied to this impact.
+   speaker.gojoHandsClashed=true;
+   speaker.gojoSkinAwakened=true;
    game.shake=Math.max(game.shake,12);
   }
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
