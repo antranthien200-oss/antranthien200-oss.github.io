@@ -4128,6 +4128,8 @@ function playAwakeningCutscene(f){
   // Gojo gets the same two 1.55-second phases and cinematic close-up as Sukuna.
   f.motion=null;f.attackAnim=0;f.attackType='';
   f.gojoAwakeningVisualPending=true;f.gojoAwakeningCameraTime=0;f.gojoSkinAwakened=false;f.gojoHandsClashed=false;
+  // Lock Gojo's facing once, so the cutscene hand rig never swivels with the cursor.
+  f.gojoAwakeningFacing=Number.isFinite(f.face)?f.face:0;
  }
  el.style.left='0px';el.style.top='0px';
  void el.offsetWidth;el.classList.add('active');
@@ -6418,7 +6420,9 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
    // The dialogue panels clear, then Gojo physically draws the blindfold down to his neck.
    cutscene.classList.remove('active','gojo-dialogue');cutscene._phase='gojo-awakening-motion';
    speaker.gojoAwakeningVisualPending=false;speaker.attackAnim=0;speaker.attackType='';
-   setMotion(speaker,'gojoAwaken',1.55,speaker.face,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
+   // Keep the exact facing captured when the dialogue cutscene began for the full hand animation.
+   speaker.face=Number.isFinite(speaker.gojoAwakeningFacing)?speaker.gojoAwakeningFacing:speaker.face;
+   setMotion(speaker,'gojoAwaken',1.55,speaker.gojoAwakeningFacing,targetOf(speaker));game.cutsceneTimer=1.55;game.shake=0;
   }else{
    cutscene.classList.remove('active','vessel-dialogue','gojo-dialogue','vessel-awakening-zoom');cutscene.style.background='';canvas.style.transform='';cutscene._speaker=null;cutscene._phase=null;
   }
