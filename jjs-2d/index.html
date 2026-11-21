@@ -10621,10 +10621,15 @@ function positionGojoAwakeningDialogue(){
  const cameraProgress=clamp((f.gojoAwakeningCameraTime||0)/1.55,0,1),ease=cameraProgress*cameraProgress*(3-2*cameraProgress),zoom=1+.45*ease;
  const focusX=W*.5+(f.x-camera.x)/viewScale,focusY=H*.5+(f.y-camera.y)/viewScale;
  headX=focusX+(headX-focusX)*zoom;headY=focusY+(headY-focusY)*zoom;
- let viewW=W,viewH=H;
- if(isManualScreenRotated()){const gx=headX;headX=innerWidth-headY;headY=gx;viewW=innerWidth;viewH=innerHeight}
- const topW=topBox.offsetWidth||42,topH=topBox.offsetHeight||68;
- const bottomW=bottomBox.offsetWidth||42,bottomH=bottomBox.offsetHeight||68;
+ // The overlay lives inside the same rotated body as the game canvas.
+ // Keep coordinates in the logical W x H viewport; rotating these points again
+ // here double-rotates the panels on devices using the manual screen-rotate control.
+ const viewW=W,viewH=H;
+ // Match the CSS clamp sizes even while a panel is display:none (offset size is then zero).
+ const fallbackBoxW=clamp(innerWidth*.08,34,42);
+ const fallbackBoxH=clamp(innerWidth*.155,56,68);
+ const topW=topBox.offsetWidth||fallbackBoxW,topH=topBox.offsetHeight||fallbackBoxH;
+ const bottomW=bottomBox.offsetWidth||fallbackBoxW,bottomH=bottomBox.offsetHeight||fallbackBoxH;
  const safe=clamp(Math.min(viewW,viewH)*.018,6,12);
  const horizontalGap=clamp(viewW*.025,12,22);
  const verticalGap=clamp(viewH*.025,8,18);
