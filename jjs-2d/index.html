@@ -2498,6 +2498,70 @@ html.manual-screen-rotated #menuSub.online-menu-open .online-fight-scene{
  html.manual-screen-rotated #menuSub .menu-sub-panel{padding:9px!important}
 }
 
+
+/* Mobile-mode HUD placement and sizing. */
+body.mobile-controls-enabled.game-active #roundLabel{
+ display:none!important;
+}
+body.mobile-controls-enabled.game-active .toprow .fighter-card{
+ transform:scale(.7407407)!important;
+ transform-origin:top left!important;
+}
+body.mobile-controls-enabled.game-active .toprow .fighter-card.enemy{
+ transform-origin:top right!important;
+}
+body.mobile-controls-enabled.game-active #comboDisplay{
+ top:calc(42px + env(safe-area-inset-top))!important;
+ padding:5px 9px!important;
+ gap:8px!important;
+ transform:translate(-50%,-7px) scale(.8)!important;
+}
+body.mobile-controls-enabled.game-active #comboDisplay.active{
+ transform:translate(-50%,0) scale(.8)!important;
+}
+body.mobile-controls-enabled.game-active .bottom{
+ left:50%!important;
+ width:min(210px,40vw)!important;
+ transform:translateX(-50%)!important;
+ align-items:center!important;
+ gap:0!important;
+}
+body.mobile-controls-enabled.game-active .awakening{
+ width:100%!important;
+ max-width:none!important;
+}
+@media(max-width:440px){
+ body.mobile-controls-enabled.game-active .bottom{
+  bottom:calc(150px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(max-width:360px){
+ body.mobile-controls-enabled.game-active .bottom{
+  bottom:calc(142px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(max-width:340px){
+ body.mobile-controls-enabled.game-active .bottom{
+  bottom:calc(115px + env(safe-area-inset-bottom))!important;
+  width:min(150px,38vw)!important;
+ }
+}
+@media(min-width:441px) and (max-width:520px){
+ body.mobile-controls-enabled.game-active .bottom{
+  bottom:calc(170px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(min-width:521px){
+ body.mobile-controls-enabled.game-active .bottom{
+  bottom:calc(215px + env(safe-area-inset-bottom))!important;
+ }
+}
+@media(orientation:landscape) and (max-height:520px){
+ body.mobile-controls-enabled.game-active .bottom{
+  bottom:calc(200px + env(safe-area-inset-bottom))!important;
+ }
+}
+
 </style>
 </head>
 <body>
