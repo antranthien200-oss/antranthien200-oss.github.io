@@ -6546,7 +6546,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     popText(f.x,f.y-55,'TWOFOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
    }
   }else{
-   if(idx===0){const orbX=f.x+Math.cos(angle)*48,orbY=f.y-23+Math.sin(angle)*48;f.skillCd[idx]=17;projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.85,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:.85,phaseDuration:.85,activeDuration:4,collapseDuration:2,phaseElapsed:0});showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
+   if(idx===0){const orbX=f.x+Math.cos(angle)*48,orbY=f.y-23+Math.sin(angle)*48;f.skillCd[idx]=17;projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:5.5,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:1.5,phaseDuration:1.5,activeDuration:3,collapseDuration:1,phaseElapsed:0});showToast('LAPSE BLUE MAX · GUIDE THE ORB',850)}
    if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
    if(idx===2){f.attackAnim=.75;f.invuln=.22;burst(f.x,f.y,'#bd9dff',26,6);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*16,vy:Math.sin(angle)*16,r:34,life:3.4,maxDistance:920,travelled:0,owner:f,kind:'hollow',damage:70,color:'#c7a7ff'})},620);f.skillCd[idx]=40;game.shake=7}
    if(idx===3){if(startDomain(f,'void',14,1.25,.35,555,1))f.skillCd[idx]=120}
@@ -8123,7 +8123,7 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.restore();
 }
 function drawGojoBlueMaxProjectile(p,x,y){
- const phase=p.phase||'active',duration=Math.max(.001,Number(p.phaseDuration)||(phase==='forming'?.85:phase==='collapse'?2:4));
+ const phase=p.phase||'active',duration=Math.max(.001,Number(p.phaseDuration)||(phase==='forming'?1.5:phase==='collapse'?1:3));
  const progress=clamp(1-(Number(p.phaseRemaining)||0)/duration,0,1),forming=phase==='forming',collapse=phase==='collapse';
  const form=smoothstep01(progress),collapseProgress=collapse?smoothstep01(progress):0;
  const coreScale=forming?clamp((progress-.38)/.62,0,1):collapse?Math.max(.025,1-collapseProgress*.98):1;
