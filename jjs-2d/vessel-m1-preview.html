@@ -8083,186 +8083,138 @@ function drawGojoBlueMaxProjectile(p,x,y){
  const duration=Math.max(.001,Number(p.phaseDuration)||(phase==='forming'?1.5:phase==='collapse'?1:3));
  const progress=clamp(1-(Number(p.phaseRemaining)||0)/duration,0,1);
  const forming=phase==='forming',collapse=phase==='collapse';
- const phaseEase=smoothstep01(progress),collapseEase=collapse?smoothstep01(progress):0;
- const reveal=forming?clamp((progress-.04)/.96,0,1):1;
- const cloudScale=forming?.24+.76*smoothstep01(reveal):collapse?1-collapseEase*.56:1+.018*Math.sin(game.time*3.1);
- const coreScale=forming?.12+.88*smoothstep01(clamp((progress-.16)/.84,0,1)):collapse?Math.max(.025,1-collapseEase*.98):1;
- const cloudAlpha=forming?clamp(progress/.18,0,1):collapse?1-collapseEase:1;
- const t=game.time,spin=t*(forming?-.46:collapse?.12:-.27),baseAlpha=ctx.globalAlpha;
- const mobile=isMobileDevice,glow=mobile?7:17;
- const pulse=1+.025*Math.sin(t*5.2);
- ctx.save();
- ctx.translate(x,y);
- ctx.globalAlpha=baseAlpha*cloudAlpha;
- ctx.lineCap='round';
- ctx.lineJoin='round';
+ const c=collapse?smoothstep01(progress):0;
+ const t=game.time,baseAlpha=ctx.globalAlpha;
+ const mobile=isMobileDevice,glow=mobile?5:13;
+ const swell=1+.018*Math.sin(t*4.1);
+ const overall=forming?.36+.64*smoothstep01(clamp(progress/.92,0,1)):collapse?1-c*.48:swell;
+ const reveal=(start,span=.34)=>forming?smoothstep01(clamp((progress-start)/span,0,1)):collapse?1-c*.16:1;
+ const alpha=collapse?1-c:1;
+ ctx.save();ctx.translate(x,y);ctx.lineCap='round';ctx.lineJoin='round';
 
- const sweep=(a,b,c,d,width,alpha,shadow)=>{
-  const x1=a[0]*cloudScale,y1=a[1]*cloudScale;
-  const x2=b[0]*cloudScale,y2=b[1]*cloudScale;
-  const x3=c[0]*cloudScale,y3=c[1]*cloudScale;
-  const x4=d[0]*cloudScale,y4=d[1]*cloudScale;
-  const grad=ctx.createLinearGradient(x1,y1,x4,y4);
-  grad.addColorStop(0,'rgba(8,35,112,0)');
-  grad.addColorStop(.18,'rgba(12,48,145,.96)');
-  grad.addColorStop(.42,'rgba(20,91,196,.98)');
-  grad.addColorStop(.68,'rgba(66,177,246,.94)');
-  grad.addColorStop(.88,'rgba(196,247,255,.92)');
-  grad.addColorStop(1,'rgba(71,177,239,0)');
-  ctx.globalAlpha=baseAlpha*cloudAlpha*alpha;
-  ctx.strokeStyle=grad;
-  ctx.lineWidth=width*cloudScale;
-  ctx.shadowColor='#258fe9';
-  ctx.shadowBlur=glow+shadow;
-  ctx.beginPath();
-  ctx.moveTo(x1,y1);
-  ctx.bezierCurveTo(x2,y2,x3,y3,x4,y4);
-  ctx.stroke();
-  ctx.shadowBlur=0;
-  ctx.globalAlpha=baseAlpha*cloudAlpha*alpha*.75;
-  ctx.strokeStyle='rgba(10,42,133,.88)';
-  ctx.lineWidth=width*cloudScale*.34;
-  ctx.beginPath();
-  ctx.moveTo(x1,y1);
-  ctx.bezierCurveTo(x2,y2,x3,y3,x4,y4);
-  ctx.stroke();
+ // Soft atmospheric volume sits behind the sharper turbulent strands.
+ ctx.globalAlpha=baseAlpha*alpha*(forming?clamp(progress/.12,0,1):1);
+ const haze=ctx.createRadialGradient(-3,-5,5,0,0,103*overall);
+ haze.addColorStop(0,'rgba(28,111,221,.23)');
+ haze.addColorStop(.42,'rgba(32,137,225,.2)');
+ haze.addColorStop(.72,'rgba(37,137,221,.12)');
+ haze.addColorStop(1,'rgba(23,75,164,0)');
+ ctx.fillStyle=haze;ctx.beginPath();ctx.ellipse(0,0,96*overall,79*overall,-.16,0,Math.PI*2);ctx.fill();
+
+ // Tapered cubic ribbons; unequal endpoints and changing widths avoid tidy orbit circles.
+ const ribbon=(points,width,opacity)=>{
+  const k=overall*(collapse?1-c*.18:1),pts=points.map(q=>[q[0]*k,q[1]*k]);
+  const [p0,p1,p2,p3]=pts,steps=22,left=[],right=[];
+  for(let i=0;i<=steps;i++){
+   const u=i/steps,v=1-u;
+   const px=v*v*v*p0[0]+3*v*v*u*p1[0]+3*v*u*u*p2[0]+u*u*u*p3[0];
+   const py=v*v*v*p0[1]+3*v*v*u*p1[1]+3*v*u*u*p2[1]+u*u*u*p3[1];
+   const tx=3*v*v*(p1[0]-p0[0])+6*v*u*(p2[0]-p1[0])+3*u*u*(p3[0]-p2[0]);
+   const ty=3*v*v*(p1[1]-p0[1])+6*v*u*(p2[1]-p1[1])+3*u*u*(p3[1]-p2[1]);
+   const len=Math.hypot(tx,ty)||1,nx=-ty/len,ny=tx/len;
+   const shape=Math.pow(Math.max(0,Math.sin(Math.PI*u)),.58)*(.72+.28*u);
+   const w=Math.max(.25,width*k*(.06+.94*shape));
+   left.push([px+nx*w*.5,py+ny*w*.5]);right.push([px-nx*w*.5,py-ny*w*.5]);
+  }
+  const g=ctx.createLinearGradient(p0[0],p0[1],p3[0],p3[1]);
+  g.addColorStop(0,'rgba(9,34,115,0)');g.addColorStop(.17,'rgba(8,38,128,.96)');
+  g.addColorStop(.44,'rgba(17,78,185,.98)');g.addColorStop(.68,'rgba(39,145,225,.98)');
+  g.addColorStop(.85,'rgba(155,229,255,.94)');g.addColorStop(1,'rgba(69,162,230,0)');
+  ctx.save();ctx.globalAlpha=baseAlpha*alpha*opacity;ctx.shadowColor='#278fe8';ctx.shadowBlur=glow+7;
+  ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);
+  for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);
+  for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);
+  ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+  ctx.globalAlpha=baseAlpha*alpha*opacity*.48;ctx.strokeStyle='rgba(6,31,104,.92)';ctx.lineWidth=Math.max(1,width*.12*k);
+  ctx.beginPath();ctx.moveTo(p0[0],p0[1]);ctx.bezierCurveTo(p1[0],p1[1],p2[0],p2[1],p3[0],p3[1]);ctx.stroke();
+  ctx.restore();
  };
 
- // Rear currents are deliberately broken and asymmetrical, not complete orbit rings.
- ctx.save();
- ctx.rotate(spin*.34);
- sweep([-69,-20],[-98,-79],[5,-94],[65,-43],15,.88,7);
- sweep([-69,37],[-82,85],[22,91],[72,24],18,.82,6);
- sweep([55,-55],[87,-13],[-5,22],[-65,57],11,.78,5);
+ // Rear currents sweep around the mass at different angles and speeds.
+ ctx.save();ctx.rotate(t*-.16);
+ ribbon([[-74,-8],[-109,-51],[-57,-105],[12,-78]],17,.88);
+ ribbon([[74,-19],[100,23],[55,92],[-17,77]],19,.84);
+ ribbon([[-56,58],[-91,23],[-80,-26],[-42,-49]],12,.68);
  ctx.restore();
 
- // Uneven vapor lobes create the thick, turbulent white-blue mass from the reference.
- const lobes=[
-  {a:-2.72,r:48,rx:31,ry:23,k:1.08},
-  {a:-1.83,r:57,rx:25,ry:32,k:.94},
-  {a:-.82,r:54,rx:33,ry:24,k:1.04},
-  {a:.08,r:55,rx:30,ry:25,k:.91},
-  {a:1.12,r:50,rx:27,ry:31,k:1.12},
-  {a:2.27,r:54,rx:32,ry:23,k:.96}
+ // Asymmetric vapor plumes: each blooms at a different point during the wind-up.
+ const clouds=[
+  {x:-48,y:-39,rx:34,ry:27,rot:-.58,at:.06},
+  {x:39,y:-47,rx:36,ry:25,rot:.54,at:.18},
+  {x:55,y:24,rx:31,ry:28,rot:1.08,at:.30},
+  {x:-40,y:48,rx:37,ry:26,rot:-.7,at:.42},
+  {x:2,y:-70,rx:25,ry:21,rot:.08,at:.55},
+  {x:-72,y:8,rx:21,ry:28,rot:-.24,at:.64}
  ];
- for(let i=0;i<lobes.length;i++){
-  const q=lobes[i],a=q.a+spin*(i%2?-.22:.19)+Math.sin(t*2.1+i*1.8)*.045;
-  const radius=q.r*cloudScale;
-  const px=Math.cos(a)*radius,py=Math.sin(a)*radius*.72;
-  const rx=q.rx*cloudScale*q.k*(1+.035*Math.sin(t*3+i));
-  const ry=q.ry*cloudScale*q.k*(1+.045*Math.cos(t*2.4+i*1.3));
-  ctx.save();
-  ctx.translate(px,py);
-  ctx.rotate(a*.42+Math.sin(t*1.6+i)*.08);
-  ctx.globalAlpha=baseAlpha*cloudAlpha*.94;
-  ctx.shadowColor='#55bfff';
-  ctx.shadowBlur=glow+8;
-  const vapor=ctx.createRadialGradient(-rx*.22,-ry*.25,1,0,0,Math.max(rx,ry)*1.25);
-  vapor.addColorStop(0,'rgba(255,255,255,.99)');
-  vapor.addColorStop(.28,'rgba(239,252,255,.98)');
-  vapor.addColorStop(.55,'rgba(163,225,255,.96)');
-  vapor.addColorStop(.78,'rgba(70,157,231,.78)');
-  vapor.addColorStop(1,'rgba(22,75,171,0)');
-  ctx.fillStyle=vapor;
-  ctx.beginPath();
-  ctx.moveTo(-rx*.95,-ry*.12);
-  ctx.bezierCurveTo(-rx*1.12,-ry*.76,-rx*.48,-ry*1.06,-rx*.12,-ry*.78);
-  ctx.bezierCurveTo(rx*.28,-ry*1.16,rx*.93,-ry*.75,rx*.79,-ry*.22);
-  ctx.bezierCurveTo(rx*1.2,ry*.18,rx*.55,ry*.92,rx*.08,ry*.76);
-  ctx.bezierCurveTo(-rx*.32,ry*1.08,-rx*1.05,ry*.61,-rx*.95,-ry*.12);
-  ctx.closePath();
-  ctx.fill();
-  ctx.shadowBlur=0;
-  ctx.globalAlpha=baseAlpha*cloudAlpha*.48;
-  ctx.strokeStyle='rgba(247,254,255,.96)';
-  ctx.lineWidth=Math.max(2,rx*.12);
-  ctx.beginPath();
-  ctx.moveTo(-rx*.56,-ry*.1);
-  ctx.bezierCurveTo(-rx*.35,-ry*.66,rx*.12,-ry*.66,rx*.36,-ry*.25);
-  ctx.stroke();
+ for(let i=0;i<clouds.length;i++){
+  const q=clouds[i],r=reveal(q.at,.24),drift=Math.sin(t*2.4+i*1.7)*2.2;
+  if(r<=.01)continue;
+  const cx=(q.x+Math.sin(t*1.7+i)*3)*overall,cy=(q.y+drift)*overall;
+  const rx=q.rx*overall*(.7+.3*r)*(1+.035*Math.sin(t*2.8+i));
+  const ry=q.ry*overall*(.7+.3*r)*(1+.04*Math.cos(t*2.2+i*1.2));
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(q.rot+Math.sin(t*1.5+i)*.06);
+  ctx.globalAlpha=baseAlpha*alpha*r*.98;ctx.shadowColor='#65caff';ctx.shadowBlur=glow+8;
+  const g=ctx.createRadialGradient(-rx*.28,-ry*.24,1,0,0,Math.max(rx,ry)*1.28);
+  g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.22,'rgba(248,254,255,.99)');
+  g.addColorStop(.46,'rgba(194,238,255,.98)');g.addColorStop(.7,'rgba(84,174,238,.9)');g.addColorStop(1,'rgba(21,75,174,0)');
+  ctx.fillStyle=g;ctx.beginPath();
+  ctx.moveTo(-rx*.88,-ry*.05);
+  ctx.bezierCurveTo(-rx*1.12,-ry*.48,-rx*.67,-ry*1.17,-rx*.13,-ry*.83);
+  ctx.bezierCurveTo(rx*.25,-ry*1.2,rx*.97,-ry*.83,rx*.81,-ry*.25);
+  ctx.bezierCurveTo(rx*1.18,ry*.2,rx*.59,ry*1.02,rx*.1,ry*.77);
+  ctx.bezierCurveTo(-rx*.37,ry*1.12,-rx*1.09,ry*.53,-rx*.88,-ry*.05);
+  ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+  ctx.globalAlpha=baseAlpha*alpha*r*.68;ctx.strokeStyle='rgba(246,253,255,.97)';ctx.lineWidth=Math.max(2,rx*.105);
+  ctx.beginPath();ctx.moveTo(-rx*.58,-ry*.16);ctx.bezierCurveTo(-rx*.32,-ry*.69,rx*.18,-ry*.7,rx*.48,-ry*.29);ctx.stroke();
+  ctx.globalAlpha=baseAlpha*alpha*r*.4;ctx.strokeStyle='rgba(220,248,255,.9)';ctx.lineWidth=Math.max(1.5,rx*.06);
+  ctx.beginPath();ctx.moveTo(-rx*.4,ry*.46);ctx.bezierCurveTo(-rx*.05,ry*.79,rx*.38,ry*.66,rx*.57,ry*.28);ctx.stroke();
   ctx.restore();
  }
 
- // Foreground cobalt ribbons cut across the vapor and wrap around the nucleus.
- ctx.save();
- ctx.rotate(-spin*.62);
- sweep([-72,5],[-46,-51],[4,-67],[43,-48],12,.98,9);
- sweep([70,-4],[44,34],[-18,69],[-59,49],14,.94,8);
- sweep([-47,58],[-19,83],[42,72],[66,39],8,.82,5);
+ // Dark cobalt inner vortex. Broken arcs and crossing bands surround the bright core.
+ const vortexScale=overall*(collapse?1-c*.22:1);
+ ctx.save();ctx.scale(vortexScale,vortexScale);ctx.rotate(t*-.22);
+ const innerBand=(path,w,color,opacity,blur=0)=>{
+  ctx.save();ctx.globalAlpha=baseAlpha*opacity*(collapse?1-c*.35:1);ctx.strokeStyle=color;ctx.lineWidth=w;ctx.shadowColor=color;ctx.shadowBlur=mobile?0:blur;
+  ctx.beginPath();ctx.moveTo(path[0][0],path[0][1]);ctx.bezierCurveTo(path[1][0],path[1][1],path[2][0],path[2][1],path[3][0],path[3][1]);ctx.stroke();ctx.restore();
+ };
+ innerBand([[-30,-12],[-23,-35],[10,-39],[29,-15]],12,'#092c83',.98,8);
+ innerBand([[28,-3],[43,19],[14,39],[-15,31]],13,'#0b348f',.96,8);
+ innerBand([[-28,10],[-44,-8],[-28,-33],[-9,-34]],9,'#124ab1',.95,6);
+ innerBand([[-22,-15],[-5,-28],[13,-26],[23,-10]],4,'#4ab8f6',.92,4);
+ innerBand([[25,7],[20,23],[0,29],[-14,22]],3.5,'#45b5f4',.8,3);
  ctx.restore();
 
- // A few narrow, luminous wisps give the cloud motion without turning it into a perfect halo.
- ctx.save();
- ctx.rotate(spin*.8);
- const wisps=[
-  [[-72,-34],[-40,-75],[14,-79],[54,-47]],
-  [[-60,44],[-27,67],[21,76],[64,34]],
-  [[62,-39],[75,-3],[36,27],[8,54]]
- ];
- for(let i=0;i<wisps.length;i++){
-  const w=wisps[i],g=ctx.createLinearGradient(w[0][0],w[0][1],w[3][0],w[3][1]);
-  g.addColorStop(0,'rgba(255,255,255,0)');
-  g.addColorStop(.34,'rgba(195,244,255,.88)');
-  g.addColorStop(.7,'rgba(74,177,248,.85)');
-  g.addColorStop(1,'rgba(30,105,208,0)');
-  ctx.globalAlpha=baseAlpha*cloudAlpha*(.62+i*.07);
-  ctx.strokeStyle=g;
-  ctx.lineWidth=(i===1?5:3.5)*cloudScale;
-  ctx.shadowColor='#a7eaff';
-  ctx.shadowBlur=mobile?4:10;
-  ctx.beginPath();
-  ctx.moveTo(w[0][0]*cloudScale,w[0][1]*cloudScale);
-  ctx.bezierCurveTo(w[1][0]*cloudScale,w[1][1]*cloudScale,w[2][0]*cloudScale,w[2][1]*cloudScale,w[3][0]*cloudScale,w[3][1]*cloudScale);
-  ctx.stroke();
- }
+ // Front ribbons cross only part of the silhouette so the cloud remains readable.
+ ctx.save();ctx.rotate(t*.12);
+ ribbon([[-73,19],[-55,-11],[-18,-41],[17,-37]],10,.92);
+ ribbon([[57,-54],[88,-22],[49,20],[16,45]],12,.95);
+ ribbon([[-17,76],[17,92],[52,66],[65,36]],8,.78);
  ctx.restore();
 
- // The nucleus stays smooth and glassy: deep cobalt shell, cyan body, white-hot center.
- ctx.globalAlpha=baseAlpha*(collapse?Math.max(.12,1-collapseEase*.82):1);
- const cr=23*coreScale*(forming?1:collapse?1: pulse);
- if(cr>1){
-  const corona=ctx.createRadialGradient(-2,-3,cr*.12,0,0,cr*2.45);
-  corona.addColorStop(0,'rgba(228,251,255,.95)');
-  corona.addColorStop(.28,'rgba(71,190,255,.55)');
-  corona.addColorStop(.62,'rgba(25,108,226,.22)');
-  corona.addColorStop(1,'rgba(14,54,151,0)');
-  ctx.fillStyle=corona;
-  ctx.beginPath();ctx.arc(0,0,cr*2.45,0,Math.PI*2);ctx.fill();
-
-  const shell=ctx.createRadialGradient(-cr*.34,-cr*.4,cr*.04,0,0,cr*1.12);
-  shell.addColorStop(0,'#f8ffff');
-  shell.addColorStop(.16,'#d9f8ff');
-  shell.addColorStop(.36,'#73dcff');
-  shell.addColorStop(.62,'#288ce5');
-  shell.addColorStop(.86,'#1053bb');
-  shell.addColorStop(1,'#082d83');
-  ctx.fillStyle=shell;
-  ctx.shadowColor='#63d9ff';
-  ctx.shadowBlur=mobile?5:14;
-  ctx.beginPath();ctx.arc(0,0,cr,0,Math.PI*2);ctx.fill();
-  ctx.shadowBlur=0;
-
-  ctx.globalAlpha=baseAlpha*(collapse?Math.max(.12,1-collapseEase*.82):1)*.8;
-  ctx.strokeStyle='rgba(220,250,255,.92)';
-  ctx.lineWidth=Math.max(1.2,cr*.055);
-  ctx.beginPath();ctx.arc(-cr*.08,-cr*.05,cr*.78,-2.42,-.28);ctx.stroke();
-  ctx.globalAlpha=baseAlpha*(collapse?Math.max(.12,1-collapseEase*.82):1)*.9;
-  ctx.fillStyle='#ffffff';
-  ctx.beginPath();ctx.ellipse(-cr*.27,-cr*.3,cr*.2,cr*.12,-.62,0,Math.PI*2);ctx.fill();
+ // Smooth luminous nucleus with a defined electric-blue shell.
+ const revealCore=forming?smoothstep01(clamp((progress-.08)/.42,0,1)):1;
+ const coreR=(5+14*revealCore)*(collapse?Math.max(.025,1-c*.96):1);
+ ctx.globalAlpha=baseAlpha*alpha*(forming?.2+.8*revealCore:collapse?1-c*.9:1);
+ if(coreR>.5){
+  const aura=ctx.createRadialGradient(-1,-2,coreR*.2,0,0,coreR*2.9);
+  aura.addColorStop(0,'rgba(240,254,255,.9)');aura.addColorStop(.2,'rgba(100,213,255,.62)');aura.addColorStop(.57,'rgba(29,117,224,.27)');aura.addColorStop(1,'rgba(8,43,137,0)');
+  ctx.fillStyle=aura;ctx.beginPath();ctx.arc(0,0,coreR*2.9,0,Math.PI*2);ctx.fill();
+  const shell=ctx.createRadialGradient(-coreR*.35,-coreR*.4,coreR*.04,0,0,coreR*1.12);
+  shell.addColorStop(0,'#ffffff');shell.addColorStop(.2,'#d8f8ff');shell.addColorStop(.42,'#69d8ff');shell.addColorStop(.7,'#2388e8');shell.addColorStop(.9,'#0e4aa9');shell.addColorStop(1,'#061e69');
+  ctx.fillStyle=shell;ctx.shadowColor='#69dfff';ctx.shadowBlur=mobile?4:11;ctx.beginPath();ctx.arc(0,0,coreR,0,Math.PI*2);ctx.fill();ctx.shadowBlur=0;
+  ctx.globalAlpha*=.85;ctx.strokeStyle='rgba(228,251,255,.95)';ctx.lineWidth=Math.max(1,coreR*.07);ctx.beginPath();ctx.arc(-coreR*.06,-coreR*.06,coreR*.79,-2.7,-.3);ctx.stroke();
+  ctx.globalAlpha*=.85;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.ellipse(-coreR*.3,-coreR*.32,coreR*.2,coreR*.12,-.65,0,Math.PI*2);ctx.fill();
  }
 
- // On the final second the cloud folds inward and sheds soft blue motes instead of square pixels.
- if(collapse&&collapseEase<.99){
-  for(let i=0;i<9;i++){
-   const a=i*Math.PI*2/9+t*(.8+i*.012);
-   const distance=cr*1.35+collapseEase*(28+(i%3)*7);
-   const size=(2.2+(i%3)*1.15)*(1-collapseEase);
-   const px=Math.cos(a)*distance,py=Math.sin(a)*distance*.78;
-   ctx.globalAlpha=baseAlpha*(1-collapseEase)*.88;
-   ctx.fillStyle=i%3===0?'#e9fbff':i%3===1?'#68d6ff':'#287de0';
-   ctx.shadowColor=ctx.fillStyle;
-   ctx.shadowBlur=mobile?2:7;
-   ctx.beginPath();ctx.arc(px,py,size,0,Math.PI*2);ctx.fill();
+ // Disintegration: the nucleus contracts first, then loose round energy motes drift away.
+ if(collapse&&c>.05&&c<.995){
+  for(let i=0;i<11;i++){
+   const seed=i*2.399,tangent=t*.55+i*.31;
+   const angle=seed+tangent,dist=coreR*1.6+c*(24+(i%4)*8);
+   const px=Math.cos(angle)*dist+(i%2?8:-6)*c,py=Math.sin(angle)*dist*.78+(i%3-1)*6*c;
+   const size=(1.8+(i%3)*1.35)*(1-c);
+   ctx.save();ctx.globalAlpha=baseAlpha*(1-c)*.9;ctx.fillStyle=i%3===0?'#f1fcff':i%3===1?'#71d8ff':'#287de0';ctx.shadowColor=ctx.fillStyle;ctx.shadowBlur=mobile?2:6;ctx.beginPath();ctx.arc(px,py,size,0,Math.PI*2);ctx.fill();ctx.restore();
   }
  }
  ctx.restore();
