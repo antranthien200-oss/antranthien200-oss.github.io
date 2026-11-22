@@ -8048,42 +8048,37 @@ function drawPixelSkillVfx(f,m,p,c,vfxFade=1){
  return true;
 }
 
-function drawSkillEnergySphere(x,y,radius,alpha,colors){
- const r=Number(radius),fade=clamp(Number.isFinite(alpha)?alpha:1,0,1);
- if(!Number.isFinite(x)||!Number.isFinite(y)||!Number.isFinite(r)||r<=0||fade<=0)return;
- const baseAlpha=Number.isFinite(ctx.globalAlpha)?ctx.globalAlpha:1;
- ctx.save();
- ctx.globalAlpha=baseAlpha*fade;
- const gradient=ctx.createRadialGradient(x-r*.28,y-r*.34,r*.025,x,y,r*1.08);
- gradient.addColorStop(0,colors.core);
- gradient.addColorStop(.2,colors.highlight);
- gradient.addColorStop(.52,colors.main);
- gradient.addColorStop(.82,colors.deep);
- gradient.addColorStop(1,colors.edge);
- ctx.fillStyle=gradient;
- ctx.shadowColor=colors.glow;
- ctx.shadowBlur=isMobileDevice?0:Math.min(18,Math.max(3,r*1.15));
- ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
- ctx.shadowBlur=0;
- ctx.globalAlpha=baseAlpha*fade*.58;
- ctx.strokeStyle=colors.rim;ctx.lineWidth=Math.max(1,r*.09);
- ctx.beginPath();ctx.arc(x,y,r*.91,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=baseAlpha*fade*.72;
- ctx.fillStyle=colors.highlight;
- ctx.beginPath();ctx.ellipse(x-r*.24,y-r*.34,r*.27,Math.max(1,r*.105),-.48,0,Math.PI*2);ctx.fill();
+function drawRedGradientSphere(x,y,r,opacity=1){
+ ctx.save();ctx.globalAlpha*=opacity;
+ const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
+ // Keep the fill even through the outlined center so the ring has no separate-looking disk.
+ gradient.addColorStop(0,"#ff9bab");
+ gradient.addColorStop(.48,"#ff9bab");
+ gradient.addColorStop(.58,"#ff9bab");
+ gradient.addColorStop(.78,"#ed4563");
+ gradient.addColorStop(1,"#b52b49");
+ ctx.globalAlpha=1;
+ ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ // A separate hollow circle sits inside the opaque sphere; only its white outline is drawn.
+ ctx.beginPath();ctx.arc(x,y,r*.62,0,Math.PI*2);
+ ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
-function drawRedGradientSphere(x,y,radius,alpha=1){
- drawSkillEnergySphere(x,y,radius,alpha,{
-  core:'#fff8fa',highlight:'#ffc3d0',main:'#ff466b',deep:'#b9143d',edge:'#3a0719',
-  rim:'#ffd9e1',glow:'#ff315c'
- });
-}
-function drawBlueGradientSphere(x,y,radius,alpha=1){
- drawSkillEnergySphere(x,y,radius,alpha,{
-  core:'#f5feff',highlight:'#b8f1ff',main:'#43bdff',deep:'#0878c8',edge:'#06315f',
-  rim:'#e5fbff',glow:'#36baff'
- });
+function drawBlueGradientSphere(x,y,r,opacity=1){
+ ctx.save();ctx.globalAlpha*=opacity;
+ const gradient=ctx.createRadialGradient(x,y,0,x,y,r);
+ // Match Reversal Red's smooth gradient and keep the color continuous under the hollow ring.
+ gradient.addColorStop(0,"#b8efff");
+ gradient.addColorStop(.48,"#b8efff");
+ gradient.addColorStop(.58,"#b8efff");
+ gradient.addColorStop(.78,"#62c9f2");
+ gradient.addColorStop(1,"#267eb9");
+ ctx.globalAlpha=1;
+ ctx.fillStyle=gradient;ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();
+ // Outline only: the inner circle has no separate fill or color break.
+ ctx.beginPath();ctx.arc(x,y,r*.62,0,Math.PI*2);
+ ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
+ ctx.restore();
 }
 function drawMotionVfx(f,m,p,c,vfxFade=1){
  if(!m||m==='gojoCounterMiss')return;
