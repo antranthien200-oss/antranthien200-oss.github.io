@@ -3885,11 +3885,25 @@ function setOnlineStatus(message){
   if(state)status.classList.add(state);
  }
 }
+function sendOnlineMessage(type,payload){
+ const room=onlineRoom;
+ if(!onlineMode||!room)return false;
+ try{room.send(type,payload);return true}
+ catch(error){
+  console.warn('Online message failed ('+String(type)+'):',error);
+  if(room===onlineRoom){
+   handleOnlineDisconnect(1006);
+   try{room.leave()}catch(leaveError){}
+  }
+  return false;
+ }
+}
 function normalizeOnlineServerUrl(value){
  const url=new URL(String(value||'').trim());
  if(url.protocol==='wss:')url.protocol='https:';
  if(url.protocol==='ws:')url.protocol='http:';
- if(url.protocol!=='https:'&&url.protocol!=='http:')throw new Error('Use an HTTPS server URL.');
+ const localHost=/^(localhost|127(?:\.\d+){3}|\[::1\])$/i.test(url.hostname);
+ if(url.protocol!=='https:'&&!(localHost&&url.protocol==='http:'))throw new Error('Use an HTTPS server URL.');
  return url.origin+url.pathname.replace(/\/$/,'');
 }
 let onlinePlayerCountTimer=null,onlinePlayerCountBusy=false;
@@ -4522,7 +4536,7 @@ function updateOnlineNetwork(dt){
   const mobileControl=mobile?mobileVehicleControl(player.vehicle):null;
   const steer=mobile?mobileControl.steer:(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
   const throttle=mobile?mobileControl.throttle:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
-  onlineRoom.send('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05});
+  if(!sendOnlineMessage('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05}))return;
  }
  const skillInputLocked=!!(player.skillInputLocked&&player.motion);
  let moveX=0,moveY=0;
@@ -4659,7 +4673,19 @@ function removeOnlineProjectile(data,hit=false){
 function bindOnlineRoom(client,room){
  onlineClient=client;onlineRoom=room;onlineSessionId=room.sessionId;
  room.onStateChange(state=>applyOnlineRoomState(state));
- room.onDrop(()=>{if(room===onlineRoom)handleOnlineDisconnect(1006)});
+ room.onDrop((code,reason)=>{
+  if(room!==onlineRoom||!onlineMode)return;
+  onlineLatencyMs=null;
+  const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='RECONNECTING...';delete pingLabel.dataset.quality}
+  setOnlineStatus('CONNECTION INTERRUPTED · RECONNECTING...');
+  console.warn('Online connection interrupted; Colyseus is retrying:',code,reason||'');
+ });
+ room.onReconnect(()=>{
+  if(room!==onlineRoom||!onlineMode)return;
+  setOnlineStatus('RECONNECTED · ONE SHARED CITY');
+  const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}
+  showToast('CONNECTION RESTORED',900);
+ });
  room.onLeave(code=>{if(room===onlineRoom)handleOnlineDisconnect(code)});
  room.onError((code,message)=>{console.warn('Online room error',code,message);setOnlineStatus('SERVER ERROR · CHECK CONNECTION')});
  room.onMessage('server:player-count',data=>{const label=$('onlinePlayersCount');if(label&&data)label.textContent=(Number(data.count)||0)+' / 16 PLAYERS'});
@@ -5050,7 +5076,7 @@ function damageBuildingAlongRay(f,angle,maxRange=1000){
   if(hi>=Math.max(lo,18)&&lo<nearest){nearest=lo;hit=b}
  }
  if(!hit)return false;
- if(onlineMode&&f===player&&onlineRoom){const buildingId=staticBuildings.indexOf(hit);if(buildingId>=0)onlineRoom.send('world:building-hit',{buildingId});return true}
+ if(onlineMode&&f===player&&onlineRoom){const buildingId=staticBuildings.indexOf(hit);if(buildingId>=0&&!sendOnlineMessage('world:building-hit',{buildingId}))return false;return true}
  hit.skillHits=(hit.skillHits||0)+1;hit.damageStage=Math.min(3,hit.skillHits);hit.lastSkillHit=game.time;
  const cx=hit.x+hit.w/2,cy=hit.y+hit.h/2;
  if(hit.damageStage>=3){
@@ -7958,11 +7984,11 @@ function toggleCityVehicle(f){
  if(!f)return false;
  if(f.vehicleTransition)return true;
  if(onlineMode&&f===player&&onlineRoom){
-  if(f.vehicle){onlineRoom.send('car:exit',{});return true}
+  if(f.vehicle)return sendOnlineMessage('car:exit',{});
   let nearest=null,best=88;
   for(const car of parkedCars){if(car.destroyed||car.occupied)continue;const d=dist(f,car);if(d<best){best=d;nearest=car}}
   if(!nearest)return false;
-  onlineRoom.send('car:enter',{carId:String(nearest.id)});return true;
+  return sendOnlineMessage('car:enter',{carId:String(nearest.id)});
  }
  if(f.vehicle){
   const car=f.vehicle,angle=car.angle||0,sideX=Math.cos(angle),sideY=Math.sin(angle);
