@@ -8133,12 +8133,30 @@ const getGojoBlueMaxTextures=(()=>{
  return ()=>cached||(cached={cloud:make(192,192,'cloud',10931),cloud2:make(192,192,'cloud',72331),plume:make(192,320,'plume',42073)});
 })();
 const gojoBlueMaxAtlas32 = new Image();
-gojoBlueMaxAtlas32.decoding = 'async';
-gojoBlueMaxAtlas32.src = 'assets/gojo-blue-max-32.avif?v=1';
+const gojoBlueMaxAtlasCanvas = document.createElement('canvas');
+const gojoBlueMaxAtlasCtx = gojoBlueMaxAtlasCanvas.getContext('2d',{willReadFrequently:true});
+gojoBlueMaxAtlas32.onload=()=>{
+  gojoBlueMaxAtlasCanvas.width=1024;
+  gojoBlueMaxAtlasCanvas.height=512;
+  gojoBlueMaxAtlasCtx.clearRect(0,0,1024,512);
+  gojoBlueMaxAtlasCtx.drawImage(gojoBlueMaxAtlas32,0,0);
+  const pixels=gojoBlueMaxAtlasCtx.getImageData(0,0,1024,512);
+  const d=pixels.data;
+  for(let i=0;i<d.length;i+=4){
+    const r=d[i],g=d[i+1],b=d[i+2],mx=Math.max(r,g,b);
+    const blueChroma=b-Math.max(r,g);
+    const keepNavy=b>22&&blueChroma>5&&b>r*1.12&&b>g*1.03;
+    if(mx<42&&!keepNavy)d[i+3]=0;
+    else if(mx>=12&&mx<42&&!keepNavy)d[i+3]=Math.round(d[i+3]*(mx-12)/30);
+  }
+  gojoBlueMaxAtlasCtx.putImageData(pixels,0,0);
+};
+gojoBlueMaxAtlas32.decoding='async';
+gojoBlueMaxAtlas32.src='assets/gojo-blue-max-32.avif?v=1';
 
 function drawGojoBlueMaxProjectile(p,x,y){
-  const atlas=gojoBlueMaxAtlas32;
-  if(!atlas.complete||atlas.naturalWidth!==1024||atlas.naturalHeight!==512){
+  const atlas=gojoBlueMaxAtlasCanvas;
+  if(atlas.width!==1024||atlas.height!==512){
     drawGojoBlueMaxProjectileProceduralFallback(p,x,y);
     return;
   }
@@ -8150,7 +8168,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   if(phase==='forming'){
     framePos=clamp(progress,0,1)*7;
   }else if(phase==='active'){
-    // Frames 8–23 loop. Orb scale stays fixed; only the energy animation advances.
+    // Frames 8–23 loop continuously; the center orb remains at a fixed frame-space scale.
     framePos=8+(((Number(game.time)||0)*12)%16);
   }else{
     framePos=24+clamp(progress,0,1)*7;
@@ -8159,8 +8177,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   const blend=framePos-first;
   const f0=Math.max(0,Math.min(31,first));
   const f1=phase==='active'?(f0>=23?8:f0+1):(f0>=31?31:f0+1);
-  const baseAlpha=ctx.globalAlpha;
-  const size=230;
+  const baseAlpha=ctx.globalAlpha,size=230;
   ctx.save();
   ctx.translate(x,y);
   ctx.globalCompositeOperation='source-over';
