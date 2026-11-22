@@ -9364,7 +9364,8 @@ function drawGojoNeutralFace(alpha=1){
  ctx.restore();
 }
 function drawCharacterDesignFaceDetails(f,x=0,y=0,scale=1,visual={}){
- if(!f)return;
+ // Training dummy keeps its own plain appearance even when it reuses a fighter's skill animations.
+ if(!f||f.isTrainingDummy)return;
  const sukunaAlpha=Number.isFinite(visual.sukunaFaceAlpha)?clamp(visual.sukunaFaceAlpha,0,1):(f.char==='vessel'&&f.awakened&&!f.sukunaAwakeningVisualPending?1:0);
  const gojoProgress=Number.isFinite(visual.gojoAwakeningProgress)?clamp(visual.gojoAwakeningProgress,0,1):(f.awakened&&!f.gojoAwakeningVisualPending?1:0);
  const gojoFaceAlpha=Number.isFinite(visual.gojoFaceAlpha)?clamp(visual.gojoFaceAlpha,0,1):gojoProgress;
@@ -10130,8 +10131,8 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(!deferHands){
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
  }
- drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
- const yujiSkillOneEyes=f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
+ if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
+ const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
   ctx.save();ctx.globalAlpha=eyePulse;ctx.fillStyle='#ff173d';ctx.shadowColor='#ff092f';ctx.shadowBlur=isMobileDevice?0:(9);
@@ -10144,7 +10145,7 @@ function drawHeadHands(f,deferMotionVfx=false){
   }
   ctx.restore();
  }
- drawAccessoryOverlays(f,0,0);
+ if(!f.isTrainingDummy)drawAccessoryOverlays(f,0,0);
  drawCharacterDesignFaceDetails(f,0,0,1,{
   sukunaFaceAlpha:sukunaMarkReveal,
   gojoFaceAlpha:gojoFaceReveal,
