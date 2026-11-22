@@ -5437,7 +5437,7 @@ function damage(target,amount,source,opts={}){
      game.hitStop=Math.max(game.hitStop,.045);game.shake=Math.max(game.shake,3.2);
      popText(source.x,source.y-58,'CLEAVED','#ff8194',14);showToast('CLEAVE · COUNTER',650);
      return;
-    }
+    }else triggerRedStunMiss(target);
    }
   }
   if(kind==='gojoTwofoldCounter'){
@@ -5561,6 +5561,10 @@ function setSkillMotion(f,idx,angle,target){
  setMotion(f,(names&&names[idx])||'skill',(times&&times[idx])||.7,angle,target);
 }
 
+function triggerRedStunMiss(f,duration=.38){
+ if(!f)return;
+ f.redStunMissUntil=Math.max(Number(f.redStunMissUntil)||0,game.time+Math.max(.08,duration));
+}
 function beginGrab(f,t,kind,duration,angle,color,finishDamage){
  if(!f||!t||t.dead||(t.block&&kind!=='megumiSerpent'&&kind!=='gojoBlueRapid'))return false;
  interruptSkillCast(t);
@@ -6102,7 +6106,7 @@ function yutaUseSkill(f,idx,t,angle){
   }else{
    if(idx===0){f.skillCd[0]=10;setMotion(f,'rikaSmash',.8,angle,t);if(hit(250,1.05)){damage(t,10,f,{stun:.5,kx:Math.cos(angle)*4,ky:Math.sin(angle)*4,color:'#d5b4e9',ignoreInvuln:true});t.jump=Math.max(t.jump,.45);t.jumpV=Math.max(t.jumpV,2.3);burst(t.x,t.y,'#d9b9ef',18,5)}}
    if(idx===1){f.skillCd[1]=10;setMotion(f,'rikaLaunch',.55,angle,t);f.jump=Math.max(f.jump,1);f.jumpV=Math.max(f.jumpV,6.8);f.vx+=Math.cos(angle)*8;f.vy+=Math.sin(angle)*8;f.invuln=.18;burst(f.x,f.y,'#d9b9ef',15,4)}
-   if(idx===2){f.skillCd[2]=20;setMotion(f,'rikaThrow',.9,angle,t);if(hit(225,.95)){beginGrab(f,t,'rikaThrow',.62,angle,'#d9b9ef',16);f.invuln=.2}}
+   if(idx===2){f.skillCd[2]=20;setMotion(f,'rikaThrow',.9,angle,t);if(hit(225,.95)){if(!beginGrab(f,t,'rikaThrow',.62,angle,'#d9b9ef',16))triggerRedStunMiss(f);f.invuln=.2}else triggerRedStunMiss(f)}
    if(idx===3){f.skillCd[3]=10;setMotion(f,'rikaHaymaker',.8,angle,t);f.invuln=.22;f.vx+=Math.cos(angle)*11;f.vy+=Math.sin(angle)*11;if(hit(315,.85))damage(t,t.block?18:12,f,{stun:.7,kx:Math.cos(angle)*14,ky:Math.sin(angle)*14,color:'#d9b9ef',big:true,ignoreInvuln:true})}
   }
   f.rikaMode=false;f.specialCd=.28;return true;
@@ -6127,7 +6131,7 @@ function yutaUseSkill(f,idx,t,angle){
  if(idx===0){if(f.skillCd[0]>0)return;f.skillCd[0]=15;setMotion(f,'yutaSevering',.82,angle,t);f.vx+=Math.cos(angle)*9;f.vy+=Math.sin(angle)*9;if(hit(250,.84)){damage(t,4,f,{stun:.2,color:'#eee3e5',ignoreInvuln:true});for(let n=0;n<3;n++)schedule(()=>{if(!t.dead&&dist(f,t)<275){const last=n===2;damage(t,2.3,f,{stun:last?.58:.16,kx:Math.cos(angle)*(last?10:1),ky:Math.sin(angle)*(last?10:1),color:'#f0e4e8',ignoreInvuln:true});if(last){t.jump=Math.max(t.jump,.42);t.jumpV=Math.max(t.jumpV,2.4)}}},150+n*145);burstLine(f,t,'#f1e7ef',6)}}
  if(idx===1){if(f.skillCd[1]>0)return;f.skillCd[1]=15;setMotion(f,'yutaSlash',.76,angle,t);f.invuln=.16;if(hit(480,.62)){damage(t,12,f,{stun:.58,kx:Math.cos(angle)*8,ky:Math.sin(angle)*8,color:'#f1e8ef',unblockable:true,big:true,ignoreInvuln:true});burstLine(f,t,'#fff2f5',10)}else{f.vx+=Math.cos(angle)*5;f.vy+=Math.sin(angle)*5}}
  if(idx===2){if(f.skillCd[2]>0)return;f.skillCd[2]=16;f.counterWindow=.25;f.counterKind='yutaOutburst';setMotion(f,'yutaOutburst',.52,angle,t);schedule(()=>{if(!f.dead&&f.counterKind==='yutaOutburst'){f.counterWindow=0;f.counterKind='';for(const target of tenTargets(f)){if(dist(f,target)<215){const a=Math.atan2(target.y-f.y,target.x-f.x);damage(target,6,f,{stun:.42,kx:Math.cos(a)*8,ky:Math.sin(a)*8,color:'#d8bde9',blockedDamage:1,ignoreInvuln:true})}}burst(f.x,f.y,'#d9bee9',22,7)}},250)}
- if(idx===3){if(f.skillCd[3]>0)return;const retry=!!f.yutaSecondWindRetry;setMotion(f,'yutaSecondWind',.84,angle,t);f.invuln=.24;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;if(hit(260,.86)){f.yutaSecondWindRetry=false;f.skillCd[3]=16;damage(t,2,f,{stun:.32,color:'#eee1f0',ignoreInvuln:true});beginGrab(f,t,'yutaSecondWind',.48,angle,'#e7c9ec',8)}else if(!retry){f.yutaSecondWindRetry=true;f.skillCd[3]=.65}else{f.yutaSecondWindRetry=false;f.skillCd[3]=16}}
+ if(idx===3){if(f.skillCd[3]>0)return;const retry=!!f.yutaSecondWindRetry;setMotion(f,'yutaSecondWind',.84,angle,t);f.invuln=.24;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;if(hit(260,.86)){f.yutaSecondWindRetry=false;f.skillCd[3]=16;damage(t,2,f,{stun:.32,color:'#eee1f0',ignoreInvuln:true});if(!beginGrab(f,t,'yutaSecondWind',.48,angle,'#e7c9ec',8))triggerRedStunMiss(f)}else if(!retry){f.yutaSecondWindRetry=true;f.skillCd[3]=.65}else{f.yutaSecondWindRetry=false;f.skillCd[3]=16;triggerRedStunMiss(f)}}
  return true;
 }
 
@@ -6544,7 +6548,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.skillCd[idx]=18;f.attackAnim=3;f.invuln=.24;setMotion(f,'yujiCursedDrag',3,angle,t);
     if(f.jump>.1){if(targetInAim(f,t,185,.9,angle)){damage(t,14,f,{stun:.75,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,unblockable:true,big:true,color:'#ffc078'});burst(t.x,t.y,'#ffc078',26,6)}else popText(f.x,f.y-50,'CURSED STRIKES · MISS','#ffc078',11)}
     else if(targetInAim(f,t,225,.88,angle)&&(networkReplay&&onlineMode&&f.onlineSessionId||beginGrab(f,t,'yujiDrag',3,angle,'#e3344e',4.3))){showToast('CURSED STRIKES · DRAG COMBO',700);popText(f.x,f.y-55,'KEEP AIMING · 3 SECONDS','#ff8b9d',12)}
-    else{f.vx+=Math.cos(angle)*3;burst(f.x,f.y,'#ffb16d',12,4);popText(f.x,f.y-50,'CURSED STRIKES · WHIFF','#ffc078',11)}
+    else{triggerRedStunMiss(f);f.vx+=Math.cos(angle)*3;burst(f.x,f.y,'#ffb16d',12,4);popText(f.x,f.y-50,'CURSED STRIKES · WHIFF','#ffc078',11)}
    }if(idx===1){f.skillCd[idx]=15;f.invuln=.3;f.attackAnim=.68;f.jump=0;f.jumpV=0;setMotion(f,'yujiCrush',.68,angle,t);f.yujiCrushDash={angle,speed:18,duration:.23,elapsed:0,sparkTimer:0,hitTargets:new Set()};burst(f.x,f.y-23,'#46d8ff',18,5);burst(f.x,f.y-23,'#d9faff',7,3.5);showToast('CRUSHING BLOW',550);return}if(idx===2){f.skillCd[idx]=18;f.blackFlashWindow=0;f.blackFlashChain=0;f.attackAnim=.50;f.invuln=.08;setMotion(f,'yujiDivergent',.50,angle,t);const attack={resolved:false,angle,hitTarget:null,buffered:false,windowOpened:false};f.yujiDivergentAttack=attack;showToast('DIVERGENT FIST',500);schedule(()=>{if(f.dead||f.stun>.2||attack.resolved||f.yujiDivergentAttack!==attack)return;const hit=targetInAim(f,t,150,.9,angle);attack.hitTarget=hit?t:null;const endX=hit?t.x:f.x+Math.cos(angle)*88,endY=hit?t.y-23:f.y-23+Math.sin(angle)*88;f.cursedWhiteFlash=.12;attack.windowOpened=true;f.blackFlashWindow=1.25;f.yujiEnergyStrike={x1:f.x+Math.cos(angle)*22,y1:f.y-23+Math.sin(angle)*22,x2:endX,y2:endY,life:.24,max:.24};burst(endX,endY,'#48d5ff',hit?20:12,5);burst(endX,endY,'#d9faff',hit?9:5,3.5);if(attack.buffered){attack.buffered=false;useAttack(f,'3')}else showToast('PRESS 3 AGAIN FOR BLACK FLASH',1000)},240);schedule(()=>{if(attack.resolved){if(f.yujiDivergentAttack===attack)f.yujiDivergentAttack=null;return}attack.resolved=true;if(f.yujiDivergentAttack===attack)f.yujiDivergentAttack=null;f.blackFlashWindow=0;const hit=attack.hitTarget&&!attack.hitTarget.dead&&dist(f,attack.hitTarget)<190?attack.hitTarget:null;if(hit)damage(hit,7.5,f,{stun:.28,kx:Math.cos(angle)*3.5,ky:Math.sin(angle)*3.5,color:'#48cfff',ignoreInvuln:true});},1700);return}
    if(idx===3){f.counterWindow=.9;f.counterKind='manji';f.skillCd[idx]=20;f.block=false;setMotion(f,'yujiManjiBlock',.65,angle,t);burst(f.x,f.y,'#f3bb67',14,3.6);popText(f.x,f.y-55,'MANJI BLOCK','#f3bb67',12)}
   }else{
@@ -6637,7 +6641,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
   }
   if(idx===2){
    if(!targetInAim(f,t,750,.95,angle)){f.skillCd[2]=15;setMotion(f,'megumiToad',.45,angle,t);popText(f.x,f.y-50,'TOAD · NO TARGET','#95b8e4',11)}
-   else{f.tenToadWindow=.4;f.tenToadTarget=t;f.tenToadVisual=.8;f.skillCd[2]=15;setMotion(f,'megumiToad',.72,angle,t);showToast('TOAD · TONGUE LOCK',600);popText(t.x,t.y-54,'TARGETED','#d8c9ff',12);schedule(()=>{if(f.dead||f.stun>.04||!f.tenToadTarget||f.tenToadTarget!==t||t.dead)return;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;if(beginGrab(f,t,'toadPull',.78,angle,'#7ba7d6',0)){showToast('TOAD · PULLED IN',550);popText(t.x,t.y-52,'TOAD TONGUE','#cbdcff',12)}else popText(f.x,f.y-48,'TOAD · BLOCKED','#a8b8d2',11)},650)}
+   else{f.tenToadWindow=.4;f.tenToadTarget=t;f.tenToadVisual=.8;f.skillCd[2]=15;setMotion(f,'megumiToad',.72,angle,t);showToast('TOAD · TONGUE LOCK',600);popText(t.x,t.y-54,'TARGETED','#d8c9ff',12);schedule(()=>{if(f.dead||f.stun>.04||!f.tenToadTarget||f.tenToadTarget!==t||t.dead)return;f.tenToadWindow=0;f.tenToadTarget=null;f.skillCd[2]=15;if(beginGrab(f,t,'toadPull',.78,angle,'#7ba7d6',0)){showToast('TOAD · PULLED IN',550);popText(t.x,t.y-52,'TOAD TONGUE','#cbdcff',12)}else{triggerRedStunMiss(f);popText(f.x,f.y-48,'TOAD · BLOCKED','#a8b8d2',11)}},650)}
   }
   if(idx===3){
    if(!f.tenDogActive){f.tenDogActive=true;f.tenDogCharges=3;f.tenDogTimer=16;f.skillCd[3]=.45;setMotion(f,'megumiDogSummon',.65,angle,t);showToast('DIVINE DOG: TOTALITY · SUMMONED',800);burst(f.x-Math.cos(angle)*42,f.y-Math.sin(angle)*42,'#e6edf7',17,4);popText(f.x,f.y-55,'THREE COMMANDS READY','#e2ecfb',11)}
@@ -6645,7 +6649,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
   }
  }else{
   if(idx===0){f.skillCd[0]=25;setMotion(f,'megumiElephant',1.2,angle,t);const point={x:clamp(aim.x,40,WORLD.w-40),y:clamp(aim.y,40,WORLD.h-40)};f.tenElephantMark={x:point.x,y:point.y,life:1.05,r:178};showToast('MAX ELEPHANT · AIM THE CRUSH',650);schedule(()=>{if(f.dead||f.stun>.04)return;f.tenElephantMark=null;tenAreaHit(point.x,point.y,178,f,35,{stun:1.05,big:true,unblockable:true,color:'#aab9cf',push:15});burst(point.x,point.y,'#b7c5d9',34,8);addDebris(point.x,point.y,'#929eaf',18);game.shake=Math.max(game.shake,14);popText(point.x,point.y-80,'MAX ELEPHANT','#e1e9f6',19)},1050)}
-  if(idx===1){f.skillCd[1]=25;setMotion(f,'megumiSerpent',1.15,angle,t);if(targetInAim(f,t,600,.92,angle)&&beginGrab(f,t,'megumiSerpent',.85,angle,'#314d70',0)){tenApplyPoison(t,f);showToast('GREAT SERPENT · VENOM',800);popText(t.x,t.y-58,'POISONED · 10s','#b9d69b',12)}else popText(f.x,f.y-48,'GREAT SERPENT · MISS','#8eabc9',11)}
+  if(idx===1){f.skillCd[1]=25;setMotion(f,'megumiSerpent',1.15,angle,t);if(targetInAim(f,t,600,.92,angle)&&beginGrab(f,t,'megumiSerpent',.85,angle,'#314d70',0)){tenApplyPoison(t,f);showToast('GREAT SERPENT · VENOM',800);popText(t.x,t.y-58,'POISONED · 10s','#b9d69b',12)}else{triggerRedStunMiss(f);popText(f.x,f.y-48,'GREAT SERPENT · MISS','#8eabc9',11)}}
   if(idx===2){const domainTarget=t&&!t.dead?t:null,hasEnemyDomain=!!(domainTarget&&(domainTarget.domainTimer>0||domainTarget.domainWindup>0));if(f.tenGardenTimer>0){f.tenGardenTimer=0;f.tenGardenDrain=0;f.skillCd[2]=1.2;setMotion(f,'megumiSwarm',.5,angle,t);showToast('CHIMERA SHADOW GARDEN · CLOSED',850);return}if(hasEnemyDomain){f.tenGardenTimer=999;f.tenGardenDrain=0;f.skillCd[2]=1.2;setMotion(f,'megumiGarden',.7,angle,t);showToast('CHIMERA SHADOW GARDEN · DOMAIN INVADED',1300);burst(f.x,f.y,'#111827',30,7);game.shake=Math.max(game.shake,8);return}f.skillCd[2]=15;setMotion(f,'megumiSwarm',1.35,angle,t);if(targetInAim(f,t,420,.88,angle)){const targetRef=t;targetRef.stun=Math.max(targetRef.stun,.35);[0,1,2].forEach(i=>schedule(()=>{if(f.dead||f.stun>.04||targetRef.dead||dist(f,targetRef)>470)return;const a=Math.atan2(targetRef.y-f.y,targetRef.x-f.x);damage(targetRef,[6,7,5][i],f,{stun:i===2?.72:.18,kx:Math.cos(a)*(i===2?12:2),ky:Math.sin(a)*(i===2?12:2),unblockable:true,ignoreInvuln:true,color:'#8496bb',big:i===2});if(i===2){targetRef.jump=.42;targetRef.jumpV=2.5;game.shake=Math.max(game.shake,8)}burst(targetRef.x,targetRef.y,'#a8b8d6',8,3)},220+i*260))}else popText(f.x,f.y-50,'SHADOW SWARM · MISS','#9eacc8',11)}
   if(idx===3){if(!targetInAim(f,t,600,.95,angle)){popText(f.x,f.y-50,'MAHORAGA · NEED A TARGET','#b7c2d4',11);return}f.skillCd[3]=120;f.tenMahoragaRitual=3;f.tenMahoragaTarget=t;f.tenMahoragaAttackTimer=0;setMotion(f,'megumiMahoraga',3,angle,t);f.vx=0;f.vy=0;showToast('WITH THIS TREASURE… I SUMMON…',1300);popText(f.x,f.y-70,'DO NOT GET INTERRUPTED','#d5dfef',12)}
  }
@@ -6659,7 +6663,7 @@ if(f.char==='perfection'){
   if(idx===2){f.skillCd[idx]=15;setMotion(f,'mahitoFocus',.5,angle,t);if(targetInAim(f,t,148*mode.range,.82,angle)){damage(t,10*mode.damage,f,{stun:.58,kx:Math.cos(angle)*9*mode.knockback,ky:Math.sin(angle)*9*mode.knockback,unblockable:f.soulMode===2,big:true,color:'#8dd7c9'})}}
   if(idx===3){f.skillCd[idx]=20;setMotion(f,'mahitoRepel',1.1,angle,t);projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*13*mode.speed,vy:Math.sin(angle)*13*mode.speed,r:28*(f.soulMode===2?1.28:f.soulMode===1?.82:1),life:2.5,maxDistance:660*mode.range,travelled:0,owner:f,kind:'bodyrepel',damage:14*mode.damage,knockback:mode.knockback,color:'#86d0c2'})}
  }else{
-  if(idx===0){f.skillCd[idx]=18;if(targetInAim(f,t,170*mode.range,.9,angle)&&beginGrab(f,t,'mahitoTransfigure',.72,angle,'#72c6b5',12*mode.damage)){}else popText(f.x,f.y-50,'IDLE TRANSFIGURATION · MISS','#9ee5d7',11)}
+  if(idx===0){f.skillCd[idx]=18;if(targetInAim(f,t,170*mode.range,.9,angle)&&beginGrab(f,t,'mahitoTransfigure',.72,angle,'#72c6b5',12*mode.damage)){}else{triggerRedStunMiss(f);popText(f.x,f.y-50,'IDLE TRANSFIGURATION · MISS','#9ee5d7',11)}}
   if(idx===1){const count=f.soulMode===1?8:f.soulMode===2?4:6;f.skillCd[idx]=17;setMotion(f,'mahitoDisfigure',1.5,angle,t);if(targetInAim(f,t,175*mode.range,.85,angle))for(let i=0;i<count;i++)schedule(()=>{if(!t.dead&&dist(f,t)<190*mode.range)damage(t,2.5*mode.damage,f,{stun:.12,color:'#81cbbb',ignoreInvuln:true})},130+i*(f.soulMode===1?135:f.soulMode===2?250:180))}
   if(idx===2){f.skillCd[idx]=20;setMotion(f,'mahitoSpikes',1.2,angle,t);const px=f.x+Math.cos(angle)*115,py=f.y+Math.sin(angle)*115;for(let i=0;i<5;i++)schedule(()=>circleHit(px+Math.cos(angle+Math.PI/2)*(i-2)*25,py+Math.sin(angle+Math.PI/2)*(i-2)*25,48*mode.range,f,4.4*mode.damage,{stun:.2,color:'#81cbbb',push:6*mode.knockback}),220+i*110)}
   if(idx===3){if(startDomain(f,'soul',14,1.5,.32,535,mode.damage))f.skillCd[idx]=120}
@@ -6667,7 +6671,7 @@ if(f.char==='perfection'){
 }
 if(f.char==='todo'){
  if(!f.awakened){
-  if(idx===0){f.skillCd[idx]=15;setMotion(f,'todoSwiftKick',1.1,angle,t);if(targetInAim(f,t,180,.9,angle)){damage(t,9,f,{stun:.5,color:'#d6b779'});schedule(()=>{if(!t.dead&&dist(f,t)<230)beginGrab(f,t,'todoThrow',.82,angle,'#e0bf76',5)},190)}}
+  if(idx===0){f.skillCd[idx]=15;setMotion(f,'todoSwiftKick',1.1,angle,t);if(targetInAim(f,t,180,.9,angle)){damage(t,9,f,{stun:.5,color:'#d6b779'});schedule(()=>{if(f.dead)return;if(!t.dead&&dist(f,t)<230){if(!beginGrab(f,t,'todoThrow',.82,angle,'#e0bf76',5))triggerRedStunMiss(f)}else triggerRedStunMiss(f)},190)}}
   if(idx===1){f.skillCd[idx]=17;setMotion(f,'todoBrute',.9,angle,t);schedule(()=>{if(!f.dead&&targetInAim(f,t,158,.8,angle))damage(t,17.5,f,{stun:.75,kx:Math.cos(angle)*15,ky:Math.sin(angle)*15,big:true,unblockable:true,color:'#e5c47d',ignoreInvuln:true})},520)}
   if(idx===2){f.skillCd[idx]=12;setMotion(f,'todoPebble',.6,angle,t);projectiles.push({x:f.x+Math.cos(angle)*28,y:f.y+Math.sin(angle)*28,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:8,life:2,maxDistance:650,travelled:0,owner:f,kind:'pebble',damage:4,color:'#d9c39a'})}
   if(idx===3){f.skillCd[idx]=16;setMotion(f,'todoElbow',1.25,angle,t);if(targetInAim(f,t,165,.85,angle)){damage(t,5,f,{stun:.3,color:'#d5b36d'});t.jump=.9;t.jumpV=3;schedule(()=>{if(!t.dead&&dist(f,t)<210)damage(t,7,f,{stun:.8,kx:Math.cos(angle)*10,ky:Math.sin(angle)*10,big:true,unblockable:true,color:'#e7ca82',ignoreInvuln:true})},650)}}
@@ -6683,7 +6687,7 @@ if(f.char==='choso'){
   if(idx===0){const charged=f.convergenceOrbs>0;if(charged)f.convergenceOrbs--;f.skillCd[idx]=15;setMotion(f,'chosoPiercing',charged?1.1:.75,angle,t);projectiles.push({x:f.x+Math.cos(angle)*32,y:f.y+Math.sin(angle)*32,vx:Math.cos(angle)*(charged?23:20),vy:Math.sin(angle)*(charged?23:20),r:charged?14:9,life:1.7,maxDistance:charged?1180:720,travelled:0,owner:f,kind:'bloodBeam',damage:charged?20:12,color:'#d93652'})}
   if(idx===1){f.skillCd[idx]=12;setMotion(f,'chosoScale',1.4,angle,t);if(targetInAim(f,t,250,.72,angle)){f.invuln=.55;f.vx+=Math.cos(angle)*13;f.vy+=Math.sin(angle)*13;for(let i=0;i<3;i++)schedule(()=>{if(!t.dead&&dist(f,t)<195)damage(t,3,f,{stun:.12,color:'#e14d66',ignoreInvuln:true})},180+i*220);schedule(()=>{if(!t.dead&&dist(f,t)<215)damage(t,7,f,{stun:.55,kx:Math.cos(angle)*12,ky:Math.sin(angle)*12,big:true,color:'#f07589',ignoreInvuln:true})},850)}}
   if(idx===2){f.skillCd[idx]=15;if(f.convergenceOrbs>0){f.convergenceOrbs--;projectiles.push({x:f.x+Math.cos(angle)*55,y:f.y+Math.sin(angle)*55,vx:Math.cos(angle)*9,vy:Math.sin(angle)*9,r:18,life:2.4,maxDistance:420,travelled:0,owner:f,kind:'bloodBombProjectile',damage:13,color:'#c52e4b'})}else{f.counterWindow=.62;f.counterKind='bloodSupernova';setMotion(f,'chosoSupernova',.72,angle,t)}}
-  if(idx===3){f.skillCd[idx]=13;setMotion(f,'chosoEdge',1.1,angle,t);if(targetInAim(f,t,165,.9,angle))beginGrab(f,t,'bloodEdge',.82,angle,'#bd2c48',6)}
+  if(idx===3){f.skillCd[idx]=13;setMotion(f,'chosoEdge',1.1,angle,t);if(targetInAim(f,t,165,.9,angle)){if(!beginGrab(f,t,'bloodEdge',.82,angle,'#bd2c48',6))triggerRedStunMiss(f)}else triggerRedStunMiss(f)}
  }else{
   if(idx===0){const orbs=Math.max(1,f.convergenceOrbs);f.convergenceOrbs=0;f.skillCd[idx]=26;setMotion(f,'chosoExorcism',1.8,angle,t);projectiles.push({x:f.x+Math.cos(angle)*45,y:f.y+Math.sin(angle)*45,vx:Math.cos(angle)*25,vy:Math.sin(angle)*25,r:22+orbs*3,life:1.6,maxDistance:1000,travelled:0,owner:f,kind:'bloodBeam',damage:8+orbs*2.2,color:'#e53c5a'})}
   if(idx===1){f.skillCd[idx]=18;setMotion(f,'chosoWingKing',1.7,angle,t);f.invuln=.45;if(targetInAim(f,t,310,.8,angle)){applyPull(f,t,.72,5.4,'#ef6278');for(let i=0;i<6;i++)schedule(()=>{if(!t.dead&&dist(f,t)<245)damage(t,3.1,f,{stun:.13,color:'#e44b65',ignoreInvuln:true})},200+i*130);schedule(()=>{if(!t.dead&&dist(f,t)<280)damage(t,10,f,{stun:.75,kx:Math.cos(angle)*9,ky:Math.sin(angle)*9,big:true,color:'#ef6278',ignoreInvuln:true})},1080)}}
@@ -8041,10 +8045,10 @@ function drawPixelSkillVfx(f,m,p,c,vfxFade=1){
  if((f.char==='vessel'&&!f.awakened)&&['yujiCursedDrag','yujiCursedDragEnd','yujiCrush','yujiDivergent','yujiBlackFlash','yujiManjiBlock','yujiManjiCounter'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m,p);
  if(f.char==='honored'&&['yujiManjiBlock','yujiManjiCounter','gojoCounterJab','gojoCounterFinish'].includes(m))return drawVesselBaseSmoothSkillVfx(f,m==='gojoCounterFinish'?'yujiManjiCounter':m,p);
 
- // Any remaining fallback that previously drew pixel sprites, blocks or pixel trails
+ // Fallbacks do not force red; only a missed grab/catch gets the red stun streaks.
  // now uses the same red stun-streak effect already used by captured/missed attacks.
  const pulse=.72+.28*Math.sin(Math.PI*clamp(p,0,1));
- drawStunRain(f,0,0,{forceRed:true,fade:clamp(Number.isFinite(vfxFade)?vfxFade:1,0,1),strength:pulse});
+ drawStunRain(f,0,0);
  return true;
 }
 
@@ -8298,7 +8302,7 @@ if(m==='gojoBlueSpin'){
   }
   ctx.restore();return;
  }
- // Sukuna Flurry's captured target uses the shared red stun streaks.
+ // Captured Sukuna targets use the regular blue stun streaks.
  if(m==='captured_sukunaFlurry')return;
  if(m==='sukunaHeadCarryMiss')return;
  if(m==='sukunaAwaken'){
@@ -9502,13 +9506,14 @@ function drawStunRain(f,x,y,options=null){
  const forceRed=!!(options&&options.forceRed);
  const effectFade=forceRed?clamp(Number.isFinite(options.fade)?options.fade:1,0,1):1;
  const motionName=f.motion&&typeof f.motion.name==='string'?f.motion.name:'';
- const vesselSkillOne=f.char==='vessel'&&!f.awakened&&(motionName==='yujiCursedDrag'||motionName==='yujiCursedDragEnd');
+ const timedMiss=(Number(f.redStunMissUntil)||0)>game.time;
  const sukunaRushMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaHeadCarryMiss';
  const gojoRapidMiss=f.char==='honored'&&motionName==='gojoRapidMiss';
  const gojoCounterMiss=f.char==='honored'&&motionName==='gojoCounterMiss';
- if(!forceRed&&f.stun<=.04&&!vesselSkillOne&&!sukunaRushMiss&&!gojoRapidMiss&&!gojoCounterMiss)return;
- const strength=(forceRed?clamp(Number.isFinite(options.strength)?options.strength:1,0,1):(vesselSkillOne||sukunaRushMiss||gojoRapidMiss||gojoCounterMiss?1:clamp(f.stun/.28,.35,1)))*effectFade;
- const captured=vesselSkillOne||sukunaRushMiss||gojoRapidMiss||gojoCounterMiss||motionName.startsWith('captured_'),blueCaptured=motionName==='captured_gojoBlueRapid';
+ const sukunaFlurryMiss=f.char==='vessel'&&f.awakened&&motionName==='sukunaFlurryMiss';
+ const redMiss=timedMiss||sukunaRushMiss||gojoRapidMiss||gojoCounterMiss||sukunaFlurryMiss;
+ if(!forceRed&&f.stun<=.04&&!redMiss)return;
+ const strength=(forceRed?clamp(Number.isFinite(options.strength)?options.strength:1,0,1):(redMiss?1:clamp(f.stun/.28,.35,1)))*effectFade;
  ctx.save();ctx.globalAlpha=.72*strength;ctx.lineCap='butt';ctx.shadowBlur=isMobileDevice?0:(0);
  for(let i=0;i<9;i++){
   const phase=(game.time*31+i*13)%48;
@@ -9517,7 +9522,7 @@ function drawStunRain(f,x,y,options=null){
   const endY=Math.min(y-16,startY+length);
   if(endY<=startY)continue;
   const lineX=Math.round(x+(i-4)*7+Math.sin(game.time*2+i)*1.1)+.5;
-  ctx.strokeStyle=forceRed?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):blueCaptured?(i%3===0?'rgba(224,250,255,.96)':'rgba(71,185,242,.86)'):captured?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
+  ctx.strokeStyle=(forceRed||redMiss)?(i%3===0?'rgba(255,205,215,.94)':'rgba(230,42,72,.84)'):(i%3===0?'rgba(212,243,255,.88)':'rgba(92,177,226,.72)');
   ctx.lineWidth=i%3===0?1.25:1;
   ctx.beginPath();ctx.moveTo(lineX,startY);ctx.lineTo(lineX,endY);ctx.stroke();
  }
