@@ -7300,10 +7300,10 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
    if(gojoCutscene&&gojoCutscene._speaker===speaker&&gojoCutscene._phase==='gojo-awakening-motion')gojoCutscene.classList.add('gojo-impact-dialogue-visible');
   }
   if(speaker.char==='honored'&&speaker.motion.name==='gojoAwaken'&&!speaker.gojoHandsClashed&&previousMotionProgress<.93&&motionProgress>=.93){
-   // The fists still meet later; keep the skin flash and screen shake tied to this impact.
+   // Heavy camera jolt on the exact frame Gojo's fists collide.
    speaker.gojoHandsClashed=true;
    speaker.gojoSkinAwakened=true;
-   game.shake=Math.max(game.shake,12);
+   game.shake=Math.max(game.shake,28);
   }
   if(speaker.motion.t>=speaker.motion.duration)speaker.motion=null;
  }
