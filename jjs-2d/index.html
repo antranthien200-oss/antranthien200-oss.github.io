@@ -5544,26 +5544,17 @@ function gojoFlashStepTarget(f){
  }
  return targetOf(f);
 }
-function gojoRapidSpinContactTarget(f,preferred=null){
+function gojoRapidSpinContactTargets(f,preferred=null){
  const candidates=[];
  const add=target=>{if(target&&target!==f&&!candidates.includes(target))candidates.push(target)};
  add(preferred);
  if(f===player){
-  if(onlineMode){
-   add(trainingDummy);
-   for(const remote of onlineRemotePlayers.values())add(remote);
-  }else{
-   add(enemy);add(trainingDummy);
-  }
+  if(onlineMode){add(trainingDummy);for(const remote of onlineRemotePlayers.values())add(remote)}
+  else{add(enemy);add(trainingDummy)}
  }else add(player);
- let best=null,bestDistance=320;
- for(const candidate of candidates){
-  if(candidate.dead||candidate.capturedBy)continue;
-  const distance=dist(f,candidate);
-  if(distance<=320&&distance<bestDistance){best=candidate;bestDistance=distance}
- }
- return best;
+ return candidates.filter(candidate=>!candidate.dead&&!candidate.capturedBy&&dist(f,candidate)<=320).sort((a,b)=>dist(f,a)-dist(f,b));
 }
+function gojoRapidSpinContactTarget(f,preferred=null){return gojoRapidSpinContactTargets(f,preferred)[0]||null;}
 function aimedAt(f){if(f&&f.onlineActionAim&&Number(f.onlineActionAimUntil)>performance.now()&&Number.isFinite(f.onlineActionAim.x)&&Number.isFinite(f.onlineActionAim.y))return f.onlineActionAim;return f.team==='player'?aimWorld():{x:player.x,y:player.y}}
 function faceTarget(f,t){f.face=Math.atan2(t.y-f.y,t.x-f.x)}
 function aimedAngle(f){const a=aimedAt(f);return Math.atan2(a.y-f.y,a.x-f.x)}
@@ -6528,7 +6519,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    }
    if(idx===2){
     const spinDuration=.5,flurryDuration=3.2,serial=(f.gojoRapidSerial||0)+1;
-    f.gojoRapidSerial=serial;f.gojoRapidSpinTarget=t;f.gojoRapidSpinHitTarget=null;f.skillCd[idx]=15;f.attackAnim=spinDuration;f.invuln=Math.max(f.invuln,.22);
+    f.gojoRapidSerial=serial;f.gojoRapidSpinTarget=t;f.gojoRapidSpinHitTarget=null;f.gojoRapidSpinHitTargets=[];f.skillCd[idx]=15;f.attackAnim=spinDuration;f.invuln=Math.max(f.invuln,.22);
     setMotion(f,'gojoRapidSpin',spinDuration,angle,t);
     burst(f.x,f.y-23,'#50caff',12,3.2);burst(f.x,f.y-23,'#e1faff',6,2.2);
     schedule(()=>{
@@ -6538,7 +6529,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
      // The spin motion may naturally expire on the same frame as this callback; only reject a replacement motion.
      const confirmedHitTarget=f.gojoRapidSpinHitTarget;
      if(f.dead||f.gojoRapidSerial!==serial||(!confirmedHitTarget&&(f.stun>.08||(f.motion&&f.motion.name!=='gojoRapidSpin'))))return;
-     const spinHitTarget=confirmedHitTarget;f.gojoRapidSpinTarget=null;f.gojoRapidSpinHitTarget=null;
+     const spinHitTarget=confirmedHitTarget;f.gojoRapidSpinTarget=null;f.gojoRapidSpinHitTarget=null;f.gojoRapidSpinHitTargets=null;
      if(confirmedHitTarget){f.stun=0;f.vx=0;f.vy=0;}
      const caught=!!spinHitTarget&&!spinHitTarget.dead&&beginGrab(f,spinHitTarget,'gojoBlueRapid',flurryDuration,angle,'#39bfff',9.75);
      if(caught){
@@ -7006,12 +6997,15 @@ function updateFighter(f,dt){if(f.dead)return;
  if(f.gojoBlueOrb){f.gojoBlueOrb.life=Math.max(0,f.gojoBlueOrb.life-dt);if(f.gojoBlueOrb.life<=0)f.gojoBlueOrb=null}
  if(!onlineMode){f.hpRegenWait=Math.max(0,(f.hpRegenWait||0)-dt);if(!f.jackpot&&f.hp<f.maxHp&&f.hpRegenWait<=0&&!(game.domainClash&&game.domainClash.members.includes(f)))f.hp=Math.min(f.maxHp,f.hp+f.maxHp*.012*dt)}if(f.char==='vessel'&&f.awakened)f.sukunaAwakeningVisualTime=(f.sukunaAwakeningVisualTime??game.time)+dt;if(f.sukunaFireCast>0){f.sukunaFireCast=Math.max(0,f.sukunaFireCast-dt);if(f.sukunaFireCast>0){f.stun=0;f.rooted=0;f.vx=0;f.vy=0;f.jump=0;f.jumpV=0;f.block=false}}if(f.cursedWhiteFlash>0)f.cursedWhiteFlash=Math.max(0,f.cursedWhiteFlash-dt);if(f.yujiCancelBurstFx){f.yujiCancelBurstFx.life-=dt;if(f.yujiCancelBurstFx.life<=0)f.yujiCancelBurstFx=null}for(const key of ['yujiEnergyStrike','yujiBlackFlashFx']){const fx=f[key];if(fx){fx.life-=dt;if(fx.life<=0)f[key]=null}}if(f.yujiCrushSlam){f.yujiCrushSlam.life-=dt;if(f.yujiCrushSlam.life<=0)f.yujiCrushSlam=null}if(f.capturedBy){const h=f.capturedBy;if(h&&!h.dead&&(h.grabTarget===f||(h.vesselAwakenSequence&&h.vesselAwakenSequence.target===f))){f.vx=0;f.vy=0;return}f.capturedBy=null}f.stun=Math.max(0,f.stun-dt);f.ragdollTimer=Math.max(0,(f.ragdollTimer||0)-dt);f.invuln=Math.max(0,f.invuln-dt);f.blockImpact=Math.max(0,(f.blockImpact||0)-dt);updateDomainState(f,dt);updateTenEffects(f,dt);updateTrashManEffects(f,dt);if(f.dead)return;f.attackCd=Math.max(0,f.attackCd-dt);f.pullTimer=Math.max(0,(f.pullTimer||0)-dt);if(f.pullTimer>0&&f.pullSource&&!f.pullSource.dead){const ps=f.pullSource,dx=ps.x-f.x,dy=ps.y-f.y,dd=Math.hypot(dx,dy)||1;if(dd>58){const strength=f.pullStrength||4.5;f.vx=lerp(f.vx,dx/dd*strength,clamp(dt*7,0,1));f.vy=lerp(f.vy,dy/dd*strength,clamp(dt*7,0,1))}}else if(f.pullTimer<=0){f.pullSource=null;f.pullStrength=0}f.comboTimer=Math.max(0,f.comboTimer-dt);f.attackAnim=Math.max(0,f.attackAnim-dt);if(f.motion){
   f.motion.t+=dt;
-  if(f.motion.name==='gojoRapidSpin'&&!f.gojoRapidSpinHitTarget&&!(onlineMode&&f.onlineSessionId)){
-   // The full 360-degree hand sweep uses a forgiving 150-unit melee contact radius.
-   // Search nearby fighters rather than relying only on the cursor-selected target.
-   const candidate=gojoRapidSpinContactTarget(f,f.gojoRapidSpinTarget);
-   if(candidate){
-    f.gojoRapidSpinHitTarget=candidate;
+  if(f.motion.name==='gojoRapidSpin'&&!(onlineMode&&f.onlineSessionId)){
+   // The rotating sweep registers every opponent it reaches, not only the nearest one.
+   const candidates=gojoRapidSpinContactTargets(f,f.gojoRapidSpinTarget);
+   if(!f.gojoRapidSpinHitTargets)f.gojoRapidSpinHitTargets=[];
+   for(const candidate of candidates){
+    if(f.gojoRapidSpinHitTargets.includes(candidate))continue;
+    f.gojoRapidSpinHitTargets.push(candidate);
+    if(!f.gojoRapidSpinHitTarget)f.gojoRapidSpinHitTarget=candidate;
+    damage(candidate,2.5,f,{stun:.14,color:'#68d5ff',ignoreInvuln:true});
     burst(candidate.x,candidate.y-23,'#68d5ff',11,3.4);burst(candidate.x,candidate.y-23,'#e8fbff',5,2.4);
     game.hitStop=Math.max(game.hitStop,.022);game.shake=Math.max(game.shake,2.8);
    }
