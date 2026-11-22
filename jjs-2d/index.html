@@ -7090,9 +7090,7 @@ function settleGoldenBinInDomain(p){
 function updateProjectiles(dt){
  const projectileDamping=Math.pow(.993,dt*60);
  for(let i=projectiles.length-1;i>=0;i--){
-  const p=projectiles[i];
-  try{
-  const t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
+  const p=projectiles[i],t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
   if(p.kind==='red'&&p.owner&&p.owner.char==='honored'&&!p.owner.awakened){
    p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
    if(p.gojoFlowParticleTimer<=0){
@@ -7253,10 +7251,6 @@ function updateProjectiles(dt){
   }else if(p.x<0||p.y<0||p.x>WORLD.w||p.y>WORLD.h)p.life=0;
   if(p.maxDistance&&p.travelled>p.maxDistance)p.life=0;
   if(p.life<=0){settleGoldenBinInDomain(p);settleThrownCan(p);projectiles.splice(i,1)}
-  }catch(error){
-   console.error('Projectile update failed; removing projectile:',p&&p.kind,error);
-   if(projectiles[i]===p)projectiles.splice(i,1);
-  }
  }
 }
 
@@ -8129,12 +8123,11 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.restore();
 }
 const getGojoBlueMaxTextures=(()=>{
- let cached=null,started=false;
+ let cached=null;
  const clamp01=v=>Math.max(0,Math.min(1,v));
  const smooth=(a,b,v)=>{const t=clamp01((v-a)/(b-a));return t*t*(3-2*t)};
- function makeAsync(w,h,seed,done){
-  let state=seed>>>0;
-  const random=()=>{state=(state*1664525+1013904223)>>>0;return state/4294967296};
+ function make(w,h,kind,seed){
+  let state=seed>>>0;const random=()=>{state=(state*1664525+1013904223)>>>0;return state/4294967296};
   const grids=[5,10,20,40,80].map(n=>({n,data:Array.from({length:(n+1)*(n+1)},random)}));
   const noise=(u,v)=>{
    const vals=grids.map(({n,data})=>{
@@ -8146,87 +8139,93 @@ const getGojoBlueMaxTextures=(()=>{
    return vals[0]*.42+vals[1]*.27+vals[2]*.17+vals[3]*.09+vals[4]*.05;
   };
   const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;
-  const c=canvas.getContext('2d');
-  if(!c){done(null);return}
-  const im=c.createImageData(w,h),data=im.data;
-  let y=0;
-  const renderChunk=()=>{
-   const endY=Math.min(h,y+4);
-   for(;y<endY;y++)for(let x=0;x<w;x++){
-    const u=x/(w-1),v=y/(h-1),n=noise(u,v),warp=(n-.5)*.36;
+  const c=canvas.getContext('2d'),im=c.createImageData(w,h);
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   const u=x/(w-1),v=y/(h-1),n=noise(u,v),warp=(n-.5)*.36;
+   let shape,depth,edge;
+   if(kind==='cloud'){
     const nx=(u-.5)*2,ny=(v-.5)*2,ang=Math.atan2(ny,nx),rad=Math.sqrt(nx*nx*.9+ny*ny*1.08);
     const boundary=.9+.105*Math.sin(ang*3+.5)+.075*Math.sin(ang*7-1.2)+.05*Math.cos(ang*11)+warp;
-    const shape=1-smooth(.64,boundary,rad),depth=rad;
-    const grain=clamp01(.62+n*.72),pocket=clamp01((n-.42)*1.9),alpha=shape*grain;
-    if(alpha<.015)continue;
+    shape=1-smooth(.64,boundary,rad);depth=rad;edge=clamp01((rad-.35)/.65);
+   }else{
+    const ny=v,center=.055*Math.sin(ny*7.3)+.025*Math.sin(ny*17),half=.12+.82*Math.pow(ny,.74);
+    const across=Math.abs((u-.5)*2-center)/half,fray=.08*Math.sin(ny*22+(u*8))+warp*.9;
+    shape=1-smooth(.73+fray,1.04+fray,across);depth=across;edge=clamp01(across);
+   }
+   const grain=clamp01(.62+n*.72),pocket=clamp01((n-.42)*1.9),alpha=shape*grain;
+   if(alpha<.015)continue;
+   let r,g,b;
+   if(kind==='cloud'){
     const d=clamp01(depth*.9+pocket*.12);
-    let r,g,b;
     if(d<.34){r=248;g=253;b=255}
     else if(d<.68){const k=(d-.34)/.34;r=245-68*k;g=252-17*k;b=255-3*k}
     else{const k=(d-.68)/.32;r=177-130*k;g=235-155*k;b=252-82*k}
-    const swirl=Math.sin(ang*2.25+rad*5.35+Math.sin(ang*3.2)*.48+(n-.5)*1.75);
-    const vein=smooth(-.22,.42,swirl)*smooth(.08,.28,depth)*(1-smooth(1.02,1.3,depth));
+    const ang=Math.atan2((v-.5)*2,(u-.5)*2),rad=Math.hypot((u-.5)*2,(v-.5)*2),swirl=Math.sin(ang*2.25+rad*5.35+Math.sin(ang*3.2)*.48+(n-.5)*1.75),vein=smooth(-.22,.42,swirl)*smooth(.08,.28,depth)*(1-smooth(1.02,1.3,depth));
     if(vein>.01){r=r*(1-vein*.98)+2*vein*.98;g=g*(1-vein*.98)+22*vein*.98;b=b*(1-vein*.98)+105*vein*.98}
-    const mottling=(n-.5)*43,i=(y*w+x)*4;
-    data[i]=Math.max(0,Math.min(255,r+mottling));
-    data[i+1]=Math.max(0,Math.min(255,g+mottling));
-    data[i+2]=Math.max(0,Math.min(255,b+mottling*.85));
-    data[i+3]=Math.round(255*alpha*.94);
+    const mottling=(n-.5)*43;r+=mottling;g+=mottling;b+=mottling*.85;
+   }else{
+    const lower=smooth(.05,.95,v),d=clamp01(edge*.72+lower*.24+pocket*.15);
+    if(d<.45){r=251;g=254;b=255}
+    else if(d<.78){const k=(d-.45)/.33;r=246-105*k;g=252-30*k;b=255}
+    else{const k=(d-.78)/.22;r=141-115*k;g=220-145*k;b=250-75*k}
+    const mottling=(n-.5)*22;r+=mottling;g+=mottling;b+=mottling*.7;
    }
-   if(y<h){requestAnimationFrame(renderChunk);return}
-   c.putImageData(im,0,0);done(canvas);
-  };
-  requestAnimationFrame(renderChunk);
- }
- return ()=>{
-  if(!started){
-   started=true;
-   const result={};let remaining=2;
-   const save=(key,canvas)=>{result[key]=canvas;if(--remaining===0)cached=result.cloud&&result.cloud2?result:null};
-   makeAsync(160,160,10931,canvas=>save('cloud',canvas));
-   makeAsync(160,160,72331,canvas=>save('cloud2',canvas));
+   const i=(y*w+x)*4;im.data[i]=Math.max(0,Math.min(255,r));im.data[i+1]=Math.max(0,Math.min(255,g));im.data[i+2]=Math.max(0,Math.min(255,b));im.data[i+3]=Math.round(255*alpha*.94);
   }
-  return cached;
- };
+  c.putImageData(im,0,0);return canvas;
+ }
+ return ()=>cached||(cached={cloud:make(192,192,'cloud',10931),cloud2:make(192,192,'cloud',72331),plume:make(192,320,'plume',42073)});
 })();
 function drawGojoBlueMaxProjectile(p,x,y){
  const phase=p.phase||'active',duration=Math.max(.001,Number(p.phaseDuration)||(phase==='forming'?1.5:phase==='collapse'?1:3));
  const progress=clamp(1-(Number(p.phaseRemaining)||0)/duration,0,1),forming=phase==='forming',collapse=phase==='collapse';
  const ease=t=>{t=clamp(t,0,1);return t*t*(3-2*t)};
  const c=collapse?ease(progress):0,t=game.time,base=ctx.globalAlpha,mobile=isMobileDevice;
- const textures=getGojoBlueMaxTextures(),form=forming?ease(progress):1;
+ const textures=getGojoBlueMaxTextures(),form=forming?ease(progress):1,glow=mobile?7:17;
  const coreRadius=forming?8+27*ease(clamp((progress-.12)/.78,0,1)):collapse?Math.max(1,34*(1-c*.98)):34;
  ctx.save();ctx.translate(x,y);ctx.lineCap='round';ctx.lineJoin='round';
- // Do not inherit the generic projectile's 30px shadow or stack full-canvas filters.
- ctx.shadowBlur=0;ctx.shadowColor='transparent';ctx.filter='none';ctx.globalCompositeOperation='source-over';
+
+ // The final phase is a compact, irregular cobalt splash. The white cloud is removed.
  if(collapse){
-  const fade=1-ease(clamp((c-.45)/.55,0,1)),scale=1-c*.5;
-  ctx.save();ctx.globalAlpha=base*fade;ctx.scale(scale,scale);
+  const reveal=1,fade=1-ease(clamp((c-.45)/.55,0,1)),scale=1-c*.5;
+  ctx.save();ctx.globalAlpha=base*reveal*fade;ctx.scale(scale,scale);
   const radii=[1,.82,1.12,.76,1.04,.71,1.16,.83,1.02,.74,1.13,.8,1.03,.69,1.18,.86,1.04,.73,1.1,.78,1.02,.74,1.15,.82];
   const points=radii.map((r,i)=>{const a=i*Math.PI*2/radii.length-.16+Math.sin(i*2.4)*.045,rad=73*r*(1+.025*Math.sin(t*3+i));return[Math.cos(a)*rad,Math.sin(a)*rad*.88]});
   const splash=ctx.createRadialGradient(-12,-17,2,0,0,96);splash.addColorStop(0,'#1267e9');splash.addColorStop(.28,'#0750d3');splash.addColorStop(.64,'#062b9f');splash.addColorStop(1,'#020d50');
-  ctx.fillStyle=splash;ctx.shadowColor='#0642ce';ctx.shadowBlur=mobile?3:7;ctx.beginPath();
-  for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length],m=[(a[0]+b[0])*.5,(a[1]+b[1])*.5];if(i===0)ctx.moveTo(m[0],m[1]);ctx.quadraticCurveTo(a[0],a[1],m[0],m[1])}
-  ctx.closePath();ctx.fill();ctx.shadowBlur=0;
-  for(let i=0;i<6;i++){const a=i*2.399+.45,dist=83+(i%3)*18,rx=5+(i%2)*3,ry=3+(i%3)*2;ctx.globalAlpha=base*fade*.8;ctx.fillStyle=i%2?'#0a48c5':'#1678ee';ctx.beginPath();ctx.ellipse(Math.cos(a)*dist,Math.sin(a)*dist*.82,rx,ry,a,0,Math.PI*2);ctx.fill()}
-  ctx.restore();ctx.globalAlpha=base*fade;drawBlueMaxCore(coreRadius,fade,base,mobile);ctx.restore();return;
+  ctx.fillStyle=splash;ctx.shadowColor='#0642ce';ctx.shadowBlur=mobile?4:12;ctx.beginPath();
+  for(let i=0;i<points.length;i++){const a=points[i],b=points[(i+1)%points.length],m=[(a[0]+b[0])*.5,(a[1]+b[1])*.5];if(i===0)ctx.moveTo(m[0],m[1]);ctx.quadraticCurveTo(a[0],a[1],m[0],m[1]);}ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+  for(let i=0;i<6;i++){const a=i*2.399+.45,dist=83+(i%3)*18,rx=5+(i%2)*3,ry=3+(i%3)*2;ctx.globalAlpha=base*reveal*fade*.8;ctx.fillStyle=i%2?'#0a48c5':'#1678ee';ctx.beginPath();ctx.ellipse(Math.cos(a)*dist,Math.sin(a)*dist*.82,rx,ry,a,0,Math.PI*2);ctx.fill();}
+  ctx.restore();
+  ctx.globalAlpha=base*reveal*fade;drawBlueMaxCore(coreRadius,reveal*fade,base,mobile);
+  ctx.restore();return;
  }
- if(!textures){
-  // The first frames use a cheap halo while the detailed clouds are built in small frame-sized chunks.
-  const halo=ctx.createRadialGradient(-4,-5,2,0,0,96);
-  halo.addColorStop(0,'rgba(225,250,255,.48)');halo.addColorStop(.38,'rgba(71,166,255,.24)');halo.addColorStop(1,'rgba(12,56,180,0)');
-  ctx.globalAlpha=base*(forming?.55+.25*form:1);ctx.fillStyle=halo;ctx.beginPath();ctx.arc(0,0,96,0,Math.PI*2);ctx.fill();
-  drawBlueMaxCore(coreRadius,forming?.3+.7*form:1,base,mobile);ctx.restore();return;
+
+ const owner=p.owner;
+ let plumeLength=0,flowAngle=0;
+ if(owner&&Number.isFinite(owner.x)&&Number.isFinite(owner.y)){
+  const face=Number.isFinite(owner.face)?owner.face:Math.atan2(p.y-owner.y,p.x-owner.x);
+  const handX=sx(owner.x+Math.cos(face)*31),handY=sy(owner.y-23+Math.sin(face)*25);
+  const dx=handX-x,dy=handY-y,dist=Math.hypot(dx,dy);flowAngle=Math.atan2(dy,dx)-Math.PI/2;
+  if(dist>52){
+   plumeLength=Math.min(460,dist+34);
+   const width=Math.max(320,Math.min(600,plumeLength*1.68));
+   ctx.save();ctx.rotate(flowAngle);ctx.globalCompositeOperation='screen';
+   ctx.globalAlpha=base*(forming?.3+.32*form:.98);
+   ctx.filter=mobile?'blur(10px)':'blur(18px)';ctx.drawImage(textures.plume,-width*.58,-8,width*1.16,plumeLength*1.04);ctx.filter='none';
+   ctx.globalAlpha=base*(forming?.38+.52*form:1);ctx.drawImage(textures.plume,-width*.5,0,width,plumeLength);
+   const under=ctx.createLinearGradient(0,0,0,plumeLength);under.addColorStop(0,'rgba(8,43,151,.15)');under.addColorStop(.22,'rgba(27,115,224,.12)');under.addColorStop(.75,'rgba(114,205,255,.08)');under.addColorStop(1,'rgba(255,255,255,.2)');
+   ctx.globalAlpha=base*.42;ctx.fillStyle=under;ctx.beginPath();ctx.moveTo(-width*.5,0);ctx.bezierCurveTo(-width*.32,plumeLength*.34,-width*.8,plumeLength*.66,-width*.52,plumeLength);ctx.quadraticCurveTo(0,plumeLength+18,width*.52,plumeLength);ctx.bezierCurveTo(width*.8,plumeLength*.66,width*.32,plumeLength*.34,width*.5,0);ctx.closePath();ctx.fill();
+   ctx.restore();
+  }
  }
- // Keep the energy centered on the floating orb; no long hand-to-orb plume or ground effect.
+
+ // A single connected, turbulent cloud volume around the orb — no separate white line overlays.
+ ctx.save();ctx.rotate(flowAngle*.14);ctx.globalCompositeOperation='screen';
  const cloudScale=(forming?.72+.28*form:1)*(1+.018*Math.sin(t*3.2));
- ctx.save();ctx.rotate(.025*Math.sin(t*.42));ctx.globalCompositeOperation='screen';
- ctx.globalAlpha=base*(forming?.48+.48*form:1);
- ctx.drawImage(textures.cloud,-250*cloudScale,-226*cloudScale,500*cloudScale,452*cloudScale);
- ctx.save();ctx.globalCompositeOperation='multiply';ctx.rotate(-.31+Math.sin(t*.38)*.045);
- ctx.globalAlpha=base*(forming?.4+.38*form:.76);
- ctx.drawImage(textures.cloud2,-218*cloudScale-14,-193*cloudScale+8,436*cloudScale,386*cloudScale);
- ctx.restore();ctx.restore();
+ ctx.globalAlpha=base*(forming?.48+.48*form:1);ctx.filter=mobile?'blur(5px)':'blur(8px)';ctx.drawImage(textures.cloud,-292*cloudScale,-264*cloudScale,584*cloudScale,528*cloudScale);ctx.filter='none';
+ ctx.save();ctx.globalCompositeOperation='multiply';ctx.rotate(-.31+Math.sin(t*.38)*.045);ctx.globalAlpha=base*(forming?.4+.38*form:.76);ctx.drawImage(textures.cloud2,-242*cloudScale-16,-214*cloudScale+9,484*cloudScale,428*cloudScale);ctx.restore();
+ ctx.restore();
+
  const coreAlpha=forming?.3+.7*form:1;
  drawBlueMaxCore(coreRadius,coreAlpha,base,mobile);
  ctx.restore();
@@ -11223,7 +11222,7 @@ function draw(){
 }
 function drawMenuBackdrop(){ctx.save();ctx.fillStyle='#0a111b66';ctx.fillRect(0,0,W,H);ctx.restore()}
 let mobileAccumulator=0,wasPaused=false,frameUpdateCost=0;
-function loop(ts){requestAnimationFrame(loop);try{const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;}catch(error){console.error('JJS2D frame error; pausing instead of stopping the render loop:',error);game.paused=true;mobileAccumulator=0;wasPaused=true;canvasNeedsDraw=false}}requestAnimationFrame(loop);
+function loop(ts){const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;requestAnimationFrame(loop)}requestAnimationFrame(loop);
 // Start positions are rendered behind the title screen too.
 resetMatch();camera.x=1100;camera.y=750;
 })();
