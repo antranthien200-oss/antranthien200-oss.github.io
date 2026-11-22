@@ -5498,14 +5498,22 @@ function cameraViewScale(){return mobileControlsEnabled?MOBILE_CAMERA_ZOOM:1}
 function aimWorld(){const scale=cameraViewScale();return {x:camera.x+(mouse.x-W/2)*scale,y:camera.y+(mouse.y-H/2)*scale}}
 let camera={x:1100,y:750};
 function activeMoves(f){if(f.char==='yuta'){if(f.domainType==='yuta'&&f.domainTimer>0){const moves=(f.awakened?CHARS.yuta.awakeMoves:CHARS.yuta.moves).map(m=>m.slice());moves[3]=f.yutaHeldKatana?['KATANA · '+f.yutaHeldKatana.technique,'Press M1 to run and activate the copied technique']:f.yutaJacobReady?["JACOB'S LADDER",'Press 4 while aiming at a target']:['AUTHENTIC MUTUAL LOVE · '+Math.min(4,f.yutaDomainHits||0)+'/4','Walk near one of the four landed katanas'];return moves}if(f.rikaMode)return f.awakened?YUTA_RIKA_AWAKE_MOVES:YUTA_RIKA_MOVES;if(f.awakened){const moves=CHARS.yuta.awakeMoves.map(m=>m.slice());moves[1]=['COPY: '+YUTA_COPY_OPTIONS[(f.yutaCopyIndex||0)%YUTA_COPY_OPTIONS.length],'Cycle the copied technique with G'];return moves}return CHARS.yuta.moves}if(f.char==='restless')return f.jackpot?CHARS.restless.awakeMoves:CHARS.restless.moves;if(f.char==='ten'&&f.awakened&&f.tenBase)return CHARS.ten.moves;return f.awakened?CHARS[f.char].awakeMoves:CHARS[f.char].moves}
+function mobileAimSelectsTarget(f,t,range=980,halfAngle=.38){
+ if(!mobileControlsEnabled||f!==player||!t||t.dead)return false;
+ // Mobile aim is directional: compare the target to the joystick heading rather than
+ // requiring it to sit beside the short on-screen aim marker.
+ const aim=aimWorld(),aimAngle=Math.atan2(aim.y-f.y,aim.x-f.x),targetAngle=Math.atan2(t.y-f.y,t.x-f.x);
+ const delta=Math.abs(Math.atan2(Math.sin(targetAngle-aimAngle),Math.cos(targetAngle-aimAngle)));
+ return dist(f,t)<=range&&delta<=halfAngle;
+}
 function targetOf(f){
  if(f&&f.onlineActionTarget&&Number(f.onlineActionTargetUntil)>performance.now()&&!f.onlineActionTarget.dead)return f.onlineActionTarget;
  if(f===player&&onlineMode){
-  if(trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
+  if(trainingDummy&&!trainingDummy.dead&&(mobileAimSelectsTarget(f,trainingDummy)||(!mobileControlsEnabled&&dist(aimWorld(),trainingDummy)<160&&dist(f,trainingDummy)<980)))return trainingDummy;
   const targets=[...onlineRemotePlayers.values()].filter(t=>!t.dead);
   if(targets.length){const aim=aimWorld();targets.sort((a,b)=>(dist(aim,a)+dist(f,a)*.08)-(dist(aim,b)+dist(f,b)*.08));return targets[0]}
  }
- if(f===player&&trainingDummy&&!trainingDummy.dead){const aim=aimWorld();if(dist(aim,trainingDummy)<160&&dist(f,trainingDummy)<980)return trainingDummy}
+ if(f===player&&trainingDummy&&!trainingDummy.dead&&(mobileAimSelectsTarget(f,trainingDummy)||(!mobileControlsEnabled&&dist(aimWorld(),trainingDummy)<160&&dist(f,trainingDummy)<980)))return trainingDummy;
  return f===player?enemy:player;
 }
 function gojoFlashStepTarget(f){
@@ -11252,7 +11260,9 @@ function drawEffects(){
  for(const t of texts){const tx=sx(t.x),ty=sy(t.y),pad=Math.max(64,t.size*8);if(!effectsViewportContains(tx,ty,pad))continue;ctx.save();ctx.globalAlpha=clamp(t.life/t.max,0,1);ctx.fillStyle='#070b12';ctx.font=`1000 ${t.size}px system-ui`;ctx.textAlign='center';ctx.fillText(t.text,sx(t.x)+2,sy(t.y)+2);ctx.fillStyle=t.color;ctx.fillText(t.text,sx(t.x),sy(t.y));ctx.restore()}}
 function drawMobileEnemyPointer(){
  if(!mobileControlsEnabled||!game.started||game.paused||!player||player.dead||!enemy||enemy.dead)return;
- const zoom=cameraViewScale(),ex=W/2+(sx(enemy.x)-W/2)/zoom,ey=H/2+(sy(enemy.y)-H/2)/zoom;
+ const pointerTarget=targetOf(player)||enemy,isDummyTarget=pointerTarget===trainingDummy;
+ if(pointerTarget.dead)return;
+ const zoom=cameraViewScale(),ex=W/2+(sx(pointerTarget.x)-W/2)/zoom,ey=H/2+(sy(pointerTarget.y)-H/2)/zoom;
  // Treat HUD and the lower touch-control band as occluded screen space.
  const left=24,right=W-24;
  const top=Math.min(102,H*.2);
@@ -11277,8 +11287,8 @@ function drawMobileEnemyPointer(){
  ctx.globalAlpha=.94;
  ctx.lineJoin='miter';
  ctx.lineWidth=3;
- ctx.strokeStyle='rgba(3,8,15,.88)';
- ctx.fillStyle='rgba(221,242,255,.9)';
+ ctx.strokeStyle=isDummyTarget?'rgba(3,24,22,.92)':'rgba(3,8,15,.88)';
+ ctx.fillStyle=isDummyTarget?'rgba(137,255,229,.96)':'rgba(221,242,255,.9)';
  ctx.beginPath();
  ctx.moveTo(13,0);
  ctx.lineTo(-8,-9);
