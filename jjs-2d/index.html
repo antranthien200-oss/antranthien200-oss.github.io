@@ -8117,6 +8117,10 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
 
   // Smooth dark-to-light radial sphere with a hollow white inner circle.
   drawRedGradientSphere(orbX,orbY,radius,vfxFade);
+  // The white plus marks Reversal Red's repulsive energy.
+  ctx.globalAlpha=vfxFade;ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(1.15,radius*.14);ctx.lineCap='round';
+  const redSignHalf=Math.max(2,radius*.27);
+  ctx.beginPath();ctx.moveTo(orbX-redSignHalf,orbY);ctx.lineTo(orbX+redSignHalf,orbY);ctx.moveTo(orbX,orbY-redSignHalf);ctx.lineTo(orbX,orbY+redSignHalf);ctx.stroke();
 
   // Two fine highlights pass in front, so the trails visibly wrap around the orb.
   drawRedTrail(0,true);drawRedTrail(1,true);
@@ -8135,7 +8139,12 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
 
   // Use the same smooth radial sphere treatment as Reversal Red, recolored for Lapse Blue.
   // The sphere keeps its existing center and shrink animation as the target is pulled in.
-  drawBlueGradientSphere(x,y,14*sphereScale,1);
+  const blueOrbRadius=14*sphereScale;
+  drawBlueGradientSphere(x,y,blueOrbRadius,1);
+  // The white minus marks Lapse Blue's attractive energy.
+  ctx.strokeStyle='#ffffff';ctx.lineWidth=Math.max(1.1,blueOrbRadius*.13);ctx.lineCap='round';
+  const blueSignHalf=Math.max(2,blueOrbRadius*.28);
+  ctx.beginPath();ctx.moveTo(x-blueSignHalf,y);ctx.lineTo(x+blueSignHalf,y);ctx.stroke();
   ctx.restore();return;
  }
  if(m==='gojoBlueSucked'){
