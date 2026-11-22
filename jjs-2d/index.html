@@ -3828,7 +3828,6 @@ function interruptSkillCast(f){
  if(!f||!(f.skillInputLocked&&f.motion||f.attackType==='skill'))return;
  f.skillCastSerial=(f.skillCastSerial||0)+1;
  f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType='';
- if(f.gojoBlueTargets)releaseGojoBlueGroup(f);
 }
 function runScheduledTasks(){for(let i=scheduledTasks.length-1;i>=0;i--){if(scheduledTasks[i].at<=game.time){const task=scheduledTasks.splice(i,1)[0];try{task.fn()}catch(err){console.error('Delayed game action failed:',err)}}}}
 const staticBuildings=[
@@ -5560,26 +5559,6 @@ function aimedAt(f){if(f&&f.onlineActionAim&&Number(f.onlineActionAimUntil)>perf
 function faceTarget(f,t){f.face=Math.atan2(t.y-f.y,t.x-f.x)}
 function aimedAngle(f){const a=aimedAt(f);return Math.atan2(a.y-f.y,a.x-f.x)}
 function targetInAim(f,t,range,halfAngle=.8,angle=aimedAngle(f)){const mobileBoost=mobileControlsEnabled&&f===player;if(!t||t.dead||dist(f,t)>range*(mobileBoost?1.22:1))return false;const da=Math.atan2(t.y-f.y,t.x-f.x);return Math.abs(Math.atan2(Math.sin(da-angle),Math.cos(da-angle)))<=halfAngle+(mobileBoost?.16:0)}
-function gojoBlueTargetIsValid(target){
- if(!target||target.dead||!Number.isFinite(target.x)||!Number.isFinite(target.y))return false;
- if(!onlineMode||target===player||target===enemy||target===trainingDummy)return true;
- return !!(target.onlineSessionId&&onlineRemotePlayers.get(target.onlineSessionId)===target);
-}
-function releaseGojoBluePull(owner,target){
- if(!target)return;
- const pull=target.gojoBluePull;
- if(!pull||(owner&&pull.owner!==owner))return;
- target.gojoBluePull=null;
- if(target.motion&&target.motion.name==='gojoBlueSucked')target.motion=null;
- target.stun=Math.max(target.stun||0,.12);
-}
-function releaseGojoBlueGroup(owner){
- if(!owner)return;
- const targets=Array.isArray(owner.gojoBlueTargets)?owner.gojoBlueTargets:[];
- for(const target of targets)releaseGojoBluePull(owner,target);
- owner.gojoBlueTargets=null;
- owner.gojoBlueOrb=null;
-}
 function burstLine(f,t,color,n=12){let dx=t.x-f.x,dy=t.y-f.y,l=Math.hypot(dx,dy)||1;for(let i=0;i<n;i++){let k=i/(n-1);burst(f.x+dx*k,f.y+dy*k,color,1,2.5)}}
 function repeatDamage(f,t,amount,count,interval,opts={}){const hitRange=(opts.range||320)+(mobileControlsEnabled&&f===player?18:0);for(let i=0;i<count;i++)schedule(()=>{if(!t.dead&&dist(f,t)<hitRange)damage(t,amount,f,{...opts,stun:opts.stun??.08})},i*interval)}
 function setMotion(f,name,duration=.5,angle=f.face,target=null){
@@ -5866,8 +5845,6 @@ function cleanupFighterDeath(f){
   const car=f.vehicle;car.occupied=false;car.speed=0;car.vx=0;car.vy=0;
   f.vehicle=null;
  }
- releaseGojoBlueGroup(f);
- if(f.gojoBluePull)releaseGojoBluePull(f.gojoBluePull.owner,f);
  f.block=false;f.vx=0;f.vy=0;f.motion=null;f.attackAnim=0;f.attackType='';
 }
 function toggleTrashCan(f){
@@ -5916,20 +5893,6 @@ function updateTrainingDummy(dt){
  if(trainingDummy.motion){
   trainingDummy.motion.t+=dt;
   if(trainingDummy.motion.t>=trainingDummy.motion.duration)trainingDummy.motion=null;
- }
- if(trainingDummy.gojoBluePull&&!onlineMode){
-  const pull=trainingDummy.gojoBluePull;
-  if(!pull.owner||pull.owner.dead||!Number.isFinite(pull.x)||!Number.isFinite(pull.y)||pull.life<=0)releaseGojoBluePull(pull.owner,trainingDummy);
-  else{
-   const dx=pull.x-trainingDummy.x,dy=pull.y-trainingDummy.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
-   if(d>7){trainingDummy.x+=dx/d*step;trainingDummy.y+=dy/d*step}
-   trainingDummy.vx=0;trainingDummy.vy=0;pull.life-=dt;pull.elapsed=(pull.elapsed||0)+dt;
-   if(trainingDummy.motion&&trainingDummy.motion.name==='gojoBlueSucked'){
-    trainingDummy.motion.t=Math.min(pull.suctionDuration||.85,pull.elapsed);
-    if(pull.elapsed>=(pull.suctionDuration||.85))trainingDummy.motion=null;
-   }
-   if(pull.life<=0)releaseGojoBluePull(pull.owner,trainingDummy);
-  }
  }
  updateTenEffects(trainingDummy,dt);
 
@@ -6499,48 +6462,28 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
  if(f.char==='honored'){
   if(!f.awakened){
    if(idx===0){
-    const mobileAimAssist=mobileControlsEnabled&&f===player,orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
-    const range=480,halfAngle=mobileAimAssist?0.96:1.12;
-    const caughtTargets=tenTargets(f)
-     .filter(candidate=>candidate!==f&&!candidate.capturedBy&&!candidate.gojoBluePull&&gojoBlueTargetIsValid(candidate)&&targetInAim(f,candidate,mobileAimAssist?range/1.22:range,halfAngle,angle))
-     .sort((a,b)=>dist(f,a)-dist(f,b))
-     .slice(0,4);
-    const primaryTarget=caughtTargets[0]||null;
-    f.skillCd[idx]=15;f.attackAnim=.85;f.invuln=.12;setMotion(f,'gojoBlue',.85,angle,primaryTarget||t);
-    f.gojoBlueTargets=caughtTargets;
-    f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:primaryTarget,startDistance:primaryTarget?Math.hypot(primaryTarget.x-orbX,primaryTarget.y-orbY):0};
+    const mobileAimAssist=mobileControlsEnabled&&f===player,caught=targetInAim(f,t,mobileAimAssist ? 480/1.22 : 480,mobileAimAssist ? 0.96 : 1.12,angle),orbX=f.x+Math.cos(angle)*64,orbY=f.y+Math.sin(angle)*64;
+    f.skillCd[idx]=15;f.attackAnim=.85;f.invuln=.12;setMotion(f,'gojoBlue',.85,angle,t);
+    f.gojoBlueOrb={x:orbX,y:orbY,life:.85,max:.85,target:caught?t:null,startDistance:caught?Math.hypot(t.x-orbX,t.y-orbY):0};
     burst(orbX,orbY,'#65d9ff',22,3.6);burst(orbX,orbY,'#d9f8ff',9,2.2);spawnGojoBlueSparks(f,orbX,orbY,12);popText(orbX,orbY-30,'LAPSE BLUE','#a8edff',12);
-    if(caughtTargets.length){
-     for(let index=0;index<caughtTargets.length;index++){
-      const target=caughtTargets[index];
-      damage(target,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',unblockable:true,ignoreInvuln:true});
-      if(!target.dead&&!onlineMode){
-       const offset=index/Math.max(1,caughtTargets.length)*Math.PI*2;
-       target.gojoBluePull={owner:f,x:orbX+Math.cos(offset)*12,y:orbY+Math.sin(offset)*12,life:1.72,elapsed:0,suctionDuration:.85};
-       setMotion(target,'gojoBlueSucked',.85,angle,f);
-      }
-     }
+    if(caught){
+     damage(t,5,f,{stun:.28,color:'#69d9ff',damageType:'bullet',unblockable:true,ignoreInvuln:true});
+     if(!onlineMode){t.gojoBluePull={owner:f,x:orbX,y:orbY,life:1.95,elapsed:0,suctionDuration:.85};setMotion(t,'gojoBlueSucked',.85,angle,f)}
      schedule(()=>{
-      if(f.dead||!game.started||game.over){releaseGojoBlueGroup(f);return}
-      const liveTargets=caughtTargets.filter(gojoBlueTargetIsValid);
-      f.gojoBlueOrb=null;
-      if(!liveTargets.length){releaseGojoBlueGroup(f);return}
-      const spinDuration=.48;setMotion(f,'gojoBlueSpin',spinDuration,angle,liveTargets[0]);f.attackAnim=spinDuration;f.invuln=.22;
+      if(f.dead||t.dead||!game.started||game.over)return;
+      f.gojoBlueOrb=null;const spinDuration=.48;setMotion(f,'gojoBlueSpin',spinDuration,angle,t);f.attackAnim=spinDuration;f.invuln=.22;
       schedule(()=>{
-       if(f.dead||!game.started||game.over){releaseGojoBlueGroup(f);return}
-       const activeTargets=caughtTargets.filter(gojoBlueTargetIsValid);
-       if(!activeTargets.length){releaseGojoBlueGroup(f);return}
+       if(f.dead||t.dead||!game.started||game.over)return;
        const slapDuration=.46,slapContactProgress=.652;
-       setMotion(f,'gojoBlueSlap',slapDuration,angle,activeTargets[0]);f.attackAnim=slapDuration;f.invuln=.18;
+       setMotion(f,'gojoBlueSlap',slapDuration,angle,t);f.attackAnim=slapDuration;f.invuln=.18;
+       // Apply the hit on the exact frame where the hand, crescent and shockwave meet.
        schedule(()=>{
-        if(f.dead||!game.started||game.over){releaseGojoBlueGroup(f);return}
-        let hitCount=0;
-        for(const target of caughtTargets){
-         if(!gojoBlueTargetIsValid(target)){releaseGojoBluePull(f,target);continue}
-         const dx=target.x-f.x,dy=target.y-(f.y-23),distance=Math.hypot(dx,dy);
-         if(distance>=210){releaseGojoBluePull(f,target);continue}
+        if(f.dead||t.dead||!game.started||game.over)return;
+        if(dist(f,t)<190){
          const windupEnd=.24,swingEnd=.68,contactP=slapContactProgress;
-         const targetForward=dx*Math.cos(angle)+dy*Math.sin(angle),targetSide=-dx*Math.sin(angle)+dy*Math.cos(angle);
+         const targetDx=t.x-f.x,targetDy=t.y-(f.y-23);
+         const targetForward=targetDx*Math.cos(angle)+targetDy*Math.sin(angle);
+         const targetSide=-targetDx*Math.sin(angle)+targetDy*Math.cos(angle);
          const contact=clamp(targetForward-5,42,86),readySide=targetSide-30,followSide=targetSide+16,strikeForward=contact+5;
          const slapHandAt=p=>{
           const raw=clamp((p-windupEnd)/(swingEnd-windupEnd),0,1),swing=smoothstep01(raw);
@@ -6551,20 +6494,19 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
          const before=slapHandAt(Math.max(0,contactP-.012)),after=slapHandAt(Math.min(1,contactP+.012));
          const sweepX=after.x-before.x,sweepY=after.y-before.y,sweepLength=Math.hypot(sweepX,sweepY)||1;
          const knockX=sweepX/sweepLength,knockY=sweepY/sweepLength;
-         releaseGojoBluePull(f,target);
-         damage(target,7.5,f,{stun:.78,kx:knockX*20,ky:knockY*20,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
-         if(!onlineMode&&!target.dead){target.vx=knockX*15;target.vy=knockY*15}
-         burst(target.x,target.y-23,'#b9efff',24,5.2);burst(target.x,target.y-23,'#4bbfff',16,4.2);spawnGojoBlueSparks(f,target.x,target.y-23,8);
-         hitCount++;
-        }
-        f.gojoBlueTargets=null;
-        if(hitCount){game.hitStop=Math.max(game.hitStop,.075);game.shake=Math.max(game.shake,12);const label=hitCount>1?'BLUE SLAP ×'+hitCount:'BLUE SLAP';popText(f.x+Math.cos(angle)*90,f.y-52+Math.sin(angle)*90,' '+label,'#e2f8ff',16)}
-        else popText(f.x+Math.cos(angle)*100,f.y+Math.sin(angle)*100-48,'BLUE · MISS','#8ce5ff',11);
+         if(!onlineMode&&t.gojoBluePull&&t.gojoBluePull.owner===f){
+          t.gojoBluePull=null;t.motion=null;t.stun=Math.max(t.stun,.78);
+         }
+         damage(t,7.5,f,{stun:.78,kx:knockX*20,ky:knockY*20,unblockable:true,big:true,ignoreInvuln:true,color:'#b9efff'});
+         if(!onlineMode){t.vx=knockX*15;t.vy=knockY*15}
+         burst(t.x,t.y-23,'#b9efff',30,5.8);burst(t.x,t.y-23,'#4bbfff',22,4.8);spawnGojoBlueSparks(f,t.x,t.y-23,20);
+         game.hitStop=Math.max(game.hitStop,.095);game.shake=Math.max(game.shake,14);
+         popText(t.x,t.y-61,'BLUE SLAP','#e2f8ff',16);
+        }else popText(f.x+Math.cos(angle)*100,f.y+Math.sin(angle)*100-48,'BLUE · MISS','#8ce5ff',11);
        },Math.round(slapDuration*slapContactProgress*1000));
       },Math.round(spinDuration*1000));
      },850);
     }else{
-     f.gojoBlueTargets=null;
      schedule(()=>{if(!f.dead&&f.motion&&f.motion.name==='gojoBlue'){f.gojoBlueOrb=null;popText(f.x+Math.cos(angle)*76,f.y+Math.sin(angle)*76-42,'BLUE · MISS','#8ce5ff',11)}},850);
     }
    }
@@ -7046,19 +6988,16 @@ function updateTenEffects(f,dt){
 }
 function updateFighter(f,dt){if(f.dead)return;
  if(f.gojoBluePull&&!onlineMode){
-  const pull=f.gojoBluePull;
-  if(!pull.owner||pull.owner.dead||!Number.isFinite(pull.x)||!Number.isFinite(pull.y)||pull.life<=0)releaseGojoBluePull(pull.owner,f);
-  else{
-   const dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
-   if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
-   f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;pull.elapsed=(pull.elapsed||0)+dt;
-   if(f.motion&&f.motion.name==='gojoBlueSucked'){
-    f.motion.t=Math.min(pull.suctionDuration||.85,pull.elapsed);
-    if(pull.elapsed>=(pull.suctionDuration||.85))f.motion=null;
-   }
-   if(pull.life>0){updateDomainContainment(f);return}
-   releaseGojoBluePull(pull.owner,f);f.stun=Math.max(f.stun,.62);
+  const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
+  if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
+  f.vx=0;f.vy=0;f.stun=Math.max(f.stun,.08);pull.life-=dt;pull.elapsed=(pull.elapsed||0)+dt;
+  // Finish the pull motion at the same moment the owner transitions into the spin.
+  if(f.motion&&f.motion.name==='gojoBlueSucked'){
+   f.motion.t=Math.min(pull.suctionDuration||.85,pull.elapsed);
+   if(pull.elapsed>=(pull.suctionDuration||.85))f.motion=null;
   }
+  if(pull.life<=0){pull.owner.gojoBlueOrb=null;f.gojoBluePull=null;f.stun=Math.max(f.stun,.62);f.motion=null}
+  updateDomainContainment(f);return;
  }
  if(onlineMode&&f.blueSuckedBy){f.vx=0;f.vy=0;return}
  if(f.gojoBlueOrb){f.gojoBlueOrb.life=Math.max(0,f.gojoBlueOrb.life-dt);if(f.gojoBlueOrb.life<=0)f.gojoBlueOrb=null}
