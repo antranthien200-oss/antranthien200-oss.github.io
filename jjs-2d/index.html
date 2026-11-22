@@ -7436,7 +7436,6 @@ function drawMap(){if(isFullScreenDomainActive())return;
   if(!mapCtx)return;
   const mapScale=1;mapCtx.setTransform(mapScale,0,0,mapScale,0,0);
   ctx=mapCtx;W=WORLD.w;H=WORLD.h;camera.x=WORLD.w/2;camera.y=WORLD.h/2;
-  let mapBuildSucceeded=false;
   try{
  ctx.fillStyle='#26313a';ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(W/2-camera.x,H/2-camera.y);
  // Base city surface and orderly concrete pavers.
@@ -7694,7 +7693,6 @@ function drawMap(){if(isFullScreenDomainActive())return;
  // District frame and clear location sign.
  ctx.strokeStyle='#a6c7c4';ctx.lineWidth=5;ctx.strokeRect(18,18,WORLD.w-36,WORLD.h-36);ctx.fillStyle='#17232c';ctx.fillRect(38,38,290,33);ctx.fillStyle='#c3e0db';ctx.font='900 13px system-ui';ctx.textAlign='left';ctx.fillText('TOKYO · CURSED CITY DISTRICT 07',50,60);
  ctx.restore();
-  mapBuildSucceeded=true;
   }catch(error){
    console.error('Map cache redraw failed; restoring the live game canvas:',error);
    mapCtx.setTransform(1,0,0,1,0,0);mapCtx.globalAlpha=1;mapCtx.globalCompositeOperation='source-over';mapCtx.setLineDash([]);mapCtx.shadowBlur=0;
