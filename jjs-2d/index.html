@@ -3864,7 +3864,7 @@ function resetTrashCans(){trashCans.length=0;trashCanSpawns.forEach((p,i)=>trash
 function makeFighter(team,char,x,y){const hp=CHARS[char].hp;return {team,char,x,y,vx:0,vy:0,face:team==='player'?0:Math.PI,hp,maxHp:hp,hpRegenWait:0,blueSuckedBy:'',blueSuctionX:0,blueSuctionY:0,blueSuctionRemaining:0,gojoBluePull:null,meter:0,comboTimer:0,attackCd:0,skillCd:[0,0,0,0],specialCd:0,dashCd:0,block:false,blockImpact:0,stun:0,invuln:0,skillLockUntil:0,attackAnim:0,attackType:'',motion:null,jump:0,jumpV:0,awakened:false,awakeMode:'',awakeFuel:0,awakeFuelDrainRate:0,flash:0,aiThink:0,aiAction:0,walk:0,dead:false,respawn:0,hitCount:0,counterWindow:0,counterKind:'',reserveBallWindow:0,blackFlashWindow:0,blackFlashChain:0,feverWindow:0,doorPlatform:null,domainType:'',domainTimer:0,domainTick:0,domainWindup:0,domainWindupStart:0,domainDuration:0,domainRadius:0,domainVisualRadius:860,domainCenterX:null,domainCenterY:null,domainInsideOwner:null,domainEscapedOwner:null,domainState:'',domainHitApplied:false,domainPower:1,domainFlashTimer:0,domainOpenedAt:0,domainCastStartedAt:0,domainMoveActive:false,domainMoveLastX:0,domainMoveLastY:0,yutaDomainHits:0,yutaDomainSwords:[],yutaKatanas:[],yutaHeldKatana:null,yutaKatanaSpawnTimer:0,yutaLadder:null,yutaCopyIndex:0,yutaSecondWindRetry:false,rikaSummoned:false,rikaMode:false,rikaLastSpecialAt:-10,transfigureMeter:0,transfigureSource:null,bloodRain:null,gambleVisuals:0,gambleAttempts:0,domainStunGuaranteed:false,jackpot:false,consecutiveJackpots:0,rhythmStacks:0,regen:0,grabTarget:null,grabKind:'',grabElapsed:0,grabDuration:0,grabTick:0,grabLastX:0,grabLastY:0,capturedBy:null,pullSource:null,pullTimer:0,pullStrength:0,pullColor:'#75dcff',rooted:0,shadowTimer:0,sukunaFireCast:0,sukunaFireSerial:0,soulMode:0,convergenceOrbs:0,bloodBomb:null,tenBase:false,adaptation:0,gojoDomain02Cd:0,carryingTrashCan:null,isTrainingDummy:false,tenDogActive:false,tenDogCharges:0,tenDogTimer:0,tenToadWindow:0,tenToadTarget:null,tenToadVisual:0,tenNueWindow:0,tenNueProjectile:null,tenNueRideTimer:0,tenRabbitSwarm:null,tenNueCast:null,tenNueM1Lock:0,ragdollTimer:0,tenPoisonTimer:0,tenPoisonTick:0,tenPoisonSource:null,tenElephantMark:null,tenMahoragaRitual:0,tenMahoragaActive:0,tenMahoragaAttackCd:0,tenMahoragaAttackTimer:0,tenMahoragaFromX:0,tenMahoragaFromY:0,tenMahoragaToX:0,tenMahoragaToY:0,tenMahoragaAttackAngle:0,tenMahoragaTarget:null,tenGardenTimer:0,tenGardenDrain:0,tenShadowStoredCan:null,trashGiantCan:null,trashStinkArea:null,trashBarrageTimer:0,trashBarrageTick:0,trashBarrageAngle:0,trashBodyBarrageTimer:0,trashBodyBarrageTick:0,trashBodyBarrageAngle:0,trashSwapDecoy:null,trashGoldenCanCarried:false,trashGoldenCanInFlight:false,trashDomainCanAvailable:false,trashDomainCanCooldown:0,trashGoldenCanX:null,trashGoldenCanY:null}};
 let player,enemy,trainingDummy;
 
-let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false;
+let onlineRoom=null,onlineClient=null,onlineSessionId=null,onlineMode=false,onlineConnectionDropped=false;
 const ONLINE_DEFAULT_SERVER_URL="https://balls-shenanigan-online-7ca6.onrender.com";
 const ONLINE_STATE_SEND_RATE=20,ONLINE_STATE_SEND_INTERVAL=1/ONLINE_STATE_SEND_RATE,ONLINE_STATE_INTERVAL_MS=1000/ONLINE_STATE_SEND_RATE;
 const ONLINE_REMOTE_INTERPOLATION_MIN_MS=52,ONLINE_REMOTE_INTERPOLATION_MAX_MS=104,ONLINE_MAX_EXTRAPOLATION_MS=120;
@@ -3887,7 +3887,7 @@ function setOnlineStatus(message){
 }
 function sendOnlineMessage(type,payload){
  const room=onlineRoom;
- if(!onlineMode||!room)return false;
+ if(!onlineMode||!room||onlineConnectionDropped)return false;
  try{room.send(type,payload);return true}
  catch(error){
   console.warn('Online message failed ('+String(type)+'):',error);
@@ -4526,7 +4526,7 @@ function updateOnlineRemotePlayers(dt){
  }
 }
 function updateOnlineNetwork(dt){
- if(!onlineMode||!onlineRoom||!player)return;
+ if(!onlineMode||!onlineRoom||!player||onlineConnectionDropped)return;
  onlineSendAccumulator+=Math.min(dt,.1);onlinePingAccumulator+=Math.min(dt,.1);
  if(onlinePingAccumulator>=1){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
  const networkSendInterval=ONLINE_STATE_SEND_INTERVAL;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
@@ -4590,7 +4590,7 @@ function drawOnlineNameplate(remote){
 }
 function startOnlineMatch(){
  stopOnlinePlayerCountPolling();stopOnlineFightAnimation();stopCharacterPreviewAnimation();stopAccessoryPreviewAnimation();
- onlineMode=true;updatePauseActionButton();
+ onlineMode=true;onlineConnectionDropped=false;updatePauseActionButton();
  resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;onlineStateArrivalAt=0;onlineStateJitterMs=0;onlineRemoteInterpolationDelayMs=60;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
  if(onlineRoom&&onlineRoom.state&&onlineRoom.state.players){
   let localState=null;
@@ -4609,7 +4609,7 @@ function startOnlineMatch(){
 function handleOnlineDisconnect(code){
  if(!onlineMode)return;
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
- onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
+ onlineMode=false;onlineConnectionDropped=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
  game.started=false;game.paused=false;
  document.body.classList.remove('game-active','game-paused','online-mode');
  $('menu').style.display='flex';$('hud').style.display='none';
@@ -4675,6 +4675,7 @@ function bindOnlineRoom(client,room){
  room.onStateChange(state=>applyOnlineRoomState(state));
  room.onDrop((code,reason)=>{
   if(room!==onlineRoom||!onlineMode)return;
+  onlineConnectionDropped=true;
   onlineLatencyMs=null;
   const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='RECONNECTING...';delete pingLabel.dataset.quality}
   setOnlineStatus('CONNECTION INTERRUPTED · RECONNECTING...');
@@ -4682,6 +4683,7 @@ function bindOnlineRoom(client,room){
  });
  room.onReconnect(()=>{
   if(room!==onlineRoom||!onlineMode)return;
+  onlineConnectionDropped=false;
   setOnlineStatus('RECONNECTED · ONE SHARED CITY');
   const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}
   showToast('CONNECTION RESTORED',900);
@@ -4810,7 +4812,7 @@ async function joinOnlineServer(){
  finally{onlineConnecting=false;const b=$('onlineJoinBtn');if(b){b.disabled=false;b.textContent='JOIN CITY'}}
 }
 function sendOnlineActivity(){
- if(!onlineMode||!onlineRoom)return;
+ if(!onlineMode||!onlineRoom||onlineConnectionDropped)return;
  const now=Date.now();if(now-onlineActivitySentAt<2500)return;
  onlineActivitySentAt=now;
  try{onlineRoom.send('player:activity',{})}catch(error){}
@@ -4820,7 +4822,7 @@ addEventListener('pagehide',()=>{if(onlineMode)leaveOnlineServer()});
 function leaveOnlineServer(){
  const room=onlineRoom;
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
- onlineMode=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
+ onlineMode=false;onlineConnectionDropped=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
  if(room){try{room.leave()}catch(e){console.warn('Could not leave online room cleanly',e)}}
  game.started=false;game.paused=false;
  document.body.classList.remove('game-active','game-paused','online-mode');
