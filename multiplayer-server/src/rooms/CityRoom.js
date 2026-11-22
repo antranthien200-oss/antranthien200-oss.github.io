@@ -721,6 +721,12 @@ modifyProjectile(client,payload={}){
   const blockedDamage=Number.isFinite(blockedValue)?clamp(blockedValue,0,250):amount*.12;
   if(!guaranteedRapidGrab&&this.resolveCounter(a,target,incomingType,client.sessionId,id))return;
   if(target.invuln>0&&!ignoreInvuln&&!guaranteedRapidGrab)return;
+  // A successful Lapse Blue slap must break the suction hold before applying knockback.
+  // Otherwise tick() keeps resetting the victim's velocity to zero until the old grab timer expires.
+  if(a.character==="honored"&&!a.awakened&&move==="gojoBlueSlap"&&target.blueSuckedBy===client.sessionId){
+   target.blueSuckedBy="";target.blueSuctionRemaining=0;target.stun=Math.max(target.stun,stun);
+   target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=Date.now();
+  }
   if(target.tenDogActive){target.tenDogActive=false;target.tenDogCharges=0;target.tenDogTimer=0;}
   if(target.tenGardenTimer>0)target.tenGardenTimer=0;
   const fireArmor=Number(target.sukunaFireCast)>0;
@@ -765,7 +771,14 @@ modifyProjectile(client,payload={}){
    }
   }
   target.invuln=invuln;
-  if(!fireArmor){target.vx=clamp((Number(target.vx)||0)+kx,-60,60);target.vy=clamp((Number(target.vy)||0)+ky,-60,60)}
+  if(!fireArmor){
+   if(a.character==="honored"&&!a.awakened&&move==="gojoBlueSlap"){
+    // Use the slap's contact vector as the full launch velocity, not a weak additive nudge.
+    target.vx=clamp(kx,-60,60);target.vy=clamp(ky,-60,60);
+   }else{
+    target.vx=clamp((Number(target.vx)||0)+kx,-60,60);target.vy=clamp((Number(target.vy)||0)+ky,-60,60);
+   }
+  }
   if(!target.awakened)target.meter=clamp(target.meter+amount*.42,0,100);
   if(!a.awakened)a.meter=clamp(a.meter+amount*.58,0,100);
   if(target.hp<=0)this.killPlayer(target);
