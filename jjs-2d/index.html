@@ -6723,7 +6723,11 @@ function handleInput(dt){if(!game.started||game.paused||game.over||game.cutscene
  if(mouse.pending){if(player.dead||player.stun>0||player.grabbedBy||player.block){mouse.pending=false;mouse.buffer=0}else if(player.attackCd<=0){useAttack(player,'m1');mouse.pending=false;mouse.buffer=0}else{mouse.buffer=Math.max(0,mouse.buffer-dt);if(mouse.buffer<=0)mouse.pending=false}}
 }
 function ai(dt){if(trainingDummy)trainingDummy.aiDisabled=true;if(enemy.dead){enemy.respawn-=dt;if(enemy.respawn<=0){const defeatedChar=enemy.char;let nextChars=Object.keys(CHARS).filter(k=>k!==defeatedChar&&k!==player.char);if(!nextChars.length)nextChars=Object.keys(CHARS).filter(k=>k!==defeatedChar);const nextChar=nextChars.length?nextChars[Math.floor(Math.random()*nextChars.length)]:defeatedChar;enemy=makeFighter('enemy',nextChar,1510+rnd(-120,120),930+rnd(-110,110));showToast('NEW CHALLENGER · '+CHARS[nextChar].name,1100)}return}
- enemy.aiThink-=dt;enemy.aiAction-=dt;let dx=player.x-enemy.x,dy=player.y-enemy.y,d=Math.hypot(dx,dy)||1;let nx=dx/d,ny=dy/d;enemy.face=Math.atan2(dy,dx);if(enemy.stun>0)return;if(game.domainClash){enemy.block=false;if(d>112){enemy.vx+=nx*.85;enemy.vy+=ny*.85}if(d<140&&enemy.attackCd<=0)useAttack(enemy,'m1');else if(d>145&&enemy.dashCd<=0&&Math.random()<.22)useAttack(enemy,'dash');return}
+ enemy.aiThink-=dt;enemy.aiAction-=dt;
+ // Let committed attacks and skills finish on their authored path. Do not steer or
+ // rotate the fighter during a motion: that would distort its hand pose and cast angle.
+ if(enemy.motion)return;
+ let dx=player.x-enemy.x,dy=player.y-enemy.y,d=Math.hypot(dx,dy)||1;let nx=dx/d,ny=dy/d;enemy.face=Math.atan2(dy,dx);if(enemy.stun>0)return;if(game.domainClash){enemy.block=false;if(d>112){enemy.vx+=nx*.85;enemy.vy+=ny*.85}if(d<140&&enemy.attackCd<=0)useAttack(enemy,'m1');else if(d>145&&enemy.dashCd<=0&&Math.random()<.22)useAttack(enemy,'dash');return}
  // Steer continuously so the opponent can walk and chase between attack decisions.
  // Keep the same approach/retreat distances while matching the player's frame-scaled acceleration.
  if(d>90){enemy.vx+=nx*.8*dt*60;enemy.vy+=ny*.8*dt*60}else if(d<65){enemy.vx-=nx*.35*dt*60;enemy.vy-=ny*.35*dt*60}
