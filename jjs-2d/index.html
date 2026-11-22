@@ -5934,7 +5934,12 @@ function updateTrainingDummy(dt){
   trainingDummy.motion.t+=dt;
   if(trainingDummy.motion.t>=trainingDummy.motion.duration)trainingDummy.motion=null;
  }
- if(trainingDummy.gojoBluePull&&!onlineMode)tickGojoBluePull(trainingDummy,dt);
+ if(trainingDummy.gojoBluePull&&!onlineMode){
+  tickGojoBluePull(trainingDummy,dt);
+  // Do not apply the dummy's training-area clamp while Lapse Blue is dragging it.
+  // That clamp fought the suction every frame and made the skill appear to break.
+  if(trainingDummy.gojoBluePull){updateTenEffects(trainingDummy,dt);return;}
+ }
  updateTenEffects(trainingDummy,dt);
 
  // Captures are positioned by updateGrab / the grab sequence itself. Do not damp or
