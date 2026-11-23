@@ -9011,6 +9011,25 @@ function drawGojoBlueMaxProjectile(p,x,y){
   [.58,'rgba(155,231,255,.92)'],[.82,'rgba(23,104,224,.7)'],[1,'rgba(3,38,155,0)']
  ]);
 
+ // Bright front-facing beams cross the orb itself, like the horizontal and diagonal flares in the reference.
+ ctx.globalCompositeOperation='lighter';
+ const frontBeams=[
+  [[-radius*2.75,-radius*.035],[-radius*1.05,-radius*.018],[radius*1.05,radius*.018],[radius*2.75,radius*.035]],
+  [[-radius*1.82,-radius*1.58],[-radius*.72,-radius*.78],[radius*.68,radius*.74],[radius*1.98,radius*1.72]],
+  [[-radius*1.8,radius*1.52],[-radius*.64,radius*.72],[radius*.72,-radius*.72],[radius*1.96,-radius*1.65]]
+ ];
+ for(let i=0;i<frontBeams.length;i++){
+  drawBlade(frontBeams[i],radius*(i===0?.035:.023),i===0?.84:.64,[
+   [0,'rgba(11,67,202,0)'],[.24,'rgba(48,153,255,.76)'],
+   [.47,'rgba(223,250,255,.99)'],[.58,'rgba(255,255,255,1)'],
+   [.78,'rgba(56,174,255,.8)'],[1,'rgba(8,55,177,0)']
+  ]);
+ }
+ // A short white flash at the core makes the crossing beams feel like one concentrated impact.
+ ctx.globalAlpha=baseAlpha*visibility*(forming?.8:phase==='active'?.56:.42);
+ ctx.fillStyle='#effdff';
+ ctx.beginPath();ctx.ellipse(0,0,radius*.19,radius*.105,-.16,0,Math.PI*2);ctx.fill();
+
  // 8) Dark-blue burst and suspended flecks during the reverse vanish.
  if(collapse&&progress>.48){
   const burstProgress=clamp((progress-.48)/.52,0,1);
