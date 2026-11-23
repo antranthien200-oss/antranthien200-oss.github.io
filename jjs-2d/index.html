@@ -8791,8 +8791,8 @@ function drawGojoBlueMaxProjectile(p,x,y){
   const midT=.5,mu=.5;
   const mx=.125*points[0][0]+.375*points[1][0]+.375*points[2][0]+.125*points[3][0];
   const my=.125*points[0][1]+.375*points[1][1]+.375*points[2][1]+.125*points[3][1];
-  const dx= .75*(points[1][0]-points[0][0])+1.5*(points[2][0]-points[1][0])*.5+.75*(points[3][0]-points[2][0])*.25;
-  const dy= .75*(points[1][1]-points[0][1])+1.5*(points[2][1]-points[1][1])*.5+.75*(points[3][1]-points[2][1])*.25;
+  const dx= .75*(points[1][0]-points[0][0])+1.5*(points[2][0]-points[1][0])+.75*(points[3][0]-points[2][0]);
+  const dy= .75*(points[1][1]-points[0][1])+1.5*(points[2][1]-points[1][1])+.75*(points[3][1]-points[2][1]);
   const len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;
   const gradient=ctx.createLinearGradient(mx-nx*halfWidth,my-ny*halfWidth,mx+nx*halfWidth,my+ny*halfWidth);
   for(const stop of stops)gradient.addColorStop(stop[0],stop[1]);
