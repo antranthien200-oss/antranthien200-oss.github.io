@@ -2761,6 +2761,92 @@ html.manual-screen-rotated #menuSub.accessory-editor-open .menu-sub-footer{
  }
 }
 
+
+
+/* Whole-menu fitting: preserve each menu's authored geometry and scale it as one unit. */
+#menu .menu-art-stage,
+html.manual-screen-rotated #menu .menu-art-stage{
+ position:absolute!important;inset:0!important;top:0!important;right:0!important;bottom:0!important;left:0!important;
+ width:100%!important;height:100%!important;max-width:none!important;max-height:none!important;
+ aspect-ratio:auto!important;transform:none!important;pointer-events:none!important;
+}
+#menu .menu-art-stage>.menu-main{
+ position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
+ width:340px!important;max-width:none!important;min-width:0!important;
+ height:auto!important;min-height:0!important;max-height:none!important;
+ box-sizing:border-box!important;padding:12px 14px!important;gap:9px!important;
+ display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important;
+ overflow:visible!important;overscroll-behavior:initial!important;
+ transform:translate(-50%,-50%) scale(var(--main-menu-fit-scale,1))!important;
+ transform-origin:center center!important;will-change:transform;
+}
+#menu .menu-art-stage>.menu-main>*{flex-shrink:0!important}
+#menu .menu-actions{width:100%!important;max-width:none!important;gap:7px!important;flex-shrink:0!important}
+#menu .menu-button{box-sizing:border-box!important;min-height:48px!important;height:auto!important;max-height:none!important;padding:7px 12px!important;flex-shrink:0!important}
+#menu .mobile-setup-wrap,#menu .menu-selected{width:100%!important;max-width:none!important;box-sizing:border-box!important;flex-shrink:0!important}
+#menu .menu-sub{
+ position:absolute!important;inset:0!important;padding:0!important;
+ overflow:hidden!important;align-items:center!important;justify-content:center!important;
+}
+#menuSub .menu-sub-panel{
+ box-sizing:border-box!important;flex:0 0 auto!important;
+ max-width:none!important;max-height:none!important;height:auto!important;
+ margin:0!important;transform:scale(var(--menu-sub-fit-scale,1))!important;
+ transform-origin:center center!important;overflow:visible!important;will-change:transform;
+}
+#menuSub.accessory-editor-open .menu-sub-panel{
+ width:1160px!important;height:920px!important;max-width:none!important;max-height:none!important;
+ padding:30px!important;overflow:hidden!important;
+}
+#menuSub.accessory-editor-open .accessory-preview-layout{
+ display:grid!important;grid-template-columns:minmax(340px,.92fr) minmax(0,1.42fr)!important;
+ flex-direction:initial!important;align-items:stretch!important;gap:18px!important;
+ width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;overflow:hidden!important;
+}
+#menuSub.accessory-editor-open .accessory-preview-panel{
+ display:flex!important;flex-direction:column!important;flex:initial!important;
+ min-width:0!important;min-height:0!important;padding:16px!important;
+}
+#menuSub.accessory-editor-open .accessory-preview-items{
+ grid-template-columns:repeat(4,minmax(0,1fr))!important;
+ grid-auto-rows:auto!important;align-content:start!important;align-items:start!important;
+ width:100%!important;height:100%!important;min-width:0!important;min-height:0!important;
+ overflow-x:hidden!important;overflow-y:auto!important;
+}
+#menuSub.character-select-open .menu-sub-panel{
+ width:1040px!important;height:auto!important;max-width:none!important;max-height:none!important;
+ padding:24px!important;overflow:visible!important;
+}
+#menuSub.character-select-open .character-select-layout{
+ display:grid!important;grid-template-columns:minmax(270px,.88fr) minmax(0,1.12fr)!important;
+ gap:20px!important;align-items:stretch!important;
+}
+#menuSub.character-select-open .character-select-roster{
+ display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:8px!important;
+}
+#menuSub.character-select-open .character-showcase{order:0!important}
+#menuSub.character-select-open .character-showcase-canvas{height:320px!important;min-height:320px!important}
+#menuSub.online-menu-open .menu-sub-panel{
+ width:900px!important;height:auto!important;max-width:none!important;max-height:none!important;
+ padding:24px!important;overflow:visible!important;
+}
+#pause{align-items:center!important;justify-content:center!important;overflow:hidden!important}
+#pause .pausebox{
+ width:330px!important;max-width:none!important;height:auto!important;max-height:none!important;
+ box-sizing:border-box!important;overflow:visible!important;
+ transform:scale(var(--pause-menu-fit-scale,1))!important;
+ transform-origin:center center!important;will-change:transform;
+}
+/* Manual rotation swaps the body's logical size; keep menu overlays centered in that same space. */
+html.manual-screen-rotated #menuSub{
+ inset:0!important;padding:0!important;overflow:hidden!important;
+ align-items:center!important;justify-content:center!important;
+}
+html.manual-screen-rotated #menuSub .menu-sub-panel{
+ margin:0!important;max-height:none!important;transform:scale(var(--menu-sub-fit-scale,1))!important;
+}
+html.manual-screen-rotated #pause{inset:0!important;align-items:center!important;justify-content:center!important}
+
 </style>
 </head>
 <body>
@@ -3116,23 +3202,28 @@ function getAccessorySummary(char){const loadout=accessoryLoadouts[char]||{};con
 function updateMenuSummary(){$('currentCharIcon').textContent=CHAR_ICONS[selected];$('currentCharName').textContent=CHARS[selected].name;$('currentAccessoriesSummary').textContent=getAccessorySummary(selected)}
 
 function fitMenuLayouts(){
+ // W/H are the logical game viewport dimensions, already swapped for manual rotation.
+ const availableWidth=Math.max(1,Number(W)||window.innerWidth||1);
+ const availableHeight=Math.max(1,Number(H)||window.innerHeight||1);
+ const fitWholeMenu=(element,variable,margin=24)=>{
+  if(!element)return;
+  element.style.setProperty(variable,'1');
+  const width=Math.max(1,element.offsetWidth||0,element.scrollWidth||0);
+  const height=Math.max(1,element.offsetHeight||0,element.scrollHeight||0);
+  const scale=Math.min(1,Math.max(1,availableWidth-margin*2)/width,Math.max(1,availableHeight-margin*2)/height);
+  element.style.setProperty(variable,String(Math.max(.05,scale)));
+ };
+ const menu=document.getElementById('menu');
+ const main=menu&&menu.querySelector('.menu-art-stage>.menu-main');
+ if(main&&getComputedStyle(menu).display!=='none')fitWholeMenu(main,'--main-menu-fit-scale',18);
+
  const sub=document.getElementById('menuSub');
  const panel=sub&&sub.querySelector('.menu-sub-panel');
- if(sub&&panel&&!sub.hidden){
-  // Mobile menus use responsive layouts and scrolling; shrinking a fixed desktop
-  // panel to fit made every menu tiny and hard to tap on phones.
-  if(isMobileDevice||window.innerWidth<=900||window.innerHeight<=600){
-   panel.style.setProperty('--menu-sub-fit-scale','1');
-   return;
-  }
-  panel.style.setProperty('--menu-sub-fit-scale','1');
-  const width=panel.offsetWidth||1;
-  const height=panel.offsetHeight||1;
-  const availableWidth=Math.max(1,window.innerWidth-24);
-  const availableHeight=Math.max(1,window.innerHeight-24);
-  const scale=Math.max(.1,Math.min(1,availableWidth/width,availableHeight/height));
-  panel.style.setProperty('--menu-sub-fit-scale',String(scale));
- }
+ if(sub&&panel&&!sub.hidden)fitWholeMenu(panel,'--menu-sub-fit-scale',18);
+
+ const pause=document.getElementById('pause');
+ const pauseBox=pause&&pause.querySelector('.pausebox');
+ if(pause&&pauseBox&&getComputedStyle(pause).display!=='none')fitWholeMenu(pauseBox,'--pause-menu-fit-scale',18);
 }
 let menuFitFrame=0;
 function scheduleMenuFit(){
@@ -3143,7 +3234,7 @@ window.addEventListener('resize',scheduleMenuFit,{passive:true});
 window.addEventListener('orientationchange',scheduleMenuFit,{passive:true});
 if(window.visualViewport)window.visualViewport.addEventListener('resize',scheduleMenuFit,{passive:true});
 
-function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub();if(view==='online')startOnlinePlayerCountPolling();else stopOnlinePlayerCountPolling()}
+function showMenuSub(view){menuView=view;if(view==='accessory')accessorySlot='head';$('menuSub').hidden=false;renderMenuSub();scheduleMenuFit();if(view==='online')startOnlinePlayerCountPolling();else stopOnlinePlayerCountPolling()}
 scheduleMenuFit();
 function closeMenuSub(){
  stopOnlinePlayerCountPolling();stopOnlineFightAnimation();stopCharacterPreviewAnimation();stopAccessoryPreviewAnimation();
@@ -4966,7 +5057,7 @@ document.querySelectorAll('[data-mobile-action]').forEach(btn=>{
 syncMobileControls();
 
 function updatePauseActionButton(){const button=$('restartBtn');if(!button)return;const label=onlineMode?'RESET CHARACTER':'RESTART MATCH';const textNode=Array.from(button.childNodes).find(node=>node.nodeType===3);if(textNode)textNode.textContent=label;button.setAttribute('aria-label',label)}
-function togglePause(){if(!game.started||game.over)return;updatePauseActionButton();game.paused=!game.paused;document.body.classList.toggle('game-paused',game.paused);if(game.paused){stopMobileJoystick();mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none'}
+function togglePause(){if(!game.started||game.over)return;updatePauseActionButton();game.paused=!game.paused;document.body.classList.toggle('game-paused',game.paused);if(game.paused){stopMobileJoystick();mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}} $('pause').style.display=game.paused?'flex':'none';if(typeof scheduleMenuFit==='function')scheduleMenuFit()}
 $('resumeBtn').onclick=togglePause;$('restartBtn').onclick=()=>{if(onlineMode&&onlineRoom){clearHeldInputs();try{onlineRoom.send('player:reset',{});showToast('RESETTING CHARACTER',700)}catch(error){console.warn('Online character reset failed:',error);showToast('RESET FAILED · CHECK CONNECTION',900)}return}resetMatch();game.paused=false;document.body.classList.remove('game-paused');syncMobileControls();$('pause').style.display='none';showToast('ROUND 1',800)};
 $('menuBtn').onclick=()=>{if(onlineMode){leaveOnlineServer();return}game.started=false;game.paused=false;document.body.classList.remove('game-active','game-paused','online-mode');stopMobileJoystick();$('pause').style.display='none';$('hud').style.display='none';$('menu').style.display='flex'};
 function showToast(){const toast=$('toast');if(toast){toast.textContent='';toast.classList.remove('show')}game.toastTimer=0}function showCombatAnnouncement(message,type='ko'){const el=$('combatNotice');if(!el)return;el.textContent=message;el.classList.remove('ko','death','active');el.classList.add(type);void el.offsetWidth;el.classList.add('active');game.combatNoticeTimer=1.35}
