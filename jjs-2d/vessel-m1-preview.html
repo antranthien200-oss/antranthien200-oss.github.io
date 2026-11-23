@@ -3941,7 +3941,7 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
    shot.vx=vx;shot.vy=vy;
    const id=String(++onlineProjectileCounter);
    shot.networkId=id;shot.networkSessionId=onlineSessionId;shot.serverOwnedVisual=true;
-   const hitTuning=({trashCan:{hitStun:.78,knockbackScale:.78,unblockable:true,damageType:'projectile'},trashJunk:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},red:{hitStun:.38,knockback:18,knockbackScale:1,damageType:'explosion',blockedDamage:6.25},fire:{hitStun:.8,knockbackScale:.65,unblockable:true,damageType:'explosion'},blueMax:{hitStun:.1,knockback:.8,knockbackScale:0,unblockable:true,ignoreInvuln:true,damageType:'melee',pullRadius:420,pullForce:.06,damageRadius:165,followSpeed:950,activeDuration:4,collapseDuration:1.5},redmax:{hitStun:.8,knockbackScale:.55,unblockable:true,damageType:'explosion'},hollow:{hitStun:.9,knockbackScale:.7,unblockable:true,damageType:'explosion'},tenNue:{hitStun:.95,knockbackScale:1,unblockable:true,damageType:'projectile'},bloodBomb:{hitStun:.6,knockback:10,unblockable:true,damageType:'explosion'},bloodBombProjectile:{hitStun:.55,knockback:9,damageType:'melee'},soul:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},bodyrepel:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},pebble:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},bloodBeam:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},ball:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},sukunaFireArrow:{hitStun:.32,knockback:8,damageType:'explosion'}})[shot.kind]||{};
+   const hitTuning=({trashCan:{hitStun:.78,knockbackScale:.78,unblockable:true,damageType:'projectile'},trashJunk:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},red:{hitStun:.38,knockback:18,knockbackScale:1,damageType:'explosion',blockedDamage:6.25},fire:{hitStun:.8,knockbackScale:.65,unblockable:true,damageType:'explosion'},blueMax:{hitStun:.1,knockback:.8,knockbackScale:0,unblockable:true,ignoreInvuln:true,damageType:'melee',pullRadius:420,pullForce:.06,damageRadius:165,followSpeed:950,activeDuration:3,collapseDuration:2},redmax:{hitStun:.8,knockbackScale:.55,unblockable:true,damageType:'explosion'},hollow:{hitStun:.9,knockbackScale:.7,unblockable:true,damageType:'explosion'},tenNue:{hitStun:.95,knockbackScale:1,unblockable:true,damageType:'projectile'},bloodBomb:{hitStun:.6,knockback:10,unblockable:true,damageType:'explosion'},bloodBombProjectile:{hitStun:.55,knockback:9,damageType:'melee'},soul:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},bodyrepel:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},pebble:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},bloodBeam:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},ball:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},sukunaFireArrow:{hitStun:.32,knockback:8,damageType:'explosion'}})[shot.kind]||{};
    try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,hitRadius:shot.hitRadius||shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:shot.kind==='sukunaFireArrow'?980:shot.kind==='trashCan'&&shot.golden?4200:700),kind:shot.kind,color:shot.color,phase:shot.phase,phaseRemaining:shot.phaseRemaining,phaseDuration:shot.phaseDuration,activeDuration:shot.activeDuration,collapseDuration:shot.collapseDuration,followSpeed:shot.followSpeed,pullRadius:shot.pullRadius,pullForce:shot.pullForce,damageRadius:shot.damageRadius,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage,knockback:shot.knockback||0,...hitTuning,golden:!!shot.golden,domainBound:!!shot.domainBound,rideVariant:!!shot.rideOwner})}
    catch(error){shot.serverOwnedVisual=false;console.warn('Online projectile registration failed',error)}
   }
@@ -6602,7 +6602,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.skillInputLocked=false;
     const orbX=f.x+Math.cos(angle)*70,orbY=f.y-23+Math.sin(angle)*70;
     f.skillCd[idx]=17;
-    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:.5,phaseDuration:.5,activeDuration:4,collapseDuration:1.5,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
+    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:1,phaseDuration:1,activeDuration:3,collapseDuration:2,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
     showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
    }
    if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
@@ -7212,15 +7212,13 @@ function updateProjectiles(dt){
    p.phaseRemaining=Math.max(0,(p.phaseRemaining||0)-dt);
    if(!p.owner||p.owner.dead){
     if(p.phase!=='collapse'){
-     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1.5;p.phaseDuration=p.collapseDuration||1.5;
+     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||2;p.phaseDuration=p.collapseDuration||2;
      p.life=Math.max(p.life,p.phaseRemaining+.05);p.vx=0;p.vy=0;
-     burst(p.x,p.y,'#1649cf',12,5);burst(p.x,p.y,'#268fff',7,3.5);
     }
    }
    if(p.phase==='forming'){
     if(p.phaseRemaining<=0){
-     p.phase='active';p.phaseElapsed=0;p.phaseRemaining=p.activeDuration||4;p.phaseDuration=p.activeDuration||4;p.tick=.12;
-     burst(p.x,p.y,'#d8f8ff',7,3);burst(p.x,p.y,'#328dff',5,3);
+     p.phase='active';p.phaseElapsed=0;p.phaseRemaining=p.activeDuration||3;p.phaseDuration=p.activeDuration||3;p.tick=.12;
     }
    }else if(p.phase==='active'){
     const a=aimedAt(p.owner),dx=a.x-p.x,dy=a.y-p.y,l=Math.hypot(dx,dy)||1,step=Math.min(l,(p.followSpeed||950)*dt);
@@ -7246,9 +7244,8 @@ function updateProjectiles(dt){
      }
     }
     if(p.phaseRemaining<=0){
-     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1.5;p.phaseDuration=p.collapseDuration||1.5;
+     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||2;p.phaseDuration=p.collapseDuration||2;
      p.life=Math.max(p.life,p.phaseRemaining+.05);p.vx=0;p.vy=0;
-     burst(p.x,p.y,'#123fc3',15,5.5);burst(p.x,p.y,'#2478ef',10,4);burst(p.x,p.y,'#9beaff',5,2.8);
     }
    }else if(p.phase==='collapse'){
     // The orb stays at its final location while its charge effect retracts in reverse.
@@ -7256,7 +7253,6 @@ function updateProjectiles(dt){
     p.collapseParticleTimer=(p.collapseParticleTimer||0)-dt;
     if(p.collapseParticleTimer<=0&&p.phaseRemaining>.08){
      p.collapseParticleTimer=isMobileDevice?.14:.085;
-     burst(p.x+rnd(-7,7),p.y+rnd(-7,7),Math.random()<.5?'#1648d5':'#318aff',isMobileDevice?2:3,2.8);
     }
     if(p.phaseRemaining<=0||p.life<=0)projectiles.splice(i,1);
    }
@@ -8725,270 +8721,36 @@ const getGojoBlueMaxOrbImage=(()=>{
     .then(response=>{if(!response.ok)throw new Error('Orb texture request failed: '+response.status);return response.text()})
     .then(encoded=>{
      const data=String(encoded||'').trim();
-     if(!data.startsWith('UklGR'))throw new Error('Invalid Gojo Blue MAX orb texture');
+     if(!data.startsWith('UklGR'))throw new Error('Invalid Gojo Blue MAX fallback texture');
      const next=new Image();
      next.onload=()=>{image=next};
-     next.onerror=()=>console.warn('Gojo Blue MAX orb image could not decode');
+     next.onerror=()=>console.warn('Gojo Blue MAX fallback texture could not decode');
      next.src='data:image/webp;base64,'+data;
     })
-    .catch(error=>console.warn('Gojo Blue MAX orb texture could not load:',error));
+    .catch(error=>console.warn('Gojo Blue MAX fallback texture could not load:',error));
   }
   return image;
  };
 })();
 function drawGojoBlueMaxProjectile(p,x,y){
- const phase=p.phase||'active';
- const duration=Math.max(.001,Number(p.phaseDuration)||(phase==='forming'?1.5:phase==='collapse'?1.5:3));
- const progress=clamp(1-(Number(p.phaseRemaining)||0)/duration,0,1);
- const easeOut=t=>1-Math.pow(1-clamp(t,0,1),3.4);
- const forming=phase==='forming',collapse=phase==='collapse';
- const spinDirection=collapse?-1:1;
- const charge=forming?easeOut(progress):collapse?1-easeOut(progress):1;
- const dissolve=collapse?easeOut(progress):0;
- const time=game.time,baseAlpha=ctx.globalAlpha,mobile=isMobileDevice;
- const visibility=collapse?Math.pow(1-progress,.84):forming?.88+.12*charge:1;
- const orbSize=forming?42+184*charge:collapse?226*(1-dissolve):226;
- const radius=Math.max(2,orbSize*.465);
- const spin=forming?progress*18:collapse?(1-progress)*18:time*2.8;
- const surfaceTurn=forming?progress*1.08:collapse?(1-progress)*1.08:time*.22;
- const sweepScale=forming?2.3-0.92*charge:collapse?1.38+0.92*dissolve:1.38+Math.sin(time*1.4)*.045;
- const sweepAlpha=forming?.82:collapse?.86:.66;
- const ink='#061b76',blue='#0750d5',electric='#168cff',cyan='#52dfff',ice='#d9f8ff',white='#f7fdff';
-
+ if(!p.blueMaxSpriteImage&&!p.blueMaxSpriteLoading){
+  p.blueMaxSpriteLoading=true;
+  const image=new Image();
+  image.onload=()=>{p.blueMaxSpriteImage=image};
+  image.onerror=()=>{p.blueMaxSpriteLoading=false;console.warn('Gojo Blue MAX sprite animation asset is missing or could not decode')};
+  image.src='gojo-blue-max-phase-animation.webp?v=20261123';
+ }
+ const image=p.blueMaxSpriteImage;
  ctx.save();
- ctx.translate(x,y);
- ctx.globalAlpha=baseAlpha*visibility;
- ctx.lineCap='round';
- ctx.lineJoin='round';
+ ctx.globalAlpha=1;
  ctx.shadowBlur=0;
-
- // Filled curved blade. A sampled cubic outline tapers naturally to both sharp tips.
- const drawBlade=(points,halfWidth,alpha,stops,samples=mobile?9:15)=>{
-  const left=[],right=[];
-  for(let i=0;i<=samples;i++){
-   const t=i/samples,u=1-t;
-   const px=u*u*u*points[0][0]+3*u*u*t*points[1][0]+3*u*t*t*points[2][0]+t*t*t*points[3][0];
-   const py=u*u*u*points[0][1]+3*u*u*t*points[1][1]+3*u*t*t*points[2][1]+t*t*t*points[3][1];
-   const dx=3*u*u*(points[1][0]-points[0][0])+6*u*t*(points[2][0]-points[1][0])+3*t*t*(points[3][0]-points[2][0]);
-   const dy=3*u*u*(points[1][1]-points[0][1])+6*u*t*(points[2][1]-points[1][1])+3*t*t*(points[3][1]-points[2][1]);
-   const len=Math.hypot(dx,dy)||1;
-   const taper=Math.pow(Math.max(0,Math.sin(Math.PI*t)),.72);
-   const width=halfWidth*taper;
-   const nx=-dy/len,ny=dx/len;
-   left.push([px+nx*width,py+ny*width]);
-   right.push([px-nx*width,py-ny*width]);
-  }
-  const mx=.125*points[0][0]+.375*points[1][0]+.375*points[2][0]+.125*points[3][0];
-  const my=.125*points[0][1]+.375*points[1][1]+.375*points[2][1]+.125*points[3][1];
-  const dx=.75*(points[1][0]-points[0][0])+1.5*(points[2][0]-points[1][0])+.75*(points[3][0]-points[2][0]);
-  const dy=.75*(points[1][1]-points[0][1])+1.5*(points[2][1]-points[1][1])+.75*(points[3][1]-points[2][1]);
-  const len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;
-  const gradient=ctx.createLinearGradient(mx-nx*halfWidth,my-ny*halfWidth,mx+nx*halfWidth,my+ny*halfWidth);
-  for(const stop of stops)gradient.addColorStop(stop[0],stop[1]);
-  ctx.globalAlpha=baseAlpha*visibility*alpha;
-  ctx.fillStyle=gradient;
-  ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);
-  for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);
-  for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);
-  ctx.closePath();ctx.fill();
- };
- const arcPoints=(cx,cy,rx,ry,a0,a1,rotation=0)=>{
-  const c=Math.cos(rotation),s=Math.sin(rotation);
-  const point=a=>[cx+rx*Math.cos(a)*c-ry*Math.sin(a)*s,cy+rx*Math.cos(a)*s+ry*Math.sin(a)*c];
-  const tangent=a=>[-rx*Math.sin(a)*c-ry*Math.cos(a)*s,-rx*Math.sin(a)*s+ry*Math.cos(a)*c];
-  const p0=point(a0),p3=point(a1),d0=tangent(a0),d1=tangent(a1),k=4/3*Math.tan((a1-a0)/4);
-  return [p0,[p0[0]+d0[0]*k,p0[1]+d0[1]*k],[p3[0]-d1[0]*k,p3[1]-d1[1]*k],p3];
- };
- const arcBlade=(cx,cy,rx,ry,a0,a1,rotation,width,alpha,stops)=>{
-  drawBlade(arcPoints(cx,cy,rx,ry,a0,a1,rotation),width,alpha,stops);
- };
- const bladeStops=[
-  [0,'rgba(5,24,112,.06)'],[.19,'rgba(15,79,208,.72)'],
-  [.47,'rgba(179,239,255,.98)'],[.58,'rgba(248,254,255,1)'],
-  [.76,'rgba(64,172,255,.9)'],[1,'rgba(5,44,160,.04)']
- ];
-
- // 1) Ground-level energy field: the generated effect spreads across the street, not just around the orb.
- ctx.save();
- ctx.globalCompositeOperation='lighter';
- ctx.translate(0,radius*.58);
- ctx.scale(1,.43);
- const floorRadius=radius*sweepScale*1.7;
- const floorGlow=ctx.createRadialGradient(0,0,1,0,0,floorRadius);
- floorGlow.addColorStop(0,'rgba(231,251,255,.42)');
- floorGlow.addColorStop(.23,'rgba(95,200,255,.27)');
- floorGlow.addColorStop(.54,'rgba(22,103,255,.13)');
- floorGlow.addColorStop(1,'rgba(3,37,147,0)');
- ctx.globalAlpha=baseAlpha*visibility*(forming?.52:collapse?.48:.33);
- ctx.fillStyle=floorGlow;ctx.beginPath();ctx.arc(0,0,floorRadius,0,Math.PI*2);ctx.fill();
- ctx.restore();
-
- // 2) Rear vortex sweeps. These are independent crescent blades behind the orb.
- ctx.globalCompositeOperation='lighter';
- arcBlade(0,0,radius*sweepScale*1.12,radius*sweepScale*.78,-2.82,.16,-.10,radius*.085,sweepAlpha,[
-  [0,'rgba(5,43,175,0)'],[.2,'rgba(27,112,255,.58)'],[.47,'rgba(211,248,255,.97)'],[.67,'rgba(70,184,255,.86)'],[1,'rgba(4,37,164,0)']
- ]);
- arcBlade(0,radius*.12,radius*sweepScale*1.34,radius*sweepScale*.56,.26,3.02,.12,radius*.065,sweepAlpha*.72,[
-  [0,'rgba(2,31,139,0)'],[.28,'rgba(13,86,224,.6)'],[.54,'rgba(118,215,255,.9)'],[.78,'rgba(23,104,226,.7)'],[1,'rgba(2,32,143,0)']
- ]);
- arcBlade(-radius*.08,0,radius*sweepScale*1.55,radius*sweepScale*.92,3.25,5.55,-.16,radius*.028,sweepAlpha*.56,[
-  [0,'rgba(5,40,166,0)'],[.5,'rgba(74,181,255,.76)'],[.7,'rgba(235,252,255,.85)'],[1,'rgba(5,42,160,0)']
- ]);
-
- // Ground-plane crescent waves: broad low ellipses like the luminous rings in the lower panels.
- arcBlade(0,radius*.63,radius*sweepScale*1.9,radius*sweepScale*.72,.12,2.93,-.04,radius*.075,forming?.62:collapse?.7:.48,[
-  [0,'rgba(6,53,185,0)'],[.22,'rgba(28,116,255,.76)'],[.49,'rgba(203,246,255,.98)'],[.68,'rgba(67,177,255,.92)'],[1,'rgba(5,43,168,0)']
- ]);
- arcBlade(0,radius*.63,radius*sweepScale*2.06,radius*sweepScale*.78,3.27,6.04,.035,radius*.036,forming?.48:collapse?.58:.34,[
-  [0,'rgba(4,35,145,0)'],[.32,'rgba(24,106,239,.7)'],[.56,'rgba(150,229,255,.88)'],[.83,'rgba(21,96,219,.66)'],[1,'rgba(4,35,145,0)']
- ]);
-
- // 3) Blue-white mist filaments around the orb. Their different radii and phases prevent a perfect-ring look.
- const mistCount=mobile?4:7;
- for(let i=0;i<mistCount;i++){
-  const a=time*(i%2?1.1:-.86)+i*2.399+spinDirection*charge*.7;
-  const rx=radius*(1.1+(i%3)*.25)*sweepScale*.56;
-  const ry=radius*(.68+(i%2)*.22)*sweepScale*.58;
-  const mx=Math.cos(a)*rx,my=Math.sin(a)*ry;
-  const ex=Math.cos(a+.85)*rx*.78,ey=Math.sin(a+.85)*ry*.78;
-  const c1x=Math.cos(a+.25)*rx*1.18,c1y=Math.sin(a+.25)*ry*1.18;
-  const c2x=Math.cos(a+.62)*rx*.88,c2y=Math.sin(a+.62)*ry*.88;
-  const path=[[mx,my],[c1x,c1y],[c2x,c2y],[ex,ey]];
-  drawBlade(path,radius*(mobile?.022:.034),.24+((i%3)*.07),[
-   [0,'rgba(19,81,208,0)'],[.36,'rgba(92,197,255,.74)'],
-   [.58,'rgba(239,253,255,.92)'],[1,'rgba(19,79,212,0)']
-  ],mobile?8:11);
- }
-
- // 4) Radial streaks and horizontal light beams, the sharp white flares in the generated middle panels.
- const beamCount=mobile?4:7;
- for(let i=0;i<beamCount;i++){
-  const a=(i/beamCount)*Math.PI*2+time*.035;
-  const inner=radius*.34,outer=radius*(2.0+(i%3)*.42)*sweepScale*.72;
-  const c1=inner+outer*.12,c2=inner+outer*.76;
-  const points=[
-   [Math.cos(a)*inner,Math.sin(a)*inner*.86],
-   [Math.cos(a+.035)*c1,Math.sin(a+.035)*c1*.86],
-   [Math.cos(a-.025)*c2,Math.sin(a-.025)*c2*.86],
-   [Math.cos(a)*outer,Math.sin(a)*outer*.86]
-  ];
-  drawBlade(points,radius*(i%3===0?.043:.022),forming?.52:collapse?.58:.42,[
-   [0,'rgba(9,49,172,0)'],[.25,'rgba(54,148,255,.68)'],
-   [.48,'rgba(233,251,255,.98)'],[.67,'rgba(67,177,255,.76)'],[1,'rgba(6,40,154,0)']
-  ],mobile?8:12);
- }
-
- // 5) Actual original Blue MAX orb texture: preserve its cyan-white core and original shading.
- ctx.globalCompositeOperation='source-over';
- ctx.globalAlpha=baseAlpha*visibility;
- const orbImage=getGojoBlueMaxOrbImage();
- if(orbImage&&orbImage.complete&&orbImage.naturalWidth>0){
-  ctx.drawImage(orbImage,-orbSize*.5,-orbSize*.509,orbSize,orbSize*1.01875);
+ ctx.shadowColor='transparent';
+ if(image&&image.complete&&image.naturalWidth>0){
+  // Native 205x205 frame size: draw 1:1 without reducing the sprite.
+  ctx.drawImage(image,x-102.5,y-102.5,205,205);
  }else{
-  const fallback=ctx.createRadialGradient(-orbSize*.12,-orbSize*.16,1,0,0,orbSize*.52);
-  fallback.addColorStop(0,'#ffffff');fallback.addColorStop(.24,'#e9fbff');
-  fallback.addColorStop(.52,'#8be5ff');fallback.addColorStop(.78,'#267fe8');
-  fallback.addColorStop(1,'rgba(8,50,178,.2)');
-  ctx.fillStyle=fallback;ctx.beginPath();ctx.arc(0,0,orbSize*.49,0,Math.PI*2);ctx.fill();
- }
-
- // 6) Surface cuts on the orb. The back half is faint; the front half carries the sharp blue edge.
- ctx.save();
- ctx.beginPath();ctx.ellipse(0,0,radius*.99,radius*1.025,0,0,Math.PI*2);ctx.clip();
- ctx.rotate(surfaceTurn);
- ctx.scale(1,.9);
- const upperCut=[[-radius*.98,-radius*.12],[-radius*.72,-radius*.95],[radius*.34,-radius*.98],[radius*.98,radius*.12]];
- const lowerCut=[[-radius*.96,radius*.3],[-radius*.48,radius*.92],[radius*.48,radius*.78],[radius*.94,-radius*.24]];
- ctx.globalCompositeOperation='multiply';
- drawBlade(upperCut,radius*.112,.84,[
-  [0,'rgba(1,12,65,.15)'],[.22,'rgba(3,28,105,.96)'],
-  [.52,'rgba(5,48,153,1)'],[.76,'rgba(7,75,186,.98)'],[1,'rgba(2,17,76,.1)']
- ]);
- drawBlade(lowerCut,radius*.071,.54,[
-  [0,'rgba(2,15,75,.05)'],[.3,'rgba(4,35,126,.9)'],
-  [.58,'rgba(7,58,168,.94)'],[1,'rgba(1,16,72,.04)']
- ]);
- ctx.globalCompositeOperation='screen';
- drawBlade(upperCut,radius*.028,.78,[
-  [0,'rgba(0,51,163,0)'],[.32,'rgba(19,116,238,.68)'],
-  [.64,'rgba(73,202,255,.94)'],[.86,'rgba(192,245,255,.94)'],[1,'rgba(15,88,213,0)']
- ]);
- drawBlade(lowerCut,radius*.018,.62,[
-  [0,'rgba(0,53,166,0)'],[.36,'rgba(33,149,250,.78)'],
-  [.62,'rgba(143,230,255,.94)'],[1,'rgba(10,75,198,0)']
- ]);
- // A thin specular curve across the sphere gives the slash the curved reflective edge of a 3D surface.
- const spec=[[-radius*.64,-radius*.36],[-radius*.2,-radius*.79],[radius*.42,-radius*.68],[radius*.78,-radius*.12]];
- drawBlade(spec,radius*.009,.7,[
-  [0,'rgba(98,206,255,0)'],[.5,'rgba(223,251,255,.95)'],[1,'rgba(104,212,255,0)']
- ]);
- ctx.restore();
-
- // 7) Foreground crescent sweeps overlap the orb, giving the illusion of depth and fast orbiting motion.
- ctx.globalCompositeOperation='lighter';
- arcBlade(0,0,radius*1.34,radius*.9,-2.82,.24,.13,radius*.072,.82,[
-  [0,'rgba(5,43,176,0)'],[.2,'rgba(38,135,255,.72)'],
-  [.48,'rgba(219,250,255,1)'],[.68,'rgba(78,189,255,.9)'],[1,'rgba(2,44,172,0)']
- ]);
- arcBlade(0,radius*.08,radius*1.52,radius*.74,.2,2.82,-.16,radius*.043,.62,[
-  [0,'rgba(3,38,155,0)'],[.3,'rgba(21,104,230,.78)'],
-  [.58,'rgba(155,231,255,.92)'],[.82,'rgba(23,104,224,.7)'],[1,'rgba(3,38,155,0)']
- ]);
-
- // Bright front-facing beams cross the orb itself, like the horizontal and diagonal flares in the reference.
- ctx.globalCompositeOperation='lighter';
- const frontBeams=[
-  [[-radius*2.75,-radius*.035],[-radius*1.05,-radius*.018],[radius*1.05,radius*.018],[radius*2.75,radius*.035]],
-  [[-radius*1.82,-radius*1.58],[-radius*.72,-radius*.78],[radius*.68,radius*.74],[radius*1.98,radius*1.72]],
-  [[-radius*1.8,radius*1.52],[-radius*.64,radius*.72],[radius*.72,-radius*.72],[radius*1.96,-radius*1.65]]
- ];
- for(let i=0;i<frontBeams.length;i++){
-  drawBlade(frontBeams[i],radius*(i===0?.035:.023),i===0?.84:.64,[
-   [0,'rgba(11,67,202,0)'],[.24,'rgba(48,153,255,.76)'],
-   [.47,'rgba(223,250,255,.99)'],[.58,'rgba(255,255,255,1)'],
-   [.78,'rgba(56,174,255,.8)'],[1,'rgba(8,55,177,0)']
-  ]);
- }
- // A short white flash at the core makes the crossing beams feel like one concentrated impact.
- ctx.globalAlpha=baseAlpha*visibility*(forming?.8:phase==='active'?.56:.42);
- ctx.fillStyle='#effdff';
- ctx.beginPath();ctx.ellipse(0,0,radius*.19,radius*.105,-.16,0,Math.PI*2);ctx.fill();
-
- // 8) Dark-blue burst and suspended flecks during the reverse vanish.
- if(collapse&&progress>.48){
-  const burstProgress=clamp((progress-.48)/.52,0,1);
-  const plumeRadius=radius*(.58+burstProgress*1.02);
-  ctx.globalCompositeOperation='source-over';
-  ctx.globalAlpha=baseAlpha*visibility*(.5+burstProgress*.3);
-  for(let i=0;i<(mobile?7:11);i++){
-   const a=i*Math.PI*2/(mobile?7:11)+time*.12;
-   const spike=plumeRadius*(.72+.28*Math.sin(i*2.17+1));
-   const px=Math.cos(a)*plumeRadius*.55,py=Math.sin(a)*plumeRadius*.48;
-   ctx.fillStyle=i%3===0?'#073db6':i%2?'#084fd0':'#09277f';
-   ctx.beginPath();
-   ctx.moveTo(px,py);
-   ctx.quadraticCurveTo(px+Math.cos(a-.35)*spike*.8,py+Math.sin(a-.35)*spike*.8,Math.cos(a)*spike,Math.sin(a)*spike);
-   ctx.quadraticCurveTo(px+Math.cos(a+.42)*spike*.6,py+Math.sin(a+.42)*spike*.6,px,py);
-   ctx.fill();
-  }
-  ctx.globalAlpha=baseAlpha*visibility*.78;
-  for(let i=0;i<(mobile?5:9);i++){
-   const a=i*2.399+time*1.8,r=plumeRadius*(.48+.5*Math.sin(i*3.1+time));
-   ctx.fillStyle=i%2?'#176dff':'#65dfff';
-   ctx.beginPath();ctx.arc(Math.cos(a)*r,Math.sin(a)*r*.72,Math.max(1.2,radius*.028),0,Math.PI*2);ctx.fill();
-  }
- }
-
- // Final cyan-white core pulse, kept subtle so the original orb texture remains recognizable.
- if(forming||phase==='active'){
-  ctx.globalCompositeOperation='lighter';
-  const pulse=1+.035*Math.sin(time*8);
-  const core=ctx.createRadialGradient(-orbSize*.035,-orbSize*.05,1,0,0,orbSize*.27*pulse);
-  core.addColorStop(0,'rgba(255,255,255,.42)');
-  core.addColorStop(.34,'rgba(195,247,255,.2)');
-  core.addColorStop(1,'rgba(53,174,255,0)');
-  ctx.globalAlpha=baseAlpha*visibility*(forming?.7:.48);
-  ctx.fillStyle=core;ctx.beginPath();ctx.arc(0,0,orbSize*.27*pulse,0,Math.PI*2);ctx.fill();
+  const fallback=getGojoBlueMaxOrbImage();
+  if(fallback&&fallback.complete&&fallback.naturalWidth>0)ctx.drawImage(fallback,x-102.5,y-102.5,205,205);
  }
  ctx.restore();
 }
@@ -10199,7 +9961,7 @@ function drawHeadHands(f,deferMotionVfx=false){
     handBScale=1.18;handAScale=.96;handBAngle=angle;
    }else if(name==='gojoBlueMax'){
     const elapsed=Math.max(0,Number.isFinite(m&&m.t)?m.t:progress*4.5);
-    const charge=smoothstep01(clamp(elapsed/.5,0,1));
+    const charge=smoothstep01(clamp(elapsed/1,0,1));
     // One hand stays drawn back while the other reaches forward to gather the orb.
     handA=P(lerp(-7,-31,charge),lerp(12,22,charge),lerp(-3,-10,charge));
     handB=P(lerp(30,74,charge),lerp(-15,-5,charge),lerp(-4,-11,charge));
@@ -11600,7 +11362,7 @@ function drawEffects(){
   if(!effectsViewportContains(sx(d.x),sy(d.y),58))continue;
   ctx.save();ctx.globalAlpha=.78;ctx.fillStyle='#a9b7d0';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,48);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,48);ctx.fillStyle='#e9f1ff';ctx.fillRect(sx(d.x-25),sy(d.y-24),18,5);ctx.fillRect(sx(d.x+7),sy(d.y-24),18,5);ctx.strokeStyle='#626f88';ctx.lineWidth=2;ctx.strokeRect(sx(d.x-25),sy(d.y-24),18,48);ctx.strokeRect(sx(d.x+7),sy(d.y-24),18,48);ctx.restore();
  }
- drawYutaDomainKatanas();for(const p of projectiles){if(activeDomainView&&!domainViewMatches(p.owner,activeDomainView))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);if(!effectsViewportContains(x,y,Math.max(88,p.r||0)+28))continue;ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=isMobileDevice?0:(isMobileDevice?4:(p.kind==='blueMax'?30:22));ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='sukunaFireArrow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.shadowColor='#ff6524';ctx.shadowBlur=isMobileDevice?0:(10);drawSukunaFlameArrowGlyph(0,0,1,1);}else if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Number.isFinite(p.rotation)?p.rotation:Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='red'){
+ drawYutaDomainKatanas();for(const p of projectiles){if(activeDomainView&&!domainViewMatches(p.owner,activeDomainView))continue;let x=sx(p.x),y=sy(p.y)-(p.kind==='tenNue'?(p.altitude||0):0);if(!effectsViewportContains(x,y,Math.max(88,p.r||0)+28))continue;ctx.save();ctx.globalAlpha=.88;ctx.shadowBlur=isMobileDevice?0:(p.kind==='blueMax'?0:22);ctx.shadowColor=p.color;ctx.fillStyle=p.color;if(p.kind==='sukunaFireArrow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.shadowColor='#ff6524';ctx.shadowBlur=isMobileDevice?0:(10);drawSukunaFlameArrowGlyph(0,0,1,1);}else if(p.kind==='tenNue'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['....BB....','...BMMB...','..BMMMMB..','BBBBMMBBBB','..BMMMMB..','.BBM..MBB.','..B....B..'],0,0,4,{B:'#26364d',M:'#9eb7e4'});ctx.fillStyle='#f5f8ff';ctx.fillRect(7,-5,4,4)}else if(p.kind==='trashCan'){ctx.translate(x,y);ctx.rotate(Number.isFinite(p.rotation)?p.rotation:Math.atan2(p.vy,p.vx));if(p.golden){ctx.fillStyle='#825b18';ctx.fillRect(-18,-14,36,28);ctx.fillStyle='#e9b839';ctx.fillRect(-15,-12,30,24);ctx.fillStyle='#fff0a0';ctx.fillRect(-10,-9,4,19);ctx.fillRect(6,-9,4,19);ctx.fillStyle='#8d6118';ctx.fillRect(-20,-18,40,5);ctx.fillStyle='#ffdc70';ctx.fillRect(-18,-20,36,4);ctx.strokeStyle='#fff1ad';ctx.lineWidth=2;ctx.strokeRect(-15,-12,30,24)}else{ctx.fillStyle='#65717e';ctx.fillRect(-17,-12,34,24);ctx.fillStyle='#c5d0d9';ctx.fillRect(-19,-16,38,5);ctx.fillStyle='#303b47';ctx.fillRect(-11,-7,4,15);ctx.fillRect(4,-7,4,15);ctx.strokeStyle='#edf3f7';ctx.lineWidth=2;ctx.strokeRect(-17,-12,34,24)}}else if(p.kind==='trashJunk'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle=p.color;ctx.fillRect(-8,-5,16,10);ctx.fillStyle='#596653';ctx.fillRect(-5,-8,7,5);ctx.fillStyle='#c5d0ab';ctx.fillRect(2,-3,4,3);ctx.strokeStyle='#293229';ctx.lineWidth=1;ctx.strokeRect(-8,-5,16,10)}else if(p.kind==='bloodBomb'||p.kind==='bloodBombProjectile'){drawPixelSpriteGrid(['...BBB...','..BMMMB..','.BMMMMMB.','BMMHHHMMB','BMMHHHMMB','.BMMMMMB.','..BMMMB..','...BBB...'],x,y,4,{B:'#641c35',M:'#d93459',H:'#ffb3c0'});ctx.fillStyle='#ff9eaf';ctx.fillRect(x-3,y-22,6,6)}else if(p.kind==='bloodBeam'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#e63d5b';ctx.globalAlpha=.9;ctx.fillRect(-28,-7,56,14);ctx.fillStyle='#ffc2cc';ctx.fillRect(-23,-2,46,4)}else if(p.kind==='red'){
    ctx.save();ctx.translate(x,y);drawRedGradientSphere(0,0,13,.96);ctx.restore();
   }else if(p.kind==='blueMax'){drawGojoBlueMaxProjectile(p,x,y)}else if(p.kind==='hollow'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));drawPixelSpriteGrid(['...BBBBBBBB...','..BMMMMMMMMB..','.BMMHHHHHHMMB.','BMMHHHHHHHHMMB','BMMMMMMMMMMMMB','.BMMMMMMMMMMB.','..BMMMMMMMMB..','...BBBBBBBB...'],0,0,5,{B:'#413c78',M:'#9488e8',H:'#f5f2ff'})}else if(p.kind==='slash'){ctx.translate(x,y);ctx.rotate(Math.atan2(p.vy,p.vx));ctx.fillStyle='#7e1f36';ctx.fillRect(-39,-6,78,12);ctx.fillStyle=p.color||'#f14b60';ctx.fillRect(-34,-3,68,6);ctx.fillStyle='#fff0f2';ctx.fillRect(-24,-6,38,3)}else{const size=Math.max(3,Math.round(p.r*.32));ctx.fillRect(Math.round((x-size*2)/3)*3,Math.round((y-size*2)/3)*3,size*4,size*4);ctx.fillStyle='#fff';ctx.fillRect(Math.round((x-size*.5)/3)*3,Math.round((y-size*.5)/3)*3,size,size)}ctx.restore()}
  ctx.save();
