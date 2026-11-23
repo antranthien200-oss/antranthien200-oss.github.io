@@ -8,18 +8,58 @@ test("Colyseus CityRoom module loads", async () => {
   assert.equal(typeof room.CityRoom, "function");
 });
 
-test("all inline game scripts parse before deployment", () => {
-  const html = readFileSync(new URL("../../jjs-2d/index.html", import.meta.url), "utf8");
-  const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
-    .map(match => match[1])
-    .filter(source => source.trim().length > 0);
-  assert.ok(scripts.length >= 1, "expected the game client to contain an inline script");
-  for (const [index, source] of scripts.entries()) {
-    assert.doesNotThrow(
-      () => new vm.Script(source, { filename: "jjs-2d:inline-" + index + ".js" }),
-      "inline script " + index + " should parse"
-    );
+test("all main-game and Vessel-preview inline scripts parse before deployment", () => {
+  const gameFiles = [
+    "../../jjs-2d/index.html",
+    "../../jjs-2d/vessel-m1-preview.html"
+  ];
+  for (const file of gameFiles) {
+    const html = readFileSync(new URL(file, import.meta.url), "utf8");
+    const scripts = [...html.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)]
+      .map(match => match[1])
+      .filter(source => source.trim().length > 0);
+    assert.ok(scripts.length >= 1, file + " should contain an inline script");
+    for (const [index, source] of scripts.entries()) {
+      assert.doesNotThrow(
+        () => new vm.Script(source, { filename: file + ":inline-" + index + ".js" }),
+        file + " inline script " + index + " should parse"
+      );
+    }
   }
+});
+
+test("Gojo Blue MAX keeps its total phase length while extending the active phase", async () => {
+  const { CityRoom } = await import("../src/rooms/CityRoom.js");
+  const room = new CityRoom();
+  const owner = {
+    character: "honored", awakened: true, dead: false, stun: 0,
+    vehicleId: "", x: 500, y: 350, aimX: 700, aimY: 350
+  };
+  room.state = { players: new Map([["gojo", owner]]) };
+  room.projectiles = new Map();
+  room.broadcast = () => {};
+  room.spawnProjectile(
+    { sessionId: "gojo", send: () => {} },
+    {
+      id: "blue-max-test", move: "gojoBlueMax", kind: "blueMax",
+      x: 500, y: 350, vx: 0, vy: 0, life: 6.25,
+      damage: 2.2, pullRadius: 420, pullForce: 0.06, damageRadius: 165
+    }
+  );
+
+  const projectile = room.projectiles.get("gojo:blue-max-test");
+  assert.ok(projectile, "server should accept the awakened Gojo Blue MAX projectile");
+  assert.equal(projectile.phaseRemaining, 0.5);
+  assert.equal(projectile.phaseDuration, 0.5);
+  assert.equal(projectile.activeDuration, 4);
+  assert.equal(projectile.collapseDuration, 1.5);
+  assert.equal(
+    projectile.phaseRemaining + projectile.activeDuration + projectile.collapseDuration,
+    6,
+    "formation + active + collapse should keep the original six-second duration"
+  );
+  assert.equal(projectile.pullRadius, 420);
+  assert.equal(projectile.damageRadius, 165);
 });
 
 
