@@ -8714,7 +8714,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  const orbRadius=14+97*charge;
  const outerRadius=orbRadius+(1-charge)*195+12;
  const spin=forming?progress*13:collapse?(1-progress)*13:time*2.15;
- const count=mobile?6:9;
+ const count=mobile?4:7;
  const energyBlue='#0750dc',energyCyan='#59d7ff',energyWhite='#effcff';
  ctx.save();
  ctx.translate(x,y);
@@ -8723,7 +8723,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.lineCap='round';
  ctx.lineJoin='round';
  ctx.shadowColor='#36aaff';
- ctx.shadowBlur=mobile?0:18;
+ ctx.shadowBlur=0;
 
  // Wide atmospheric bloom behind the orb, built from smooth gradients rather than a small texture.
  const bloomRadius=outerRadius*1.55;
@@ -8737,7 +8737,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.beginPath();ctx.arc(0,0,bloomRadius,0,Math.PI*2);ctx.fill();
 
  // Fast rotating vortex rings. Their radii draw inward while charging and outward while vanishing.
- const ringCount=mobile?2:3;
+ const ringCount=mobile?1:2;
  for(let i=0;i<ringCount;i++){
   const ringRadius=orbRadius*(1.02+i*.24)+(1-charge)*(66+i*42);
   const rotation=spin*.18+i*.82;
@@ -8768,26 +8768,20 @@ function drawGojoBlueMaxProjectile(p,x,y){
   const c2y=Math.sin(a+spinDirection*1.12)*(inner+outer*.3)*.82;
   const x2=Math.cos(a+spinDirection*(1.55+bend))*inner;
   const y2=Math.sin(a+spinDirection*(1.55+bend))*inner*.82;
-  const grad=ctx.createLinearGradient(x1,y1,x2,y2);
-  grad.addColorStop(0,'rgba(13,51,196,0)');
-  grad.addColorStop(.28,'rgba(24,105,255,.86)');
-  grad.addColorStop(.72,'rgba(112,224,255,.96)');
-  grad.addColorStop(1,'rgba(255,255,255,.94)');
+  // Two clean strokes replace per-slash gradient and blur allocations; the bloom supplies the glow.
   ctx.globalAlpha=baseAlpha*visibility*(forming?.68:collapse?.76:.52);
-  ctx.strokeStyle=grad;
+  ctx.strokeStyle='#167cff';
   ctx.lineWidth=(mobile?3.2:5.4)+(i%3)*.7;
-  ctx.shadowBlur=mobile?0:16;
-  ctx.shadowColor=energyCyan;
+  ctx.shadowBlur=0;
   ctx.beginPath();ctx.moveTo(x1,y1);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,x2,y2);ctx.stroke();
   ctx.globalAlpha=baseAlpha*visibility*(mobile?.46:.72);
   ctx.strokeStyle=energyWhite;
   ctx.lineWidth=mobile?1:1.45;
-  ctx.shadowBlur=mobile?0:8;
   ctx.beginPath();ctx.moveTo(x1*.985,y1*.985);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,x2,y2);ctx.stroke();
  }
 
  // Short radial blades and sparks give the gathering energy a sharp, high-speed finish.
- const sparkCount=mobile?9:16;
+ const sparkCount=mobile?6:12;
  for(let i=0;i<sparkCount;i++){
   const a=i*Math.PI*2/sparkCount-spin*.48;
   const r1=orbRadius*(1.08+(i%3)*.13)+(1-charge)*130;
@@ -8795,7 +8789,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   ctx.globalAlpha=baseAlpha*visibility*(.34+(i%3)*.13);
   ctx.strokeStyle=i%3===0?'#ffffff':i%2?energyCyan:energyBlue;
   ctx.lineWidth=i%4===0?2.1:1.15;
-  ctx.shadowBlur=mobile?0:10;
+  ctx.shadowBlur=0;
   ctx.beginPath();
   ctx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1*.86);
   ctx.lineTo(Math.cos(a+spinDirection*.055)*r2,Math.sin(a+spinDirection*.055)*r2*.86);
@@ -8810,7 +8804,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   ctx.globalAlpha=baseAlpha*visibility*Math.sin(waveProgress*Math.PI)*.78;
   ctx.strokeStyle='#e9fbff';
   ctx.lineWidth=mobile?1.8:3.2;
-  ctx.shadowBlur=mobile?0:18;
+  ctx.shadowBlur=0;
   ctx.shadowColor=energyCyan;
   ctx.beginPath();ctx.arc(0,0,waveRadius,0,Math.PI*2);ctx.stroke();
   ctx.globalAlpha=baseAlpha*visibility*Math.sin(waveProgress*Math.PI)*.42;
@@ -8827,7 +8821,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  core.addColorStop(.91,'#1976ed');
  core.addColorStop(1,'rgba(12,57,190,.16)');
  ctx.globalAlpha=baseAlpha*visibility;
- ctx.shadowBlur=mobile?0:24;
+ ctx.shadowBlur=0;
  ctx.shadowColor='#7be4ff';
  ctx.fillStyle=core;
  ctx.beginPath();ctx.arc(0,0,coreRadius,0,Math.PI*2);ctx.fill();
