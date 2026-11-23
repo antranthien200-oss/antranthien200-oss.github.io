@@ -8819,6 +8819,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  const progress=clamp(1-(Number(p.phaseRemaining)||0)/duration,0,1);
  const easeOut=t=>1-Math.pow(1-clamp(t,0,1),3.4);
  const forming=phase==='forming',collapse=phase==='collapse';
+ const spinDirection=collapse?-1:1;
  const charge=forming?easeOut(progress):collapse?1-easeOut(progress):1;
  const dissolve=collapse?easeOut(progress):0;
  const time=game.time,baseAlpha=ctx.globalAlpha,mobile=isMobileDevice;
