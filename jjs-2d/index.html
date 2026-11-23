@@ -2771,14 +2771,14 @@ html.manual-screen-rotated #menu .menu-art-stage{
  aspect-ratio:auto!important;transform:none!important;pointer-events:none!important;
 }
 #menu .menu-art-stage>.menu-main{
- position:absolute!important;top:50%!important;left:50%!important;right:auto!important;bottom:auto!important;
+ position:absolute!important;top:34%!important;left:50%!important;right:auto!important;bottom:auto!important;
  width:340px!important;max-width:none!important;min-width:0!important;
- height:auto!important;min-height:0!important;max-height:none!important;
+ height:62%!important;min-height:0!important;max-height:none!important;
  box-sizing:border-box!important;padding:12px 14px!important;gap:9px!important;
  display:flex!important;flex-direction:column!important;align-items:stretch!important;justify-content:center!important;
  overflow:visible!important;overscroll-behavior:initial!important;
- transform:translate(-50%,-50%) scale(var(--main-menu-fit-scale,1))!important;
- transform-origin:center center!important;will-change:transform;
+ transform:translateX(-50%) scale(var(--main-menu-fit-scale,1))!important;
+ transform-origin:top center!important;will-change:transform;
 }
 #menu .menu-art-stage>.menu-main>*{flex-shrink:0!important}
 #menu .menu-actions{width:100%!important;max-width:none!important;gap:7px!important;flex-shrink:0!important}
@@ -3205,17 +3205,20 @@ function fitMenuLayouts(){
  // W/H are the logical game viewport dimensions, already swapped for manual rotation.
  const availableWidth=Math.max(1,Number(W)||window.innerWidth||1);
  const availableHeight=Math.max(1,Number(H)||window.innerHeight||1);
- const fitWholeMenu=(element,variable,margin=24)=>{
+ const fitWholeMenu=(element,variable,margin=24,topAnchored=false)=>{
   if(!element)return;
   element.style.setProperty(variable,'1');
   const width=Math.max(1,element.offsetWidth||0,element.scrollWidth||0);
   const height=Math.max(1,element.offsetHeight||0,element.scrollHeight||0);
-  const scale=Math.min(1,Math.max(1,availableWidth-margin*2)/width,Math.max(1,availableHeight-margin*2)/height);
+  const top=topAnchored?Math.max(0,element.offsetTop||0):margin;
+  const usableHeight=Math.max(1,availableHeight-top-margin);
+  const usableWidth=Math.max(1,availableWidth-margin*2);
+  const scale=Math.min(1,usableWidth/width,usableHeight/height);
   element.style.setProperty(variable,String(Math.max(.05,scale)));
  };
  const menu=document.getElementById('menu');
  const main=menu&&menu.querySelector('.menu-art-stage>.menu-main');
- if(main&&getComputedStyle(menu).display!=='none')fitWholeMenu(main,'--main-menu-fit-scale',18);
+ if(main&&getComputedStyle(menu).display!=='none')fitWholeMenu(main,'--main-menu-fit-scale',18,true);
 
  const sub=document.getElementById('menuSub');
  const panel=sub&&sub.querySelector('.menu-sub-panel');
