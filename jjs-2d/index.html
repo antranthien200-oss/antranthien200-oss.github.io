@@ -8764,40 +8764,6 @@ function drawGojoBlueMaxProjectile(p,x,y){
   ctx.beginPath();ctx.arc(0,0,orbSize*.49,0,Math.PI*2);ctx.fill();
  }
 
- // Surface ribbons are clipped to the orb and foreshortened so they wrap around a 3D sphere.
- const sphereR=orbSize*.465;
- ctx.save();
- ctx.beginPath();ctx.ellipse(0,0,sphereR*.99,sphereR*1.025,0,0,Math.PI*2);ctx.clip();
- ctx.rotate(spin*.11);
- ctx.scale(1,.88);
- const ribbonAlpha=baseAlpha*visibility*(.7+.22*charge);
- const darkRibbon=()=>{
-  ctx.beginPath();
-  ctx.moveTo(-sphereR*1.08,-sphereR*.11);
-  ctx.bezierCurveTo(-sphereR*.76,-sphereR*.88,sphereR*.18,-sphereR*.94,sphereR*1.08,sphereR*.02);
- };
- const cyanRibbon=()=>{
-  ctx.beginPath();
-  ctx.moveTo(-sphereR*1.08,sphereR*.29);
-  ctx.bezierCurveTo(-sphereR*.55,-sphereR*.48,sphereR*.32,-sphereR*.62,sphereR*1.08,sphereR*.19);
- };
- ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowBlur=0;
- // Deep-blue curved band, with a darker underside and narrow cobalt reflection.
- ctx.globalAlpha=ribbonAlpha*.82;
- darkRibbon();ctx.strokeStyle='#061e77';ctx.lineWidth=sphereR*.165;ctx.stroke();
- ctx.globalAlpha=ribbonAlpha*.88;
- darkRibbon();ctx.strokeStyle='#073bb0';ctx.lineWidth=sphereR*.083;ctx.stroke();
- ctx.globalAlpha=ribbonAlpha*.82;
- darkRibbon();ctx.strokeStyle='#247ce8';ctx.lineWidth=Math.max(1,sphereR*.021);ctx.stroke();
- // Cyan curved band crosses the opposite side of the orb, with a thin white specular edge.
- ctx.globalAlpha=ribbonAlpha*.76;
- cyanRibbon();ctx.strokeStyle='#0871c6';ctx.lineWidth=sphereR*.135;ctx.stroke();
- ctx.globalAlpha=ribbonAlpha*.9;
- cyanRibbon();ctx.strokeStyle='#31caff';ctx.lineWidth=sphereR*.068;ctx.stroke();
- ctx.globalAlpha=ribbonAlpha*.95;
- cyanRibbon();ctx.strokeStyle='#e5fbff';ctx.lineWidth=Math.max(1,sphereR*.017);ctx.stroke();
- ctx.restore();
- ctx.restore();
 
  // Wide atmospheric bloom behind the orb, built from smooth gradients rather than a small texture.
  const bloomRadius=outerRadius*1.55;
@@ -8809,6 +8775,62 @@ function drawGojoBlueMaxProjectile(p,x,y){
  bloom.addColorStop(1,'rgba(5,38,160,0)');
  ctx.fillStyle=bloom;
  ctx.beginPath();ctx.arc(0,0,bloomRadius,0,Math.PI*2);ctx.fill();
+
+ // Fine crescent slashes skim over the orb surface instead of reading as painted bands.
+ const sphereR=orbSize*.465;
+ ctx.save();
+ ctx.beginPath();ctx.ellipse(0,0,sphereR*.99,sphereR*1.025,0,0,Math.PI*2);ctx.clip();
+ ctx.rotate(spin*.045);
+ ctx.scale(1,.88);
+ ctx.lineCap='butt';ctx.lineJoin='round';ctx.shadowBlur=0;
+ const drawCrescentSlash=(points,maxWidth,alpha,colors)=>{
+  const samples=12,left=[],right=[];
+  for(let i=0;i<=samples;i++){
+   const t=i/samples,u=1-t;
+   const x=u*u*u*points[0][0]+3*u*u*t*points[1][0]+3*u*t*t*points[2][0]+t*t*t*points[3][0];
+   const y=u*u*u*points[0][1]+3*u*u*t*points[1][1]+3*u*t*t*points[2][1]+t*t*t*points[3][1];
+   const dx=3*u*u*(points[1][0]-points[0][0])+6*u*t*(points[2][0]-points[1][0])+3*t*t*(points[3][0]-points[2][0]);
+   const dy=3*u*u*(points[1][1]-points[0][1])+6*u*t*(points[2][1]-points[1][1])+3*t*t*(points[3][1]-points[2][1]);
+   const length=Math.hypot(dx,dy)||1,width=maxWidth*Math.pow(Math.sin(Math.PI*t),.92);
+   const nx=-dy/length,ny=dx/length;
+   left.push([x+nx*width,y+ny*width]);right.push([x-nx*width,y-ny*width]);
+  }
+  const gradient=ctx.createLinearGradient(points[0][0],points[0][1],points[3][0],points[3][1]);
+  for(const stop of colors)gradient.addColorStop(stop[0],stop[1]);
+  ctx.globalAlpha=baseAlpha*visibility*alpha;
+  ctx.fillStyle=gradient;
+  ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);
+  for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);
+  for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);
+  ctx.closePath();ctx.fill();
+ };
+ const topArc=[
+  [-sphereR*.94,-sphereR*.12],[-sphereR*.64,-sphereR*.86],
+  [sphereR*.48,-sphereR*.94],[sphereR*.96,sphereR*.10]
+ ];
+ const lowerArc=[
+  [-sphereR*.82,sphereR*.34],[-sphereR*.38,sphereR*.82],
+  [sphereR*.48,sphereR*.82],[sphereR*.86,-sphereR*.22]
+ ];
+ // A soft navy underside is offset just enough to suggest the slash's depth.
+ drawCrescentSlash(topArc,sphereR*.052,.48,[
+  [0,'rgba(3,23,104,0)'],[.22,'rgba(5,43,151,.78)'],
+  [.72,'rgba(7,55,163,.82)'],[1,'rgba(4,35,132,0)']
+ ]);
+ drawCrescentSlash(lowerArc,sphereR*.043,.36,[
+  [0,'rgba(4,28,126,0)'],[.28,'rgba(5,48,153,.75)'],
+  [.72,'rgba(8,62,178,.68)'],[1,'rgba(4,35,132,0)']
+ ]);
+ // Thin cyan cutting edges sit inside the dark crescents; their pointed ends stay visible.
+ drawCrescentSlash(topArc,sphereR*.017,.88,[
+  [0,'rgba(75,192,255,0)'],[.25,'rgba(38,157,255,.82)'],
+  [.56,'rgba(220,250,255,.96)'],[.82,'rgba(48,190,255,.86)'],[1,'rgba(73,178,255,0)']
+ ]);
+ drawCrescentSlash(lowerArc,sphereR*.013,.72,[
+  [0,'rgba(55,168,255,0)'],[.3,'rgba(36,153,255,.85)'],
+  [.58,'rgba(182,241,255,.94)'],[.82,'rgba(24,157,255,.8)'],[1,'rgba(67,173,255,0)']
+ ]);
+ ctx.restore();
 
  // Fast rotating vortex rings. Their radii draw inward while charging and outward while vanishing.
  const ringCount=mobile?1:2;
