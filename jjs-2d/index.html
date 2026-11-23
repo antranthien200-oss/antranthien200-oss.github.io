@@ -8725,30 +8725,37 @@ function drawGojoBlueMaxProjectile(p,x,y){
  const progress=clamp(1-(Number(p.phaseRemaining)||0)/duration,0,1);
  const easeOut=t=>1-Math.pow(1-clamp(t,0,1),3.4);
  const forming=phase==='forming',collapse=phase==='collapse';
- // The collapse is the charge animation played backwards: ribbons unwind and the core contracts.
  const charge=forming?easeOut(progress):collapse?1-easeOut(progress):1;
+ const dissolve=collapse?easeOut(progress):0;
  const spinDirection=collapse?-1:1;
  const time=game.time,baseAlpha=ctx.globalAlpha,mobile=isMobileDevice;
  const visibility=collapse?Math.pow(1-progress,.82):forming?.82+.18*charge:1;
- const coreRadius=5+59*charge;
- const orbRadius=14+97*charge;
- const outerRadius=orbRadius+(1-charge)*195+12;
+ const orbSize=forming?42+184*charge:collapse?226*(1-dissolve):226;
+ const sphereR=orbSize*.465;
  const spin=forming?progress*13:collapse?(1-progress)*13:time*2.15;
- const count=mobile?4:7;
- const energyBlue='#0750dc',energyCyan='#59d7ff',energyWhite='#effcff';
+ const surfaceTurn=spinDirection*(forming?progress*1.42:collapse?(1-progress)*1.42:time*.18);
+ const outerRadius=orbSize*.5+(1-charge)*34;
+
  ctx.save();
  ctx.translate(x,y);
  ctx.globalAlpha=baseAlpha*visibility;
- ctx.globalCompositeOperation='lighter';
  ctx.lineCap='round';
  ctx.lineJoin='round';
- ctx.shadowColor='#36aaff';
- ctx.shadowBlur=0;
 
- // Restore the original Blue MAX orb artwork as the actual sphere, not a replacement core.
+ // Broad atmospheric bloom is placed BEHIND the original orb artwork.
+ ctx.globalCompositeOperation='lighter';
+ const bloomRadius=outerRadius*1.85;
+ const bloom=ctx.createRadialGradient(-orbSize*.09,-orbSize*.14,1,0,0,bloomRadius);
+ bloom.addColorStop(0,'rgba(237,252,255,.74)');
+ bloom.addColorStop(.2,'rgba(108,214,255,.48)');
+ bloom.addColorStop(.48,'rgba(25,117,255,.24)');
+ bloom.addColorStop(.78,'rgba(7,47,176,.09)');
+ bloom.addColorStop(1,'rgba(5,30,130,0)');
+ ctx.fillStyle=bloom;
+ ctx.beginPath();ctx.arc(0,0,bloomRadius,0,Math.PI*2);ctx.fill();
+
+ // Restore and draw the actual original orb texture as the sphere's base.
  const orbImage=getGojoBlueMaxOrbImage();
- const orbSize=forming?42+184*charge:collapse?226*(1-dissolve):226;
- ctx.save();
  ctx.globalCompositeOperation='source-over';
  ctx.globalAlpha=baseAlpha*visibility;
  if(orbImage&&orbImage.complete&&orbImage.naturalWidth>0){
@@ -8764,151 +8771,145 @@ function drawGojoBlueMaxProjectile(p,x,y){
   ctx.beginPath();ctx.arc(0,0,orbSize*.49,0,Math.PI*2);ctx.fill();
  }
 
-
- // Wide atmospheric bloom behind the orb, built from smooth gradients rather than a small texture.
- const bloomRadius=outerRadius*1.55;
- const bloom=ctx.createRadialGradient(-orbRadius*.12,-orbRadius*.16,Math.max(1,coreRadius*.12),0,0,bloomRadius);
- bloom.addColorStop(0,'rgba(244,254,255,.96)');
- bloom.addColorStop(.16,'rgba(145,231,255,.78)');
- bloom.addColorStop(.42,'rgba(35,143,255,.36)');
- bloom.addColorStop(.76,'rgba(9,67,210,.13)');
- bloom.addColorStop(1,'rgba(5,38,160,0)');
- ctx.fillStyle=bloom;
- ctx.beginPath();ctx.arc(0,0,bloomRadius,0,Math.PI*2);ctx.fill();
-
- // Fine crescent slashes skim over the orb surface instead of reading as painted bands.
- const sphereR=orbSize*.465;
- ctx.save();
- ctx.beginPath();ctx.ellipse(0,0,sphereR*.99,sphereR*1.025,0,0,Math.PI*2);ctx.clip();
- ctx.rotate(spin*.045);
- ctx.scale(1,.88);
- ctx.lineCap='butt';ctx.lineJoin='round';ctx.shadowBlur=0;
- const drawCrescentSlash=(points,maxWidth,alpha,colors)=>{
-  const samples=12,left=[],right=[];
-  for(let i=0;i<=samples;i++){
-   const t=i/samples,u=1-t;
-   const x=u*u*u*points[0][0]+3*u*u*t*points[1][0]+3*u*t*t*points[2][0]+t*t*t*points[3][0];
-   const y=u*u*u*points[0][1]+3*u*u*t*points[1][1]+3*u*t*t*points[2][1]+t*t*t*points[3][1];
+ // Build each energy slash as a filled, curved blade with a long taper at both tips.
+ // This produces the cut/crescent silhouette in the generated reference, not a round brush stroke.
+ const drawBlade=(points,halfWidth,alpha,stops,sampleCount=mobile?12:18)=>{
+  const left=[],right=[];
+  for(let i=0;i<=sampleCount;i++){
+   const t=i/sampleCount,u=1-t;
+   const px=u*u*u*points[0][0]+3*u*u*t*points[1][0]+3*u*t*t*points[2][0]+t*t*t*points[3][0];
+   const py=u*u*u*points[0][1]+3*u*u*t*points[1][1]+3*u*t*t*points[2][1]+t*t*t*points[3][1];
    const dx=3*u*u*(points[1][0]-points[0][0])+6*u*t*(points[2][0]-points[1][0])+3*t*t*(points[3][0]-points[2][0]);
    const dy=3*u*u*(points[1][1]-points[0][1])+6*u*t*(points[2][1]-points[1][1])+3*t*t*(points[3][1]-points[2][1]);
-   const length=Math.hypot(dx,dy)||1,width=maxWidth*Math.pow(Math.sin(Math.PI*t),.92);
-   const nx=-dy/length,ny=dx/length;
-   left.push([x+nx*width,y+ny*width]);right.push([x-nx*width,y-ny*width]);
+   const len=Math.hypot(dx,dy)||1;
+   const taper=Math.pow(Math.max(0,Math.sin(Math.PI*t)),.68);
+   const width=halfWidth*taper*(.86+.14*Math.sin(Math.PI*t));
+   const nx=-dy/len,ny=dx/len;
+   left.push([px+nx*width,py+ny*width]);
+   right.push([px-nx*width,py-ny*width]);
   }
-  const gradient=ctx.createLinearGradient(points[0][0],points[0][1],points[3][0],points[3][1]);
-  for(const stop of colors)gradient.addColorStop(stop[0],stop[1]);
+  const midT=.5,mu=.5;
+  const mx=.125*points[0][0]+.375*points[1][0]+.375*points[2][0]+.125*points[3][0];
+  const my=.125*points[0][1]+.375*points[1][1]+.375*points[2][1]+.125*points[3][1];
+  const dx= .75*(points[1][0]-points[0][0])+1.5*(points[2][0]-points[1][0])*.5+.75*(points[3][0]-points[2][0])*.25;
+  const dy= .75*(points[1][1]-points[0][1])+1.5*(points[2][1]-points[1][1])*.5+.75*(points[3][1]-points[2][1])*.25;
+  const len=Math.hypot(dx,dy)||1,nx=-dy/len,ny=dx/len;
+  const gradient=ctx.createLinearGradient(mx-nx*halfWidth,my-ny*halfWidth,mx+nx*halfWidth,my+ny*halfWidth);
+  for(const stop of stops)gradient.addColorStop(stop[0],stop[1]);
   ctx.globalAlpha=baseAlpha*visibility*alpha;
   ctx.fillStyle=gradient;
-  ctx.beginPath();ctx.moveTo(left[0][0],left[0][1]);
+  ctx.beginPath();
+  ctx.moveTo(left[0][0],left[0][1]);
   for(let i=1;i<left.length;i++)ctx.lineTo(left[i][0],left[i][1]);
   for(let i=right.length-1;i>=0;i--)ctx.lineTo(right[i][0],right[i][1]);
   ctx.closePath();ctx.fill();
  };
- const topArc=[
-  [-sphereR*.94,-sphereR*.12],[-sphereR*.64,-sphereR*.86],
-  [sphereR*.48,-sphereR*.94],[sphereR*.96,sphereR*.10]
+
+ // Surface slashes: large diagonal crescent cuts that bend with the sphere and stay clipped to it.
+ ctx.save();
+ ctx.beginPath();ctx.ellipse(0,0,sphereR*.99,sphereR*1.025,0,0,Math.PI*2);ctx.clip();
+ ctx.rotate(surfaceTurn);
+ ctx.scale(1,.87);
+ ctx.globalCompositeOperation='source-over';
+ const deepBlueArc=[
+  [-sphereR*1.03,sphereR*.18],[-sphereR*.78,-sphereR*.93],
+  [sphereR*.43,-sphereR*1.02],[sphereR*1.03,-sphereR*.13]
  ];
- const lowerArc=[
-  [-sphereR*.82,sphereR*.34],[-sphereR*.38,sphereR*.82],
-  [sphereR*.48,sphereR*.82],[sphereR*.86,-sphereR*.22]
+ const cyanArc=[
+  [-sphereR*1.02,-sphereR*.25],[-sphereR*.55,-sphereR*.88],
+  [sphereR*.53,-sphereR*.72],[sphereR*1.02,sphereR*.25]
  ];
- // A soft navy underside is offset just enough to suggest the slash's depth.
- drawCrescentSlash(topArc,sphereR*.052,.48,[
-  [0,'rgba(3,23,104,0)'],[.22,'rgba(5,43,151,.78)'],
-  [.72,'rgba(7,55,163,.82)'],[1,'rgba(4,35,132,0)']
+ drawBlade(deepBlueArc,sphereR*.082,.86,[
+  [0,'rgba(2,13,66,.08)'],
+  [.14,'rgba(4,25,103,.96)'],
+  [.36,'rgba(5,51,157,.98)'],
+  [.56,'rgba(14,91,206,.96)'],
+  [.82,'rgba(4,35,123,.94)'],
+  [1,'rgba(1,13,65,.08)']
  ]);
- drawCrescentSlash(lowerArc,sphereR*.043,.36,[
-  [0,'rgba(4,28,126,0)'],[.28,'rgba(5,48,153,.75)'],
-  [.72,'rgba(8,62,178,.68)'],[1,'rgba(4,35,132,0)']
+ // A narrow electric-blue edge gives the dark crescent a hard, swept cutting edge.
+ drawBlade([
+  [deepBlueArc[0][0],deepBlueArc[0][1]-sphereR*.014],
+  [deepBlueArc[1][0],deepBlueArc[1][1]-sphereR*.014],
+  [deepBlueArc[2][0],deepBlueArc[2][1]-sphereR*.014],
+  [deepBlueArc[3][0],deepBlueArc[3][1]-sphereR*.014]
+ ],sphereR*.011,.82,[
+  [0,'rgba(55,156,255,0)'],[.38,'rgba(32,130,255,.78)'],
+  [.62,'rgba(107,213,255,.94)'],[1,'rgba(42,133,255,0)']
  ]);
- // Thin cyan cutting edges sit inside the dark crescents; their pointed ends stay visible.
- drawCrescentSlash(topArc,sphereR*.017,.88,[
-  [0,'rgba(75,192,255,0)'],[.25,'rgba(38,157,255,.82)'],
-  [.56,'rgba(220,250,255,.96)'],[.82,'rgba(48,190,255,.86)'],[1,'rgba(73,178,255,0)']
- ]);
- drawCrescentSlash(lowerArc,sphereR*.013,.72,[
-  [0,'rgba(55,168,255,0)'],[.3,'rgba(36,153,255,.85)'],
-  [.58,'rgba(182,241,255,.94)'],[.82,'rgba(24,157,255,.8)'],[1,'rgba(67,173,255,0)']
+ // Cyan-white curve cuts across the orb as a separate, thinner slash.
+ drawBlade(cyanArc,sphereR*.037,.9,[
+  [0,'rgba(6,45,129,0)'],
+  [.18,'rgba(12,101,206,.82)'],
+  [.42,'rgba(41,182,255,.98)'],
+  [.58,'rgba(223,251,255,1)'],
+  [.78,'rgba(49,178,255,.96)'],
+  [1,'rgba(5,65,167,0)']
  ]);
  ctx.restore();
 
- // Fast rotating vortex rings. Their radii draw inward while charging and outward while vanishing.
- const ringCount=mobile?1:2;
- for(let i=0;i<ringCount;i++){
-  const ringRadius=orbRadius*(1.02+i*.24)+(1-charge)*(66+i*42);
-  const rotation=spin*.18+i*.82;
-  ctx.save();
-  ctx.rotate(rotation);
-  ctx.globalAlpha=baseAlpha*visibility*(.24-i*.045);
-  ctx.strokeStyle=i===0?'#e9fbff':i===1?energyCyan:'#2478ff';
-  ctx.lineWidth=mobile?1.7:2.4-i*.35;
-  ctx.setLineDash(i===0?[26,9,5,13]:[54,17,11,23]);
-  ctx.lineDashOffset=-spinDirection*(forming?progress*135:collapse?(1-progress)*135:time*(i===0?68:94));
-  ctx.beginPath();
-  ctx.ellipse(0,0,ringRadius*1.18,ringRadius*.67,0,.22+i*.8,Math.PI*1.62+i*.8);
-  ctx.stroke();
-  ctx.restore();
+ // Large sweeping slash arcs around the orb, matching the reference's fast circular energy movement.
+ ctx.globalCompositeOperation='lighter';
+ const orbitRotation=surfaceTurn*.72;
+ ctx.save();ctx.rotate(orbitRotation);
+ const orbitArcA=[
+  [-orbSize*.78,orbSize*.12],[-orbSize*.62,-orbSize*.86],
+  [orbSize*.42,-orbSize*1.02],[orbSize*.91,-orbSize*.13]
+ ];
+ const orbitArcB=[
+  [-orbSize*.92,-orbSize*.02],[-orbSize*.55,orbSize*.91],
+  [orbSize*.47,orbSize*.99],[orbSize*.92,orbSize*.24]
+ ];
+ drawBlade(orbitArcA,orbSize*.025,.78,[
+  [0,'rgba(10,72,220,0)'],[.22,'rgba(20,108,255,.52)'],
+  [.5,'rgba(185,239,255,.94)'],[.76,'rgba(58,170,255,.72)'],[1,'rgba(8,54,192,0)']
+ ]);
+ drawBlade(orbitArcB,orbSize*.035,.58,[
+  [0,'rgba(2,30,142,0)'],[.3,'rgba(10,75,220,.62)'],
+  [.57,'rgba(72,181,255,.82)'],[.82,'rgba(4,47,174,.6)'],[1,'rgba(2,30,142,0)']
+ ]);
+ ctx.restore();
+
+ // A few fast tapered energy blades fly inward toward the core during formation, then unwind in reverse.
+ const slashCount=mobile?4:6;
+ for(let i=0;i<slashCount;i++){
+  const a=i*Math.PI*2/slashCount+spin*.22;
+  const outer=orbSize*.63+(1-charge)*orbSize*.7+(i%2)*8;
+  const inner=sphereR*(.17+(i%3)*.06);
+  const points=[
+   [Math.cos(a)*outer,Math.sin(a)*outer*.78],
+   [Math.cos(a+spinDirection*.38)*outer*.82,Math.sin(a+spinDirection*.38)*outer*.82*.78],
+   [Math.cos(a+spinDirection*1.08)*(inner+outer*.28),Math.sin(a+spinDirection*1.08)*(inner+outer*.28)*.78],
+   [Math.cos(a+spinDirection*1.55)*inner,Math.sin(a+spinDirection*1.55)*inner*.78]
+  ];
+  drawBlade(points, mobile?2.2:3.4,forming?.82:collapse?.82:.54,[
+   [0,'rgba(5,39,176,0)'],[.22,'rgba(12,77,228,.72)'],
+   [.54,'rgba(94,197,255,.92)'],[.76,'rgba(240,252,255,.96)'],[1,'rgba(21,95,230,0)']
+  ]);
  }
 
- // Tapered whirl-slashes: layered blue edges, cyan bodies, and bright white cutting edges.
- // The changing curve radius makes the slashes visibly rush into the core, then reverse on vanish.
- for(let i=0;i<count;i++){
-  const a=i*Math.PI*2/count+spin*.24;
-  const outer=outerRadius+(i%3)*7;
-  const inner=coreRadius*(.84+(i%2)*.18)+(1-charge)*13;
-  const bend=spinDirection*(.18+(i%4)*.045);
-  const x1=Math.cos(a)*outer,y1=Math.sin(a)*outer*.82;
-  const c1x=Math.cos(a+spinDirection*.42)*outer*.88;
-  const c1y=Math.sin(a+spinDirection*.42)*outer*.82;
-  const c2x=Math.cos(a+spinDirection*1.12)*(inner+outer*.3);
-  const c2y=Math.sin(a+spinDirection*1.12)*(inner+outer*.3)*.82;
-  const x2=Math.cos(a+spinDirection*(1.55+bend))*inner;
-  const y2=Math.sin(a+spinDirection*(1.55+bend))*inner*.82;
-  // Two clean strokes replace per-slash gradient and blur allocations; the bloom supplies the glow.
-  ctx.globalAlpha=baseAlpha*visibility*(forming?.68:collapse?.76:.52);
-  ctx.strokeStyle='#167cff';
-  ctx.lineWidth=(mobile?3.2:5.4)+(i%3)*.7;
-  ctx.shadowBlur=0;
-  ctx.beginPath();ctx.moveTo(x1,y1);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,x2,y2);ctx.stroke();
-  ctx.globalAlpha=baseAlpha*visibility*(mobile?.46:.72);
-  ctx.strokeStyle=energyWhite;
-  ctx.lineWidth=mobile?1:1.45;
-  ctx.beginPath();ctx.moveTo(x1*.985,y1*.985);ctx.bezierCurveTo(c1x,c1y,c2x,c2y,x2,y2);ctx.stroke();
- }
-
- // Short radial blades and sparks give the gathering energy a sharp, high-speed finish.
+ // Bright sparks and one expanding pulse punctuate the end of the 1.5-second formation.
  const sparkCount=mobile?6:12;
  for(let i=0;i<sparkCount;i++){
   const a=i*Math.PI*2/sparkCount-spin*.48;
-  const r1=orbRadius*(1.08+(i%3)*.13)+(1-charge)*130;
+  const r1=orbSize*.58+(1-charge)*orbSize*.5;
   const r2=r1+(mobile?8:13)+(i%4)*3;
   ctx.globalAlpha=baseAlpha*visibility*(.34+(i%3)*.13);
   ctx.strokeStyle=i%3===0?'#ffffff':i%2?energyCyan:energyBlue;
   ctx.lineWidth=i%4===0?2.1:1.15;
-  ctx.shadowBlur=0;
   ctx.beginPath();
   ctx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1*.86);
   ctx.lineTo(Math.cos(a+spinDirection*.055)*r2,Math.sin(a+spinDirection*.055)*r2*.86);
   ctx.stroke();
  }
-
- // A quick expanding shock ring hits at the end of charge-up and again as the orb first opens.
  const activeElapsed=phase==='active'?Math.max(0,duration-(Number(p.phaseRemaining)||0)):0;
  const waveProgress=forming?clamp((progress-.7)/.3,0,1):phase==='active'?clamp(activeElapsed/.44,0,1):0;
  if(waveProgress>0&&waveProgress<1){
-  const waveRadius=coreRadius+waveProgress*(outerRadius*1.72);
-  ctx.globalAlpha=baseAlpha*visibility*Math.sin(waveProgress*Math.PI)*.78;
-  ctx.strokeStyle='#e9fbff';
-  ctx.lineWidth=mobile?1.8:3.2;
-  ctx.shadowBlur=0;
-  ctx.shadowColor=energyCyan;
+  const waveRadius=sphereR*.28+waveProgress*(orbSize*.9);
+  ctx.globalAlpha=baseAlpha*visibility*Math.sin(waveProgress*Math.PI)*.72;
+  ctx.strokeStyle='#e9fbff';ctx.lineWidth=mobile?1.8:3.2;
   ctx.beginPath();ctx.arc(0,0,waveRadius,0,Math.PI*2);ctx.stroke();
-  ctx.globalAlpha=baseAlpha*visibility*Math.sin(waveProgress*Math.PI)*.42;
-  ctx.strokeStyle='#268fff';ctx.lineWidth=mobile?4:7;
-  ctx.beginPath();ctx.arc(0,0,waveRadius+5,0,Math.PI*2);ctx.stroke();
  }
-
- // The restored orb artwork already contains the original cyan center and highlights.
  ctx.restore();
 }
 
