@@ -8699,6 +8699,26 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
+const getGojoBlueMaxOrbImage=(()=>{
+ let image=null,loading=false;
+ return ()=>{
+  if(!loading){
+   loading=true;
+   fetch('gojo-blue-max-orb.webp.b64?v=20261123',{cache:'force-cache'})
+    .then(response=>{if(!response.ok)throw new Error('Orb texture request failed: '+response.status);return response.text()})
+    .then(encoded=>{
+     const data=String(encoded||'').trim();
+     if(!data.startsWith('UklGR'))throw new Error('Invalid Gojo Blue MAX orb texture');
+     const next=new Image();
+     next.onload=()=>{image=next};
+     next.onerror=()=>console.warn('Gojo Blue MAX orb image could not decode');
+     next.src='data:image/webp;base64,'+data;
+    })
+    .catch(error=>console.warn('Gojo Blue MAX orb texture could not load:',error));
+  }
+  return image;
+ };
+})();
 function drawGojoBlueMaxProjectile(p,x,y){
  const phase=p.phase||'active';
  const duration=Math.max(.001,Number(p.phaseDuration)||(phase==='forming'?1.5:phase==='collapse'?1.5:3));
@@ -8724,6 +8744,60 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.lineJoin='round';
  ctx.shadowColor='#36aaff';
  ctx.shadowBlur=0;
+
+ // Restore the original Blue MAX orb artwork as the actual sphere, not a replacement core.
+ const orbImage=getGojoBlueMaxOrbImage();
+ const orbSize=forming?42+184*charge:collapse?226*(1-dissolve):226;
+ ctx.save();
+ ctx.globalCompositeOperation='source-over';
+ ctx.globalAlpha=baseAlpha*visibility;
+ if(orbImage&&orbImage.complete&&orbImage.naturalWidth>0){
+  ctx.drawImage(orbImage,-orbSize*.5,-orbSize*.509,orbSize,orbSize*1.01875);
+ }else{
+  const originalFallback=ctx.createRadialGradient(-orbSize*.12,-orbSize*.16,1,0,0,orbSize*.52);
+  originalFallback.addColorStop(0,'#ffffff');
+  originalFallback.addColorStop(.24,'#e9fbff');
+  originalFallback.addColorStop(.52,'#8be5ff');
+  originalFallback.addColorStop(.78,'#267fe8');
+  originalFallback.addColorStop(1,'rgba(8,50,178,.2)');
+  ctx.fillStyle=originalFallback;
+  ctx.beginPath();ctx.arc(0,0,orbSize*.49,0,Math.PI*2);ctx.fill();
+ }
+
+ // Surface ribbons are clipped to the orb and foreshortened so they wrap around a 3D sphere.
+ const sphereR=orbSize*.465;
+ ctx.save();
+ ctx.beginPath();ctx.ellipse(0,0,sphereR*.99,sphereR*1.025,0,0,Math.PI*2);ctx.clip();
+ ctx.rotate(spin*.11);
+ ctx.scale(1,.88);
+ const ribbonAlpha=baseAlpha*visibility*(.7+.22*charge);
+ const darkRibbon=()=>{
+  ctx.beginPath();
+  ctx.moveTo(-sphereR*1.08,-sphereR*.11);
+  ctx.bezierCurveTo(-sphereR*.76,-sphereR*.88,sphereR*.18,-sphereR*.94,sphereR*1.08,sphereR*.02);
+ };
+ const cyanRibbon=()=>{
+  ctx.beginPath();
+  ctx.moveTo(-sphereR*1.08,sphereR*.29);
+  ctx.bezierCurveTo(-sphereR*.55,-sphereR*.48,sphereR*.32,-sphereR*.62,sphereR*1.08,sphereR*.19);
+ };
+ ctx.lineCap='round';ctx.lineJoin='round';ctx.shadowBlur=0;
+ // Deep-blue curved band, with a darker underside and narrow cobalt reflection.
+ ctx.globalAlpha=ribbonAlpha*.82;
+ darkRibbon();ctx.strokeStyle='#061e77';ctx.lineWidth=sphereR*.165;ctx.stroke();
+ ctx.globalAlpha=ribbonAlpha*.88;
+ darkRibbon();ctx.strokeStyle='#073bb0';ctx.lineWidth=sphereR*.083;ctx.stroke();
+ ctx.globalAlpha=ribbonAlpha*.82;
+ darkRibbon();ctx.strokeStyle='#247ce8';ctx.lineWidth=Math.max(1,sphereR*.021);ctx.stroke();
+ // Cyan curved band crosses the opposite side of the orb, with a thin white specular edge.
+ ctx.globalAlpha=ribbonAlpha*.76;
+ cyanRibbon();ctx.strokeStyle='#0871c6';ctx.lineWidth=sphereR*.135;ctx.stroke();
+ ctx.globalAlpha=ribbonAlpha*.9;
+ cyanRibbon();ctx.strokeStyle='#31caff';ctx.lineWidth=sphereR*.068;ctx.stroke();
+ ctx.globalAlpha=ribbonAlpha*.95;
+ cyanRibbon();ctx.strokeStyle='#e5fbff';ctx.lineWidth=Math.max(1,sphereR*.017);ctx.stroke();
+ ctx.restore();
+ ctx.restore();
 
  // Wide atmospheric bloom behind the orb, built from smooth gradients rather than a small texture.
  const bloomRadius=outerRadius*1.55;
@@ -8812,26 +8886,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   ctx.beginPath();ctx.arc(0,0,waveRadius+5,0,Math.PI*2);ctx.stroke();
  }
 
- // Dense cyan-white heart with a crisp rim; the core remains smooth at every render scale.
- const core=ctx.createRadialGradient(-coreRadius*.22,-coreRadius*.27,1,0,0,Math.max(2,coreRadius));
- core.addColorStop(0,'#ffffff');
- core.addColorStop(.24,'#effeff');
- core.addColorStop(.48,'#b9f3ff');
- core.addColorStop(.72,'#55caff');
- core.addColorStop(.91,'#1976ed');
- core.addColorStop(1,'rgba(12,57,190,.16)');
- ctx.globalAlpha=baseAlpha*visibility;
- ctx.shadowBlur=0;
- ctx.shadowColor='#7be4ff';
- ctx.fillStyle=core;
- ctx.beginPath();ctx.arc(0,0,coreRadius,0,Math.PI*2);ctx.fill();
- ctx.shadowBlur=0;
- ctx.strokeStyle='rgba(245,254,255,.94)';
- ctx.lineWidth=mobile?1.2:2;
- ctx.beginPath();ctx.arc(0,0,coreRadius*.91,0,Math.PI*2);ctx.stroke();
- ctx.globalAlpha=baseAlpha*visibility*.82;
- ctx.fillStyle='#ffffff';
- ctx.beginPath();ctx.arc(-coreRadius*.12,-coreRadius*.14,Math.max(1.4,coreRadius*.22),0,Math.PI*2);ctx.fill();
+ // The restored orb artwork already contains the original cyan center and highlights.
  ctx.restore();
 }
 
