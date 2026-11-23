@@ -4528,7 +4528,7 @@ function updateOnlineRemotePlayers(dt){
 function updateOnlineNetwork(dt){
  if(!onlineMode||!onlineRoom||!player||onlineConnectionDropped)return;
  onlineSendAccumulator+=Math.min(dt,.1);onlinePingAccumulator+=Math.min(dt,.1);
- if(onlinePingAccumulator>=1){onlinePingAccumulator%=2;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
+ if(onlinePingAccumulator>=1){onlinePingAccumulator%=1;try{onlineRoom.send('network:ping',{sentAt:performance.now()})}catch(e){}}
  const networkSendInterval=ONLINE_STATE_SEND_INTERVAL;if(onlineSendAccumulator<networkSendInterval)return;onlineSendAccumulator%=networkSendInterval;
  const motion=player.motion;if(motion&&motion.name)player.onlineLastMove=String(motion.name).slice(0,48);
  if(player.vehicle&&!player.vehicleTransition){
