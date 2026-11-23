@@ -49,10 +49,10 @@ test("Gojo Blue MAX keeps its total phase length while extending the active phas
 
   const projectile = room.projectiles.get("gojo:blue-max-test");
   assert.ok(projectile, "server should accept the awakened Gojo Blue MAX projectile");
-  assert.equal(projectile.phaseRemaining, 0.5);
-  assert.equal(projectile.phaseDuration, 0.5);
-  assert.equal(projectile.activeDuration, 4);
-  assert.equal(projectile.collapseDuration, 1.5);
+  assert.equal(projectile.phaseRemaining, 1);
+  assert.equal(projectile.phaseDuration, 1);
+  assert.equal(projectile.activeDuration, 3);
+  assert.equal(projectile.collapseDuration, 2);
   assert.equal(
     projectile.phaseRemaining + projectile.activeDuration + projectile.collapseDuration,
     6,
