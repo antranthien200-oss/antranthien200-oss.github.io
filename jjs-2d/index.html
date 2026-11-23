@@ -8712,8 +8712,8 @@ function drawGojoBlueMaxProjectile(p,x,y){
  const visibility=collapse?Math.pow(1-progress,.82):forming?.82+.18*charge:1;
  const coreRadius=5+59*charge;
  const orbRadius=14+97*charge;
- const outerRadius=orbRadius*(1.1+(1-charge)*.76)+16;
- const spin=time*(forming?8.6:collapse?-8.6:2.15);
+ const outerRadius=orbRadius+(1-charge)*195+12;
+ const spin=forming?progress*13:collapse?(1-progress)*13:time*2.15;
  const count=mobile?6:9;
  const energyBlue='#0750dc',energyCyan='#59d7ff',energyWhite='#effcff';
  ctx.save();
@@ -8739,7 +8739,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  // Fast rotating vortex rings. Their radii draw inward while charging and outward while vanishing.
  const ringCount=mobile?2:3;
  for(let i=0;i<ringCount;i++){
-  const ringRadius=orbRadius*(1.02+i*.24)+(1-charge)*(24+i*18);
+  const ringRadius=orbRadius*(1.02+i*.24)+(1-charge)*(66+i*42);
   const rotation=spin*.18+i*.82;
   ctx.save();
   ctx.rotate(rotation);
@@ -8747,7 +8747,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   ctx.strokeStyle=i===0?'#e9fbff':i===1?energyCyan:'#2478ff';
   ctx.lineWidth=mobile?1.7:2.4-i*.35;
   ctx.setLineDash(i===0?[26,9,5,13]:[54,17,11,23]);
-  ctx.lineDashOffset=-spinDirection*time*(i===0?68:94);
+  ctx.lineDashOffset=-spinDirection*(forming?progress*135:collapse?(1-progress)*135:time*(i===0?68:94));
   ctx.beginPath();
   ctx.ellipse(0,0,ringRadius*1.18,ringRadius*.67,0,.22+i*.8,Math.PI*1.62+i*.8);
   ctx.stroke();
@@ -8790,7 +8790,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  const sparkCount=mobile?9:16;
  for(let i=0;i<sparkCount;i++){
   const a=i*Math.PI*2/sparkCount-spin*.48;
-  const r1=orbRadius*(1.08+(i%3)*.13)+(1-charge)*22;
+  const r1=orbRadius*(1.08+(i%3)*.13)+(1-charge)*130;
   const r2=r1+(mobile?8:13)+(i%4)*3;
   ctx.globalAlpha=baseAlpha*visibility*(.34+(i%3)*.13);
   ctx.strokeStyle=i%3===0?'#ffffff':i%2?energyCyan:energyBlue;
