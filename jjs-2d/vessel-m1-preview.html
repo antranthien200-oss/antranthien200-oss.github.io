@@ -8639,7 +8639,7 @@ const getGojoBlueMaxOrbImage=(()=>{
      next.onerror=()=>console.warn('Gojo Blue MAX orb image could not decode');
      next.src='data:image/webp;base64,'+data;
     })
-    .catch(error=>{loading=false;console.warn('Gojo Blue MAX orb texture could not load:',error)});
+    .catch(error=>{console.warn('Gojo Blue MAX orb texture could not load:',error)});
   }
   return image;
  };
