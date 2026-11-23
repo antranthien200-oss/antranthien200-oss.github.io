@@ -3941,8 +3941,8 @@ projectiles.push=(...items)=>nativeProjectilePush(...items.map(p=>{
    shot.vx=vx;shot.vy=vy;
    const id=String(++onlineProjectileCounter);
    shot.networkId=id;shot.networkSessionId=onlineSessionId;shot.serverOwnedVisual=true;
-   const hitTuning=({trashCan:{hitStun:.78,knockbackScale:.78,unblockable:true,damageType:'projectile'},trashJunk:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},red:{hitStun:.38,knockback:18,knockbackScale:1,damageType:'explosion',blockedDamage:6.25},fire:{hitStun:.8,knockbackScale:.65,unblockable:true,damageType:'explosion'},blueMax:{hitStun:.1,knockback:.8,knockbackScale:0,unblockable:true,ignoreInvuln:true,damageType:'melee',pullRadius:360,pullForce:.055,followSpeed:950,activeDuration:3,collapseDuration:1.5},redmax:{hitStun:.8,knockbackScale:.55,unblockable:true,damageType:'explosion'},hollow:{hitStun:.9,knockbackScale:.7,unblockable:true,damageType:'explosion'},tenNue:{hitStun:.95,knockbackScale:1,unblockable:true,damageType:'projectile'},bloodBomb:{hitStun:.6,knockback:10,unblockable:true,damageType:'explosion'},bloodBombProjectile:{hitStun:.55,knockback:9,damageType:'melee'},soul:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},bodyrepel:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},pebble:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},bloodBeam:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},ball:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},sukunaFireArrow:{hitStun:.32,knockback:8,damageType:'explosion'}})[shot.kind]||{};
-   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,hitRadius:shot.hitRadius||shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:shot.kind==='sukunaFireArrow'?980:shot.kind==='trashCan'&&shot.golden?4200:700),kind:shot.kind,color:shot.color,phase:shot.phase,phaseRemaining:shot.phaseRemaining,phaseDuration:shot.phaseDuration,activeDuration:shot.activeDuration,collapseDuration:shot.collapseDuration,followSpeed:shot.followSpeed,pullRadius:shot.pullRadius,pullForce:shot.pullForce,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage,knockback:shot.knockback||0,...hitTuning,golden:!!shot.golden,domainBound:!!shot.domainBound,rideVariant:!!shot.rideOwner})}
+   const hitTuning=({trashCan:{hitStun:.78,knockbackScale:.78,unblockable:true,damageType:'projectile'},trashJunk:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},red:{hitStun:.38,knockback:18,knockbackScale:1,damageType:'explosion',blockedDamage:6.25},fire:{hitStun:.8,knockbackScale:.65,unblockable:true,damageType:'explosion'},blueMax:{hitStun:.28,knockback:.8,knockbackScale:0,unblockable:true,ignoreInvuln:true,damageType:'melee',pullRadius:420,pullForce:.06,damageRadius:165,followSpeed:950,activeDuration:4,collapseDuration:1.5},redmax:{hitStun:.8,knockbackScale:.55,unblockable:true,damageType:'explosion'},hollow:{hitStun:.9,knockbackScale:.7,unblockable:true,damageType:'explosion'},tenNue:{hitStun:.95,knockbackScale:1,unblockable:true,damageType:'projectile'},bloodBomb:{hitStun:.6,knockback:10,unblockable:true,damageType:'explosion'},bloodBombProjectile:{hitStun:.55,knockback:9,damageType:'melee'},soul:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},bodyrepel:{hitStun:.38,knockbackScale:.7*(Number(shot.knockback)||1),damageType:'bullet'},pebble:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},bloodBeam:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},ball:{hitStun:.38,knockbackScale:.7,damageType:'bullet'},sukunaFireArrow:{hitStun:.32,knockback:8,damageType:'explosion'}})[shot.kind]||{};
+   try{onlineRoom.send('combat:projectile',{id,move,x:shot.x,y:shot.y,vx,vy,r:shot.r,hitRadius:shot.hitRadius||shot.r,life:shot.life,maxDistance:shot.maxDistance||shot.flightLength||(shot.kind==='blueMax'?1500:shot.kind==='bloodBomb'?1200:shot.kind==='redmax'?900:shot.kind==='hollow'?920:shot.kind==='tenNue'?1000:shot.kind==='sukunaFireArrow'?980:shot.kind==='trashCan'&&shot.golden?4200:700),kind:shot.kind,color:shot.color,phase:shot.phase,phaseRemaining:shot.phaseRemaining,phaseDuration:shot.phaseDuration,activeDuration:shot.activeDuration,collapseDuration:shot.collapseDuration,followSpeed:shot.followSpeed,pullRadius:shot.pullRadius,pullForce:shot.pullForce,damageRadius:shot.damageRadius,aimX:aim.x,aimY:aim.y,targetId:shot.targetRef&&shot.targetRef.onlineSessionId||'',damage:shot.damage,knockback:shot.knockback||0,...hitTuning,golden:!!shot.golden,domainBound:!!shot.domainBound,rideVariant:!!shot.rideOwner})}
    catch(error){shot.serverOwnedVisual=false;console.warn('Online projectile registration failed',error)}
   }
  }
@@ -6599,9 +6599,10 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
    }
   }else{
    if(idx===0){
+    f.skillInputLocked=false;
     const orbX=f.x+Math.cos(angle)*70,orbY=f.y-23+Math.sin(angle)*70;
     f.skillCd[idx]=17;
-    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:1.5,phaseDuration:1.5,activeDuration:3,collapseDuration:1.5,followSpeed:950,pullRadius:360,pullForce:.055,phaseElapsed:0});
+    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:.5,phaseDuration:.5,activeDuration:4,collapseDuration:1.5,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
     showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
    }
    if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
@@ -7218,28 +7219,28 @@ function updateProjectiles(dt){
    }
    if(p.phase==='forming'){
     if(p.phaseRemaining<=0){
-     p.phase='active';p.phaseElapsed=0;p.phaseRemaining=p.activeDuration||3;p.phaseDuration=p.activeDuration||3;p.tick=.12;
+     p.phase='active';p.phaseElapsed=0;p.phaseRemaining=p.activeDuration||4;p.phaseDuration=p.activeDuration||4;p.tick=.12;
      burst(p.x,p.y,'#d8f8ff',7,3);burst(p.x,p.y,'#328dff',5,3);
     }
    }else if(p.phase==='active'){
     const a=aimedAt(p.owner),dx=a.x-p.x,dy=a.y-p.y,l=Math.hypot(dx,dy)||1,step=Math.min(l,(p.followSpeed||950)*dt);
     p.x=clamp(p.x+dx/l*step,28,WORLD.w-28);p.y=clamp(p.y+dy/l*step,28,WORLD.h-28);
     p.tick-=dt;
-    const targets=tenTargets(p.owner),pullRadius=p.pullRadius||360,pullStrength=p.pullForce||.055;
+    const targets=tenTargets(p.owner),pullRadius=p.pullRadius||420,pullStrength=p.pullForce||.06;
     for(const target of targets){
      if(!target||target.dead||target.vehicle)continue;
      const dx=p.x-target.x,dy=p.y-target.y,gap=Math.hypot(dx,dy);
      if(gap>=pullRadius)continue;
-     const inv=1/(gap||1),pull=clamp((pullRadius-gap)*pullStrength,5,22);
-     target.vx=clamp((Number(target.vx)||0)+dx*inv*pull,-28,28);
-     target.vy=clamp((Number(target.vy)||0)+dy*inv*pull,-28,28);
+     const inv=1/(gap||1),pull=clamp((pullRadius-gap)*pullStrength,5,24);
+     target.vx=clamp((Number(target.vx)||0)+dx*inv*pull,-32,32);
+     target.vy=clamp((Number(target.vy)||0)+dy*inv*pull,-32,32);
     }
     if(p.tick<=0){
      p.tick=.2;
      for(const target of targets){
       if(!target||target.dead||target.vehicle)continue;
       const dx=p.x-target.x,dy=p.y-target.y,gap=Math.hypot(dx,dy);
-      if(gap>=165)continue;
+      if(gap>=(p.damageRadius||165))continue;
       const inv=1/(gap||1);
       damage(target,p.damage,p.owner,{stun:.28,kx:dx*inv*1.2,ky:dy*inv*1.2,color:'#70dfff',unblockable:true,ignoreInvuln:true});
      }
@@ -10198,7 +10199,7 @@ function drawHeadHands(f,deferMotionVfx=false){
     handBScale=1.18;handAScale=.96;handBAngle=angle;
    }else if(name==='gojoBlueMax'){
     const elapsed=Math.max(0,Number.isFinite(m&&m.t)?m.t:progress*4.5);
-    const charge=smoothstep01(clamp(elapsed/1.5,0,1));
+    const charge=smoothstep01(clamp(elapsed/.5,0,1));
     // One hand stays drawn back while the other reaches forward to gather the orb.
     handA=P(lerp(-7,-31,charge),lerp(12,22,charge),lerp(-3,-10,charge));
     handB=P(lerp(30,74,charge),lerp(-15,-5,charge),lerp(-4,-11,charge));
