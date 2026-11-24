@@ -8788,31 +8788,85 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
 }
 function drawGojoBlueMaxProjectile(p,x,y){
  const loader=drawGojoBlueMaxProjectile;
- if(!loader.spriteImage&&!loader.spriteLoading&&!loader.spriteFailed){
+ if(!loader.frames&&!loader.spriteLoading&&!loader.spriteFailed){
   loader.spriteLoading=true;
-  fetch('./gojo-blue-max-orb.webp.b64?v=20261124',{cache:'force-cache'})
-   .then(response=>{if(!response.ok)throw new Error('HTTP '+response.status);return response.text()})
-   .then(encoded=>{
-    const base64=String(encoded||'').trim();
-    if(!base64.startsWith('UklGR'))throw new Error('Invalid WebP base64 asset');
+  (async()=>{
+   if(typeof ImageDecoder==='undefined')throw new Error('This browser does not support ImageDecoder');
+   const response=await fetch('./gojo-blue-max-phase-animation.avif?v=20261124',{cache:'force-cache'});
+   if(!response.ok)throw new Error('AVIF request failed: HTTP '+response.status);
+   const data=await response.arrayBuffer();
+   const decoder=new ImageDecoder({data:new Uint8Array(data),type:'image/avif'});
+   const decoded=[];
+   try{
+    await decoder.tracks.ready;
+    const track=decoder.tracks.selectedTrack;
+    if(!track||Number(track.frameCount)<41)throw new Error('Expected 41 AVIF frames; found '+(track&&track.frameCount));
+    for(let i=0;i<41;i++){
+     const result=await decoder.decode({frameIndex:i,completeFramesOnly:true});
+     const videoFrame=result.image;
+     try{
+      const bitmap=await createImageBitmap(videoFrame);
+      decoded.push(bitmap);
+     }finally{
+      if(videoFrame&&typeof videoFrame.close==='function')videoFrame.close();
+     }
+    }
+   }finally{
+    decoder.close();
+   }
+   loader.frames=decoded;
+   console.info('Gojo Blue MAX animation loaded:',loader.frames.length,'native frames');
+  })().catch(async error=>{
+   loader.spriteFailed=true;
+   console.warn('Gojo Blue MAX AVIF animation could not load:',error);
+   // Static orb fallback for browsers without animated AVIF/WebCodecs support.
+   try{
+    const fallback=await fetch('./gojo-blue-max-orb.webp.b64?v=20261124',{cache:'force-cache'});
+    if(!fallback.ok)throw new Error('Fallback request failed: HTTP '+fallback.status);
+    const encoded=(await fallback.text()).trim();
+    if(!encoded.startsWith('UklGR'))throw new Error('Invalid fallback WebP base64 asset');
     const image=new Image();
-    image.onload=()=>{loader.spriteImage=image};
-    image.onerror=()=>{loader.spriteFailed=true;console.warn('Gojo Blue MAX WebP orb could not decode')};
-    image.src='data:image/webp;base64,'+base64;
-   })
-   .catch(error=>{loader.spriteFailed=true;console.warn('Gojo Blue MAX orb asset could not load:',error)});
+    image.onload=()=>{loader.fallbackImage=image};
+    image.onerror=()=>console.warn('Gojo Blue MAX fallback WebP could not decode');
+    image.src='data:image/webp;base64,'+encoded;
+   }catch(fallbackError){
+    console.warn('Gojo Blue MAX fallback orb could not load:',fallbackError);
+   }
+  });
  }
- const image=loader.spriteImage;
+ let frame=null;
+ if(loader.frames&&loader.frames.length>=41){
+  const phase=p.phase||'active';
+  const defaultDuration=phase==='forming'?1:phase==='collapse'?2:3;
+  const duration=Math.max(.001,Number(p.phaseDuration)||defaultDuration);
+  const remaining=Number(p.phaseRemaining);
+  const elapsed=Number.isFinite(remaining)?clamp(duration-remaining,0,duration):Math.max(0,Number(p.phaseElapsed)||0);
+  const progress=clamp(elapsed/duration,0,.999999);
+  let frameIndex=20;
+  if(phase==='forming'){
+   // Frames 1-20 run across the one-second wind-up.
+   frameIndex=Math.min(19,Math.floor(progress*20));
+  }else if(phase==='active'){
+   // The single middle frame (frame 21) holds during the three-second active phase.
+   frameIndex=20;
+  }else if(phase==='collapse'){
+   // Frames 22-41 run across the two-second collapse/explosion.
+   frameIndex=21+Math.min(19,Math.floor(progress*20));
+  }
+  frame=loader.frames[frameIndex];
+ }
+ if(!frame&&loader.fallbackImage)frame=loader.fallbackImage;
+ if(!frame)return;
+ const frameWidth=frame.width||frame.naturalWidth||205;
+ const frameHeight=frame.height||frame.naturalHeight||205;
  ctx.save();
  ctx.globalAlpha=1;
  ctx.globalCompositeOperation='source-over';
  ctx.shadowBlur=0;
  ctx.shadowColor='transparent';
  ctx.filter='none';
- if(image&&image.complete&&image.naturalWidth>0&&image.naturalHeight>0){
-  // Draw the committed 160x163 WebP at its native size; do not scale it.
-  ctx.drawImage(image,x-image.naturalWidth/2,y-image.naturalHeight/2);
- }
+ // Draw each decoded frame at its native dimensions with no scaling or added effects.
+ ctx.drawImage(frame,x-frameWidth/2,y-frameHeight/2);
  ctx.restore();
 }
 
