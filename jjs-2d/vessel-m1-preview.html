@@ -7204,7 +7204,7 @@ function updateProjectiles(dt){
     }
     if(Number.isFinite(p.networkPhaseDuration))p.phaseDuration=p.networkPhaseDuration;
    }
-   if(p.kind==='blueMax'&&p.phase==='active'){emitGojoBlueMaxSuctionFlow(p,dt);recordGojoBlueMaxTrail(p);}
+   if(p.kind==='blueMax'&&p.phase==='active')recordGojoBlueMaxTrail(p);
    if(p.kind==='trashCan')p.rotation=(Number(p.rotation)||0)+(Number(p.spin)||22)*dt;
    p.life=Math.min(Number.isFinite(p.networkLife)?p.networkLife:p.life,Math.max(0,p.life-dt));
    if(p.life<=0)projectiles.splice(i,1);
@@ -7271,7 +7271,6 @@ function updateProjectiles(dt){
     p.followAimX+=(a.x-p.followAimX)*aimBlend;p.followAimY+=(a.y-p.followAimY)*aimBlend;
     const dx=p.followAimX-p.x,dy=p.followAimY-p.y,l=Math.hypot(dx,dy)||1,step=Math.min(l,(p.followSpeed||950)*dt);
     p.x=clamp(p.x+dx/l*step,28,WORLD.w-28);p.y=clamp(p.y+dy/l*step,28,WORLD.h-28);
-    emitGojoBlueMaxSuctionFlow(p,dt);
     recordGojoBlueMaxTrail(p);
     p.tick-=dt;
     const targets=tenTargets(p.owner),pullRadius=p.pullRadius||420,pullStrength=p.pullForce||.06;
@@ -9777,14 +9776,6 @@ function spawnGojoOrbFlowParticles(owner,x,y,palette='blue',count=4){
   particles.push({x:x+Math.cos(angle)*radius,y:y+Math.sin(angle)*radius,vx:Math.cos(angle)*radial-Math.sin(angle)*tangent,vy:Math.sin(angle)*radial+Math.cos(angle)*tangent,life,max:life,size:rnd(2,4.2),color,shape:'gojoFlow'});
  }
 }
-function emitGojoBlueMaxSuctionFlow(p,dt){
-  if(!p||p.kind!=='blueMax'||p.phase!=='active'||!p.owner||p.owner.char!=='honored')return;
-  p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
-  if(p.gojoFlowParticleTimer<=0){
-   p.gojoFlowParticleTimer=isMobileDevice ? .075 : .055;
-   spawnGojoOrbFlowParticles(p.owner,p.x,p.y,'blue',isMobileDevice?2:4);
-  }
- }
 function emitGojoBlueSkillSparks(f,name){
  const now=game.time,baseInterval=name==='gojoBlue'?.085:name==='gojoBlueSpin'?.065:.075,interval=baseInterval*(isMobileDevice?1.45:1);
  if(now<(f.gojoBlueSparkNext||0))return;
