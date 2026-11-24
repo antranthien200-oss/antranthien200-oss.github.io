@@ -6602,7 +6602,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.skillInputLocked=false;
     const orbX=f.x+Math.cos(angle)*70,orbY=f.y-23+Math.sin(angle)*70;
     f.skillCd[idx]=17;
-    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:1,phaseDuration:1,activeDuration:3,collapseDuration:1.5,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
+    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:1,phaseDuration:1,activeDuration:3,collapseDuration:1,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
     showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
    }
    if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
@@ -7146,6 +7146,24 @@ function settleGoldenBinInDomain(p){
  f.trashGoldenCanInFlight=false;f.trashDomainCanAvailable=false;f.trashDomainCanCooldown=.55;
  burst(p.x,p.y,'#ffe18b',14,4);
 }
+function detonateBlueMax(p){
+ if(!p||p.blastDone)return;
+ p.blastDone=true;
+ const owner=p.owner,blastRadius=p.explosionRadius||275,targets=owner?tenTargets(owner):[];
+ for(const target of targets){
+  if(!target||target===owner||target.dead||target.vehicle)continue;
+  const dx=target.x-p.x,dy=target.y-p.y,gap=Math.hypot(dx,dy);
+  if(gap>blastRadius+23)continue;
+  const angle=gap>1?Math.atan2(dy,dx):(Number.isFinite(owner.face)?owner.face:0);
+  const nx=Math.cos(angle),ny=Math.sin(angle),falloff=1-clamp(gap/blastRadius,0,1),push=18+14*falloff;
+  target.blueMaxSuckedBy='';
+  damage(target,p.explosionDamage||18,owner,{stun:.48,kx:nx*push,ky:ny*push,color:'#70dfff',unblockable:true,ignoreInvuln:true,damageType:'explosion'});
+  // Set the launch velocity after damage so the suction hold cannot overwrite it.
+  target.vx=nx*push;target.vy=ny*push;
+ }
+ game.shake=Math.max(game.shake,7.5);
+}
+
 function updateProjectiles(dt){
  const projectileDamping=Math.pow(.993,dt*60);
  for(let i=projectiles.length-1;i>=0;i--){
@@ -7212,20 +7230,9 @@ function updateProjectiles(dt){
    p.phaseRemaining=Math.max(0,(p.phaseRemaining||0)-dt);
    if(!p.owner||p.owner.dead){
     if(p.phase!=='collapse'){
-     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1.5;p.phaseDuration=p.collapseDuration||1.5;
+     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1;p.phaseDuration=p.collapseDuration||1;
      p.life=Math.max(p.life,p.phaseRemaining+.05);p.vx=0;p.vy=0;
-     if(!p.blastDone){
-      p.blastDone=true;
-      const blastRadius=p.explosionRadius||275;
-      for(const target of tenTargets(p.owner)){
-       if(!target||target.dead||target.vehicle)continue;
-       const dx=target.x-p.x,dy=target.y-p.y,gap=Math.hypot(dx,dy);
-       if(gap>blastRadius+23)continue;
-       const inv=1/(gap||1),falloff=1-clamp(gap/blastRadius,0,1),push=18+14*falloff;
-       damage(target,p.explosionDamage||18,p.owner,{stun:.48,kx:dx*inv*push,ky:dy*inv*push,color:'#70dfff',unblockable:true,ignoreInvuln:true,damageType:'explosion'});
-      }
-      game.shake=Math.max(game.shake,4.5);
-     }
+     detonateBlueMax(p);
     }
    }
    if(p.phase==='forming'){
@@ -7263,8 +7270,9 @@ function updateProjectiles(dt){
      }
     }
     if(p.phaseRemaining<=0){
-     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1.5;p.phaseDuration=p.collapseDuration||1.5;
+     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1;p.phaseDuration=p.collapseDuration||1;
      p.life=Math.max(p.life,p.phaseRemaining+.05);p.vx=0;p.vy=0;
+     detonateBlueMax(p);
     }
    }else if(p.phase==='collapse'){
     // The orb stays at its final location while its charge effect retracts in reverse.
