@@ -2986,7 +2986,7 @@ function resize(){
  ctx.setTransform(dpr,0,0,dpr,0,0);
  ctx.imageSmoothingEnabled=false;
 }
-let mobileRenderAverage=16,mobileSlowFrames=0,mobileFastFrames=0;
+let mobileRenderAverage=16,mobileSlowFrames=0,mobileFastFrames=0,mobileLastScaleChange=0;
 function applyMobileRenderScale(nextDpr){
  const next=Math.max(MOBILE_MIN_DPR,Math.min(MAX_DPR,nextDpr));
  if(Math.abs(next-dpr)<.015)return;
@@ -2995,14 +2995,24 @@ function applyMobileRenderScale(nextDpr){
 }
 function tuneMobileRenderScale(renderMs,updateMs=0){
  if(!isMobileDevice)return;
- const totalCost=Math.max(0,renderMs)+Math.max(0,updateMs);
+ const now=performance.now(),totalCost=Math.max(0,renderMs)+Math.max(0,updateMs);
  mobileRenderAverage=mobileRenderAverage*.65+totalCost*.35;
  if(totalCost>80)mobileSlowFrames+=3;
  else if(mobileRenderAverage>34)mobileSlowFrames++;
  else if(mobileRenderAverage<19)mobileFastFrames++;
  else{mobileSlowFrames=0;mobileFastFrames=0}
- if(mobileSlowFrames>=2){applyMobileRenderScale(Math.max(MOBILE_MIN_DPR,dpr*.76));mobileSlowFrames=0;mobileFastFrames=0}
- else if(mobileFastFrames>=180&&dpr<MAX_DPR){applyMobileRenderScale(Math.min(MAX_DPR,dpr+.025));mobileFastFrames=0}
+ // Require sustained slow frames and a cooldown before resizing the canvas backing store.
+ if(mobileSlowFrames>=12&&now-mobileLastScaleChange>1500){
+  const before=dpr;
+  applyMobileRenderScale(Math.max(MOBILE_MIN_DPR,dpr*.84));
+  if(dpr!==before)mobileLastScaleChange=now;
+  mobileSlowFrames=0;mobileFastFrames=0;
+ }else if(mobileFastFrames>=240&&dpr<MAX_DPR&&now-mobileLastScaleChange>3000){
+  const before=dpr;
+  applyMobileRenderScale(Math.min(MAX_DPR,dpr+.015));
+  if(dpr!==before)mobileLastScaleChange=now;
+  mobileFastFrames=0;
+ }
 }
 function screenPointToGame(x,y){return isManualScreenRotated()?{x:y,y:viewportWidth-x}:{x,y}}
 function screenDeltaToGame(dx,dy){return isManualScreenRotated()?{x:dy,y:-dx}:{x:dx,y:dy}}
@@ -8889,10 +8899,22 @@ function drawGojoBlueMaxProjectile(p,x,y){
     loadStaticFallback();
     return;
    }
-   loader.spriteSheet=image;
+   // Snapshot the loaded sheet once so animated-image decoders cannot swap
+   // the displayed source frame underneath the game's per-frame sprite rendering.
+   const frameCanvas=document.createElement('canvas');
+   frameCanvas.width=image.naturalWidth;frameCanvas.height=image.naturalHeight;
+   const frameContext=frameCanvas.getContext('2d');
+   if(!frameContext){
+    loader.sheetFailed=true;
+    loadStaticFallback();
+    return;
+   }
+   frameContext.imageSmoothingEnabled=false;
+   frameContext.drawImage(image,0,0);
+   loader.spriteSheet=frameCanvas;
   };
   image.onerror=()=>{loader.sheetFailed=true;console.warn('Gojo Blue MAX frame sheet could not load');loadStaticFallback()};
-  image.src='./gojo-blue-max-frames.webp?v=20261124-frames';
+  image.src='./gojo-blue-max-frames.webp?v=20261124-frames-static';
  }
  let frameIndex=20;
  const phase=p.phase||'active';
