@@ -5634,7 +5634,7 @@ function triggerRedStunMiss(f,duration=.38){
  f.redStunMissUntil=Math.max(Number(f.redStunMissUntil)||0,game.time+Math.max(.08,duration));
 }
 function beginGrab(f,t,kind,duration,angle,color,finishDamage){
- if(!f||!t||t.dead||(t.block&&kind!=='megumiSerpent'&&kind!=='gojoBlueRapid'))return false;
+ if(!f||!t||t.dead||Number(t.gojoRedMaxActiveUntil)>Date.now()||(t.block&&kind!=='megumiSerpent'&&kind!=='gojoBlueRapid'))return false;
  interruptSkillCast(t);
  if(onlineMode&&onlineRoom&&((f===player&&t.onlineSessionId)||(f.onlineSessionId&&t===player))){
   const moveByKind={yujiDrag:'yujiCursedDrag',gojoBlueRapid:'gojoBlueRapid',gojoFaceGrater:'gojoFaceGrater',todoThrow:'todoSwiftGrab',mahitoTransfigure:'mahitoTransfigure',toadPull:'megumiToad',megumiSerpent:'megumiSerpent',sukunaCleave:'sukunaCleave',sukunaFlurry:'sukunaFlurry',bloodEdge:'chosoEdge',rikaThrow:'rikaThrow',yutaSecondWind:f.rikaMode?'rikaHaymaker':'yutaSecondWind'};
