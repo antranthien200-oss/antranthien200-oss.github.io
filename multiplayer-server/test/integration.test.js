@@ -28,7 +28,7 @@ test("all main-game and Vessel-preview inline scripts parse before deployment", 
   }
 });
 
-test("Gojo Blue MAX keeps its total phase length while extending the active phase", async () => {
+test("Gojo Blue MAX uses a 1.5-second explosion phase after its active phase", async () => {
   const { CityRoom } = await import("../src/rooms/CityRoom.js");
   const room = new CityRoom();
   const owner = {
@@ -52,11 +52,11 @@ test("Gojo Blue MAX keeps its total phase length while extending the active phas
   assert.equal(projectile.phaseRemaining, 1);
   assert.equal(projectile.phaseDuration, 1);
   assert.equal(projectile.activeDuration, 3);
-  assert.equal(projectile.collapseDuration, 2);
+  assert.equal(projectile.collapseDuration, 1.5);
   assert.equal(
     projectile.phaseRemaining + projectile.activeDuration + projectile.collapseDuration,
-    6,
-    "formation + active + collapse should keep the original six-second duration"
+    5.5,
+    "formation + active + explosion should total 5.5 seconds"
   );
   assert.equal(projectile.pullRadius, 420);
   assert.equal(projectile.damageRadius, 165);
