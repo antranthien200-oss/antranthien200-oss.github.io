@@ -7348,7 +7348,7 @@ function updateProjectiles(dt){
      const targetCenterY=p.y+23,dx=p.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy);
      if(gap>=pullRadius)continue;
      // Pull the fighter's visible body center (23px above its world anchor) directly into the orb.
-     const pullSpeed=100+((pullRadius-gap)/pullRadius)*140,step=Math.min(gap,pullSpeed*dt);
+     const pullSpeed=190+((pullRadius-gap)/pullRadius)*260,step=Math.min(gap,pullSpeed*dt);
      if(step>0){
       target.x=clamp(target.x+dx/gap*step,28,WORLD.w-28);
       target.y=clamp(target.y+dy/gap*step,28,WORLD.h-28);
@@ -8941,17 +8941,44 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.shadowColor='transparent';
  ctx.filter='none';
  drawGojoBlueMaxTrail(p);
+ const drawOrb=()=>{
   if(loader.spriteSheet){
-  const sourceX=(frameIndex%5)*205;
-  const sourceY=Math.floor(frameIndex/5)*205;
-  // Keep the original 205x205 source frame and render the full Blue MAX animation at 1.5x.
-  const renderSize=205*1.5,renderHalf=renderSize/2;
-  ctx.drawImage(loader.spriteSheet,sourceX,sourceY,205,205,x-renderHalf,y-renderHalf,renderSize,renderSize);
- }else if(loader.fallbackImage&&loader.fallbackImage.complete){
-  // Static fallback only while the browser-compatible frame sheet is unavailable.
-  const fallbackWidth=loader.fallbackImage.naturalWidth*1.5,fallbackHeight=loader.fallbackImage.naturalHeight*1.5;
-  ctx.drawImage(loader.fallbackImage,x-fallbackWidth/2,y-fallbackHeight/2,fallbackWidth,fallbackHeight);
+   const sourceX=(frameIndex%5)*205;
+   const sourceY=Math.floor(frameIndex/5)*205;
+   // Keep the original 205x205 source frame and render the full Blue MAX animation at 1.5x.
+   const renderSize=205*1.5,renderHalf=renderSize/2;
+   ctx.drawImage(loader.spriteSheet,sourceX,sourceY,205,205,x-renderHalf,y-renderHalf,renderSize,renderSize);
+  }else if(loader.fallbackImage&&loader.fallbackImage.complete){
+   // Static fallback only while the browser-compatible frame sheet is unavailable.
+   const fallbackWidth=loader.fallbackImage.naturalWidth*1.5,fallbackHeight=loader.fallbackImage.naturalHeight*1.5;
+   ctx.drawImage(loader.fallbackImage,x-fallbackWidth/2,y-fallbackHeight/2,fallbackWidth,fallbackHeight);
+  }
+ };
+ if(phase==='active'){
+  // A single clean white ring contracts around the orb through the 3-second active phase.
+  const ringRadius=208-62*progress;
+  ctx.save();
+  ctx.globalCompositeOperation='source-over';
+  ctx.filter='none';
+  ctx.shadowBlur=0;
+  ctx.globalAlpha=.78;
+  ctx.strokeStyle='#ffffff';
+  ctx.lineWidth=2.5;
+  ctx.beginPath();
+  ctx.arc(x,y,ringRadius,0,Math.PI*2);
+  ctx.stroke();
+  ctx.restore();
+  // Rotate only the orb artwork slowly; the shrinking ring stays circular.
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(progress*Math.PI/3);
+  ctx.translate(-x,-y);
+  drawOrb();
+  ctx.restore();
+ }else{
+  drawOrb();
  }
+
  ctx.restore();
 }
 
