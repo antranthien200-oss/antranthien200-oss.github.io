@@ -28,7 +28,7 @@ jobs:
 
           source_file="jjs-2d/gojo-blue-max-phase-animation.avif"
           output_file="jjs-2d/gojo-blue-max-frames.webp"
-          output_base64="jjs-2d/gojo-blue-max-frames.webp.b64"
+          
           work_dir="$RUNNER_TEMP/gojo-blue-max-frames"
           mkdir -p "$work_dir"
 
@@ -66,8 +66,7 @@ jobs:
             exit 1
           fi
 
-          base64 -w 0 "$output_file" > "$output_base64"
-          echo "Created $output_base64 ($(wc -c < "$output_base64") base64 characters)"
+          echo "Created $output_file ($(wc -c < "$output_file") bytes)"
 
       - name: Commit generated frame sheet
         shell: bash
@@ -75,7 +74,8 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add jjs-2d/gojo-blue-max-frames.webp.b64
+          git add jjs-2d/gojo-blue-max-frames.webp
+          git rm -f jjs-2d/gojo-blue-max-frames.webp.b64 || true
           if git diff --cached --quiet; then
             echo "Frame sheet is already up to date."
             exit 0
