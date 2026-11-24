@@ -3762,7 +3762,8 @@ function drawCharacterSelectPreview(now=0){
    ctx.save();ctx.globalAlpha=(1-entranceEase)*.28;ctx.strokeStyle=previewAccent;ctx.lineWidth=2;
    ctx.beginPath();ctx.ellipse(-18,0,25+entranceEase*20,20+entranceEase*12,-.18,Math.PI*.1,Math.PI*1.1);ctx.stroke();ctx.restore();
   }
-  drawAccessoryAura(previewFighter,0,pose.headBob*.12,1.1+Math.sin(time*3.2)*.035+pose.effect*.025);
+  // Awakened Vessel already has Sukuna's dedicated smoke aura; suppress the separate equipped/legacy ring aura here.
+  if(!(key==='vessel'&&characterPreviewAwakened))drawAccessoryAura(previewFighter,0,pose.headBob*.12,1.1+Math.sin(time*3.2)*.035+pose.effect*.025);
   drawCharacterIdleEffects(key,time,previewAccent,pose);
   drawCharacterIdleHand(pose.left,theme);
   drawCharacterIdleHand(pose.right,theme);
