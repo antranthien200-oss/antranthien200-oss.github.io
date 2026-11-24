@@ -3695,7 +3695,13 @@ function drawCharacterAwakeningPreview(charKey,accent,time,cx,headY,radius){
   const x=cx+Math.cos(a)*r,y=headY+Math.sin(a)*r*.72;
   ctx.beginPath();ctx.moveTo(x-Math.cos(a)*3,y-Math.sin(a)*3);ctx.lineTo(x+Math.cos(a)*5,y+Math.sin(a)*5);ctx.stroke();
  }
- if(charKey==='vessel'||charKey==='perfection'){
+ if(charKey==='vessel'){
+  // Sukuna gets his red-black smoke aura from the same frame set as live gameplay.
+  // Do not draw the generic orbit ring or spokes around the character.
+  ctx.restore();
+  return;
+ }
+ if(charKey==='perfection'){
   ctx.globalAlpha=.35+.2*pulse;ctx.beginPath();ctx.ellipse(cx,headY,radius*.83,radius*.61,time*.18,0,Math.PI*2);ctx.stroke();
  }
  ctx.restore();
@@ -3732,8 +3738,9 @@ function drawCharacterSelectPreview(now=0){
  }
  const pose=getCharacterIdlePose(key,time,characterPreviewIdleVariation,idleStrength);
  const loadout={...(accessoryLoadouts[key]||{head:'none',face:'none',neck:'none',aura:'none'})};
- const previewFighter={char:key,team:'player',stun:0,flash:0,awakened:characterPreviewAwakened,jackpot:key==='restless'&&characterPreviewAwakened,accessoryPreview:loadout};
+ const previewFighter={char:key,team:'player',stun:0,flash:0,awakened:characterPreviewAwakened,gojoSkinAwakened:key==='honored'&&characterPreviewAwakened,jackpot:key==='restless'&&characterPreviewAwakened,accessoryPreview:loadout};
  const theme=getStunTintedTheme(previewFighter);
+ const previewAccent=key==='honored'&&characterPreviewAwakened?theme.accent:accent;
  const entranceProgress=characterPreviewEntranceStart?clamp((now-characterPreviewEntranceStart)/560,0,1):1;
  const entranceEase=1-Math.pow(1-entranceProgress,3);
  const entranceAlpha=.38+.62*entranceEase;
@@ -3743,30 +3750,31 @@ function drawCharacterSelectPreview(now=0){
   const w=rect.width,h=rect.height,cx=w*.5,headY=h*.46;
   const bg=ctx.createLinearGradient(0,0,0,h);bg.addColorStop(0,'rgba(15,27,45,.42)');bg.addColorStop(1,'rgba(2,7,15,.12)');
   ctx.fillStyle=bg;ctx.fillRect(0,0,w,h);
-  drawCharacterPreviewBackdrop(key,accent,time,w,h,cx,headY,characterPreviewAwakened);
+  drawCharacterPreviewBackdrop(key,previewAccent,time,w,h,cx,headY,characterPreviewAwakened);
   const halo=ctx.createRadialGradient(cx,headY,4,cx,headY,Math.min(w,h)*.48);
-  halo.addColorStop(0,accent+(characterPreviewAwakened?'48':'30'));halo.addColorStop(.56,accent+'0c');halo.addColorStop(1,accent+'00');
+  halo.addColorStop(0,previewAccent+(characterPreviewAwakened?'48':'30'));halo.addColorStop(.56,previewAccent+'0c');halo.addColorStop(1,previewAccent+'00');
   ctx.fillStyle=halo;ctx.fillRect(0,0,w,h);
-  if(characterPreviewAwakened)drawCharacterAwakeningPreview(key,accent,time,cx,headY,Math.min(w,h)*.31);
+  if(characterPreviewAwakened)drawCharacterAwakeningPreview(key,previewAccent,time,cx,headY,Math.min(w,h)*.31);
   const fighterScale=Math.max(2.75,Math.min(4.25,Math.min(w/112,h/72)));
+  if(characterPreviewAwakened&&key==='vessel')drawVesselAwakeningSmokePreview(cx,headY,fighterScale,time);
   ctx.save();ctx.globalAlpha=entranceAlpha;ctx.translate(cx+(1-entranceEase)*34,headY+(1-entranceEase)*5);ctx.scale(fighterScale*(.9+.1*entranceEase),fighterScale*(.9+.1*entranceEase));
   if(entranceProgress<1){
-   ctx.save();ctx.globalAlpha=(1-entranceEase)*.28;ctx.strokeStyle=accent;ctx.lineWidth=2;
+   ctx.save();ctx.globalAlpha=(1-entranceEase)*.28;ctx.strokeStyle=previewAccent;ctx.lineWidth=2;
    ctx.beginPath();ctx.ellipse(-18,0,25+entranceEase*20,20+entranceEase*12,-.18,Math.PI*.1,Math.PI*1.1);ctx.stroke();ctx.restore();
   }
   drawAccessoryAura(previewFighter,0,pose.headBob*.12,1.1+Math.sin(time*3.2)*.035+pose.effect*.025);
-  drawCharacterIdleEffects(key,time,accent,pose);
+  drawCharacterIdleEffects(key,time,previewAccent,pose);
   drawCharacterIdleHand(pose.left,theme);
   drawCharacterIdleHand(pose.right,theme);
   ctx.save();ctx.translate(0,pose.headBob);ctx.rotate(pose.headSway);
   drawCuteHead(previewFighter,character,theme);
   ctx.save();ctx.translate(0,Math.sin(time*2.8)*.42);ctx.rotate(Math.sin(time*1.75+pose.effect)*.022);drawAccessoryOverlays(previewFighter,0,0);
   drawCharacterDesignFaceDetails(previewFighter);ctx.restore();
-  drawCharacterAccessoryMotion(previewFighter,time,accent,pose);
+  drawCharacterAccessoryMotion(previewFighter,time,previewAccent,pose);
   ctx.restore();ctx.restore();
   ctx.save();ctx.globalAlpha=.46*entranceAlpha;
   const shadow=ctx.createRadialGradient(cx+(1-entranceEase)*34,h*.82,2,cx+(1-entranceEase)*34,h*.82,w*.25);
-  shadow.addColorStop(0,accent+'55');shadow.addColorStop(1,accent+'00');
+  shadow.addColorStop(0,previewAccent+'55');shadow.addColorStop(1,previewAccent+'00');
   ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(cx+(1-entranceEase)*34,h*.82,w*.25,7,0,0,Math.PI*2);ctx.fill();ctx.restore();
  }finally{ctx=oldContext}
 }
@@ -11883,6 +11891,19 @@ function getVesselSmokeAuraFrames(){
  }
  return vesselSmokeAuraFrames;
 }
+
+function drawVesselAwakeningSmokePreview(cx,headY,scale,time){
+ const frames=getVesselSmokeAuraFrames();
+ const framePosition=(time*6)%frames.length;
+ const frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
+ // Match live gameplay's close-hugging red-and-black smoke, scaled with the menu avatar.
+ const size=66*scale;
+ ctx.save();ctx.imageSmoothingEnabled=true;
+ ctx.globalAlpha=.9*(1-mix);ctx.drawImage(frames[frameA],cx-size/2,headY-size/2,size,size);
+ ctx.globalAlpha=.9*mix;ctx.drawImage(frames[frameB],cx-size/2,headY-size/2,size,size);
+ ctx.restore();
+}
+
 function drawVesselAwakeningSmoke(f){
  if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending||!worldRectVisible(f.x-70,f.y-75,140,130,24))return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3-23,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
