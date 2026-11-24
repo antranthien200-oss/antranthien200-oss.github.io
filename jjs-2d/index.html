@@ -8873,11 +8873,13 @@ function drawGojoBlueMaxProjectile(p,x,y){
  if(loader.spriteSheet){
   const sourceX=(frameIndex%5)*205;
   const sourceY=Math.floor(frameIndex/5)*205;
-  // Crop and draw one 205x205 source frame at exactly 205x205; no scaling.
-  ctx.drawImage(loader.spriteSheet,sourceX,sourceY,205,205,x-102.5,y-102.5,205,205);
+  // Keep the original 205x205 source frame and render the full Blue MAX animation at 1.5x.
+  const renderSize=205*1.5,renderHalf=renderSize/2;
+  ctx.drawImage(loader.spriteSheet,sourceX,sourceY,205,205,x-renderHalf,y-renderHalf,renderSize,renderSize);
  }else if(loader.fallbackImage&&loader.fallbackImage.complete){
   // Static fallback only while the browser-compatible frame sheet is unavailable.
-  ctx.drawImage(loader.fallbackImage,x-loader.fallbackImage.naturalWidth/2,y-loader.fallbackImage.naturalHeight/2);
+  const fallbackWidth=loader.fallbackImage.naturalWidth*1.5,fallbackHeight=loader.fallbackImage.naturalHeight*1.5;
+  ctx.drawImage(loader.fallbackImage,x-fallbackWidth/2,y-fallbackHeight/2,fallbackWidth,fallbackHeight);
  }
  ctx.restore();
 }
