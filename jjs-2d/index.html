@@ -7221,7 +7221,7 @@ function detonateBlueMax(p){
  const owner=p.owner,blastRadius=p.explosionRadius||275,targets=owner?tenTargets(owner):[];
  for(const target of targets){
   if(!target||target===owner||target.dead||target.vehicle)continue;
-  const dx=target.x-p.x,dy=target.y-p.y,gap=Math.hypot(dx,dy);
+  const dx=target.x-p.x,dy=target.y-23-p.y,gap=Math.hypot(dx,dy);
   if(gap>blastRadius+23)continue;
   const angle=gap>1?Math.atan2(dy,dx):(Number.isFinite(owner.face)?owner.face:0);
   const nx=Math.cos(angle),ny=Math.sin(angle),falloff=1-clamp(gap/blastRadius,0,1),push=18+14*falloff;
@@ -7315,15 +7315,13 @@ function updateProjectiles(dt){
     const targets=tenTargets(p.owner),pullRadius=p.pullRadius||420,pullStrength=p.pullForce||.06;
     for(const target of targets){
      if(!target||target.dead||target.vehicle)continue;
-     const dx=p.x-target.x,dy=p.y-target.y,gap=Math.hypot(dx,dy);
+     const targetCenterY=p.y+23,dx=p.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy);
      if(gap>=pullRadius)continue;
-     const captureRadius=46;
-     if(gap>captureRadius){
-      const pullSpeed=clamp(110+(pullRadius-gap)/pullRadius*190,110,300);
-      const step=Math.min(gap-captureRadius,pullSpeed*dt);
+     // Pull the fighter's visible body center (23px above its world anchor) directly into the orb.
+     const pullSpeed=1250,step=Math.min(gap,pullSpeed*dt);
+     if(step>0){
       target.x=clamp(target.x+dx/gap*step,28,WORLD.w-28);
       target.y=clamp(target.y+dy/gap*step,28,WORLD.h-28);
-      collideWorld(target);
      }
      target.vx=0;target.vy=0;
      target.stun=Math.max(target.stun,.08);
@@ -7332,7 +7330,7 @@ function updateProjectiles(dt){
      p.tick=.2;
      for(const target of targets){
       if(!target||target.dead||target.vehicle)continue;
-      const dx=p.x-target.x,dy=p.y-target.y,gap=Math.hypot(dx,dy);
+      const dx=p.x-target.x,dy=p.y+23-target.y,gap=Math.hypot(dx,dy);
       if(gap>=(p.damageRadius||165))continue;
       const inv=1/(gap||1);
       damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true});
