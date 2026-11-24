@@ -8960,10 +8960,10 @@ function drawGojoBlueMaxProjectile(p,x,y){
   }
  };
  if(phase==='active'){
-  // Keep the slow rotation on the orb artwork; no surrounding ring.
+  // Rotate the orb three times faster throughout the 3-second active phase.
   ctx.save();
   ctx.translate(x,y);
-  ctx.rotate(progress*Math.PI/3);
+  ctx.rotate(progress*Math.PI);
   ctx.translate(-x,-y);
   drawOrb();
   ctx.restore();
