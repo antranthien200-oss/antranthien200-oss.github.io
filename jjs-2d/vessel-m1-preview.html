@@ -7185,9 +7185,15 @@ function updateProjectiles(dt){
   }
   if(p.serverOwnedVisual){
    if(Number.isFinite(p.networkX)){const blend=clamp(dt*13,0,1);p.x=lerp(p.x,p.networkX,blend);p.y=lerp(p.y,p.networkY,blend)}
-   if(p.kind==='blueMax'&&p.networkPhase){p.phase=p.networkPhase;if(Number.isFinite(p.networkPhaseRemaining))p.phaseRemaining=p.networkPhaseRemaining;if(Number.isFinite(p.networkPhaseDuration))p.phaseDuration=p.networkPhaseDuration}
-   // Interpolate the server-synced phase timer locally so the 20 charge frames do not hitch between snapshots.
-   if(p.kind==='blueMax'&&p.networkPhase)p.phaseRemaining=Math.max(0,(Number(p.phaseRemaining)||0)-dt);
+   if(p.kind==='blueMax'&&p.networkPhase){
+    p.phase=p.networkPhase;
+    // Advance the synced timer locally; each new server snapshot resets it to the authoritative value.
+    if(Number.isFinite(p.networkPhaseRemaining)){
+     p.networkPhaseRemaining=Math.max(0,p.networkPhaseRemaining-dt);
+     p.phaseRemaining=p.networkPhaseRemaining;
+    }
+    if(Number.isFinite(p.networkPhaseDuration))p.phaseDuration=p.networkPhaseDuration;
+   }
    if(p.kind==='blueMax'&&p.phase==='active')recordGojoBlueMaxTrail(p);
    if(p.kind==='trashCan')p.rotation=(Number(p.rotation)||0)+(Number(p.spin)||22)*dt;
    p.life=Math.min(Number.isFinite(p.networkLife)?p.networkLife:p.life,Math.max(0,p.life-dt));
