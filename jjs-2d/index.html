@@ -8788,6 +8788,21 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
 }
 function drawGojoBlueMaxProjectile(p,x,y){
  const loader=drawGojoBlueMaxProjectile;
+ const loadStaticFallback=()=>{
+  if(loader.fallbackLoading||loader.fallbackImage||loader.fallbackFailed)return;
+  loader.fallbackLoading=true;
+  fetch('./gojo-blue-max-orb.webp.b64?v=20261124',{cache:'force-cache'})
+   .then(response=>{if(!response.ok)throw new Error('Fallback request failed: HTTP '+response.status);return response.text()})
+   .then(encoded=>{
+    const base64=String(encoded||'').trim();
+    if(!base64.startsWith('UklGR'))throw new Error('Invalid fallback WebP base64');
+    const image=new Image();
+    image.onload=()=>{loader.fallbackImage=image};
+    image.onerror=()=>{loader.fallbackFailed=true;console.warn('Gojo Blue MAX fallback orb could not decode')};
+    image.src='data:image/webp;base64,'+base64;
+   })
+   .catch(error=>{loader.fallbackFailed=true;console.warn('Gojo Blue MAX fallback orb could not load:',error)});
+ };
  if(!loader.spriteSheet&&!loader.sheetLoading&&!loader.sheetFailed){
   loader.sheetLoading=true;
   fetch('./gojo-blue-max-frames.webp.b64?v=20261124-frames',{cache:'force-cache'})
@@ -8800,16 +8815,18 @@ function drawGojoBlueMaxProjectile(p,x,y){
      if(image.naturalWidth!==1025||image.naturalHeight!==1845){
       loader.sheetFailed=true;
       console.warn('Gojo Blue MAX frame sheet has unexpected dimensions:',image.naturalWidth,image.naturalHeight);
+      loadStaticFallback();
       return;
      }
      loader.spriteSheet=image;
     };
-    image.onerror=()=>{loader.sheetFailed=true;console.warn('Gojo Blue MAX frame sheet could not decode')};
+    image.onerror=()=>{loader.sheetFailed=true;console.warn('Gojo Blue MAX frame sheet could not decode');loadStaticFallback()};
     image.src='data:image/webp;base64,'+base64;
    })
    .catch(error=>{
     loader.sheetFailed=true;
     console.warn('Gojo Blue MAX frame sheet could not load:',error);
+    loadStaticFallback();
    });
  }
  let frameIndex=20;
