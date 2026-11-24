@@ -66,7 +66,9 @@ test("Blue MAX animation skips orb regeneration and uses smooth suction in both 
   for (const file of ["../../jjs-2d/index.html", "../../jjs-2d/vessel-m1-preview.html"]) {
     const html = readFileSync(new URL(file, import.meta.url), "utf8");
     assert.match(html, /frameIndex=21\+Math\.min\(12,Math\.floor\(progress\*13\)\)/);
-    assert.match(html, /const captureRadius=46/);
+    assert.match(html, /const targetCenterY=p\.y\+23/);
+    assert.match(html, /const pullSpeed=1250,step=Math\.min\(gap,pullSpeed\*dt\)/);
+    assert.doesNotMatch(html, /captureRadius=46/);
    assert.match(html, /function detonateBlueMax\(p\)/);
    assert.match(html, /phaseRemaining:\.5,phaseDuration:\.5,activeDuration:3,collapseDuration:1/);
    assert.match(html, /collapseDuration:1[,}]/);
@@ -123,7 +125,8 @@ test("Blue MAX explosion releases its captured victim and launches them away fro
 test("multiplayer Blue MAX uses a server-owned soft capture and releases it for the explosion", () => {
   const source = readFileSync(new URL("../src/rooms/CityRoom.js", import.meta.url), "utf8");
   assert.ok(source.includes('blueMaxSuckedBy:t.string().default("")'));
-  assert.match(source, /300\*dt/);
+  assert.match(source, /targetCenterY=orb\.y\+23/);
+  assert.match(source, /1250\*dt/);
   assert.match(source, /candidate\.blueMaxSuckedBy=p\.ownerId/);
   assert.match(source, /candidate\.blueMaxSuckedBy="";candidate\.vx=0;candidate\.vy=0/);
   assert.doesNotMatch(source, /candidate\.vx\+=dx\*inv\*pull/);
