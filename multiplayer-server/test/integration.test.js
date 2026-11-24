@@ -74,7 +74,7 @@ test("Blue MAX animation skips orb regeneration and uses smooth suction in both 
 
 test("multiplayer Blue MAX uses a server-owned soft capture and releases it for the explosion", () => {
   const source = readFileSync(new URL("../src/rooms/CityRoom.js", import.meta.url), "utf8");
-  assert.match(source, /blueMaxSuckedBy:t\.string\(\)\.default\("")/);
+  assert.ok(source.includes('blueMaxSuckedBy:t.string().default("")'));
   assert.match(source, /300\*dt/);
   assert.match(source, /candidate\.blueMaxSuckedBy=p\.ownerId/);
   assert.match(source, /candidate\.blueMaxSuckedBy="";candidate\.vx=0;candidate\.vy=0/);
