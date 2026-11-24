@@ -10100,13 +10100,6 @@ function drawHeadHands(f,deferMotionVfx=false){
     handA=P(supportForward,supportSide,supportLift);
     handB=P(forward,side,lift);
     handBScale=1.18;handAScale=.96;handBAngle=angle;
-   }else if(name==='gojoBlueMax'){
-    const elapsed=Math.max(0,Number.isFinite(m&&m.t)?m.t:progress*4.5);
-    const charge=smoothstep01(clamp(elapsed/1,0,1));
-    // One hand stays drawn back while the other reaches forward to gather the orb.
-    handA=P(lerp(-7,-31,charge),lerp(12,22,charge),lerp(-3,-10,charge));
-    handB=P(lerp(30,74,charge),lerp(-15,-5,charge),lerp(-4,-11,charge));
-    handAScale=1.18;handBScale=1.22;handAAngle=angle+.22;handBAngle=angle-.12;
    }else if(name==='gojoBlue'){
     const spread=18-11*pulse,forward=20+26*smooth;
     const settle=smoothstep01(clamp((progress-.82)/.18,0,1));
