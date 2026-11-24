@@ -2847,6 +2847,24 @@ html.manual-screen-rotated #menuSub .menu-sub-panel{
 }
 html.manual-screen-rotated #pause{inset:0!important;align-items:center!important;justify-content:center!important}
 
+
+/* Keep the rotated main-menu controls centered; the logo is hidden on this menu,
+   so do not reserve its empty left-hand grid column. */
+html.manual-screen-rotated #menu .menu-main{
+ grid-template-columns:minmax(190px,min(42%,360px))!important;
+ grid-template-areas:"actions" "setup" "selected"!important;
+ justify-content:center!important;
+ justify-items:stretch!important;
+}
+html.manual-screen-rotated #menu .menu-logo{display:none!important}
+html.manual-screen-rotated #menu .menu-actions,
+html.manual-screen-rotated #menu .mobile-setup-wrap,
+html.manual-screen-rotated #menu .menu-selected{
+ width:100%!important;
+ max-width:360px!important;
+ justify-self:center!important;
+}
+
 </style>
 </head>
 <body>
