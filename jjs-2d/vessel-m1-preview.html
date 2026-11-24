@@ -7241,9 +7241,16 @@ function updateProjectiles(dt){
      if(!target||target.dead||target.vehicle)continue;
      const dx=p.x-target.x,dy=p.y-target.y,gap=Math.hypot(dx,dy);
      if(gap>=pullRadius)continue;
-     const inv=1/(gap||1),pull=clamp((pullRadius-gap)*pullStrength,5,24);
-     target.vx=clamp((Number(target.vx)||0)+dx*inv*pull,-32,32);
-     target.vy=clamp((Number(target.vy)||0)+dy*inv*pull,-32,32);
+     const captureRadius=46;
+     if(gap>captureRadius){
+      const pullSpeed=clamp(110+(pullRadius-gap)/pullRadius*190,110,300);
+      const step=Math.min(gap-captureRadius,pullSpeed*dt);
+      target.x=clamp(target.x+dx/gap*step,28,WORLD.w-28);
+      target.y=clamp(target.y+dy/gap*step,28,WORLD.h-28);
+      collideWorld(target);
+     }
+     target.vx=0;target.vy=0;
+     target.stun=Math.max(target.stun,.08);
     }
     if(p.tick<=0){
      p.tick=.2;
@@ -7252,7 +7259,7 @@ function updateProjectiles(dt){
       const dx=p.x-target.x,dy=p.y-target.y,gap=Math.hypot(dx,dy);
       if(gap>=(p.damageRadius||165))continue;
       const inv=1/(gap||1);
-      damage(target,p.damage,p.owner,{stun:.28,kx:dx*inv*1.2,ky:dy*inv*1.2,color:'#70dfff',unblockable:true,ignoreInvuln:true});
+      damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true});
      }
     }
     if(p.phaseRemaining<=0){
@@ -8769,7 +8776,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
  }else if(phase==='collapse'){
   // Frames 22-35 contain the full explosion and its decay. Frames 36-41
   // start regenerating a small blue orb, so skip them entirely.
-  frameIndex=21+Math.min(13,Math.floor(progress*14));
+  frameIndex=21+Math.min(12,Math.floor(progress*13));
  }
  ctx.save();
  ctx.globalAlpha=1;
