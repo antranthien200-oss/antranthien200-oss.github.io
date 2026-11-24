@@ -958,7 +958,7 @@ killPlayer(p){
   }
   const targetCenterY=orb.y+23,dx=orb.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy)||1;
   // Ease targets into the orb: gentle pull at the edge, stronger as they approach center.
-  const pullRadius=orb.pullRadius||420,pullSpeed=100+clamp((pullRadius-gap)/pullRadius,0,1)*140;
+  const pullRadius=orb.pullRadius||420,pullSpeed=190+clamp((pullRadius-gap)/pullRadius,0,1)*260;
   const step=Math.min(gap,pullSpeed*dt);
   if(step>0){
    target.x=clamp(target.x+dx/gap*step,45,WORLD_WIDTH-45);
