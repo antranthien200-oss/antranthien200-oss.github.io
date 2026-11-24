@@ -10201,6 +10201,11 @@ function drawHeadHands(f,deferMotionVfx=false){
     handA=P(lerp(forward,43,settle),lerp(spread,0,settle),lerp(-8-5*pulse,-3,settle));
     handB=P(lerp(forward,-43,settle),lerp(-spread,0,settle),lerp(-8-5*pulse,-3,settle));
     handAScale=1.15;handBScale=1.15;
+   }else if(name==='gojoBlueMax'){
+    // Max Blue is an orb-guiding skill, not a hand-sign or raised-hand attack.
+    // Keep both hands in the standard relaxed position beside the head.
+    handA=left;handB=right;handAAngle=angle;handBAngle=angle;
+    handAScale=1.04;handBScale=.94;
    }else if(name==='gojoRed'||name==='gojoRedMax'){}else if(name==='gojoRed'||name==='gojoRedMax'){
     handA=P(18+34*pulse,16,-4);handB=P(8+10*(1-smooth),-18,7);handAScale=1.22;
    }else if(name==='gojoPurple'){
@@ -10508,7 +10513,8 @@ function drawHeadHands(f,deferMotionVfx=false){
   }
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
- const deferHands=!!(deferMotionVfx&&m&&name&&name!=='carEnter'&&name!=='carExit'&&!m.skipMotionVfx);
+ const gojoBlueMaxNeutralHands=f.char==='honored'&&f.awakened&&name==='gojoBlueMax';
+ const deferHands=!!(deferMotionVfx&&m&&name&&name!=='carEnter'&&name!=='carExit'&&!m.skipMotionVfx&&!gojoBlueMaxNeutralHands);
  if(deferHands)f.motionHandPose={a:{x:handA.x,y:handA.y,angle:handAAngle,scale:handAScale},b:{x:handB.x,y:handB.y,angle:handBAngle,scale:handBScale},theme:stunTheme};
  else f.motionHandPose=null;
  if(!deferHands){
