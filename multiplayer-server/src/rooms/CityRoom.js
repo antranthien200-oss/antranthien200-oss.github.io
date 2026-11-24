@@ -473,7 +473,7 @@ modifyProjectile(client,payload={}){
      p.x=clamp(p.x+dx/len*step,35,WORLD_WIDTH-35);p.y=clamp(p.y+dy/len*step,35,WORLD_HEIGHT-35);p.travelled+=step;
      for(const [targetId,candidate] of this.state.players){
       if(targetId===p.ownerId||candidate.dead||candidate.vehicleId)continue;
-      const dx=p.x-candidate.x,dy=p.y-candidate.y,gap=Math.hypot(dx,dy);
+      const dx=p.x-candidate.x,dy=p.y+23-candidate.y,gap=Math.hypot(dx,dy);
       const pullRadius=p.pullRadius||420;
       if(gap>=pullRadius){
        if(candidate.blueMaxSuckedBy===p.ownerId)candidate.blueMaxSuckedBy="";
@@ -495,7 +495,7 @@ modifyProjectile(client,payload={}){
        for(const [targetId,candidate] of this.state.players){
         if(candidate.blueMaxSuckedBy===p.ownerId){candidate.blueMaxSuckedBy="";candidate.vx=0;candidate.vy=0}
         if(targetId===p.ownerId||candidate.dead||candidate.vehicleId)continue;
-        const dx=candidate.x-p.x,dy=candidate.y-p.y,gap=Math.hypot(dx,dy);
+        const dx=candidate.x-p.x,dy=candidate.y-23-p.y,gap=Math.hypot(dx,dy);
         if(gap>blastRadius+23)continue;
         const angle=gap>1?Math.atan2(dy,dx):(Number.isFinite(owner.face)?owner.face:0),falloff=1-clamp(gap/blastRadius,0,1),push=18+14*falloff;
         hurt(owner,candidate,18,.48,push,angle,true,true,"explosion",2.16);
@@ -956,11 +956,12 @@ killPlayer(p){
    target.blueMaxSuckedBy="";target.vx=0;target.vy=0;target.stun=Math.max(target.stun,.12);
    continue;
   }
-  const dx=orb.x-target.x,dy=orb.y-target.y,gap=Math.hypot(dx,dy)||1,captureRadius=46;
-  const step=Math.min(Math.max(0,gap-captureRadius),300*dt);
+  const targetCenterY=orb.y+23,dx=orb.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy)||1;
+  // Pull through map obstacles and converge on the orb's exact visual center.
+  const step=Math.min(gap,1250*dt);
   if(step>0){
-   const nx=clamp(target.x+dx/gap*step,45,WORLD_WIDTH-45),ny=clamp(target.y+dy/gap*step,45,WORLD_HEIGHT-45);
-   if(!isBlockedByBuilding({x:nx,y:ny},BUILDING_LAYOUT.filter((b,index)=>!this.state.world.buildings.get(String(index))?.collapsed),29)){target.x=nx;target.y=ny}
+   target.x=clamp(target.x+dx/gap*step,45,WORLD_WIDTH-45);
+   target.y=clamp(target.y+dy/gap*step,45,WORLD_HEIGHT-45);
   }
   target.vx=0;target.vy=0;target.moveX=0;target.moveY=0;target.block=false;target.stun=Math.max(target.stun,.08);
  }
