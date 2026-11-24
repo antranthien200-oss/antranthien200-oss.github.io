@@ -66,6 +66,8 @@ test("Blue MAX animation skips orb regeneration and uses smooth suction in both 
   for (const file of ["../../jjs-2d/index.html", "../../jjs-2d/vessel-m1-preview.html"]) {
     const html = readFileSync(new URL(file, import.meta.url), "utf8");
     assert.match(html, /frameIndex=21\+Math\.min\(12,Math\.floor\(progress\*13\)\)/);
+    assert.match(html, /p\.phaseRemaining=Math\.max\(0,\(Number\(p\.phaseRemaining\)\|\|0\)-dt\)/);
+    assert.match(html, /frameIndex=Math\.min\(19,Math\.floor\(progress\*20\)\)/);
     assert.match(html, /const targetCenterY=p\.y\+23/);
     assert.match(html, /aimBlend=1-Math\.exp\(-dt\*3\.4\)/);
     assert.match(html, /function recordGojoBlueMaxTrail\(p\)/);
