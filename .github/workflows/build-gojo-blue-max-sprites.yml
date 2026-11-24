@@ -55,6 +55,12 @@ jobs:
             fi
           done
 
+          # Temporary complete 41-frame contact sheet for validating frame selection.
+          ffmpeg -hide_banner -y -framerate 1 -start_number 0 -i "$work_dir/frame-%010d.png" \
+            -vf "scale=64:64,tile=5x9:padding=3:margin=3:color=black" \
+            -frames:v 1 "$work_dir/all-41-contact.png"
+          base64 -w 0 "$work_dir/all-41-contact.png" > jjs-2d/gojo-blue-max-all-frames-contact.png.b64.txt
+
           # Five columns by nine rows; the final four cells are unused.
           ffmpeg -hide_banner -y -framerate 20 -i "$work_dir/frame-%010d.png" \
             -vf "format=rgba,tile=5x9:padding=0:margin=0:color=black@0" \
@@ -75,6 +81,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add jjs-2d/gojo-blue-max-frames.webp
+          git add jjs-2d/gojo-blue-max-all-frames-contact.png.b64.txt
           git rm -f jjs-2d/gojo-blue-max-frames.webp.b64 || true
           if git diff --cached --quiet; then
             echo "Frame sheet is already up to date."
