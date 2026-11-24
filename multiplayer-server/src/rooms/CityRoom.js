@@ -738,7 +738,7 @@ modifyProjectile(client,payload={}){
  }
  startSukunaHeadCarry(client,payload={}){
   const ownerId=client.sessionId,owner=this.state.players.get(ownerId),targetId=String(payload.targetId||""),target=this.state.players.get(targetId),now=Date.now();
-  if(!owner||!target||owner===target||owner.dead||target.dead||owner.character!=="vessel"||!owner.awakened||owner.lastActionKind!=="3"||now-owner.lastActionAt>2200)return;
+  if(!owner||!target||owner===target||owner.dead||target.dead||Number(target.gojoRedMaxUntil)>now||owner.character!=="vessel"||!owner.awakened||owner.lastActionKind!=="3"||now-owner.lastActionAt>2200)return;
   if(owner.activeGrabTarget||owner.grabbedBy||target.grabbedBy||target.activeGrabTarget||target.block||target.vehicleId||distance(owner,target)>185)return;
   const settings=grabSettings(owner.character,"sukunaHeadCarryWindup");if(!settings)return;
   owner.activeGrabTarget=targetId;owner.grabKind=settings.kind;owner.stun=0;owner.vx=0;owner.vy=0;
