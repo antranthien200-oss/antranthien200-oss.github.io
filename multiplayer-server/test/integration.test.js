@@ -28,7 +28,7 @@ test("all main-game and Vessel-preview inline scripts parse before deployment", 
   }
 });
 
-test("Gojo Blue MAX uses a 1.5-second explosion phase after its active phase", async () => {
+test("Gojo Blue MAX uses a 1-second explosion phase after its active phase", async () => {
   const { CityRoom } = await import("../src/rooms/CityRoom.js");
   const room = new CityRoom();
   const owner = {
@@ -52,11 +52,11 @@ test("Gojo Blue MAX uses a 1.5-second explosion phase after its active phase", a
   assert.equal(projectile.phaseRemaining, 1);
   assert.equal(projectile.phaseDuration, 1);
   assert.equal(projectile.activeDuration, 3);
-  assert.equal(projectile.collapseDuration, 1.5);
+  assert.equal(projectile.collapseDuration, 1);
   assert.equal(
     projectile.phaseRemaining + projectile.activeDuration + projectile.collapseDuration,
-    5.5,
-    "formation + active + explosion should total 5.5 seconds"
+    5,
+    "formation + active + explosion should total 5 seconds"
   );
   assert.equal(projectile.pullRadius, 420);
   assert.equal(projectile.damageRadius, 165);
@@ -67,9 +67,56 @@ test("Blue MAX animation skips orb regeneration and uses smooth suction in both 
     const html = readFileSync(new URL(file, import.meta.url), "utf8");
     assert.match(html, /frameIndex=21\+Math\.min\(12,Math\.floor\(progress\*13\)\)/);
     assert.match(html, /const captureRadius=46/);
+   assert.match(html, /function detonateBlueMax\(p\)/);
+   assert.match(html, /collapseDuration:1[,}]/);
+   assert.match(html, /target\.vx=nx\*push;target\.vy=ny\*push/);
     assert.doesNotMatch(html, /frameIndex=21\+Math\.min\(13,Math\.floor\(progress\*14\)\)/);
     assert.doesNotMatch(html, /target\.vx=clamp\(\(Number\(target\.vx\)\|\|0\)\+dx\*inv\*pull,-32,32\)/);
   }
+});
+
+test("Blue MAX explosion releases its captured victim and launches them away from the orb", async () => {
+  const { CityRoom } = await import("../src/rooms/CityRoom.js");
+  const room = new CityRoom();
+  const owner = {
+    character: "honored", awakened: true, dead: false, stun: 0,
+    vehicleId: "", x: 500, y: 350, aimX: 500, aimY: 350, face: 0,
+    hp: 100, meter: 0, jackpot: false
+  };
+  const victim = {
+    character: "vessel", dead: false, vehicleId: "", x: 560, y: 350,
+    vx: 0, vy: 0, hp: 100, maxHp: 100, stun: 0, invuln: 0,
+    block: false, awakened: false, meter: 0, jackpot: false,
+    blueMaxSuckedBy: "gojo"
+  };
+  room.state = { players: new Map([["gojo", owner], ["victim", victim]]) };
+  room.projectiles = new Map();
+  room.projectileSequence = 0;
+  room.broadcast = () => {};
+  room.spawnProjectile(
+    { sessionId: "gojo", send: () => {} },
+    {
+      id: "blue-max-blast-test", move: "gojoBlueMax", kind: "blueMax",
+      x: 500, y: 350, vx: 0, vy: 0, life: 6,
+      damage: 2.2, pullRadius: 420, pullForce: 0.06, damageRadius: 165
+    }
+  );
+
+  const projectile = room.projectiles.get("gojo:blue-max-blast-test");
+  assert.ok(projectile);
+  projectile.phase = "active";
+  projectile.phaseRemaining = 0.01;
+  projectile.phaseDuration = 3;
+  const originalX = victim.x;
+
+  room.tickProjectiles(0.02, Date.now() + 500);
+
+  assert.equal(projectile.phase, "collapse");
+  assert.equal(projectile.phaseRemaining, 1);
+  assert.equal(victim.blueMaxSuckedBy, "");
+  assert.ok(victim.hp < 100, "the explosion should damage the victim");
+  assert.ok(victim.vx > 0, "the explosion should apply outward velocity");
+  assert.ok(victim.x > originalX, "the explosion should physically displace the victim");
 });
 
 test("multiplayer Blue MAX uses a server-owned soft capture and releases it for the explosion", () => {
