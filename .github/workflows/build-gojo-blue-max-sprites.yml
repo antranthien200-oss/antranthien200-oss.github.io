@@ -48,7 +48,7 @@ jobs:
           fi
 
           for frame in "$work_dir"/frame-*.png; do
-            dimensions="$(identify -format '%wx%h' "$frame" 2>/dev/null || true)"
+            dimensions="$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$frame" | head -n 1)"
             if [ "$dimensions" != "205x205" ]; then
               echo "Expected 205x205 frame, got $dimensions from $frame"
               exit 1
@@ -60,7 +60,7 @@ jobs:
             -vf "format=rgba,tile=5x9:padding=0:margin=0:color=black@0" \
             -frames:v 1 -c:v libwebp -lossless 1 -compression_level 6 "$output_file"
 
-          sheet_dimensions="$(identify -format '%wx%h' "$output_file")"
+          sheet_dimensions="$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$output_file" | head -n 1)"
           if [ "$sheet_dimensions" != "1025x1845" ]; then
             echo "Expected 1025x1845 sprite sheet, got $sheet_dimensions"
             exit 1
