@@ -49,14 +49,14 @@ test("Gojo Blue MAX uses a 1-second explosion phase after its active phase", asy
 
   const projectile = room.projectiles.get("gojo:blue-max-test");
   assert.ok(projectile, "server should accept the awakened Gojo Blue MAX projectile");
-  assert.equal(projectile.phaseRemaining, 1);
-  assert.equal(projectile.phaseDuration, 1);
+  assert.equal(projectile.phaseRemaining, 0.5);
+  assert.equal(projectile.phaseDuration, 0.5);
   assert.equal(projectile.activeDuration, 3);
   assert.equal(projectile.collapseDuration, 1);
   assert.equal(
     projectile.phaseRemaining + projectile.activeDuration + projectile.collapseDuration,
-    5,
-    "formation + active + explosion should total 5 seconds"
+    4.5,
+    "formation + active + explosion should total 4.5 seconds"
   );
   assert.equal(projectile.pullRadius, 420);
   assert.equal(projectile.damageRadius, 165);
@@ -68,6 +68,7 @@ test("Blue MAX animation skips orb regeneration and uses smooth suction in both 
     assert.match(html, /frameIndex=21\+Math\.min\(12,Math\.floor\(progress\*13\)\)/);
     assert.match(html, /const captureRadius=46/);
    assert.match(html, /function detonateBlueMax\(p\)/);
+   assert.match(html, /phaseRemaining:\.5,phaseDuration:\.5,activeDuration:3,collapseDuration:1/);
    assert.match(html, /collapseDuration:1[,}]/);
    assert.match(html, /target\.vx=nx\*push;target\.vy=ny\*push/);
     assert.doesNotMatch(html, /frameIndex=21\+Math\.min\(13,Math\.floor\(progress\*14\)\)/);
