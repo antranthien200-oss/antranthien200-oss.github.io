@@ -8727,29 +8727,19 @@ function drawGojoBlueMaxProjectile(p,x,y){
  };
  if(!loader.spriteSheet&&!loader.sheetLoading&&!loader.sheetFailed){
   loader.sheetLoading=true;
-  fetch('./gojo-blue-max-frames.webp.b64?v=20261124-frames',{cache:'force-cache'})
-   .then(response=>{if(!response.ok)throw new Error('Frame sheet request failed: HTTP '+response.status);return response.text()})
-   .then(encoded=>{
-    const base64=String(encoded||'').trim();
-    if(!base64.startsWith('UklGR'))throw new Error('Invalid Gojo Blue MAX frame sheet');
-    const image=new Image();
-    image.onload=()=>{
-     if(image.naturalWidth!==1025||image.naturalHeight!==1845){
-      loader.sheetFailed=true;
-      console.warn('Gojo Blue MAX frame sheet has unexpected dimensions:',image.naturalWidth,image.naturalHeight);
-      loadStaticFallback();
-      return;
-     }
-     loader.spriteSheet=image;
-    };
-    image.onerror=()=>{loader.sheetFailed=true;console.warn('Gojo Blue MAX frame sheet could not decode');loadStaticFallback()};
-    image.src='data:image/webp;base64,'+base64;
-   })
-   .catch(error=>{
+  const image=new Image();
+  image.decoding='async';
+  image.onload=()=>{
+   if(image.naturalWidth!==1025||image.naturalHeight!==1845){
     loader.sheetFailed=true;
-    console.warn('Gojo Blue MAX frame sheet could not load:',error);
+    console.warn('Gojo Blue MAX frame sheet has unexpected dimensions:',image.naturalWidth,image.naturalHeight);
     loadStaticFallback();
-   });
+    return;
+   }
+   loader.spriteSheet=image;
+  };
+  image.onerror=()=>{loader.sheetFailed=true;console.warn('Gojo Blue MAX frame sheet could not load');loadStaticFallback()};
+  image.src='./gojo-blue-max-frames.webp?v=20261124-frames';
  }
  let frameIndex=20;
  const phase=p.phase||'active';
