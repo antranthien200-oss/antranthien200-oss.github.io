@@ -7249,7 +7249,7 @@ function updateProjectiles(dt){
      const targetCenterY=p.y+23,dx=p.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy);
      if(gap>=pullRadius)continue;
      // Pull the fighter's visible body center (23px above its world anchor) directly into the orb.
-     const pullSpeed=1250,step=Math.min(gap,pullSpeed*dt);
+     const pullSpeed=100+((pullRadius-gap)/pullRadius)*140,step=Math.min(gap,pullSpeed*dt);
      if(step>0){
       target.x=clamp(target.x+dx/gap*step,28,WORLD.w-28);
       target.y=clamp(target.y+dy/gap*step,28,WORLD.h-28);
