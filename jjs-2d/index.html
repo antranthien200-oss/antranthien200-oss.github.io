@@ -3656,7 +3656,20 @@ function drawCharacterPreviewBackdrop(charKey,accent,time,width,height,cx,headY,
 }
 function drawCharacterAwakeningPreview(charKey,accent,time,cx,headY,radius){
  const pulse=.5+.5*Math.sin(time*4.8);
- ctx.save();ctx.globalAlpha=.18+.12*pulse;ctx.strokeStyle=accent;ctx.lineWidth=1.5;
+ ctx.save();
+ if(charKey==='honored'){
+  // Gojo uses a soft, expanding Six Eyes glow instead of the old orbiting ring.
+  const glow=ctx.createRadialGradient(cx,headY,radius*.08,cx,headY,radius*1.42);
+  glow.addColorStop(0,'rgba(104,205,255,.34)');
+  glow.addColorStop(.38,'rgba(70,170,255,.2)');
+  glow.addColorStop(1,'rgba(50,140,255,0)');
+  ctx.globalAlpha=.78+.22*pulse;
+  ctx.fillStyle=glow;
+  ctx.beginPath();ctx.arc(cx,headY,radius*1.42,0,Math.PI*2);ctx.fill();
+  ctx.restore();
+  return;
+ }
+ ctx.globalAlpha=.18+.12*pulse;ctx.strokeStyle=accent;ctx.lineWidth=1.5;
  ctx.beginPath();ctx.ellipse(cx,headY,radius*(1.12+.025*pulse),radius*.76,0,time*.35,time*.35+Math.PI*1.78);ctx.stroke();
  ctx.globalAlpha=.32+.18*pulse;ctx.lineWidth=1;
  for(let i=0;i<8;i++){
@@ -10427,7 +10440,12 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(!isMobileDevice){ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=isMobileDevice?0:(10);ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
  if(!isMobileDevice&&f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
- if(f.awakened&&f.char!=='vessel'){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':c.accent;ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
+ if(f.awakened&&f.char==='honored'){
+  const pulse=.78+.22*Math.sin(game.time*5.2),glowRadius=isMobileDevice?58:72,glowColor=c.accent||'#50baff';
+  ctx.save();const glow=ctx.createRadialGradient(x,headY,3,x,headY,glowRadius);
+  glow.addColorStop(0,glowColor+'48');glow.addColorStop(.42,glowColor+'25');glow.addColorStop(1,glowColor+'00');
+  ctx.globalAlpha=pulse;ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,headY,glowRadius,0,Math.PI*2);ctx.fill();ctx.restore();
+ }else if(f.awakened&&f.char!=='vessel'){ctx.save();ctx.strokeStyle=f.jackpot?'#65f69b':c.accent;ctx.globalAlpha=.45+Math.sin(game.time*12)*.2;ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,headY,28+Math.sin(game.time*9)*3,0,Math.PI*2);ctx.stroke();ctx.restore();}
  if(f.block){ctx.save();ctx.translate(x,headY);ctx.rotate(f.face);ctx.strokeStyle=f.blockImpact>0?'#ffffff':'#c8eeff';ctx.lineWidth=f.blockImpact>0?5:3;ctx.globalAlpha=.78+(f.blockImpact>0?.22:0);ctx.beginPath();ctx.arc(0,0,33,-1.18,1.18);ctx.stroke();ctx.restore();}
  const palette=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored,trailColor=brightenM1TrailColor(palette.accent||palette.main);
  if(name==='gojoBlueSpin'||name==='gojoBlueSlap'||name==='gojoRapidSpin'||name==='gojoRapidFlurry'){
@@ -10492,9 +10510,12 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(deferHands)f.motionHandPose={a:{x:handA.x,y:handA.y,angle:handAAngle,scale:handAScale},b:{x:handB.x,y:handB.y,angle:handBAngle,scale:handBScale},theme:stunTheme};
  else f.motionHandPose=null;
  if(!deferHands){
+  ctx.save();
+  if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?7:16;}
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+  ctx.restore();
  }
- if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
+ if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
