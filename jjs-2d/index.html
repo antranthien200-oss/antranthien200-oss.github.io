@@ -8786,30 +8786,13 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
-const getGojoBlueMaxSpriteSource=(()=>{
- let request=null;
- return ()=>{
-  if(!request)request=fetch('gojo-blue-max-phase-animation.avif.b64?v=20261124',{cache:'force-cache'})
-   .then(response=>{if(!response.ok)throw new Error('Blue MAX sprite request failed: '+response.status);return response.text()})
-   .then(encoded=>{
-    const base64=String(encoded||'').trim();
-    if(!base64.startsWith('AAAALGZ0eXBhdmlz'))throw new Error('Invalid Blue MAX AVIF sprite');
-    return 'data:image/avif;base64,'+base64;
-   });
-  return request;
- };
-})();
-getGojoBlueMaxSpriteSource().catch(error=>console.warn('Gojo Blue MAX sprite could not preload:',error));
 function drawGojoBlueMaxProjectile(p,x,y){
  if(!p.blueMaxSpriteImage&&!p.blueMaxSpriteLoading&&!p.blueMaxSpriteError){
   p.blueMaxSpriteLoading=true;
-  getGojoBlueMaxSpriteSource().then(source=>{
-   if(!projectiles.includes(p))return;
-   const image=new Image();
-   image.onload=()=>{p.blueMaxSpriteImage=image};
-   image.onerror=()=>{p.blueMaxSpriteError=true;console.warn('Gojo Blue MAX AVIF animation could not decode')};
-   image.src=source;
-  }).catch(error=>{p.blueMaxSpriteError=true;console.warn('Gojo Blue MAX sprite unavailable:',error)});
+  const image=new Image();
+  image.onload=()=>{p.blueMaxSpriteImage=image};
+  image.onerror=()=>{p.blueMaxSpriteError=true;console.warn('Gojo Blue MAX AVIF animation could not decode')};
+  image.src='gojo-blue-max-phase-animation.avif?v=20261124';
  }
  const image=p.blueMaxSpriteImage;
  ctx.save();
