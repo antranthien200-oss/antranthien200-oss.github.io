@@ -6672,7 +6672,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     f.skillInputLocked=false;
     const orbX=f.x+Math.cos(angle)*70,orbY=f.y-23+Math.sin(angle)*70;
     f.skillCd[idx]=17;
-    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:1,phaseDuration:1,activeDuration:3,collapseDuration:1,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
+    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:.5,phaseDuration:.5,activeDuration:3,collapseDuration:1,followSpeed:950,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
     showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
    }
    if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
