@@ -9781,7 +9781,7 @@ function emitGojoBlueMaxSuctionFlow(p,dt){
   if(!p||p.kind!=='blueMax'||p.phase!=='active'||!p.owner||p.owner.char!=='honored')return;
   p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
   if(p.gojoFlowParticleTimer<=0){
-   p.gojoFlowParticleTimer=isMobileDevice?.075:.055;
+   p.gojoFlowParticleTimer=isMobileDevice ? .075 : .055;
    spawnGojoOrbFlowParticles(p.owner,p.x,p.y,'blue',isMobileDevice?2:4);
   }
  }
