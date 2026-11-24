@@ -3729,7 +3729,7 @@ function drawCharacterSelectPreview(now=0){
  }
  const pose=getCharacterIdlePose(key,time,characterPreviewIdleVariation,idleStrength);
  const loadout={...(accessoryLoadouts[key]||{head:'none',face:'none',neck:'none',aura:'none'})};
- const previewFighter={char:key,team:'player',stun:0,flash:0,awakened:characterPreviewAwakened,jackpot:key==='restless'&&characterPreviewAwakened,accessoryPreview:loadout};
+ const previewFighter={char:key,team:'player',stun:0,flash:0,awakened:characterPreviewAwakened,gojoSkinAwakened:key==='honored'&&characterPreviewAwakened,jackpot:key==='restless'&&characterPreviewAwakened,accessoryPreview:loadout};
  const theme=getStunTintedTheme(previewFighter);
  const entranceProgress=characterPreviewEntranceStart?clamp((now-characterPreviewEntranceStart)/560,0,1):1;
  const entranceEase=1-Math.pow(1-entranceProgress,3);
