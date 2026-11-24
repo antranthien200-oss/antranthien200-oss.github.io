@@ -8756,11 +8756,8 @@ function drawGojoBlueMaxProjectile(p,x,y){
   frameIndex=20;
  }else if(phase==='collapse'){
   // Frames 22-30 contain the actual explosion. Later source frames regenerate a small orb,
-  // so stop drawing after the explosion instead of showing that unwanted regeneration.
-  if(elapsed>=.9){
-   return;
-  }
-  frameIndex=21+Math.min(8,Math.floor(elapsed/.1));
+  // so hold the final explosion frame until collapse ends instead of showing that regeneration.
+  frameIndex=elapsed>=.9?29:21+Math.min(8,Math.floor(elapsed/.1));
  }
  ctx.save();
  ctx.globalAlpha=1;
