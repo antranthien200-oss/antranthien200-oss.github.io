@@ -8849,8 +8849,10 @@ function drawGojoBlueMaxTrail(p){
    right.push([screen[i].x-nx*width,screen[i].y-ny*width]);
   }
   ctx.save();
+  ctx.globalCompositeOperation='source-over';
+  ctx.filter='none';
   ctx.shadowBlur=0;
-  ctx.shadowColor='transparent';
+  ctx.shadowColor='rgba(0,0,0,0)';
   ctx.globalAlpha=1;
   ctx.fillStyle='#ffffff';
   ctx.beginPath();
