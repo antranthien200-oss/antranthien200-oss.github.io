@@ -7319,10 +7319,6 @@ function updateProjectiles(dt){
    }else if(p.phase==='collapse'){
     // The orb stays at its final location while its charge effect retracts in reverse.
     p.vx=0;p.vy=0;
-    p.collapseParticleTimer=(p.collapseParticleTimer||0)-dt;
-    if(p.collapseParticleTimer<=0&&p.phaseRemaining>.08){
-     p.collapseParticleTimer=isMobileDevice?.14:.085;
-    }
     if(p.phaseRemaining<=0||p.life<=0)projectiles.splice(i,1);
    }
    continue;
@@ -8790,45 +8786,41 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.strokeStyle="#ffffff";ctx.lineWidth=Math.max(1.25,r*.085);ctx.stroke();
  ctx.restore();
 }
-const getGojoBlueMaxOrbImage=(()=>{
- let image=null,loading=false;
+const getGojoBlueMaxSpriteSource=(()=>{
+ let request=null;
  return ()=>{
-  if(!loading){
-   loading=true;
-   fetch('gojo-blue-max-orb.webp.b64?v=20261123',{cache:'force-cache'})
-    .then(response=>{if(!response.ok)throw new Error('Orb texture request failed: '+response.status);return response.text()})
-    .then(encoded=>{
-     const data=String(encoded||'').trim();
-     if(!data.startsWith('UklGR'))throw new Error('Invalid Gojo Blue MAX fallback texture');
-     const next=new Image();
-     next.onload=()=>{image=next};
-     next.onerror=()=>console.warn('Gojo Blue MAX fallback texture could not decode');
-     next.src='data:image/webp;base64,'+data;
-    })
-    .catch(error=>console.warn('Gojo Blue MAX fallback texture could not load:',error));
-  }
-  return image;
+  if(!request)request=fetch('gojo-blue-max-phase-animation.avif.b64?v=20261124',{cache:'force-cache'})
+   .then(response=>{if(!response.ok)throw new Error('Blue MAX sprite request failed: '+response.status);return response.text()})
+   .then(encoded=>{
+    const base64=String(encoded||'').trim();
+    if(!base64.startsWith('AAAALGZ0eXBhdmlz'))throw new Error('Invalid Blue MAX AVIF sprite');
+    return 'data:image/avif;base64,'+base64;
+   });
+  return request;
  };
 })();
+getGojoBlueMaxSpriteSource().catch(error=>console.warn('Gojo Blue MAX sprite could not preload:',error));
 function drawGojoBlueMaxProjectile(p,x,y){
- if(!p.blueMaxSpriteImage&&!p.blueMaxSpriteLoading){
+ if(!p.blueMaxSpriteImage&&!p.blueMaxSpriteLoading&&!p.blueMaxSpriteError){
   p.blueMaxSpriteLoading=true;
-  const image=new Image();
-  image.onload=()=>{p.blueMaxSpriteImage=image};
-  image.onerror=()=>{p.blueMaxSpriteLoading=false;console.warn('Gojo Blue MAX sprite animation asset is missing or could not decode')};
-  image.src='gojo-blue-max-phase-animation.webp?v=20261123';
+  getGojoBlueMaxSpriteSource().then(source=>{
+   if(!projectiles.includes(p))return;
+   const image=new Image();
+   image.onload=()=>{p.blueMaxSpriteImage=image};
+   image.onerror=()=>{p.blueMaxSpriteError=true;console.warn('Gojo Blue MAX AVIF animation could not decode')};
+   image.src=source;
+  }).catch(error=>{p.blueMaxSpriteError=true;console.warn('Gojo Blue MAX sprite unavailable:',error)});
  }
  const image=p.blueMaxSpriteImage;
  ctx.save();
  ctx.globalAlpha=1;
+ ctx.globalCompositeOperation='source-over';
  ctx.shadowBlur=0;
  ctx.shadowColor='transparent';
- if(image&&image.complete&&image.naturalWidth>0){
-  // Native 205x205 frame size: draw 1:1 without reducing the sprite.
-  ctx.drawImage(image,x-102.5,y-102.5,205,205);
- }else{
-  const fallback=getGojoBlueMaxOrbImage();
-  if(fallback&&fallback.complete&&fallback.naturalWidth>0)ctx.drawImage(fallback,x-102.5,y-102.5,205,205);
+ ctx.filter='none';
+ if(image&&image.complete&&image.naturalWidth===205&&image.naturalHeight===205){
+  // Native 205x205 source frame; draw 1:1 with no scaling or extra effect layers.
+  ctx.drawImage(image,x-102.5,y-102.5);
  }
  ctx.restore();
 }
