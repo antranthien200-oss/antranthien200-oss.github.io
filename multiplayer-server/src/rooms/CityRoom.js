@@ -957,8 +957,9 @@ killPlayer(p){
    continue;
   }
   const targetCenterY=orb.y+23,dx=orb.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy)||1;
-  // Pull through map obstacles and converge on the orb's exact visual center.
-  const step=Math.min(gap,1250*dt);
+  // Ease targets into the orb: gentle pull at the edge, stronger as they approach center.
+  const pullRadius=orb.pullRadius||420,pullSpeed=100+clamp((pullRadius-gap)/pullRadius,0,1)*140;
+  const step=Math.min(gap,pullSpeed*dt);
   if(step>0){
    target.x=clamp(target.x+dx/gap*step,45,WORLD_WIDTH-45);
    target.y=clamp(target.y+dy/gap*step,45,WORLD_HEIGHT-45);
