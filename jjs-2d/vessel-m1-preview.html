@@ -7168,7 +7168,7 @@ function recordGojoBlueMaxTrail(p){
   if(!p.trailPoints)p.trailPoints=[];
   const points=p.trailPoints,now=game.time,last=points[points.length-1];
   if(!last||Math.hypot(p.x-last.x,p.y-last.y)>.8||now-last.time>.022)points.push({x:p.x,y:p.y,time:now});
-  while(points.length>18||(points.length&&now-points[0].time>.17))points.shift();
+  while(points.length>36||(points.length&&now-points[0].time>.28))points.shift();
  }
 function updateProjectiles(dt){
  const projectileDamping=Math.pow(.993,dt*60);
@@ -8754,16 +8754,16 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.restore();
 }
 function drawGojoBlueMaxTrail(p){
-  const points=(p.trailPoints||[]).filter(point=>game.time-point.time<=.17);
+  const points=(p.trailPoints||[]).filter(point=>game.time-point.time<=.28);
   if(points.length<2)return;
   const screen=points.map(point=>({x:sx(point.x),y:sy(point.y),time:point.time})),now=game.time;
-  const fade=clamp(1-(now-screen[screen.length-1].time)/.16,0,1);
+  const fade=clamp(1-(now-screen[screen.length-1].time)/.26,0,1);
   const ribbon=(widthScale,alpha,blur)=>{
    const left=[],right=[],n=screen.length;
    for(let i=0;i<n;i++){
     const before=screen[Math.max(0,i-1)],after=screen[Math.min(n-1,i+1)];
     const tx=after.x-before.x,ty=after.y-before.y,len=Math.hypot(tx,ty)||1,nx=-ty/len,ny=tx/len,u=i/(n-1);
-    const width=(.22+7.2*Math.pow(u,.92))*widthScale;
+    const width=(.22+10.8*Math.pow(u,.92))*widthScale;
     left.push([screen[i].x+nx*width,screen[i].y+ny*width]);
     right.push([screen[i].x-nx*width,screen[i].y-ny*width]);
    }
