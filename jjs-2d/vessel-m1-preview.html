@@ -3692,7 +3692,13 @@ function drawCharacterAwakeningPreview(charKey,accent,time,cx,headY,radius){
   const x=cx+Math.cos(a)*r,y=headY+Math.sin(a)*r*.72;
   ctx.beginPath();ctx.moveTo(x-Math.cos(a)*3,y-Math.sin(a)*3);ctx.lineTo(x+Math.cos(a)*5,y+Math.sin(a)*5);ctx.stroke();
  }
- if(charKey==='vessel'||charKey==='perfection'){
+ if(charKey==='vessel'){
+  // Sukuna's awakened form uses the same close-hugging red/black smoke aura as gameplay,
+  // never the generic orbit ring or its spokes.
+  ctx.restore();
+  return;
+ }
+ if(charKey==='perfection'){
   ctx.globalAlpha=.35+.2*pulse;ctx.beginPath();ctx.ellipse(cx,headY,radius*.83,radius*.61,time*.18,0,Math.PI*2);ctx.stroke();
  }
  ctx.restore();
@@ -3746,6 +3752,7 @@ function drawCharacterSelectPreview(now=0){
   ctx.fillStyle=halo;ctx.fillRect(0,0,w,h);
   if(characterPreviewAwakened)drawCharacterAwakeningPreview(key,accent,time,cx,headY,Math.min(w,h)*.31);
   const fighterScale=Math.max(2.75,Math.min(4.25,Math.min(w/112,h/72)));
+  if(characterPreviewAwakened&&key==='vessel')drawVesselAwakeningSmokePreview(cx,headY,fighterScale,time);
   ctx.save();ctx.globalAlpha=entranceAlpha;ctx.translate(cx+(1-entranceEase)*34,headY+(1-entranceEase)*5);ctx.scale(fighterScale*(.9+.1*entranceEase),fighterScale*(.9+.1*entranceEase));
   if(entranceProgress<1){
    ctx.save();ctx.globalAlpha=(1-entranceEase)*.28;ctx.strokeStyle=accent;ctx.lineWidth=2;
@@ -3766,6 +3773,19 @@ function drawCharacterSelectPreview(now=0){
   shadow.addColorStop(0,accent+'55');shadow.addColorStop(1,accent+'00');
   ctx.fillStyle=shadow;ctx.beginPath();ctx.ellipse(cx+(1-entranceEase)*34,h*.82,w*.25,7,0,0,Math.PI*2);ctx.fill();ctx.restore();
  }finally{ctx=oldContext}
+}
+
+
+function drawVesselAwakeningSmokePreview(cx,headY,scale,time){
+ const frames=getVesselSmokeAuraFrames();
+ const framePosition=(time*6)%frames.length;
+ const frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
+ // Match the live game's dense, irregular crimson-and-black smoke, scaled with the avatar.
+ const size=66*scale;
+ ctx.save();ctx.imageSmoothingEnabled=true;
+ ctx.globalAlpha=.9*(1-mix);ctx.drawImage(frames[frameA],cx-size/2,headY-size/2,size,size);
+ ctx.globalAlpha=.9*mix;ctx.drawImage(frames[frameB],cx-size/2,headY-size/2,size,size);
+ ctx.restore();
 }
 
 function drawCharacterCardArt(canvas,charKey){
