@@ -62,6 +62,24 @@ test("Gojo Blue MAX uses a 1.5-second explosion phase after its active phase", a
   assert.equal(projectile.damageRadius, 165);
 });
 
+test("Blue MAX animation skips orb regeneration and uses smooth suction in both clients", () => {
+  for (const file of ["../../jjs-2d/index.html", "../../jjs-2d/vessel-m1-preview.html"]) {
+    const html = readFileSync(new URL(file, import.meta.url), "utf8");
+    assert.match(html, /frameIndex=21\+Math\.min\(12,Math\.floor\(progress\*13\)\)/);
+    assert.match(html, /const captureRadius=46/);
+    assert.doesNotMatch(html, /frameIndex=21\+Math\.min\(13,Math\.floor\(progress\*14\)\)/);
+    assert.doesNotMatch(html, /target\.vx=clamp\(\(Number\(target\.vx\)\|\|0\)\+dx\*inv\*pull,-32,32\)/);
+  }
+});
+
+test("multiplayer Blue MAX uses a server-owned soft capture and releases it for the explosion", () => {
+  const source = readFileSync(new URL("../src/rooms/CityRoom.js", import.meta.url), "utf8");
+  assert.match(source, /blueMaxSuckedBy:t\.string\(\)\.default\("")/);
+  assert.match(source, /300\*dt/);
+  assert.match(source, /candidate\.blueMaxSuckedBy=p\.ownerId/);
+  assert.match(source, /candidate\.blueMaxSuckedBy="";candidate\.vx=0;candidate\.vy=0/);
+  assert.doesNotMatch(source, /candidate\.vx\+=dx\*inv\*pull/);
+});
 
 test("a new domain clashes with an older already-open domain anywhere in the arena", async () => {
   const { CityRoom } = await import("../src/rooms/CityRoom.js");
