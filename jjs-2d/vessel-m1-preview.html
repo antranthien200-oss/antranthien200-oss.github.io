@@ -4789,7 +4789,7 @@ function bindOnlineRoom(client,room){if(SUKUNA_PREVIEW_MODE)return;
   try{useAttack(remote,actionKind,true)}finally{remote.onlineActionReplay=false}
   if(typeof data.awakened==='boolean')remote.awakened=data.awakened;
   if(actionKind==='special'&&remote.char==='honored'&&target&&target!==remote){target.skillLockUntil=Math.max(Number(target.skillLockUntil)||0,Date.now()+1000);remote.invuln=Math.max(Number(remote.invuln)||0,.62)}
-  if(actionKind==='special'&&remote.char==='honored'&&Number.isFinite(Number(data.flashStepFromX))&&Number.isFinite(Number(data.flashStepFromY)))remote.gojoFlashStepFx={fromX:Number(data.flashStepFromX),fromY:Number(data.flashStepFromY),toX:Number(data.flashStepToX),toY:Number(data.flashStepToY),startedAt:performance.now(),duration:.62};
+  if(actionKind==='special'&&remote.char==='honored'&&Number.isFinite(Number(data.flashStepFromX))&&Number.isFinite(Number(data.flashStepFromY)))remote.gojoFlashStepFx={fromX:Number(data.flashStepFromX),fromY:Number(data.flashStepFromY),fromFace:Number.isFinite(Number(data.face))?Number(data.face):remote.face,toX:Number(data.flashStepToX),toY:Number(data.flashStepToY),startedAt:performance.now(),duration:.62};
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
  });
  room.onMessage('combat:grab-started',data=>{
@@ -6476,12 +6476,12 @@ if(f.attackCd>0)return;
    const travelAngle=Math.atan2(f.y-fromY,f.x-fromX);
    f.face=targetFacing;f.vx=0;f.vy=0;f.jump=0;f.block=false;
    setMotion(f,'gojoFlashStep',.46,travelAngle,target);
-   f.gojoFlashStepFx={fromX,fromY,toX:f.x,toY:f.y,startedAt:performance.now(),duration:.62};
+   f.gojoFlashStepFx={fromX,fromY,fromFace:targetFacing,toX:f.x,toY:f.y,startedAt:performance.now(),duration:.62};
    f.attackCd=0;f.invuln=Math.max(f.invuln||0,.62);
    target.skillLockUntil=Math.max(Number(target.skillLockUntil)||0,Date.now()+1000);
    f.onlineActionTarget=target;f.onlineActionTargetUntil=performance.now()+650;
    f.onlineActionAim={x:target.x,y:target.y};f.onlineActionAimUntil=performance.now()+650;
-   burst(fromX,fromY,'#d8f3ff',5,2.1);burst(f.x,f.y,'#e9faff',9,2.8);
+   // Limitless teleport is intentionally silent visually; its only trace is the source afterimage.
    f.specialCd=15;return;
   }
   if(f.char==='vessel'&&f.awakened){
@@ -10580,61 +10580,41 @@ function drawFighter(f){
  if(!transition&&f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
 }
-function drawGojoFlashStepPath(f,fx,age){
+function drawGojoFlashStepAfterimage(f,fx,age){
  if(!f||!fx)return;
- const duration=Math.max(.24,Number(fx.duration)||.62),progress=clamp(age/duration,0,1);
- const fade=1-smoothstep01(clamp((progress-.68)/.32,0,1));
- if(fade<=.005)return;
- const x1=sx(fx.fromX),y1=sy(fx.fromY)-23;
- const x2=sx(fx.toX),y2=sy(fx.toY)-23;
- const dx=x2-x1,dy=y2-y1,length=Math.hypot(dx,dy);
- if(length<5)return;
- const angle=Math.atan2(dy,dx);
-
- // Keep the travel wake narrow and directional; the character echoes are the main effect.
- ctx.save();ctx.translate(x1,y1);ctx.rotate(angle);ctx.lineCap='round';ctx.lineJoin='round';
- const wake=ctx.createLinearGradient(0,0,length,0);
- wake.addColorStop(0,'rgba(75,180,255,0)');
- wake.addColorStop(.14,'rgba(90,190,255,.22)');
- wake.addColorStop(.56,'rgba(145,220,255,.48)');
- wake.addColorStop(.9,'rgba(225,248,255,.72)');
- wake.addColorStop(1,'rgba(255,255,255,0)');
- ctx.globalAlpha=fade*.82;ctx.strokeStyle=wake;ctx.lineWidth=7;
- ctx.beginPath();ctx.moveTo(0,0);ctx.quadraticCurveTo(length*.48,-2,length,0);ctx.stroke();
- ctx.globalAlpha=fade*.36;ctx.strokeStyle='#8bdcff';ctx.lineWidth=1.5;
- ctx.beginPath();ctx.moveTo(length*.04,-7);ctx.quadraticCurveTo(length*.5,-8,length*.94,-2);ctx.stroke();
- ctx.beginPath();ctx.moveTo(length*.02,7);ctx.quadraticCurveTo(length*.52,8,length*.9,2);ctx.stroke();
+ const duration=Math.max(.18,Number(fx.duration)||.62);
+ const progress=clamp(age/duration,0,1);
+ const fade=1-smoothstep01(progress);
+ if(fade<=.015)return;
+ // One clean, stationary copy remains only at Gojo's starting position.
+ const ghost={
+  ...f,
+  x:Number(fx.fromX),
+  y:Number(fx.fromY),
+  face:Number.isFinite(fx.fromFace)?fx.fromFace:f.face,
+  isTrainingDummy:true,
+  dead:false,
+  motion:null,
+  motionHandPose:null,
+  block:false,
+  blockImpact:0,
+  stun:0,
+  flash:0,
+  pullTimer:0,
+  transfigureMeter:0,
+  vehicle:null,
+  vehicleTransition:null,
+  gojoFlashStepFx:null,
+  gojoBlueTrailPose:null,
+  gojoBlueSharpTrailState:null,
+  gojoBlueSparks:null,
+  attackAnim:0,
+  attackType:''
+ };
+ ctx.save();
+ ctx.globalAlpha=.34*fade;
+ drawHeadHands(ghost,true);
  ctx.restore();
-
- // A chain of solid, readable character afterimages follows Gojo's exact dash path.
- const echoCount=5;
- for(let i=0;i<echoCount;i++){
-  const ratio=echoCount===1?.5:i/(echoCount-1);
-  const along=.09+ratio*.77;
-  const reveal=smoothstep01(clamp((progress-along*.28)/.2,0,1));
-  const alpha=fade*reveal*(.22+ratio*.13);
-  if(alpha<.012)continue;
-  const ghost={
-   ...f,
-   x:lerp(fx.fromX,fx.toX,along),
-   y:lerp(fx.fromY,fx.toY,along),
-   face:angle,
-   motion:{name:'gojoFlashStep',t:.14,duration:.46,activeDuration:.46,angle},
-   motionHandPose:null,
-   block:false,
-   vehicle:null,
-   vehicleTransition:null,
-   gojoFlashStepFx:null,
-   attackAnim:0
-  };
-  ctx.save();
-  ctx.globalAlpha=Math.min(.4,alpha);
-  ctx.globalCompositeOperation='source-over';
-  ctx.shadowColor='rgba(88,195,255,.62)';
-  ctx.shadowBlur=isMobileDevice?0:4;
-  drawHeadHands(ghost,true);
-  ctx.restore();
- }
 }
 function drawFighterMotionOverlays(f){
  if(!f||f.dead||f.vehicleTransition||isGojoAwakeningCutscene(f))return;
@@ -10642,11 +10622,12 @@ function drawFighterMotionOverlays(f){
  const flashStepActive=!!fx&&fxAge<Math.max(.24,Number(fx.duration)||.48);
  const fighterVisible=worldRectVisible(f.x-260,f.y-300,520,600,80);
  if(!flashStepActive&&!fighterVisible)return;
- if(flashStepActive)drawGojoFlashStepPath(f,fx,fxAge);
+ if(flashStepActive)drawGojoFlashStepAfterimage(f,fx,fxAge);
  if(!fighterVisible)return;
  const m=f.motion;
  if(!m){drawGojoBlueSparks(f);return}
  const name=m.name||'';
+ if(name==='gojoFlashStep')return; // No travel VFX, trails, or extra echoes for Limitless.
  if(name==='carEnter'||name==='carExit'||m.skipMotionVfx){drawGojoBlueSparks(f);return}
  const progress=clamp(m.t/(m.activeDuration||m.duration||1),0,1);
  const vfxFade=m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
