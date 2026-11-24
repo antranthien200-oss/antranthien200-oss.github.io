@@ -16,12 +16,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Install FFmpeg
+      - name: Install AVIF and WebP tools
         run: |
           sudo apt-get update
-          sudo apt-get install -y ffmpeg
+          sudo apt-get install -y ffmpeg libavif-bin
 
-      - name: Convert the 41 AVIF frames into a native-size sprite sheet
+      - name: Extract all 41 AVIF sequence frames and build the sprite sheet
         shell: bash
         run: |
           set -euo pipefail
@@ -29,30 +29,38 @@ jobs:
           source_file="jjs-2d/gojo-blue-max-phase-animation.avif"
           output_file="jjs-2d/gojo-blue-max-frames.webp"
           output_base64="jjs-2d/gojo-blue-max-frames.webp.b64"
+          work_dir="$RUNNER_TEMP/gojo-blue-max-frames"
+          mkdir -p "$work_dir"
 
           test -f "$source_file"
 
-          dimensions="$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$source_file" | head -n 1)"
-          frame_count="$(ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=nb_read_frames -of csv=p=0 "$source_file" | head -n 1)"
+          # FFmpeg currently treats this AVIF sequence as one still image.
+          # libavif's --index all explicitly extracts every AVIF sequence frame.
+          avifdec --info "$source_file"
+          avifdec --index all "$source_file" "$work_dir/frame.png"
 
-          echo "Source dimensions: $dimensions"
-          echo "Source frames: $frame_count"
-
-          if [ "$dimensions" != "205x205" ]; then
-            echo "Expected 205x205 source frames, got $dimensions"
+          extracted_count="$(find "$work_dir" -maxdepth 1 -type f -name 'frame-*.png' | wc -l | tr -d ' ')"
+          echo "Extracted AVIF frames: $extracted_count"
+          if [ "$extracted_count" != "41" ]; then
+            echo "Expected 41 frames from AVIF sequence, got $extracted_count"
+            ls -lah "$work_dir"
             exit 1
           fi
 
-          if [ "$frame_count" != "41" ]; then
-            echo "Expected exactly 41 AVIF frames, got $frame_count"
-            exit 1
-          fi
+          for frame in "$work_dir"/frame-*.png; do
+            dimensions="$(identify -format '%wx%h' "$frame" 2>/dev/null || true)"
+            if [ "$dimensions" != "205x205" ]; then
+              echo "Expected 205x205 frame, got $dimensions from $frame"
+              exit 1
+            fi
+          done
 
-          ffmpeg -hide_banner -y -i "$source_file" \
-            -vf "select='between(n,0,40)',format=rgba,tpad=stop_mode=clone:stop=4,tile=5x9:padding=0:margin=0:color=black@0" \
+          # Five columns by nine rows; the final four cells are unused.
+          ffmpeg -hide_banner -y -framerate 20 -i "$work_dir/frame-%010d.png" \
+            -vf "format=rgba,tile=5x9:padding=0:margin=0:color=black@0" \
             -frames:v 1 -c:v libwebp -lossless 1 -compression_level 6 "$output_file"
 
-          sheet_dimensions="$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$output_file" | head -n 1)"
+          sheet_dimensions="$(identify -format '%wx%h' "$output_file")"
           if [ "$sheet_dimensions" != "1025x1845" ]; then
             echo "Expected 1025x1845 sprite sheet, got $sheet_dimensions"
             exit 1
