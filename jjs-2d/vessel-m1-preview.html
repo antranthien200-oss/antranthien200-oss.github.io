@@ -5450,7 +5450,7 @@ function playYujiManjiCounterResponse(defender,attacker,applyDamage=true){
  }});
 }
 function damage(target,amount,source,opts={}){
- if(target.dead)return;
+ if(target.dead||Number(target.gojoRedMaxActiveUntil)>Date.now())return;
  if(onlineMode){
   if(source===player&&target.onlineSessionId&&onlineRoom){
    if(opts.damageType!=='vehicle'&&opts.damageType!=='domain-clash-m1'){
@@ -6252,6 +6252,7 @@ function useAttack(f,kind,networkReplay=false){
  if(SUKUNA_PREVIEW_MODE&&f===player){f.attackCd=0;f.skillCd=[0,0,0,0];f.specialCd=0;f.dashCd=0;f.gojoDomain02Cd=0;}
  if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||(!networkReplay&&f.vehicle)||(!networkReplay&&game.cutsceneTimer>0))return;
+ if(Number(f.gojoRedMaxActiveUntil)>Date.now())return;
  if(!networkReplay&&Number(f.skillLockUntil)>Date.now()&&(['1','2','3','4'].includes(kind)||kind==='special'||kind==='m1'))return;
  if(!networkReplay&&f.grabbedBy)return;
  if(!networkReplay&&(f.blueSuckedBy||f.blueMaxSuckedBy||f.gojoBluePull))return;
@@ -6615,7 +6616,7 @@ if(f.skillCd[idx]>0)return;const aim=aimedAt(f),angle=Math.atan2(aim.y-f.y,aim.x
     projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:.5,phaseDuration:.5,activeDuration:3,collapseDuration:1,followSpeed:950,followAimX:aim.x,followAimY:aim.y,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
     showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
    }
-   if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
+   if(idx===1){f.gojoRedMaxActiveUntil=Date.now()+1550;f.attackAnim=.95;f.invuln=1.55;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
    if(idx===2){f.attackAnim=.75;f.invuln=.22;burst(f.x,f.y,'#bd9dff',26,6);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*16,vy:Math.sin(angle)*16,r:34,life:3.4,maxDistance:920,travelled:0,owner:f,kind:'hollow',damage:70,color:'#c7a7ff'})},620);f.skillCd[idx]=40;game.shake=7}
    if(idx===3){if(startDomain(f,'void',14,1.25,.35,555,1))f.skillCd[idx]=120}
   }return;
