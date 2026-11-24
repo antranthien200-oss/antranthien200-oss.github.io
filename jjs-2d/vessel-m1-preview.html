@@ -8882,20 +8882,7 @@ function drawGojoBlueMaxProjectile(p,x,y){
   }
  };
  if(phase==='active'){
-  // A single clean white ring contracts around the orb through the 3-second active phase.
-  const ringRadius=208-62*progress;
-  ctx.save();
-  ctx.globalCompositeOperation='source-over';
-  ctx.filter='none';
-  ctx.shadowBlur=0;
-  ctx.globalAlpha=.78;
-  ctx.strokeStyle='#ffffff';
-  ctx.lineWidth=2.5;
-  ctx.beginPath();
-  ctx.arc(x,y,ringRadius,0,Math.PI*2);
-  ctx.stroke();
-  ctx.restore();
-  // Rotate only the orb artwork slowly; the shrinking ring stays circular.
+  // Keep the slow rotation on the orb artwork; no surrounding ring.
   ctx.save();
   ctx.translate(x,y);
   ctx.rotate(progress*Math.PI/3);
