@@ -6424,12 +6424,12 @@ function useAttack(f,kind,networkReplay=false){
 if(f.attackCd>0)return;
   f.combo=f.comboTimer>0?(f.combo%4)+1:1;
   const fin=f.combo===4,aim=aimedAt(f);f.face=Math.atan2(aim.y-f.y,aim.x-f.x);
-  const shrineM1=f.char==='vessel'&&f.awakened,baseM1=!f.awakened;
+  const shrineM1=f.char==='vessel'&&f.awakened,gojoAwakenM1=f.char==='honored'&&f.awakened,baseM1=!f.awakened||gojoAwakenM1,m1Speed=gojoAwakenM1?1.25:1;
   const angle=f.face;
-  const m1MotionName='m1_'+f.combo,m1Duration=shrineM1?(fin?.52:.42):baseM1?fin?.34:.20:fin?.42:.24;
-  f.comboTimer=shrineM1?.50:baseM1?.52:.62;
-  f.attackCd=shrineM1?fin?.54:.44:baseM1?fin?.36:.22:fin?.44:.26;
-  f.attackAnim=shrineM1?(fin?.42:.32):baseM1?fin?.24:.15:fin?.28:.18;
+  const m1MotionName='m1_'+f.combo,m1Duration=(shrineM1?(fin?.52:.42):baseM1?fin?.34:.20:fin?.42:.24)/m1Speed;
+  f.comboTimer=(shrineM1?.50:baseM1?.52:.62)/m1Speed;
+  f.attackCd=(shrineM1?fin?.54:.44:baseM1?fin?.36:.22:fin?.44:.26)/m1Speed;
+  f.attackAnim=(shrineM1?(fin?.42:.32):baseM1?fin?.24:.15:fin?.28:.18)/m1Speed;
   f.attackType=shrineM1?'slash':'punch';
   setMotion(f,m1MotionName,m1Duration,angle,t);f.vx=0;f.vy=0;if(shrineM1){f.motion.activeDuration=fin?.42:.32;f.motion.vfxFadeOut=.1;f.motion.shrineReach=clamp(dist(f,t)*.56,23,76);}
   const baseRange=f.char==='vessel'&&f.awakened?188:112;
@@ -8654,6 +8654,8 @@ if(m==='gojoBlueSpin'){
  }
  // Captured victims already receive the stun streak effect; avoid the generic pixel-dot fallback.
  if(m.startsWith('captured_')&&m!=='captured_sukunaFlurry')return;
+ // Gojo's M1 uses the same clean hand-trail animation in both forms.
+ if(m.startsWith('m1_')&&f.char==='honored')return;
  if(drawPixelSkillVfx(f,m,p,c,vfxFade))return;
  const front=24, pulse=.6+.4*Math.sin(game.time*24), energy=c.accent;
  if(m.startsWith('m1_')){
