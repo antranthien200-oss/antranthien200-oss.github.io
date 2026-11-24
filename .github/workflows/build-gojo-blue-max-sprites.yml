@@ -1,0 +1,76 @@
+name: Build Gojo Blue MAX frame sheet
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/build-gojo-blue-max-sprites.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  build-frame-sheet:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+
+      - name: Convert the 41 AVIF frames into a native-size sprite sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          source_file="jjs-2d/gojo-blue-max-phase-animation.avif"
+          output_file="jjs-2d/gojo-blue-max-frames.webp"
+          output_base64="jjs-2d/gojo-blue-max-frames.webp.b64"
+
+          test -f "$source_file"
+
+          dimensions="$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$source_file" | head -n 1)"
+          frame_count="$(ffprobe -v error -select_streams v:0 -count_frames -show_entries stream=nb_read_frames -of csv=p=0 "$source_file" | head -n 1)"
+
+          echo "Source dimensions: $dimensions"
+          echo "Source frames: $frame_count"
+
+          if [ "$dimensions" != "205x205" ]; then
+            echo "Expected 205x205 source frames, got $dimensions"
+            exit 1
+          fi
+
+          if [ "$frame_count" != "41" ]; then
+            echo "Expected exactly 41 AVIF frames, got $frame_count"
+            exit 1
+          fi
+
+          ffmpeg -hide_banner -y -i "$source_file" \
+            -vf "select='between(n,0,40)',format=rgba,tpad=stop_mode=clone:stop=4,tile=5x9:padding=0:margin=0:color=black@0" \
+            -frames:v 1 -c:v libwebp -lossless 1 -compression_level 6 "$output_file"
+
+          sheet_dimensions="$(ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 "$output_file" | head -n 1)"
+          if [ "$sheet_dimensions" != "1025x1845" ]; then
+            echo "Expected 1025x1845 sprite sheet, got $sheet_dimensions"
+            exit 1
+          fi
+
+          base64 -w 0 "$output_file" > "$output_base64"
+          echo "Created $output_base64 ($(wc -c < "$output_base64") base64 characters)"
+
+      - name: Commit generated frame sheet
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add jjs-2d/gojo-blue-max-frames.webp.b64
+          if git diff --cached --quiet; then
+            echo "Frame sheet is already up to date."
+            exit 0
+          fi
+          git commit -m "Generate Gojo Blue MAX frame sheet"
+          git push
