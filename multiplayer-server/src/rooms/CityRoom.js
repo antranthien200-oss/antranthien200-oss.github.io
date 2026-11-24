@@ -3,7 +3,7 @@ import { schema,t } from "@colyseus/schema";
 import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PLAYER_RESPAWN_POINT,PROP_SPAWNS,canAddDomainClashParticipant,isValidDomainClashParticipants,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainPulseSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isGuaranteedRapidGrabAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
 const PlayerCombatState=schema({lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),gojoRapidAt:t.number().default(0),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickInterval:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerCombatState");
 const PlayerAbilityState=schema({sukunaFireCast:t.number().default(0),tenDogActive:t.boolean().default(false),tenDogCharges:t.number().default(0),tenDogTimer:t.number().default(0),tenGardenTimer:t.number().default(0),soulMode:t.number().default(0),convergenceOrbs:t.number().default(0),tenBase:t.boolean().default(false),shadowTimer:t.number().default(0),rikaSummoned:t.boolean().default(false),rikaMode:t.boolean().default(false),reserveBallWindow:t.number().default(0),yutaCopyIndex:t.number().default(0)},"PlayerAbilityState");
-const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueMaxSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),skillLockUntil:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),abilities:PlayerAbilityState,combat:PlayerCombatState},"PlayerState");
+const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueMaxSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),skillLockUntil:t.number().default(0),gojoRedMaxUntil:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),abilities:PlayerAbilityState,combat:PlayerCombatState},"PlayerState");
 for(const field of ["lastActionKind","lastActionAt","gojoRapidAt","counterKind","counterWindow","grabbedBy","activeGrabTarget","grabKind","grabRemaining","grabDuration","grabTick","grabTickInterval","grabTickDamage","grabFinishDamage","grabKnockback"]){
  Object.defineProperty(PlayerState.prototype,field,{configurable:true,enumerable:false,get(){return this.combat[field]},set(value){this.combat[field]=value}});
 }
@@ -69,7 +69,7 @@ export class CityRoom extends Room{
   p.x=spawn.x;p.y=spawn.y;p.vx=0;p.vy=0;p.moveX=0;p.moveY=0;p.moveScale=1;p.aimX=spawn.x;p.aimY=spawn.y;
   p.face=0;p.walk=0;p.jump=0;p.block=false;p.attackAnim=0;p.attackType="";
   p.motionName="";p.motionProgress=0;p.motionDuration=1;p.motionStartedAt=0;p.lastActionKind="";p.lastActionAt=0;p.gojoRapidAt=0;
-  p.hp=p.maxHp=CHARACTER_HP[p.character]||100;p.meter=0;p.stun=0;p.invuln=1.2;p.skillLockUntil=0;p.dead=false;p.respawnTimer=0;
+  p.hp=p.maxHp=CHARACTER_HP[p.character]||100;p.meter=0;p.stun=0;p.invuln=1.2;p.skillLockUntil=0;p.gojoRedMaxUntil=0;p.dead=false;p.respawnTimer=0;
   p.awakened=false;p.awakeMode="";p.awakeFuel=0;p.awakeFuelDrainRate=0;p.jackpot=false;p.consecutiveJackpots=0;p.domainStunGuaranteed=false;
   p.vehicleId="";p.trashCanId="";
   p.domainType="";p.domainTimer=0;p.domainWindupStart=0;p.domainRequestType="";p.domainRadius=0;p.domainX=spawn.x;p.domainY=spawn.y;p.domainWindup=0;p.domainDuration=0;p.domainCastAt=0;p.domainClashId="";
@@ -144,6 +144,7 @@ export class CityRoom extends Room{
  }
 combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),kind=String(payload.kind||"");
+  if(p&&Number(p.gojoRedMaxUntil)>Date.now())return;
   const flameArrowAction=!!p&&kind==="2"&&p.character==="vessel"&&p.awakened&&p.stun<=.16;
   const gojoFlashStepAction=!!p&&kind==="special"&&p.character==="honored";
   if(!p||p.dead||p.vehicleId||(p.stun>0&&kind!=="dash"&&!flameArrowAction)||p.grabbedBy||p.activeGrabTarget||p.blueSuckedBy||p.blueMaxSuckedBy)return;
@@ -152,10 +153,11 @@ combatAction(client,payload={}){
   const counter=counterSettings(p.character,kind,p.awakened);
   const modeToggle=kind==="awaken"&&p.awakened&&(p.character==="yuta"||p.character==="ten"),wasAwakened=p.awakened;
   const cooldown=kind==="domain02"?24:modeToggle?.08:(gojoFlashStepAction?15:(counter?.cooldown??(kind==="m1"?.06:kind==="dash"?1.05:kind==="awaken"?1:kind==="special"?.4:.42)));
-  const now=Date.now(),times=this.lastActionAt.get(id)||new Map(),blackFlashState=this.blackFlashFollowUps.get(id);
+  const now=Date.now(),times=this.lastActionAt.get(id)||new Map(),blackFlashState=this.blackFlashFollowUps.get(id),startsGojoRedMax=kind==="2"&&p.character==="honored"&&p.awakened;
   const blackFlashFollowUp=kind==="3"&&p.character==="vessel"&&!p.awakened&&payload.blackFlashFollowUp===true&&blackFlashState&&!blackFlashState.used&&now-blackFlashState.startedAt>=160&&now-blackFlashState.startedAt<=2000;
   if(p.skillLockUntil>now&&(['1','2','3','4'].includes(kind)||kind==='special'||kind==='m1'))return;
    if(!blackFlashFollowUp&&now-(times.get(kind)||0)<cooldown*1000)return;
+  if(startsGojoRedMax){p.gojoRedMaxUntil=now+1550;p.invuln=Math.max(p.invuln,1.55)}
   if(kind==="3"&&p.character==="vessel"&&!p.awakened){
    if(blackFlashFollowUp)blackFlashState.used=true;
    else this.blackFlashFollowUps.set(id,{startedAt:now,used:false});
@@ -229,7 +231,7 @@ combatAction(client,payload={}){
   const id=client.sessionId,p=this.state.players.get(id),requested=String(payload.domainType||"");
   const reject=reason=>{client.send("domain:reject",{domainType:requested,reason});return false};
   if(!p||!requested)return reject("INVALID DOMAIN");
-  if(p.dead||p.vehicleId||p.stun>0||p.domainClashId)return reject("DOMAIN UNAVAILABLE");
+  if(p.dead||p.vehicleId||p.stun>0||p.domainClashId||Number(p.gojoRedMaxUntil)>Date.now())return reject("DOMAIN UNAVAILABLE");
   const settings=domainSettings(p.character,requested);
   if(!settings)return reject("INVALID DOMAIN");
   if(p.domainType||p.domainWindup>0||p.domainTimer>0){
@@ -295,7 +297,7 @@ combatAction(client,payload={}){
  domainClashHit(client,payload={}){
   const id=client.sessionId,player=this.state.players.get(id),targetId=String(payload.targetId||""),target=this.state.players.get(targetId);
   const clash=player?.domainClashId?this.domainClashes.get(player.domainClashId):null;
-  if(!clash||!isValidDomainClashParticipants(clash.participants)||!clash.participants.includes(id)||targetId===id||!target||!clash.participants.includes(targetId)||player.dead||target.dead||player.stun>0||target.grabbedBy)return;
+  if(!clash||!isValidDomainClashParticipants(clash.participants)||!clash.participants.includes(id)||targetId===id||!target||!clash.participants.includes(targetId)||player.dead||target.dead||Number(player.gojoRedMaxUntil)>Date.now()||Number(target.gojoRedMaxUntil)>Date.now()||player.stun>0||target.grabbedBy)return;
   const now=Date.now(),requestedFace=Number(payload.face);
   if(Number.isFinite(requestedFace))player.face=clamp(requestedFace,-Math.PI,Math.PI);
   // Do not reject clash hits using packet timing, range, or client-facing estimates.
@@ -342,6 +344,7 @@ finishDomainClash(clash,winnerId=null,reason="TIME"){
   const ownerId=client.sessionId,owner=this.state.players.get(ownerId);
   if(!owner||owner.dead||owner.stun>0||owner.vehicleId||!payload||typeof payload!=="object"){reject();return}
   const move=String(payload.move||"").slice(0,48),kind=String(payload.kind||"projectile").slice(0,32);
+  if(Number(owner.gojoRedMaxUntil)>Date.now()&&kind!=="redmax"){reject();return}
   const profile=combatProfile(owner.character,move,owner.awakened);
   const x=Number(payload.x),y=Number(payload.y),vx=Number(payload.vx),vy=Number(payload.vy);
   const golden=payload.golden===true&&kind==="trashCan"&&owner.character==="trashman"&&owner.domainType==="trash"&&owner.domainTimer>0&&move==="trashManFlyingCan";
@@ -371,7 +374,7 @@ modifyProjectile(client,payload={}){
   if(projectile&&projectile.ownerId===client.sessionId&&projectile.kind==="bloodBomb")projectile.detonate=true;
  }
  applyProjectileDamage(owner,target,damage,stun,push,angle,unblockable=false,ignoreInvuln=false,incomingType="projectile",blockedDamage=null,nonlethalBlock=false){
-  if(!owner||!target||target.dead)return false;
+  if(!owner||!target||target.dead||Number(target.gojoRedMaxUntil)>Date.now())return false;
   if(!ignoreInvuln&&target.invuln>0)return false;
   if(this.resolveCounter(owner,target,incomingType))return false;
   if(target.tenDogActive){target.tenDogActive=false;target.tenDogCharges=0;target.tenDogTimer=0;}
@@ -643,7 +646,7 @@ modifyProjectile(client,payload={}){
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
   if(Math.abs(facing)>(kind==="gojoTwofoldCounter"?1.42:1.18))return false;
   const projectile=["bullet","projectile"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-  const hurt=(target,amount,stun,push,directionX=nx,directionY=ny)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+directionX*push,-60,60);target.vy=clamp((Number(target.vy)||0)+directionY*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
+  const hurt=(target,amount,stun,push,directionX=nx,directionY=ny)=>{if(Number(target.gojoRedMaxUntil)>Date.now())return;if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+directionX*push,-60,60);target.vy=clamp((Number(target.vy)||0)+directionY*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
   defender.counterKind="";defender.counterWindow=0;
   if(kind==="sukunaCleaveCounter"&&(projectile||incomingType==="domain"||d>220))return false;
   if(kind==="yutaOutburst"){defender.invuln=Math.max(defender.invuln,.5);if(!projectile){attacker.stun=Math.max(attacker.stun,.48);attacker.vx=clamp((Number(attacker.vx)||0)-nx*11,-60,60);attacker.vy=clamp((Number(attacker.vy)||0)-ny*11,-60,60)}return true}
@@ -748,7 +751,7 @@ modifyProjectile(client,payload={}){
  combatHit(client,payload={}){
   const a=this.state.players.get(client.sessionId),id=String(payload.targetId||""),target=this.state.players.get(id),move=String(payload.move||"").slice(0,48);
   const guaranteedRapidGrab=isGuaranteedRapidGrabAllowed(a?.character,move,a?.gojoRapidAt,Date.now(),payload.guaranteedContact===true,a?.awakened);
-  if(!a||!target||a===target||a.dead||target.dead||(a.stun>0&&!guaranteedRapidGrab)||a.activeGrabTarget||(target.grabbedBy&&!guaranteedRapidGrab)||(Number(a.skillLockUntil)>Date.now()&&/m1(?:_|$)/i.test(move)))return;
+  if(!a||!target||a===target||a.dead||target.dead||Number(a.gojoRedMaxUntil)>Date.now()||Number(target.gojoRedMaxUntil)>Date.now()||(a.stun>0&&!guaranteedRapidGrab)||a.activeGrabTarget||(target.grabbedBy&&!guaranteedRapidGrab)||(Number(a.skillLockUntil)>Date.now()&&/m1(?:_|$)/i.test(move)))return;
   const profile=combatProfile(a.character,move,a.awakened);
   const incomingType=String(payload.damageType||"melee").slice(0,24);
   const amountValue=Number(payload.amount),amount=Number.isFinite(amountValue)?clamp(amountValue,0,250):profile.damage;
@@ -907,7 +910,7 @@ killPlayer(p){
   if(impactSpeed>95){
    const speedRatio=clamp((impactSpeed-95)/(680-95),0,1),hitDamage=Math.round(10+22*speedRatio),push=5+speedRatio*7,angle=Math.atan2(hy,hx);
    for(const [id,target] of this.state.players){
-    if(id===client.sessionId||target.dead||target.vehicleId||distance(c,target)>52)continue;
+    if(id===client.sessionId||target.dead||target.vehicleId||Number(target.gojoRedMaxUntil)>now||distance(c,target)>52)continue;
     const key="car:"+p.vehicleId+":"+id;
     if(now-(this.lastHitAt.get(key)||0)<680)continue;
     this.lastHitAt.set(key,now);
