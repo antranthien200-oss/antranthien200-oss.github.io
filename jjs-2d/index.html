@@ -6217,6 +6217,7 @@ function updateCityTrainImpact(){
   if(f===player)dropCarriedTrashCan(f);
   if(f.vehicle){f.vehicle.occupied=false;f.vehicle.destroyed=true;f.vehicle.respawnTimer=15;f.vehicle.speed=0;f.vehicle.vx=0;f.vehicle.vy=0;f.vehicle=null;}
   if(f.awakened)endAwakening(f);
+  spawnBloodDeathFx(f);
   f.hp=0;f.dead=true;f.respawn=2.5;f.stun=0;f.invuln=0;f.block=false;f.vx=0;f.vy=0;f.motion=null;f.attackAnim=0;f.attackType='';
   f.domainTimer=0;f.domainWindup=0;f.domainState='';
   popText(f.x,f.y-63,'STRUCK BY TRAIN','#ff6670',18);
@@ -11733,13 +11734,16 @@ function drawEffects(){
    }
    ctx.closePath();ctx.fillStyle=p.color||'#b41434';ctx.fill();
    ctx.strokeStyle='#570817';ctx.lineWidth=3;ctx.stroke();
-   // A few blocky crimson spikes keep the silhouette close to the pixel-art reference.
+   // Angular, snapped crimson spikes make the burst read like chunky pixel art.
    ctx.fillStyle='#e52a4c';
    for(let i=0;i<8;i++){
-    const angle=i*Math.PI/4+.12,inner=radius*.48,outer=radius*(.83+(i%3)*.07);
-    const x1=snap(Math.cos(angle)*inner),y1=snap(Math.sin(angle)*inner);
-    const x2=snap(Math.cos(angle)*outer),y2=snap(Math.sin(angle)*outer);
-    ctx.fillRect(Math.min(x1,x2)-2,Math.min(y1,y2)-2,Math.max(4,Math.abs(x2-x1)+4),Math.max(4,Math.abs(y2-y1)+4));
+    const angle=i*Math.PI/4+.12,inner=radius*.32,outer=radius*(.79+(i%3)*.07),halfWidth=radius*.105;
+    const ux=Math.cos(angle),uy=Math.sin(angle),nx=-uy,ny=ux;
+    ctx.beginPath();
+    ctx.moveTo(snap(ux*inner+nx*halfWidth),snap(uy*inner+ny*halfWidth));
+    ctx.lineTo(snap(ux*outer),snap(uy*outer));
+    ctx.lineTo(snap(ux*inner-nx*halfWidth),snap(uy*inner-ny*halfWidth));
+    ctx.closePath();ctx.fill();
    }
    ctx.restore();
   }else if(p.shape==='bloodCore'){
