@@ -9060,7 +9060,10 @@ function drawGojoBlueMaxProjectile(p,x,y){
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f)return false;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
- return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0&&(p.owner===f||(p.owner&&p.owner.team!==f.team&&Math.hypot(p.x-f.x,p.y+23-f.y)<(p.pullRadius||420)+24)));
+ // The owner animation is authoritative even if a network snapshot briefly drops the projectile reference.
+ if(f.motion&&f.motion.name==='gojoBlueMax')return true;
+ // Do not let replicated hit-flash or stun overlays blink either fighter during any MAX phase.
+ return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
 }
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
