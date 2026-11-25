@@ -4749,17 +4749,17 @@ function syncGojoBlueMaxNetworkPhase(projectile,phase,remaining,duration){
  const incomingOrder=Object.prototype.hasOwnProperty.call(phaseOrder,incomingPhase)?phaseOrder[incomingPhase]:currentOrder;
  // Network snapshots can arrive late. Never let an older packet rewind the orb's phase.
  const nextPhase=incomingOrder>currentOrder?incomingPhase:currentPhase;
- const phaseChanged=nextPhase!==currentPhase;
+ const phaseChanged=nextPhase!==currentPhase,stalePhase=incomingOrder<currentOrder;
  const incomingRemaining=Number(remaining);
  let nextRemaining=Number(projectile.networkPhaseRemaining);
- if(Number.isFinite(incomingRemaining)){
+ if(!stalePhase&&Number.isFinite(incomingRemaining)){
   const received=Math.max(0,incomingRemaining);
   // Within one phase, accept only forward progress. A new phase gets its own fresh timer.
   nextRemaining=phaseChanged||!Number.isFinite(nextRemaining)?received:Math.min(Math.max(0,nextRemaining),received);
  }
  const incomingDuration=Number(duration);
  let nextDuration=Number(projectile.networkPhaseDuration);
- if(Number.isFinite(incomingDuration)&&incomingDuration>0&&(!Number.isFinite(nextDuration)||phaseChanged))nextDuration=incomingDuration;
+ if(!stalePhase&&Number.isFinite(incomingDuration)&&incomingDuration>0&&(!Number.isFinite(nextDuration)||phaseChanged))nextDuration=incomingDuration;
  projectile.networkPhase=nextPhase;
  if(Number.isFinite(nextRemaining))projectile.networkPhaseRemaining=nextRemaining;
  if(Number.isFinite(nextDuration))projectile.networkPhaseDuration=nextDuration;
