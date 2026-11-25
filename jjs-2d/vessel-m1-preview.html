@@ -7287,7 +7287,6 @@ function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i];
   try{
-  if(p.kind==='blueMax')game.blueMaxVisualSuppressUntil=Math.max(Number(game.blueMaxVisualSuppressUntil)||0,game.time+.3);
   const t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
   if(p.kind==='red'&&p.owner&&p.owner.char==='honored'&&!p.owner.awakened){
    p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
