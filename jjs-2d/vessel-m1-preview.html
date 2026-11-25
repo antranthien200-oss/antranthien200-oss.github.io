@@ -8752,7 +8752,7 @@ if(m==='gojoBlueSpin'){
   }
   ctx.restore();
   return;
- }else if(m.startsWith('gojoBlue')){
+ }else if(m!=='gojoBlueMax'&&m.startsWith('gojoBlue')){
   const r=7+Math.sin(p*Math.PI)*8;ctx.save();ctx.globalAlpha=.8;ctx.shadowBlur=isMobileDevice?0:(20);ctx.shadowColor='#54d9ff';ctx.strokeStyle='#a9f0ff';ctx.lineWidth=2;ctx.beginPath();ctx.arc(front+6,-18,r,0,Math.PI*2);ctx.stroke();ctx.beginPath();ctx.ellipse(front+6,-18,r+9,r+4,game.time*3,0,Math.PI*2);ctx.stroke();ctx.fillStyle='#3cc8ff';ctx.beginPath();ctx.arc(front+6,-18,Math.max(3,r*.5),0,Math.PI*2);ctx.fill();ctx.restore();
  }else if(m.startsWith('gojoRed')){
   const r=5+10*pulse;ctx.save();ctx.globalAlpha=.9;ctx.shadowBlur=isMobileDevice?0:(22);ctx.shadowColor='#ff405e';ctx.fillStyle='#ff506b';ctx.beginPath();ctx.arc(front+8,-14,r,0,Math.PI*2);ctx.fill();ctx.strokeStyle='#ffd6dc';ctx.lineWidth=2;ctx.beginPath();ctx.arc(front+8,-14,r+5,0,Math.PI*2);ctx.stroke();ctx.restore();
