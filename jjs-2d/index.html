@@ -4787,7 +4787,7 @@ function syncGojoBlueMaxNetworkPhase(projectile,phase,remaining,duration){
  projectile.networkPhase=nextPhase;
  if(Number.isFinite(nextRemaining))projectile.networkPhaseRemaining=nextRemaining;
  if(Number.isFinite(nextDuration))projectile.networkPhaseDuration=nextDuration;
- return {phase:nextPhase,remaining:projectile.networkPhaseRemaining,duration:projectile.networkPhaseDuration};
+ return {phase:nextPhase,remaining:Number.isFinite(Number(projectile.networkPhaseRemaining))?Number(projectile.networkPhaseRemaining):projectile.phaseRemaining,duration:Number.isFinite(Number(projectile.networkPhaseDuration))?Number(projectile.networkPhaseDuration):projectile.phaseDuration};
 }
 function receiveOnlineProjectile(data){
  if(!data||!data.sessionId||!data.id)return;
