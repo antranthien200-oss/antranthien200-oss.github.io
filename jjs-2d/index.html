@@ -7164,6 +7164,8 @@ function updateTenEffects(f,dt){
  } if(f.tenGardenTimer>0){if(f.stun>.04){f.tenGardenTimer=0;f.tenGardenDrain=0;showToast('CHIMERA SHADOW GARDEN · PORTAL BROKEN',900)}else{f.vx=0;f.vy=0;f.tenGardenDrain=(f.tenGardenDrain||0)+dt*4;const drain=Math.floor(f.tenGardenDrain);if(drain>0){f.tenGardenDrain-=drain;f.hp=Math.max(0,f.hp-drain);f.hpRegenWait=4.5;updateHud();if(f.hp<=0){cleanupFighterDeath(f);f.hp=0;f.dead=true;f.respawn=2.5;f.tenGardenTimer=0;popText(f.x,f.y-60,'DOMAIN STRAIN · K.O.','#aebbd0',18)}}}}
 }
 function updateFighter(f,dt){if(f.dead)return;
+ // Expire hit flashes before capture locks return early from fighter simulation.
+ f.flash=Math.max(0,(f.flash||0)-dt);
  if(f.gojoBluePull&&!onlineMode){
   const pull=f.gojoBluePull,dx=pull.x-f.x,dy=pull.y-f.y,d=Math.hypot(dx,dy)||1,step=Math.min(d,680*dt);
   if(d>7){f.x+=dx/d*step;f.y+=dy/d*step;collideWorld(f)}
@@ -7197,7 +7199,7 @@ function updateFighter(f,dt){if(f.dead)return;
    game.shake=Math.max(game.shake,4.5+2.5*shakePulse);
   }
   if(f.motion.t>=f.motion.duration)f.motion=null;
- }advanceVehicleTransition(f,dt);if(f.vehicleTransition&&f.vehicleTransition.mode==='exit'){f.vx=0;f.vy=0;updateDomainContainment(f);return}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);const gojoCounterExpired=!onlineMode&&f.counterKind==='gojoTwofoldCounter'&&f.counterWindow>0&&f.counterWindow<=dt;f.counterWindow=Math.max(0,f.counterWindow-dt);if(f.counterWindow===0){if(gojoCounterExpired)setMotion(f,'gojoCounterMiss',.34,f.face,null);f.counterKind=''}f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.flash=Math.max(0,f.flash-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
+ }advanceVehicleTransition(f,dt);if(f.vehicleTransition&&f.vehicleTransition.mode==='exit'){f.vx=0;f.vy=0;updateDomainContainment(f);return}f.dashCd=Math.max(0,f.dashCd-dt);const rhythmFast=f.char==='restless'&&f.jackpot&&f.rhythmStacks>0?1+Math.min(1,f.rhythmStacks*.12):1;f.skillCd=f.skillCd.map(v=>Math.max(0,v-dt*rhythmFast));f.specialCd=Math.max(0,f.specialCd-dt*rhythmFast);f.gojoDomain02Cd=Math.max(0,(f.gojoDomain02Cd||0)-dt);const gojoCounterExpired=!onlineMode&&f.counterKind==='gojoTwofoldCounter'&&f.counterWindow>0&&f.counterWindow<=dt;f.counterWindow=Math.max(0,f.counterWindow-dt);if(f.counterWindow===0){if(gojoCounterExpired)setMotion(f,'gojoCounterMiss',.34,f.face,null);f.counterKind=''}f.reserveBallWindow=Math.max(0,f.reserveBallWindow-dt);const oldBlackFlashWindow=f.blackFlashWindow;f.blackFlashWindow=Math.max(0,f.blackFlashWindow-dt);if(oldBlackFlashWindow>0&&f.blackFlashWindow===0)f.blackFlashChain=0;f.feverWindow=Math.max(0,f.feverWindow-dt);f.shadowTimer=Math.max(0,(f.shadowTimer||0)-dt);if(f.awakened&&!(game.domainClash&&game.domainClash.members.includes(f))){f.awakeFuel=Math.max(0,(f.awakeFuel??100)-(f.awakeFuelDrainRate||100/60)*dt);if(f.awakeFuel<=0)endAwakening(f)}if(f.jackpot){f.jackpotParticleTimer=(f.jackpotParticleTimer||0)-dt;if(f.jackpotParticleTimer<=0){f.jackpotParticleTimer=.065;burst(f.x+rnd(-24,24),f.y-24+rnd(-25,25),Math.random()<.5?'#5df486':'#a5ffb4',3,3.2)}if(!(game.domainClash&&game.domainClash.members.includes(f))){f.hp=Math.min(f.maxHp,f.hp+4*dt);if(f.awakeFuel<=0)endAwakening(f)}}if(game.domainClash&&game.domainClash.members.includes(f))f.block=false;
  if(f.vehicle){f.x=f.vehicle.x;f.y=f.vehicle.y;f.vx=f.vehicle.vx;f.vy=f.vehicle.vy;updateDomainContainment(f);return;}
  if(f.rooted>0){f.rooted=Math.max(0,f.rooted-dt);f.vx=0;f.vy=0}else if(f.stun>0){const drag=Math.pow(.985,dt*60);f.vx*=drag;f.vy*=drag}else{const drag=Math.pow(f.block?.72:.86,dt*60);f.vx*=drag;f.vy*=drag}const crushDash=f.yujiCrushDash,crushDashActive=!!(crushDash&&f.stun<=.02&&f.rooted<=0);
   if(crushDash&&!crushDashActive)f.yujiCrushDash=null;
@@ -7389,6 +7391,8 @@ function updateProjectiles(dt){
      if(!target||target.dead||target.vehicle)continue;
      const targetCenterY=p.y+23,dx=p.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy);
      if(gap>=pullRadius)continue;
+     // Keep Max Blue's own pull/damage from repeatedly blinking the captured fighter.
+     target.blueMaxVisualUntil=Math.max(Number(target.blueMaxVisualUntil)||0,game.time+.22);
      // Pull the fighter's visible body center (23px above its world anchor) directly into the orb.
      const pullSpeed=190+((pullRadius-gap)/pullRadius)*260,step=Math.min(gap,pullSpeed*dt);
      if(step>0){
@@ -10550,7 +10554,9 @@ function drawHeadHands(f,deferMotionVfx=false){
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
   ctx.restore();
  }
- if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}if(f.flash>0)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;drawCuteHead(f,c,stunTheme);
+ if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}const blueMaxFlashSuppressed=(f.char==='honored'&&f.awakened&&name==='gojoBlueMax')||Number(f.blueMaxVisualUntil)>game.time||!!f.blueMaxSuckedBy;
+ if(f.flash>0&&!blueMaxFlashSuppressed)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;
+ drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
