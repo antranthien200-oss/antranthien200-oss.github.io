@@ -7273,6 +7273,7 @@ function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i];
   try{
+  if(p.kind==='blueMax')game.blueMaxVisualSuppressUntil=Math.max(Number(game.blueMaxVisualSuppressUntil)||0,game.time+.3);
   const t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
   if(p.kind==='red'&&p.owner&&p.owner.char==='honored'&&!p.owner.awakened){
    p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
@@ -8990,13 +8991,23 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.restore();
 }
 
+function refreshGojoBlueMaxVisualSuppression(){
+ const hasProjectile=projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
+ const isCaster=f=>!!(f&&f.motion&&f.motion.name==='gojoBlueMax');
+ let hasRemoteCaster=false;
+ for(const remote of onlineRemotePlayers.values()){
+  if(isCaster(remote)){hasRemoteCaster=true;break}
+ }
+ if(hasProjectile||isCaster(player)||isCaster(enemy)||hasRemoteCaster){
+  // Keep the suppression window stable across late/missing online projectile snapshots.
+  game.blueMaxVisualSuppressUntil=Math.max(Number(game.blueMaxVisualSuppressUntil)||0,game.time+.3);
+ }
+}
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f)return false;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
- // The owner animation is authoritative even if a network snapshot briefly drops the projectile reference.
  if(f.motion&&f.motion.name==='gojoBlueMax')return true;
- // Do not let replicated hit-flash or stun overlays blink either fighter during any MAX phase.
- return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
+ return (Number(game.blueMaxVisualSuppressUntil)||0)>game.time;
 }
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
@@ -9017,9 +9028,9 @@ const JJS_HEAD_PALETTE={
  trashman:{main:'#778489',accent:'#bed0ad',shadow:'#39464c'},
  dummy:{main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'}
 };
-function getFighterTheme(f){
+function getFighterTheme(f,suppressTransientWhiteFlash=false){
  if(f.dummyWhiteVisual)return {main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'};
- if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
+ if(f.cursedWhiteFlash>0&&!suppressTransientWhiteFlash)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
  if(f.char==='vessel'&&f.awakened)return {main:'#9f3046',accent:'#f05c70',shadow:'#571c30'};
  if(f.char==='honored'&&f.awakened&&f.gojoSkinAwakened)return {main:'#26b8ff',accent:'#83ddff',shadow:'#1268b8'};
@@ -9027,8 +9038,8 @@ function getFighterTheme(f){
  if(f.char==='perfection'&&f.awakened)return {main:'#9239cc',accent:'#e2adff',shadow:'#45156b'};
  return p;
 }
-function getStunTintedTheme(f){
- const base=getFighterTheme(f);
+function getStunTintedTheme(f,suppressTransientWhiteFlash=false){
+ const base=getFighterTheme(f,suppressTransientWhiteFlash);
  if(!f||f.stun<=.04)return base;
  const blend=(hex,tint,amount)=>{
   const source=parseInt(hex.slice(1),16),target=parseInt(tint.slice(1),16);
@@ -9947,7 +9958,7 @@ function drawStunRain(f,x,y,options=null){
 }
 
 function drawHeadHands(f,deferMotionVfx=false){
- const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f):getStunTintedTheme(f);
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -11938,6 +11949,7 @@ function positionGojoAwakeningDialogue(){
 }
 
 function draw(){
+ refreshGojoBlueMaxVisualSuppression();
  const mobileRemoteRender=onlineMode?getMobileRemoteRenderSets():{detailed:[],simple:[]};
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
  if(zoomFighter&&!zoomFighter.dead){
