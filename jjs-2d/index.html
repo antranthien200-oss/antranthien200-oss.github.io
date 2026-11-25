@@ -4484,7 +4484,7 @@ function applyOnlineRoomState(state){
  const local=state.players.get(onlineSessionId);
  if(local&&player){
   const wasDead=player.dead,oldLocalHp=Number(player.hp)||0;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
-   if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp,grabImpact=String(local.attackType||'')==='grab',blueMaxTickHit=!!local.blueMaxSuckedBy||projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&p.life>0&&p.owner&&p.owner.team!==player.team&&Math.hypot(p.x-player.x,p.y+23-player.y)<(p.pullRadius||420)+24);if(!blueMaxTickHit){player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',grabImpact?2:12,grabImpact?2.1:4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,grabImpact?.8:2.5);if(!grabImpact)game.hitStop=Math.max(game.hitStop,.018)}}}
+   if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp,grabImpact=String(local.attackType||'')==='grab',blueMaxTickHit=isGojoBlueMaxVisualSuppressed(player)||!!local.blueMaxSuckedBy||projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&p.life>0&&p.owner&&p.owner.team!==player.team&&Math.hypot(p.x-player.x,p.y+23-player.y)<(p.pullRadius||420)+24);if(!blueMaxTickHit){player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',grabImpact?2:12,grabImpact?2.1:4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,grabImpact?.8:2.5);if(!grabImpact)game.hitStop=Math.max(game.hitStop,.018)}}}
   player.meter=clamp(Number(local.meter)||0,0,100);player.awakeMode=String(local.awakeMode||"");player.awakeFuel=Number(local.awakeFuel)||0;player.awakeFuelDrainRate=Number(local.awakeFuelDrainRate)||0;player.jackpot=!!local.jackpot;player.consecutiveJackpots=Number(local.consecutiveJackpots)||0;player.domainStunGuaranteed=!!local.domainStunGuaranteed;player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.skillLockUntil=Number(local.skillLockUntil)||0;player.blueSuckedBy=String(local.blueSuckedBy||'');player.blueMaxSuckedBy=String(local.blueMaxSuckedBy||'');player.blueSuctionX=Number(local.blueSuctionX)||0;player.blueSuctionY=Number(local.blueSuctionY)||0;player.blueSuctionRemaining=Number(local.blueSuctionRemaining)||0;if(!(player.onlineDashPredictionUntil>stateArrivalNow)){player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;}
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;const localAbilities=local.abilities||{};
   const pendingDomain=player.onlineDomainRequestPending,serverDomainType=String(local.domainType||'');
@@ -4564,7 +4564,7 @@ function applyOnlineRoomState(state){
     remote.motion={name:String(net.motionName),t:clamp(Math.max(reported,serverAge),0,duration),duration,activeDuration:duration,angle:remote.networkFace,target:null};
    }else remote.motion=null;
   }
-  if(remote.hp<oldHp&&!remote.dead){const loss=oldHp-remote.hp,blueMaxTickHit=!!remote.blueMaxSuckedBy||projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&p.life>0&&p.owner&&p.owner.team!==remote.team&&Math.hypot(p.x-remote.x,p.y+23-remote.y)<(p.pullRadius||420)+24);if(!blueMaxTickHit){remote.flash=.16;const grabImpact=remote.attackType==='grab';burst(remote.x,remote.y,'#ffe1ac',grabImpact?2:10,grabImpact?2.1:3);popText(remote.x,remote.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,1.2)}}
+  if(remote.hp<oldHp&&!remote.dead){const loss=oldHp-remote.hp,blueMaxTickHit=isGojoBlueMaxVisualSuppressed(remote)||!!remote.blueMaxSuckedBy||projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&p.life>0&&p.owner&&p.owner.team!==remote.team&&Math.hypot(p.x-remote.x,p.y+23-remote.y)<(p.pullRadius||420)+24);if(!blueMaxTickHit){remote.flash=.16;const grabImpact=remote.attackType==='grab';burst(remote.x,remote.y,'#ffe1ac',grabImpact?2:10,grabImpact?2.1:3);popText(remote.x,remote.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,1.2)}}
   if(remote.dead&&!remote.wasDead){popText(remote.x,remote.y-65,'K.O.','#ffcf75',25);remote.wasDead=true}
   if(!remote.dead)remote.wasDead=false;
  }
@@ -7331,6 +7331,7 @@ function updateProjectiles(dt){
  for(let i=projectiles.length-1;i>=0;i--){
   const p=projectiles[i];
   try{
+  if(p.kind==='blueMax')game.blueMaxVisualSuppressUntil=Math.max(Number(game.blueMaxVisualSuppressUntil)||0,game.time+.3);
   const t=p.targetRef|| (p.owner===player?targetOf(p.owner):player);
   if(p.kind==='red'&&p.owner&&p.owner.char==='honored'&&!p.owner.awakened){
    p.gojoFlowParticleTimer=(p.gojoFlowParticleTimer||0)-dt;
@@ -9057,13 +9058,23 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.restore();
 }
 
+function refreshGojoBlueMaxVisualSuppression(){
+ const hasProjectile=projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
+ const isCaster=f=>!!(f&&f.motion&&f.motion.name==='gojoBlueMax');
+ let hasRemoteCaster=false;
+ for(const remote of onlineRemotePlayers.values()){
+  if(isCaster(remote)){hasRemoteCaster=true;break}
+ }
+ if(hasProjectile||isCaster(player)||isCaster(enemy)||hasRemoteCaster){
+  // Keep the suppression window stable across late/missing online projectile snapshots.
+  game.blueMaxVisualSuppressUntil=Math.max(Number(game.blueMaxVisualSuppressUntil)||0,game.time+.3);
+ }
+}
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f)return false;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
- // The owner animation is authoritative even if a network snapshot briefly drops the projectile reference.
  if(f.motion&&f.motion.name==='gojoBlueMax')return true;
- // Do not let replicated hit-flash or stun overlays blink either fighter during any MAX phase.
- return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
+ return (Number(game.blueMaxVisualSuppressUntil)||0)>game.time;
 }
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
@@ -9084,9 +9095,9 @@ const JJS_HEAD_PALETTE={
  trashman:{main:'#778489',accent:'#bed0ad',shadow:'#39464c'},
  dummy:{main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'}
 };
-function getFighterTheme(f){
+function getFighterTheme(f,suppressTransientWhiteFlash=false){
  if(f.dummyWhiteVisual)return {main:'#ffffff',accent:'#ffffff',shadow:'#c5cdd4'};
- if(f.cursedWhiteFlash>0)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
+ if(f.cursedWhiteFlash>0&&!suppressTransientWhiteFlash)return {main:'#ffffff',accent:'#ffffff',shadow:'#d5e6ef'};
  const p=JJS_HEAD_PALETTE[f.char]||JJS_HEAD_PALETTE.honored;
  if(f.char==='vessel'&&f.awakened)return {main:'#9f3046',accent:'#f05c70',shadow:'#571c30'};
  if(f.char==='honored'&&f.awakened&&f.gojoSkinAwakened)return {main:'#26b8ff',accent:'#83ddff',shadow:'#1268b8'};
@@ -9094,8 +9105,8 @@ function getFighterTheme(f){
  if(f.char==='perfection'&&f.awakened)return {main:'#9239cc',accent:'#e2adff',shadow:'#45156b'};
  return p;
 }
-function getStunTintedTheme(f){
- const base=getFighterTheme(f);
+function getStunTintedTheme(f,suppressTransientWhiteFlash=false){
+ const base=getFighterTheme(f,suppressTransientWhiteFlash);
  if(!f||f.stun<=.04)return base;
  const blend=(hex,tint,amount)=>{
   const source=parseInt(hex.slice(1),16),target=parseInt(tint.slice(1),16);
@@ -10014,7 +10025,7 @@ function drawStunRain(f,x,y,options=null){
 }
 
 function drawHeadHands(f,deferMotionVfx=false){
- const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f):getStunTintedTheme(f);
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -12018,6 +12029,7 @@ function positionGojoAwakeningDialogue(){
 }
 
 function draw(){
+ refreshGojoBlueMaxVisualSuppression();
  const mobileRemoteRender=onlineMode?getMobileRemoteRenderSets():{detailed:[],simple:[]};
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
  if(zoomFighter&&!zoomFighter.dead){
