@@ -4764,10 +4764,39 @@ function handleOnlineDisconnect(code){
 function findOnlineProjectileIndex(sessionId,id){
  return projectiles.findIndex(p=>p&&p.serverOwnedVisual&&p.networkSessionId===sessionId&&String(p.networkId)===String(id));
 }
+function syncGojoBlueMaxNetworkPhase(projectile,phase,remaining,duration){
+ if(!projectile)return null;
+ const phaseOrder={forming:0,active:1,collapse:2};
+ const currentPhase=String(projectile.networkPhase||projectile.phase||'forming');
+ const incomingPhase=String(phase||currentPhase);
+ const currentOrder=Object.prototype.hasOwnProperty.call(phaseOrder,currentPhase)?phaseOrder[currentPhase]:0;
+ const incomingOrder=Object.prototype.hasOwnProperty.call(phaseOrder,incomingPhase)?phaseOrder[incomingPhase]:currentOrder;
+ // Network snapshots can arrive late. Never let an older packet rewind the orb's phase.
+ const nextPhase=incomingOrder>currentOrder?incomingPhase:currentPhase;
+ const phaseChanged=nextPhase!==currentPhase;
+ const incomingRemaining=Number(remaining);
+ let nextRemaining=Number(projectile.networkPhaseRemaining);
+ if(Number.isFinite(incomingRemaining)){
+  const received=Math.max(0,incomingRemaining);
+  // Within one phase, accept only forward progress. A new phase gets its own fresh timer.
+  nextRemaining=phaseChanged||!Number.isFinite(nextRemaining)?received:Math.min(Math.max(0,nextRemaining),received);
+ }
+ const incomingDuration=Number(duration);
+ let nextDuration=Number(projectile.networkPhaseDuration);
+ if(Number.isFinite(incomingDuration)&&incomingDuration>0&&(!Number.isFinite(nextDuration)||phaseChanged))nextDuration=incomingDuration;
+ projectile.networkPhase=nextPhase;
+ if(Number.isFinite(nextRemaining))projectile.networkPhaseRemaining=nextRemaining;
+ if(Number.isFinite(nextDuration))projectile.networkPhaseDuration=nextDuration;
+ return {phase:nextPhase,remaining:projectile.networkPhaseRemaining,duration:projectile.networkPhaseDuration};
+}
 function receiveOnlineProjectile(data){
  if(!data||!data.sessionId||!data.id)return;
  const index=findOnlineProjectileIndex(data.sessionId,data.id);
- if(index>=0){Object.assign(projectiles[index],{x:Number(data.x)||projectiles[index].x,y:Number(data.y)||projectiles[index].y,networkX:Number(data.x)||projectiles[index].x,networkY:Number(data.y)||projectiles[index].y,phase:String(data.phase||projectiles[index].phase||'active'),phaseRemaining:Number.isFinite(Number(data.phaseRemaining))?Number(data.phaseRemaining):projectiles[index].phaseRemaining,phaseDuration:Number.isFinite(Number(data.phaseDuration))?Number(data.phaseDuration):projectiles[index].phaseDuration,networkPhase:String(data.phase||projectiles[index].phase||'active'),networkPhaseRemaining:Number.isFinite(Number(data.phaseRemaining))?Number(data.phaseRemaining):projectiles[index].phaseRemaining,networkPhaseDuration:Number.isFinite(Number(data.phaseDuration))?Number(data.phaseDuration):projectiles[index].phaseDuration,serverOwnedVisual:true,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant});return}
+ if(index>=0){
+  const existing=projectiles[index],phaseSync=existing.kind==='blueMax'?syncGojoBlueMaxNetworkPhase(existing,data.phase,data.phaseRemaining,data.phaseDuration):null;
+  Object.assign(existing,{x:Number(data.x)||existing.x,y:Number(data.y)||existing.y,networkX:Number(data.x)||existing.x,networkY:Number(data.y)||existing.y,phase:phaseSync?phaseSync.phase:String(data.phase||existing.phase||'active'),phaseRemaining:phaseSync?phaseSync.remaining:(Number.isFinite(Number(data.phaseRemaining))?Number(data.phaseRemaining):existing.phaseRemaining),phaseDuration:phaseSync?phaseSync.duration:(Number.isFinite(Number(data.phaseDuration))?Number(data.phaseDuration):existing.phaseDuration),networkPhase:phaseSync?phaseSync.phase:String(data.phase||existing.phase||'active'),networkPhaseRemaining:phaseSync?phaseSync.remaining:(Number.isFinite(Number(data.phaseRemaining))?Number(data.phaseRemaining):existing.phaseRemaining),networkPhaseDuration:phaseSync?phaseSync.duration:(Number.isFinite(Number(data.phaseDuration))?Number(data.phaseDuration):existing.phaseDuration),serverOwnedVisual:true,golden:!!data.golden,domainBound:!!data.domainBound,rideVariant:!!data.rideVariant});
+  return;
+ }
  if(data.sessionId===onlineSessionId){
   if(String(data.kind||'')!=='sukunaFireArrow')return;
   const x=Number(data.x)||0,y=Number(data.y)||0;
@@ -4891,7 +4920,7 @@ function bindOnlineRoom(client,room){
  });
  room.onMessage('combat:projectile',receiveOnlineProjectile);
   room.onMessage('combat:door-trap',data=>{if(!data||!Number.isFinite(Number(data.x))||!Number.isFinite(Number(data.y)))return;const owner=data.sessionId===onlineSessionId?player:onlineRemotePlayers.get(data.sessionId)||null;doorTraps.push({x:Number(data.x),y:Number(data.y),life:clamp(Number(data.life)||1.25,.1,2),owner,hit:true})});
- room.onMessage('combat:projectile-state',data=>{for(const state of data&&data.projectiles||[]){const i=findOnlineProjectileIndex(state.sessionId,state.id);if(i>=0){const p=projectiles[i];p.networkX=Number(state.x)||p.x;p.networkY=Number(state.y)||p.y;p.networkLife=Number(state.life)||p.life;p.networkVx=Number(state.vx)||p.networkVx||p.vx;p.networkVy=Number(state.vy)||p.networkVy||p.vy;if(typeof state.phase==='string'){p.networkPhase=state.phase;p.networkPhaseRemaining=Number.isFinite(Number(state.phaseRemaining))?Number(state.phaseRemaining):p.networkPhaseRemaining;p.networkPhaseDuration=Number.isFinite(Number(state.phaseDuration))?Number(state.phaseDuration):p.networkPhaseDuration}p.travelled=Number(state.travelled)||p.travelled||0;p.maxDistance=Number(state.maxDistance)||p.maxDistance||700;p.golden=!!state.golden;p.domainBound=!!state.domainBound;p.rideVariant=!!state.rideVariant;p.altitude=p.kind==='tenNue'?Math.sin(Math.PI*clamp(p.travelled/p.maxDistance,0,1))*175:p.altitude||0}}});
+ room.onMessage('combat:projectile-state',data=>{for(const state of data&&data.projectiles||[]){const i=findOnlineProjectileIndex(state.sessionId,state.id);if(i>=0){const p=projectiles[i];p.networkX=Number(state.x)||p.x;p.networkY=Number(state.y)||p.y;p.networkLife=Number(state.life)||p.life;p.networkVx=Number(state.vx)||p.networkVx||p.vx;p.networkVy=Number(state.vy)||p.networkVy||p.vy;if(typeof state.phase==='string'){if(p.kind==='blueMax')syncGojoBlueMaxNetworkPhase(p,state.phase,state.phaseRemaining,state.phaseDuration);else{p.networkPhase=state.phase;p.networkPhaseRemaining=Number.isFinite(Number(state.phaseRemaining))?Number(state.phaseRemaining):p.networkPhaseRemaining;p.networkPhaseDuration=Number.isFinite(Number(state.phaseDuration))?Number(state.phaseDuration):p.networkPhaseDuration}}p.travelled=Number(state.travelled)||p.travelled||0;p.maxDistance=Number(state.maxDistance)||p.maxDistance||700;p.golden=!!state.golden;p.domainBound=!!state.domainBound;p.rideVariant=!!state.rideVariant;p.altitude=p.kind==='tenNue'?Math.sin(Math.PI*clamp(p.travelled/p.maxDistance,0,1))*175:p.altitude||0}}});
  room.onMessage('combat:projectile-hit',data=>removeOnlineProjectile(data,true));
  room.onMessage('combat:projectile-impact',data=>removeOnlineProjectile(data,true));
  room.onMessage('combat:projectile-explode',data=>removeOnlineProjectile(data,true));
