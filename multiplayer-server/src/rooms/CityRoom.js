@@ -147,6 +147,8 @@ combatAction(client,payload={}){
   const flameArrowAction=!!p&&kind==="2"&&p.character==="vessel"&&p.awakened&&p.stun<=.16;
   const gojoFlashStepAction=!!p&&kind==="special"&&p.character==="honored";
   if(!p||p.dead||p.vehicleId||(p.stun>0&&kind!=="dash"&&!flameArrowAction)||p.grabbedBy||p.activeGrabTarget||p.blueSuckedBy||p.blueMaxSuckedBy)return;
+  const gojoBlueMaxAbilityLock=Array.from(this.projectiles.values()).some(projectile=>projectile&&projectile.ownerId===id&&projectile.kind==="blueMax"&&projectile.life>0);
+  if(gojoBlueMaxAbilityLock&&["1","3","4","special","awaken","domain02"].includes(kind))return;
   if(!["m1","dash","special","awaken","domain02","1","2","3","4"].includes(kind))return;
   if(kind==="domain02"&&(p.character!=="honored"||(p.awakened===false&&p.meter<100)))return;
   const counter=counterSettings(p.character,kind,p.awakened);
@@ -230,6 +232,7 @@ combatAction(client,payload={}){
   const reject=reason=>{client.send("domain:reject",{domainType:requested,reason});return false};
   if(!p||!requested)return reject("INVALID DOMAIN");
   if(p.dead||p.vehicleId||p.stun>0||p.domainClashId)return reject("DOMAIN UNAVAILABLE");
+  if(Array.from(this.projectiles.values()).some(projectile=>projectile&&projectile.ownerId===id&&projectile.kind==="blueMax"&&projectile.life>0))return reject("GOJO BLUE MAX IN PROGRESS");
   const settings=domainSettings(p.character,requested);
   if(!settings)return reject("INVALID DOMAIN");
   if(p.domainType||p.domainWindup>0||p.domainTimer>0){
