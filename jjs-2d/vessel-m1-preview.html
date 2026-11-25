@@ -5594,7 +5594,7 @@ function damage(target,amount,source,opts={}){
  if(target.block&&!frontGuard&&!opts.unblockable)popText(target.x,target.y-39,'BACK HIT','#ffcfad',10);
  if(!(jackpotProtected&&target.jackpot)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5;}
  registerPlayerHit(target,source,amount);
- target.stun=sukunaFireArmor?0:Math.max(target.stun,opts.stun??.35);target.invuln=opts.invuln??.12;target.flash=.16;if(!sukunaFireArmor){target.vx+=opts.kx??0;target.vy+=opts.ky??0}
+ target.stun=sukunaFireArmor?0:Math.max(target.stun,opts.stun??.35);target.invuln=opts.invuln??.12;target.flash=opts.suppressHitFlash?0:.16;if(!sukunaFireArmor){target.vx+=opts.kx??0;target.vy+=opts.ky??0}
  if(!target.awakened)target.meter=clamp(target.meter+amount*.42,0,100);
  if(source&&!source.awakened)source.meter=clamp(source.meter+amount*.58,0,100);
  burst(target.x,target.y,opts.color||'#fff',opts.grabHit?2:opts.big?22:10,opts.grabHit?2.2:opts.big?6:3);
@@ -7351,7 +7351,7 @@ function updateProjectiles(dt){
       const dx=p.x-target.x,dy=p.y+23-target.y,gap=Math.hypot(dx,dy);
       if(gap>=(p.damageRadius||165))continue;
       const inv=1/(gap||1);
-      damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true});
+      damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true,suppressHitFlash:true});
      }
     }
     if(p.phaseRemaining<=0){
@@ -10487,7 +10487,7 @@ function drawHeadHands(f,deferMotionVfx=false){
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
   ctx.restore();
  }
- if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}const blueMaxFlashSuppressed=(f.char==='honored'&&f.awakened&&name==='gojoBlueMax')||Number(f.blueMaxVisualUntil)>game.time||!!f.blueMaxSuckedBy;
+ if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}const blueMaxFlashSuppressed=(f.char==='honored'&&f.awakened&&name==='gojoBlueMax')||Number(f.blueMaxVisualUntil)>game.time||!!f.blueMaxSuckedBy||projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0&&(p.owner===f||(p.owner&&p.owner.team!==f.team&&Math.hypot(p.x-f.x,p.y+23-f.y)<(p.pullRadius||420)+24)));
  if(f.flash>0&&!blueMaxFlashSuppressed)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;
  drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
@@ -10511,7 +10511,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  });
  ctx.restore();
  if(!deferHands&&f.sideViewPreview&&sideViewFrontHand){drawFloatingHand(sideViewFrontHand.x,sideViewFrontHand.y,sideViewFrontHand.angle,stunTheme,sideViewFrontHand.scale)}
- drawStunRain(f,x,y);
+ if(!blueMaxFlashSuppressed)drawStunRain(f,x,y);
  
  if(f.pullTimer>.02){ctx.save();ctx.globalAlpha=.55;ctx.strokeStyle=f.pullColor||'#75dcff';ctx.lineWidth=2;ctx.setLineDash([5,4]);ctx.beginPath();ctx.ellipse(x,y+15,25,8,game.time*2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();}
  if(f.transfigureMeter>0){const mw=46,bw=mw*(f.transfigureMeter/100);ctx.save();ctx.fillStyle='#061014cc';ctx.fillRect(x-mw/2,headY-47,mw,7);ctx.fillStyle='#88dfcc';ctx.fillRect(x-mw/2,headY-47,bw,7);ctx.strokeStyle='#d8fff4';ctx.strokeRect(x-mw/2,headY-47,mw,7);ctx.font='900 7px system-ui';ctx.textAlign='center';ctx.fillStyle='#d9fff4';ctx.fillText('SOUL',x,headY-51);ctx.restore();}
