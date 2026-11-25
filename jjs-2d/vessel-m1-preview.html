@@ -6323,11 +6323,13 @@ function useAttack(f,kind,networkReplay=false){
  if(!networkReplay&&kind==='special'&&f.specialCd>0)return;
  // A committed skill cannot be cancelled by another skill, M1, or dash.
  // Keep the game's timed combo inputs available during their short follow-up windows.
+ const gojoBlueMaxAbilityLock=!networkReplay&&f.char==='honored'&&f.awakened&&projectiles.some(p=>p&&p.kind==='blueMax'&&p.owner===f&&p.life>0);
+ if(gojoBlueMaxAbilityLock&&['1','3','4','special','awaken','domain02'].includes(kind))return;
  const timedComboFollowUp=
   yujiBlackFlashFollowUp||
   (kind==='2'&&f.char==='restless'&&!f.jackpot&&f.feverWindow>0)||
   (kind==='2'&&f.char==='ten'&&(!f.awakened||f.tenBase)&&f.tenToadWindow>0&&f.tenToadTarget&&!f.tenToadTarget.dead);
- if(f.skillInputLocked&&f.motion&&kind!=='special'&&!timedComboFollowUp)return;
+ if(f.skillInputLocked&&f.motion&&kind!=='special'&&!timedComboFollowUp&&!(gojoBlueMaxAbilityLock&&kind==='2'))return;
  // Buffer an early second press so players do not have to hit the exact midpoint frame.
  if(yujiBlackFlashFollowUp&&!(f.blackFlashWindow>0)){f.yujiDivergentAttack.buffered=true;return}
  const gojoFlashStepTargetRef=f.char==='honored'&&kind==='special'?gojoFlashStepTarget(f):null,gojoBlueMaxAutoTarget=f.char==='honored'&&f.awakened&&kind==='1'?gojoBlueMaxMobileTarget(f):null;
