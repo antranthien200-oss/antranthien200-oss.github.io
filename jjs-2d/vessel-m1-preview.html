@@ -5619,10 +5619,10 @@ function damage(target,amount,source,opts={}){
  }
   updateHud();return;
  }
- if(!sukunaFireArmor)interruptSkillCast(target);
+ if(!sukunaFireArmor&&!opts.suppressSkillInterrupt)interruptSkillCast(target);
  if(target.block&&!frontGuard&&!opts.unblockable)popText(target.x,target.y-39,'BACK HIT','#ffcfad',10);
  if(!(jackpotProtected&&target.jackpot)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5;}
- registerPlayerHit(target,source,amount);
+ if(!opts.suppressComboTracking)registerPlayerHit(target,source,amount);
  target.stun=sukunaFireArmor?0:Math.max(target.stun,opts.stun??.35);target.invuln=opts.invuln??.12;const suppressHitFeedback=opts.suppressHitFeedback===true;target.flash=(opts.suppressHitFlash||suppressHitFeedback)?0:.16;if(!sukunaFireArmor){target.vx+=opts.kx??0;target.vy+=opts.ky??0}
  if(!target.awakened)target.meter=clamp(target.meter+amount*.42,0,100);
  if(source&&!source.awakened)source.meter=clamp(source.meter+amount*.58,0,100);
@@ -5632,7 +5632,7 @@ function damage(target,amount,source,opts={}){
  }
  if(opts.big){game.shake=Math.max(game.shake,9);game.hitStop=Math.max(game.hitStop,.045);if(!opts.grabHit)addDebris(target.x,target.y,'#c9cbd0',8)}
  if(target.hp<=0){cleanupFighterDeath(target);target.dead=true;target.respawn=target.isTrainingDummy?2.4:2.5;if(target.isTrainingDummy){popText(target.x,target.y-75,'DUMMY DOWN','#aaf4e8',22)}else{popText(target.x,target.y-65,'K.O.','#ffcf75',28);if(source===player){game.kills++;showCombatAnnouncement('K.O.','ko');showToast('K.O. · '+game.kills,1000)}}}
- updateHud();
+ if(!opts.suppressHudUpdate)updateHud();
 }
 function circleHit(x,y,r,source,amount,opts={}){let target=source===player?targetOf(source):player;if(target.dead)return;let d=Math.hypot(target.x-x,target.y-y),mobileBonus=mobileControlsEnabled&&source===player?14:0;if(d<r+18+mobileBonus){let ang=Math.atan2(target.y-y,target.x-x);damage(target,amount,source,{...opts,kx:Math.cos(ang)*(opts.push||4),ky:Math.sin(ang)*(opts.push||4)})}}
 const MOBILE_CAMERA_ZOOM=1.5;
@@ -7379,13 +7379,15 @@ function updateProjectiles(dt){
     }
     if(p.tick<=0){
      p.tick=.2;
+     let blueMaxTickHit=false;
      for(const target of targets){
       if(!target||target.dead||target.vehicle)continue;
       const dx=p.x-target.x,dy=p.y+23-target.y,gap=Math.hypot(dx,dy);
       if(gap>=(p.damageRadius||165))continue;
-      const inv=1/(gap||1);
-      damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true,suppressHitFlash:true,suppressHitFeedback:true});
+      blueMaxTickHit=true;
+      damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true,suppressHitFlash:true,suppressHitFeedback:true,suppressSkillInterrupt:true,suppressComboTracking:true,suppressHudUpdate:true});
      }
+     if(blueMaxTickHit)updateHud();
     }
     if(p.phaseRemaining<=0){
      p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1;p.phaseDuration=p.collapseDuration||1;
@@ -8988,6 +8990,11 @@ function drawGojoBlueMaxProjectile(p,x,y){
  ctx.restore();
 }
 
+function isGojoBlueMaxVisualSuppressed(f){
+ if(!f)return false;
+ if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
+ return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0&&(p.owner===f||(p.owner&&p.owner.team!==f.team&&Math.hypot(p.x-f.x,p.y+23-f.y)<(p.pullRadius||420)+24)));
+}
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
  ctx.fillStyle=color;
@@ -9937,7 +9944,7 @@ function drawStunRain(f,x,y,options=null){
 }
 
 function drawHeadHands(f,deferMotionVfx=false){
- const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',stunTheme=getStunTintedTheme(f);
+ const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f):getStunTintedTheme(f);
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -10520,7 +10527,7 @@ function drawHeadHands(f,deferMotionVfx=false){
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
   ctx.restore();
  }
- if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}const blueMaxFlashSuppressed=(f.char==='honored'&&f.awakened&&name==='gojoBlueMax')||Number(f.blueMaxVisualUntil)>game.time||!!f.blueMaxSuckedBy||projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0&&(p.owner===f||(p.owner&&p.owner.team!==f.team&&Math.hypot(p.x-f.x,p.y+23-f.y)<(p.pullRadius||420)+24)));
+ if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}
  if(f.flash>0&&!blueMaxFlashSuppressed)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;
  drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
