@@ -4477,7 +4477,15 @@ function applyOnlineRoomState(state){
  const local=state.players.get(onlineSessionId);
  if(local&&player){
   const wasDead=player.dead,oldLocalHp=Number(player.hp)||0;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
-   if(player.hp<oldLocalHp-.05&&!local.dead){const loss=oldLocalHp-player.hp,grabImpact=String(local.attackType||'')==='grab';player.flash=.16;if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}else{burst(player.x,player.y,'#ff8293',grabImpact?2:12,grabImpact?2.1:4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,grabImpact?.8:2.5);if(!grabImpact)game.hitStop=Math.max(game.hitStop,.018)}}
+   if(player.hp<oldLocalHp-.05&&!local.dead){
+   const loss=oldLocalHp-player.hp,grabImpact=String(local.attackType||'')==='grab';
+   const blueMaxFlashProtected=isGojoBlueMaxVisualSuppressed(player)||!!local.blueMaxSuckedBy;
+   if(!blueMaxFlashProtected){
+    player.flash=.16;
+    if(player.block){player.blockImpact=.16;popText(player.x,player.y-39,'GUARD','#d7edff',12)}
+    else{burst(player.x,player.y,'#ff8293',grabImpact?2:12,grabImpact?2.1:4);popText(player.x,player.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,grabImpact?.8:2.5);if(!grabImpact)game.hitStop=Math.max(game.hitStop,.018)}
+   }
+  }
   player.meter=clamp(Number(local.meter)||0,0,100);player.awakeMode=String(local.awakeMode||"");player.awakeFuel=Number(local.awakeFuel)||0;player.awakeFuelDrainRate=Number(local.awakeFuelDrainRate)||0;player.jackpot=!!local.jackpot;player.consecutiveJackpots=Number(local.consecutiveJackpots)||0;player.domainStunGuaranteed=!!local.domainStunGuaranteed;player.stun=Number(local.stun)||0;player.invuln=Number(local.invuln)||0;player.skillLockUntil=Number(local.skillLockUntil)||0;player.blueSuckedBy=String(local.blueSuckedBy||'');player.blueMaxSuckedBy=String(local.blueMaxSuckedBy||'');player.blueSuctionX=Number(local.blueSuctionX)||0;player.blueSuctionY=Number(local.blueSuctionY)||0;player.blueSuctionRemaining=Number(local.blueSuctionRemaining)||0;if(!(player.onlineDashPredictionUntil>stateArrivalNow)){player.vx=Number(local.vx)||0;player.vy=Number(local.vy)||0;}
   player.dead=!!local.dead;player.respawn=Number(local.respawnTimer)||0;player.awakened=!!local.awakened;const localAbilities=local.abilities||{};
   const pendingDomain=player.onlineDomainRequestPending,serverDomainType=String(local.domainType||'');
@@ -4557,7 +4565,13 @@ function applyOnlineRoomState(state){
     remote.motion={name:String(net.motionName),t:clamp(Math.max(reported,serverAge),0,duration),duration,activeDuration:duration,angle:remote.networkFace,target:null};
    }else remote.motion=null;
   }
-  if(remote.hp<oldHp&&!remote.dead){const loss=oldHp-remote.hp;remote.flash=.16;const grabImpact=remote.attackType==='grab';burst(remote.x,remote.y,'#ffe1ac',grabImpact?2:10,grabImpact?2.1:3);popText(remote.x,remote.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,1.2)}
+  if(remote.hp<oldHp&&!remote.dead){
+   const loss=oldHp-remote.hp,grabImpact=remote.attackType==='grab';
+   const blueMaxFlashProtected=isGojoBlueMaxVisualSuppressed(remote)||!!remote.blueMaxSuckedBy;
+   if(!blueMaxFlashProtected){
+    remote.flash=.16;burst(remote.x,remote.y,'#ffe1ac',grabImpact?2:10,grabImpact?2.1:3);popText(remote.x,remote.y-43,'-'+Math.round(loss),'#ffe1ac',13);game.shake=Math.max(game.shake,1.2)
+   }
+  }
   if(remote.dead&&!remote.wasDead){popText(remote.x,remote.y-65,'K.O.','#ffcf75',25);remote.wasDead=true}
   if(!remote.dead)remote.wasDead=false;
  }
@@ -5623,7 +5637,7 @@ function damage(target,amount,source,opts={}){
  if(target.block&&!frontGuard&&!opts.unblockable)popText(target.x,target.y-39,'BACK HIT','#ffcfad',10);
  if(!(jackpotProtected&&target.jackpot)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5;}
  if(!opts.suppressComboTracking)registerPlayerHit(target,source,amount);
- target.stun=sukunaFireArmor?0:Math.max(target.stun,opts.stun??.35);target.invuln=opts.invuln??.12;const suppressHitFeedback=opts.suppressHitFeedback===true;target.flash=(opts.suppressHitFlash||suppressHitFeedback)?0:.16;if(!sukunaFireArmor){target.vx+=opts.kx??0;target.vy+=opts.ky??0}
+ target.stun=sukunaFireArmor?0:Math.max(target.stun,opts.stun??.35);target.invuln=opts.invuln??.12;const suppressHitFeedback=opts.suppressHitFeedback===true,blueMaxFlashProtected=isGojoBlueMaxVisualSuppressed(target);target.flash=(opts.suppressHitFlash||suppressHitFeedback||blueMaxFlashProtected)?0:.16;if(!sukunaFireArmor){target.vx+=opts.kx??0;target.vy+=opts.ky??0}
  if(!target.awakened)target.meter=clamp(target.meter+amount*.42,0,100);
  if(source&&!source.awakened)source.meter=clamp(source.meter+amount*.58,0,100);
  if(!suppressHitFeedback){
@@ -8992,22 +9006,24 @@ function drawGojoBlueMaxProjectile(p,x,y){
 }
 
 function refreshGojoBlueMaxVisualSuppression(){
- const hasProjectile=projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
- const isCaster=f=>!!(f&&f.motion&&f.motion.name==='gojoBlueMax');
- let hasRemoteCaster=false;
- for(const remote of onlineRemotePlayers.values()){
-  if(isCaster(remote)){hasRemoteCaster=true;break}
- }
- if(hasProjectile||isCaster(player)||isCaster(enemy)||hasRemoteCaster){
-  // Keep the suppression window stable across late/missing online projectile snapshots.
-  game.blueMaxVisualSuppressUntil=Math.max(Number(game.blueMaxVisualSuppressUntil)||0,game.time+.3);
- }
+ const clearExpired=f=>{
+  if(f&&(Number(f.blueMaxVisualUntil)||0)<=game.time)f.blueMaxVisualUntil=0;
+ };
+ clearExpired(player);clearExpired(enemy);
+ for(const remote of onlineRemotePlayers.values())clearExpired(remote);
 }
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f)return false;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
  if(f.motion&&f.motion.name==='gojoBlueMax')return true;
- return (Number(game.blueMaxVisualSuppressUntil)||0)>game.time;
+ // Protect only the caster and fighters actually inside an active Max Blue pull.
+ for(const p of projectiles){
+  if(!p||p.kind!=='blueMax'||p.life<=0)continue;
+  const owner=p.owner;
+  if(owner===f)return true;
+  if(owner&&owner.team!==f.team&&p.phase==='active'&&Math.hypot(p.x-f.x,p.y+23-f.y)<(Number(p.pullRadius)||420)+24)return true;
+ }
+ return false;
 }
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
