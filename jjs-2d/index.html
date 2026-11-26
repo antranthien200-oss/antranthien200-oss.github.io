@@ -4019,6 +4019,7 @@ let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineS
 let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
 const onlineRemotePlayers=new Map();
+let onlineTopPlayerId="";
 try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL;onlinePlayerNameSetting=localStorage.getItem('ballsShenaniganPlayerName')||''}catch(e){}
 function setOnlineStatus(message){
  onlineStatusMessage=String(message||'');
@@ -4455,6 +4456,26 @@ function drawOnlineFightScene(now){
   mouse.buffer=oldMouse.buffer;mouse.pending=oldMouse.pending;
  }
 }
+function drawServerTopPlayerCrown(f){
+ if(!onlineMode||!onlineTopPlayerId||!f||f.dead||f.vehicle||f.vehicleTransition)return;
+ const sessionId=f===player?onlineSessionId:f.onlineSessionId;
+ if(!sessionId||sessionId!==onlineTopPlayerId)return;
+ const x=sx(f.x),baseY=sy(f.y)-f.jump*3;
+ const bob=Math.sin(game.time*3.4)*3.2;
+ const crownY=baseY-121+bob;
+ ctx.save();ctx.translate(Math.round(x),Math.round(crownY));
+ ctx.shadowColor='#ffc83d';ctx.shadowBlur=isMobileDevice?7:13;
+ ctx.fillStyle='#f8bd35';ctx.strokeStyle='#8b5b17';ctx.lineWidth=1.35;ctx.lineJoin='round';
+ ctx.beginPath();
+ ctx.moveTo(-13,6);ctx.lineTo(-14,-6);ctx.lineTo(-5,0);
+ ctx.lineTo(-1,-12);ctx.lineTo(5,0);ctx.lineTo(14,-6);
+ ctx.lineTo(12,6);ctx.closePath();ctx.fill();ctx.stroke();
+ ctx.shadowBlur=0;
+ ctx.fillStyle='#fff0a0';ctx.fillRect(-10,4,20,2);
+ ctx.fillStyle='#fff5c5';
+ for(const [jx,jy,jr] of [[-13,-6,1.5],[-1,-12,1.8],[14,-6,1.5]]){ctx.beginPath();ctx.arc(jx,jy,jr,0,Math.PI*2);ctx.fill()}
+ ctx.restore();
+}
 function applyOnlineRoomState(state){
  if(!state||!state.players)return;
  const stateArrivalNow=performance.now();
@@ -4483,9 +4504,14 @@ function applyOnlineRoomState(state){
   onlineTrainWarning=!!world.trainWarning;
  }
  const entries=[];state.players.forEach((v,k)=>entries.push([k,v]));
+ let bestServerKills=0;onlineTopPlayerId="";
+ for(const [sessionId,net] of entries){
+  const kills=Math.max(0,Number(net.kills)||0);
+  if(kills>bestServerKills){bestServerKills=kills;onlineTopPlayerId=sessionId}
+ }
  const local=state.players.get(onlineSessionId);
  if(local&&player){
-  const wasDead=player.dead,oldLocalHp=Number(player.hp)||0;player.hp=Number(local.hp)||0;player.maxHp=Number(local.maxHp)||player.maxHp;
+  const wasDead=player.dead,oldLocalHp=Number(player.hp)||0;player.hp=Number(local.hp)||0;player.onlineKills=Math.max(0,Number(local.kills)||0);player.maxHp=Number(local.maxHp)||player.maxHp;
    if(player.hp<oldLocalHp-.05&&!local.dead){
    const loss=oldLocalHp-player.hp,grabImpact=String(local.attackType||'')==='grab';
    const blueMaxFlashProtected=isGojoBlueMaxVisualSuppressed(player)||!!local.blueMaxSuckedBy;
@@ -4547,7 +4573,7 @@ function applyOnlineRoomState(state){
    remote.networkX=snapshotX;remote.networkY=snapshotY;remote.networkFace=snapshotFace;
   }
   remote.walk=Number(net.walk)||0;remote.jump=Number(net.jump)||0;remote.block=!!net.block;remote.awakened=!!net.awakened;remote.awakeMode=String(net.awakeMode||"");remote.awakeFuel=Number(net.awakeFuel)||0;remote.awakeFuelDrainRate=Number(net.awakeFuelDrainRate)||0;remote.jackpot=!!net.jackpot;remote.consecutiveJackpots=Number(net.consecutiveJackpots)||0;remote.domainStunGuaranteed=!!net.domainStunGuaranteed;remote.dead=!!net.dead;
-  remote.hp=Number(net.hp)||0;remote.maxHp=Number(net.maxHp)||remote.maxHp;remote.meter=Number(net.meter)||0;
+  remote.hp=Number(net.hp)||0;remote.onlineKills=Math.max(0,Number(net.kills)||0);remote.maxHp=Number(net.maxHp)||remote.maxHp;remote.meter=Number(net.meter)||0;
   remote.stun=Number(net.stun)||0;remote.invuln=Number(net.invuln)||0;remote.skillLockUntil=Number(net.skillLockUntil)||0;remote.vx=Number(net.vx)||0;remote.vy=Number(net.vy)||0;remote.blueSuckedBy=String(net.blueSuckedBy||'');remote.blueMaxSuckedBy=String(net.blueMaxSuckedBy||'');remote.blueSuctionX=Number(net.blueSuctionX)||0;remote.blueSuctionY=Number(net.blueSuctionY)||0;remote.blueSuctionRemaining=Number(net.blueSuctionRemaining)||0;
   const remoteAbilities=net.abilities||{};remote.domainType=String(net.domainType||'');remote.domainTimer=Number(net.domainTimer)||0;remote.domainWindupStart=Number(net.domainWindupStart)||remote.domainWindupStart||0;remote.domainRadius=Number(net.domainRadius)||0;
   remote.domainCenterX=Number(net.domainX)||remote.networkX;remote.domainCenterY=Number(net.domainY)||remote.networkY;remote.domainWindup=Number(net.domainWindup)||0;remote.domainDuration=Number(net.domainDuration)||0;remote.counterKind=String(net.combat.counterKind||'');remote.counterWindow=Number(net.combat.counterWindow)||0;remote.grabbedBy=String(net.combat.grabbedBy||'');remote.activeGrabTarget=String(net.combat.activeGrabTarget||'');remote.grabKind=String(net.combat.grabKind||'');remote.grabRemaining=Number(net.combat.grabRemaining)||0;remote.grabDuration=Number(net.combat.grabDuration)||0;remote.motionName=String(net.motionName||'');remote.motionProgress=Number(net.motionProgress)||0;remote.motionDuration=clamp(Number(net.motionDuration)||1,.08,12);remote.motionStartedAt=Number(net.motionStartedAt)||0;remote.domainClashId=String(net.domainClashId||'');remote.sukunaFireCast=Number(remoteAbilities.sukunaFireCast)||0;remote.tenDogActive=!!remoteAbilities.tenDogActive;remote.tenDogCharges=Number(remoteAbilities.tenDogCharges)||0;remote.tenDogTimer=Number(remoteAbilities.tenDogTimer)||0;remote.tenGardenTimer=Number(remoteAbilities.tenGardenTimer)||0;remote.soulMode=Number(remoteAbilities.soulMode)||0;remote.convergenceOrbs=Number(remoteAbilities.convergenceOrbs)||0;remote.tenBase=!!remoteAbilities.tenBase;remote.shadowTimer=Number(remoteAbilities.shadowTimer)||0;remote.rikaSummoned=!!remoteAbilities.rikaSummoned;remote.rikaMode=!!remoteAbilities.rikaMode;remote.reserveBallWindow=Number(remoteAbilities.reserveBallWindow)||0;remote.yutaCopyIndex=Number(remoteAbilities.yutaCopyIndex)||0;
@@ -12178,7 +12204,7 @@ function draw(){
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawVesselAwakeningSmoke(remote);}
  drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
- if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighter(remote);for(const remote of mobileRemoteRender.simple)drawMobileRemoteFighter(remote);for(const remote of mobileRemoteRender.detailed)drawOnlineNameplate(remote)}
+ if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighter(remote);for(const remote of mobileRemoteRender.simple)drawMobileRemoteFighter(remote);for(const remote of mobileRemoteRender.detailed)drawOnlineNameplate(remote);if(player)drawServerTopPlayerCrown(player);for(const remote of mobileRemoteRender.detailed)drawServerTopPlayerCrown(remote);for(const remote of mobileRemoteRender.simple)drawServerTopPlayerCrown(remote)}
  drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();
  // Foreground combat pass keeps skill effects and Gojo's hand trails visible over opponents.
  if(player)drawFighterMotionOverlays(player);if(enemy)drawFighterMotionOverlays(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighterMotionOverlays(remote)}
