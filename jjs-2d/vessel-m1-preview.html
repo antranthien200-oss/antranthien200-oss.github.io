@@ -9908,12 +9908,23 @@ function drawCharacterDesignFaceDetails(f,x=0,y=0,scale=1,visual={}){
  }
  ctx.restore();
 }
-function drawFloatingHand(x,y,angle,theme,scale=1){
+function drawFloatingHand(x,y,angle,theme,scale=1,faceOrb=false){
  // Original small floating pixel-circle fist used by every character.
  ctx.save();
  ctx.translate(Math.round(x),Math.round(y));
+ if(faceOrb)ctx.rotate(Number.isFinite(angle)?angle:0);
  ctx.scale(scale,scale);
  drawPixelatedCircle(0,0,7.6,theme,2.0);
+ if(faceOrb){
+  // Three tiny block-pixel fingertips make the otherwise round fist visibly face forward.
+  for(let i=0;i<3;i++){
+   const fy=-4+i*3.1;
+   ctx.fillStyle=theme.shadow;
+   ctx.fillRect(3.6,fy,5.1,2.35);
+   ctx.fillStyle=theme.main;
+   ctx.fillRect(4.2,fy+.45,4.1,1.4);
+  }
+ }
  ctx.restore();
 }
 function drawCuteHead(f,c,themeOverride=null){
@@ -10099,6 +10110,8 @@ function drawHeadHands(f,deferMotionVfx=false){
  const dx=target.x-f.x,dy=target.y-(f.y-23),distance=Math.hypot(dx,dy)||1;
  const nx=dx/distance,ny=dy/distance,px=-ny,py=nx,angle=Math.atan2(ny,nx);
  const reach=lockShrineM1&&Number.isFinite(m.shrineReach)?m.shrineReach:clamp(distance*.56,23,76),idle=Math.sin(game.time*4.2+(isPlayer?0:1.5))*1.4,headY=y-23;
+ const gojoBlueMaxOrb=f.char==='honored'&&f.awakened&&name==='gojoBlueMax'?projectiles.find(p=>p&&p.kind==='blueMax'&&p.owner===f&&p.phase==='active'&&!p.finished):null;
+ const gojoBlueMaxHandAngle=gojoBlueMaxOrb?Math.atan2(sy(gojoBlueMaxOrb.y)-headY,sx(gojoBlueMaxOrb.x)-x):angle;
  const awakenCollapse=name==='sukunaAwaken'?smoothstep01(clamp(progress/.34,0,1)):0;
  const awakenSurge=name==='sukunaAwaken'?smoothstep01(clamp((progress-.48)/.30,0,1)):0;
  const awakenHeadDrop=name==='sukunaAwaken'?awakenCollapse*(1-awakenSurge)*10-awakenSurge*2:0;
@@ -10348,9 +10361,8 @@ function drawHeadHands(f,deferMotionVfx=false){
     handB=P(lerp(forward,-43,settle),lerp(-spread,0,settle),lerp(-8-5*pulse,-3,settle));
     handAScale=1.15;handBScale=1.15;
    }else if(name==='gojoBlueMax'){
-    // Max Blue is an orb-guiding skill, not a hand-sign or raised-hand attack.
-    // Keep both hands in the standard relaxed position beside the head.
-    handA=left;handB=right;handAAngle=angle;handBAngle=angle;
+    // Keep both hands completely still in their relaxed positions; only their facing follows the live orb.
+    handA=left;handB=right;handAAngle=gojoBlueMaxHandAngle;handBAngle=gojoBlueMaxHandAngle;
     handAScale=1.04;handBScale=.94;
    }else if(name==='gojoRed'||name==='gojoRedMax'){}else if(name==='gojoRed'||name==='gojoRedMax'){
     handA=P(18+34*pulse,16,-4);handB=P(8+10*(1-smooth),-18,7);handAScale=1.22;
@@ -10666,7 +10678,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  if(!deferHands){
   ctx.save();
   if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?7:16;}
-  if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
+  if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale,!!gojoBlueMaxOrb);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale,!!gojoBlueMaxOrb)}
   ctx.restore();
  }
  if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}
