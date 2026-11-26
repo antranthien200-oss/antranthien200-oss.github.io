@@ -4504,10 +4504,10 @@ function applyOnlineRoomState(state){
   onlineTrainWarning=!!world.trainWarning;
  }
  const entries=[];state.players.forEach((v,k)=>entries.push([k,v]));
- let bestServerKills=0;onlineTopPlayerId="";
+ let bestServerKills=0,bestServerKillAt=Infinity;onlineTopPlayerId="";
  for(const [sessionId,net] of entries){
-  const kills=Math.max(0,Number(net.kills)||0);
-  if(kills>bestServerKills){bestServerKills=kills;onlineTopPlayerId=sessionId}
+  const kills=Math.max(0,Number(net.kills)||0),killAt=Math.max(0,Number(net.lastKillAt)||0);
+  if(kills>bestServerKills||(kills>0&&kills===bestServerKills&&killAt<bestServerKillAt)){bestServerKills=kills;bestServerKillAt=killAt;onlineTopPlayerId=sessionId}
  }
  const local=state.players.get(onlineSessionId);
  if(local&&player){
