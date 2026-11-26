@@ -3,7 +3,7 @@ import { schema,t } from "@colyseus/schema";
 import { BUILDING_LAYOUT,CAR_SPAWNS,CHARACTER_HP,CHARACTER_IDS,DOMAIN_BY_CHARACTER,MAX_PLAYERS,PLAYER_RESPAWN_POINT,PROP_SPAWNS,canAddDomainClashParticipant,isValidDomainClashParticipants,TRAIN_TRACK_Y,WORLD_HEIGHT,WORLD_WIDTH,combatProfile,counterSettings,domainPulseSettings,domainSettings,findAvailableSpawn,grabSettings,isBlockedByBuilding,isGuaranteedRapidGrabAllowed,normalizePlayerUpdate,rayHitsRect,sanitizePlayerName } from "../rules.js";
 const PlayerCombatState=schema({lastActionKind:t.string().default(""),lastActionAt:t.number().default(0),gojoRapidAt:t.number().default(0),counterKind:t.string().default(""),counterWindow:t.number().default(0),grabbedBy:t.string().default(""),activeGrabTarget:t.string().default(""),grabKind:t.string().default(""),grabRemaining:t.number().default(0),grabDuration:t.number().default(0),grabTick:t.number().default(0),grabTickInterval:t.number().default(0),grabTickDamage:t.number().default(0),grabFinishDamage:t.number().default(0),grabKnockback:t.number().default(0)},"PlayerCombatState");
 const PlayerAbilityState=schema({sukunaFireCast:t.number().default(0),tenDogActive:t.boolean().default(false),tenDogCharges:t.number().default(0),tenDogTimer:t.number().default(0),tenGardenTimer:t.number().default(0),soulMode:t.number().default(0),convergenceOrbs:t.number().default(0),tenBase:t.boolean().default(false),shadowTimer:t.number().default(0),rikaSummoned:t.boolean().default(false),rikaMode:t.boolean().default(false),reserveBallWindow:t.number().default(0),yutaCopyIndex:t.number().default(0)},"PlayerAbilityState");
-const PlayerState=schema({name:t.string().default("Player"),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueMaxSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),skillLockUntil:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),abilities:PlayerAbilityState,combat:PlayerCombatState},"PlayerState");
+const PlayerState=schema({name:t.string().default("Player"),kills:t.number().default(0),character:t.string().default("vessel"),accessoryHead:t.string().default("none"),accessoryFace:t.string().default("none"),accessoryNeck:t.string().default("none"),accessoryAura:t.string().default("none"),x:t.number().default(1250),y:t.number().default(765),vx:t.number().default(0),vy:t.number().default(0),moveX:t.number().default(0),moveY:t.number().default(0),moveScale:t.number().default(1),aimX:t.number().default(1250),aimY:t.number().default(765),face:t.number().default(0),walk:t.number().default(0),jump:t.number().default(0),block:t.boolean().default(false),attackAnim:t.number().default(0),attackType:t.string().default(""),motionName:t.string().default(""),motionProgress:t.number().default(0),motionDuration:t.number().default(1),motionStartedAt:t.number().default(0),hp:t.number().default(100),maxHp:t.number().default(100),hpRegenWait:t.number().default(0),blueSuckedBy:t.string().default(""),blueMaxSuckedBy:t.string().default(""),blueSuctionX:t.number().default(0),blueSuctionY:t.number().default(0),blueSuctionRemaining:t.number().default(0),meter:t.number().default(0),stun:t.number().default(0),invuln:t.number().default(0),skillLockUntil:t.number().default(0),dead:t.boolean().default(false),respawnTimer:t.number().default(0),awakened:t.boolean().default(false),awakeMode:t.string().default(""),awakeFuel:t.number().default(0),awakeFuelDrainRate:t.number().default(0),jackpot:t.boolean().default(false),consecutiveJackpots:t.number().default(0),domainStunGuaranteed:t.boolean().default(false),connected:t.boolean().default(true),vehicleId:t.string().default(""),trashCanId:t.string().default(""),domainType:t.string().default(""),domainTimer:t.number().default(0),domainWindupStart:t.number().default(0),domainRequestType:t.string().default(""),domainRadius:t.number().default(0),domainX:t.number().default(0),domainY:t.number().default(0),domainWindup:t.number().default(0),domainDuration:t.number().default(0),domainCastAt:t.number().default(0),domainClashId:t.string().default(""),abilities:PlayerAbilityState,combat:PlayerCombatState},"PlayerState");
 for(const field of ["lastActionKind","lastActionAt","gojoRapidAt","counterKind","counterWindow","grabbedBy","activeGrabTarget","grabKind","grabRemaining","grabDuration","grabTick","grabTickInterval","grabTickDamage","grabFinishDamage","grabKnockback"]){
  Object.defineProperty(PlayerState.prototype,field,{configurable:true,enumerable:false,get(){return this.combat[field]},set(value){this.combat[field]=value}});
 }
@@ -393,7 +393,7 @@ modifyProjectile(client,payload={}){
    if(!target.awakened)target.meter=clamp(target.meter+damage*.42,0,100);
    if(!owner.awakened)owner.meter=clamp(owner.meter+damage*.58,0,100);
   }
-  if(target.hp<=0)this.killPlayer(target);
+  if(target.hp<=0)this.killPlayer(target,owner);
   return true;
  }
  createFireZone(owner,x,y,angle,now=Date.now()){
@@ -646,7 +646,7 @@ modifyProjectile(client,payload={}){
   const incomingAngle=Math.atan2(attacker.y-defender.y,attacker.x-defender.x),facing=Math.atan2(Math.sin(incomingAngle-defender.face),Math.cos(incomingAngle-defender.face));
   if(Math.abs(facing)>(kind==="gojoTwofoldCounter"?1.42:1.18))return false;
   const projectile=["bullet","projectile"].includes(incomingType),dx=attacker.x-defender.x,dy=attacker.y-defender.y,d=Math.hypot(dx,dy)||1,nx=dx/d,ny=dy/d;
-  const hurt=(target,amount,stun,push,directionX=nx,directionY=ny)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+directionX*push,-60,60);target.vy=clamp((Number(target.vy)||0)+directionY*push,-60,60);if(target.hp<=0)this.killPlayer(target)};
+  const hurt=(target,amount,stun,push,directionX=nx,directionY=ny)=>{if(!this.consumeJackpotFuel(target,amount)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.stun=Math.max(target.stun,stun);target.invuln=Math.max(target.invuln,.12);target.vx=clamp((Number(target.vx)||0)+directionX*push,-60,60);target.vy=clamp((Number(target.vy)||0)+directionY*push,-60,60);if(target.hp<=0)this.killPlayer(target,defender)};
   defender.counterKind="";defender.counterWindow=0;
   if(kind==="sukunaCleaveCounter"&&(projectile||incomingType==="domain"||d>220))return false;
   if(kind==="yutaOutburst"){defender.invuln=Math.max(defender.invuln,.5);if(!projectile){attacker.stun=Math.max(attacker.stun,.48);attacker.vx=clamp((Number(attacker.vx)||0)-nx*11,-60,60);attacker.vy=clamp((Number(attacker.vy)||0)-ny*11,-60,60)}return true}
@@ -801,7 +801,7 @@ modifyProjectile(client,payload={}){
    if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-blockedDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}
    if(!target.awakened)target.meter=clamp(target.meter+amount*.12,0,100);
    target.invuln=.08;
-   if(target.hp<=0)this.killPlayer(target);
+   if(target.hp<=0)this.killPlayer(target,a);
    return;
   }
   if(!jackpotProtected){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-amount);if(target.hp<hpBefore)target.hpRegenWait=4.5}
@@ -824,10 +824,15 @@ modifyProjectile(client,payload={}){
   }
   if(!target.awakened)target.meter=clamp(target.meter+amount*.42,0,100);
   if(!a.awakened)a.meter=clamp(a.meter+amount*.58,0,100);
-  if(target.hp<=0)this.killPlayer(target);
+  if(target.hp<=0)this.killPlayer(target,a);
  }
-killPlayer(p){
+killPlayer(p,killer=null){
   if(p.dead)return;
+  if(killer&&killer!==p){
+   for(const [killerId,candidate] of this.state.players){
+    if(candidate===killer){candidate.kills=Math.max(0,Number(candidate.kills)||0)+1;break}
+   }
+  }
   if(p.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}
   if(p.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.3)}}
   p.grabbedBy="";p.activeGrabTarget="";p.grabKind="";p.grabRemaining=0;p.blueSuckedBy="";p.blueSuctionRemaining=0;p.counterKind="";p.counterWindow=0;this.sukunaFireArrowCasts.delete(Array.from(this.state.players.entries()).find(([,candidate])=>candidate===p)?.[0]||"");
@@ -921,7 +926,7 @@ killPlayer(p){
     target.vy=clamp((Number(target.vy)||0)+hy*push,-60,60);
     if(!target.awakened)target.meter=clamp(target.meter+hitDamage*.42,0,100);
     if(!p.awakened)p.meter=clamp(p.meter+hitDamage*.58,0,100);
-    if(target.hp<=0)this.killPlayer(target);
+    if(target.hp<=0)this.killPlayer(target,p);
    }
   }
  }
@@ -1011,7 +1016,7 @@ killPlayer(p){
   target.face=angle+Math.PI;target.block=false;target.stun=Math.max(target.stun,.08);
   target.grabRemaining=Math.max(0,target.grabRemaining-dt);target.grabTick=Math.max(0,target.grabTick-dt);if(target.grabKind!=="sukunaHeadCarry")target.motionName="captured_"+target.grabKind;target.motionProgress=progress;
   if(target.grabTick===0&&target.grabRemaining>0){target.grabTick=target.grabTickInterval||.2;if(!this.consumeJackpotFuel(target,target.grabTickDamage)){const hpBefore=target.hp;target.hp=Math.max(0,target.hp-target.grabTickDamage);if(target.hp<hpBefore)target.hpRegenWait=4.5}target.meter=clamp(target.meter+target.grabTickDamage*.25,0,100);owner.meter=clamp(owner.meter+target.grabTickDamage*.35,0,100)}
-  if(target.hp<=0){this.killPlayer(target);continue}
+  if(target.hp<=0){this.killPlayer(target,owner);continue}
   if(target.grabRemaining<=0){
    const finishedKind=target.grabKind,finish=finishedKind==="sukunaCleave"?Math.max(10,target.hp*.4):target.grabFinishDamage,push=target.grabKnockback;target.grabbedBy="";target.grabKind="";owner.activeGrabTarget="";owner.grabKind="";
    if(finishedKind==="yujiDrag"||finishedKind==="gojoBlueRapid"){
@@ -1025,7 +1030,7 @@ killPlayer(p){
    if(finishedKind==="sukunaHeadCarry"){target.motionName="captured_sukunaHeadCarryImpact";target.motionProgress=0;target.motionDuration=.42;target.motionStartedAt=now}
    else if(finishedKind==="yujiDrag"||finishedKind==="gojoBlueRapid"){target.motionName="";target.motionProgress=0;target.motionDuration=1;target.motionStartedAt=now;target.attackType=""}
    else{target.motionName="grabRelease";target.motionProgress=1}target.attackAnim=0;target.grabDuration=0;target.grabTick=0;target.grabTickInterval=0;target.grabTickDamage=0;target.grabFinishDamage=0;target.grabKnockback=0;
-   if(target.hp<=0)this.killPlayer(target);
+   if(target.hp<=0)this.killPlayer(target,owner);
   }
  }
 this.tickSukunaFireArrowCasts(now);this.tickProjectiles(dt,now);this.tickFireZones(dt,now);this.tickDomainClashes(dt,now);if(w.trainX!==-9999){const centers=[w.trainX-380,w.trainX-190,w.trainX];for(const p of this.state.players.values()){if(p.dead||Math.abs(p.y-TRAIN_TRACK_Y)>(p.vehicleId?100:54)||!centers.some(x=>Math.abs(p.x-x)<=(p.vehicleId?130:110)))continue;this.killPlayer(p)}for(const c of w.cars.values()){if(c.destroyed||Math.abs(c.y-TRAIN_TRACK_Y)>90)continue;if(centers.some(x=>Math.abs(c.x-x)<130)){c.destroyed=true;c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0;c.respawnTimer=15}}}const shrinePulse=domainPulseSettings("shrine");if(shrinePulse&&now-this.shrineTickAt>=shrinePulse.interval*1000){this.shrineTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||o.domainType!=="shrine"||o.domainTimer<=0||o.domainClashId)continue;const cx=Number.isFinite(o.domainX)?o.domainX:o.x,cy=Number.isFinite(o.domainY)?o.domainY:o.y,r=clamp(o.domainRadius||Math.hypot(WORLD_WIDTH,WORLD_HEIGHT),120,Math.hypot(WORLD_WIDTH,WORLD_HEIGHT));for(const [tid,t] of players){if(tid===oid||t.dead||distance({x:cx,y:cy},t)>r)continue;const angle=Math.atan2(t.y-o.y,t.x-o.x);this.applyProjectileDamage(o,t,shrinePulse.damage,shrinePulse.stun,0,angle,false,shrinePulse.ignoreInvuln,shrinePulse.damageType,shrinePulse.blockedDamage)}}}if(now-this.domainTickAt>=350){this.domainTickAt=now;const players=Array.from(this.state.players.entries());for(const [oid,o] of players){if(o.dead||o.domainType!=="void"||o.domainTimer<=0)continue;const r=clamp(o.domainRadius||Math.hypot(WORLD_WIDTH,WORLD_HEIGHT),120,Math.hypot(WORLD_WIDTH,WORLD_HEIGHT));for(const [tid,t] of players){if(tid===oid||t.dead||o.domainClashId||distance(o,t)>r)continue;t.stun=Math.max(t.stun,.42);t.invuln=0}}}}
