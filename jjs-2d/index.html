@@ -4704,7 +4704,7 @@ function updateOnlineNetwork(dt){
  if(!skillInputLocked&&(movementKeys.has('d')||movementKeys.has('arrowright')))moveX++;
  if(!skillInputLocked&&mobileControlsEnabled&&mobileJoyPointer!==null){moveX+=mobileMove.x;moveY+=mobileMove.y}
  const moveLength=Math.hypot(moveX,moveY)||1;moveX/=moveLength;moveY/=moveLength;
- const blueMaxProjectile=mobileControlsEnabled?projectiles.find(p=>p&&p.owner===player&&p.kind==='blueMax'&&p.mobileAutoTarget&&p.phase!=='collapse'):null;let blueMaxTarget=blueMaxProjectile&&blueMaxProjectile.targetRef;if(blueMaxProjectile&&(!blueMaxTarget||blueMaxTarget.dead||blueMaxTarget.vehicle)){blueMaxTarget=gojoBlueMaxMobileTarget(player);if(blueMaxTarget)blueMaxProjectile.targetRef=blueMaxTarget}const aim=blueMaxTarget?{x:blueMaxTarget.x,y:blueMaxTarget.y-23}:aimedAt(player),activeAccessories=accessoryLoadouts[player.char]||EMPTY_ACCESSORY_LOADOUT;
+ const aim=aimedAt(player),activeAccessories=accessoryLoadouts[player.char]||EMPTY_ACCESSORY_LOADOUT;
  const snapshot={x:player.x,y:player.y,vx:player.vx||0,vy:player.vy||0,moveX,moveY,moveScale:mobileControlsEnabled?1.5:1,aimX:aim.x,aimY:aim.y,accessoryHead:activeAccessories.head||'none',accessoryFace:activeAccessories.face||'none',accessoryNeck:activeAccessories.neck||'none',accessoryAura:activeAccessories.aura||'none',meter:player.meter,awakened:!!player.awakened,awakeMode:String(player.awakeMode||""),awakeFuel:Number(player.awakeFuel)||0,awakeFuelDrainRate:Number(player.awakeFuelDrainRate)||0,jackpot:!!player.jackpot,consecutiveJackpots:Number(player.consecutiveJackpots)||0,domainStunGuaranteed:!!player.domainStunGuaranteed,face:player.face,walk:player.walk||0,jump:player.jump||0,block:!!player.block,attackAnim:player.attackAnim||0,attackType:String(player.attackType||'').slice(0,32),motionName:motion?String(motion.name||'').slice(0,48):'',motionProgress:motion&&motion.duration>0?clamp(motion.t/motion.duration,0,1):0,motionDuration:motion&&motion.duration?motion.duration:1,trashCanId:player.carryingTrashCan?String(player.carryingTrashCan.id??''):'',domainType:String(player.domainType||''),domainTimer:Number(player.domainTimer)||0,domainWindup:Number(player.domainWindup)||0,domainWindupStart:Number(player.domainWindupStart)||0,domainRadius:Number(player.domainRadius)||0,sukunaFireCast:Number(player.sukunaFireCast)||0,tenDogActive:!!player.tenDogActive,tenDogCharges:Number(player.tenDogCharges)||0,tenDogTimer:Number(player.tenDogTimer)||0,tenGardenTimer:Number(player.tenGardenTimer)||0,soulMode:Number(player.soulMode)||0,convergenceOrbs:Number(player.convergenceOrbs)||0,tenBase:!!player.tenBase,shadowTimer:Number(player.shadowTimer)||0,rikaSummoned:!!player.rikaSummoned,rikaMode:!!player.rikaMode,reserveBallWindow:Number(player.reserveBallWindow)||0,yutaCopyIndex:Number(player.yutaCopyIndex)||0};
  try{onlineRoom.send('player:update',snapshot)}catch(e){console.warn('Online state send failed',e)}
 }
@@ -5081,7 +5081,14 @@ function moveMobileJoystick(e){
  mobileJoyKnob.style.transform='translate(-50%,-50%) translate('+dx+'px,'+dy+'px)';
  ['w','a','s','d'].forEach(k=>keys.delete(k));
  const threshold=rect.width*.12;
- if(player&&player.vehicle){
+ const blueMaxControl=getGojoBlueMaxMobileProjectile(player);
+ if(blueMaxControl){
+  // Reuse the existing two-axis stick while Blue MAX has temporary control.
+  mobileCarMove.x=0;mobileCarMove.y=0;
+  mobileMove.x=len>threshold?dx/max:0;
+  mobileMove.y=len>threshold?dy/max:0;
+  blueMaxControl.steerX=mobileMove.x;blueMaxControl.steerY=mobileMove.y;
+ }else if(player&&player.vehicle){
   // In a car, the stick points toward the direction the driver wants to travel.
   // Vehicle steering then turns toward that heading automatically.
   mobileCarMove.x=len>threshold?dx/max:0;
@@ -5097,8 +5104,8 @@ function moveMobileJoystick(e){
    updateMobileAimPointer();
   }else{mobileMove.x=0;mobileMove.y=0}
  }
- if(Math.abs(dx)>threshold)keys.add(dx<0?'a':'d');
- if(Math.abs(dy)>threshold)keys.add(dy<0?'w':'s');
+ if(!blueMaxControl&&Math.abs(dx)>threshold)keys.add(dx<0?'a':'d');
+ if(!blueMaxControl&&Math.abs(dy)>threshold)keys.add(dy<0?'w':'s');
 }
 function stopMobileJoystick(){
  mobileJoyPointer=null;clearMobileJoyKeys();
@@ -6458,7 +6465,7 @@ function useAttack(f,kind,networkReplay=false){
  if(f.skillInputLocked&&f.motion&&kind!=='special'&&!timedComboFollowUp&&!(gojoBlueMaxAbilityLock&&kind==='2'))return;
  // Buffer an early second press so players do not have to hit the exact midpoint frame.
  if(yujiBlackFlashFollowUp&&!(f.blackFlashWindow>0)){f.yujiDivergentAttack.buffered=true;return}
- const gojoFlashStepTargetRef=f.char==='honored'&&kind==='special'?gojoFlashStepTarget(f):null,gojoBlueMaxAutoTarget=f.char==='honored'&&f.awakened&&kind==='1'?gojoBlueMaxMobileTarget(f):null;
+ const gojoFlashStepTargetRef=f.char==='honored'&&kind==='special'?gojoFlashStepTarget(f):null,gojoBlueMaxAutoTarget=null;
  if(!networkReplay&&onlineMode&&f===player&&f.char==='honored'&&kind==='special'&&!gojoFlashStepTargetRef){showToast('FLASH STEP · NO OTHER PLAYER',900);return}
  if(f.char==='honored'&&kind==='special'&&gojoFlashStepTargetRef)f.face=Number.isFinite(gojoFlashStepTargetRef.face)?gojoFlashStepTargetRef.face:Math.atan2(gojoFlashStepTargetRef.y-f.y,gojoFlashStepTargetRef.x-f.x);
  f.skillCastSerial=(f.skillCastSerial||0)+1;
@@ -6964,16 +6971,16 @@ if(f.char==='choso'){
  }finally{activeSkillScheduleOwner=previousSkillScheduleOwner}
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const skillInputLocked=!!(player.skillInputLocked&&player.motion),m1InputLocked=isM1Motion(player),grabInputLocked=!!player.grabbedBy,movementLocked=skillInputLocked||grabInputLocked,actionLocked=skillInputLocked||grabInputLocked||m1InputLocked;if(keys.has('q')){keys.delete('q');if(!player.dead&&!m1InputLocked&&!grabInputLocked)useAttack(player,'dash')}let x=0,y=0;if(!movementLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const gojoBlueMaxMobileControl=getGojoBlueMaxMobileProjectile(player),skillInputLocked=!!(player.skillInputLocked&&player.motion),m1InputLocked=isM1Motion(player),grabInputLocked=!!player.grabbedBy,movementLocked=skillInputLocked||grabInputLocked||!!gojoBlueMaxMobileControl,actionLocked=skillInputLocked||grabInputLocked||m1InputLocked||!!gojoBlueMaxMobileControl;if(keys.has('q')){keys.delete('q');if(!player.dead&&!m1InputLocked&&!grabInputLocked)useAttack(player,'dash')}let x=0,y=0;if(!movementLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.grabbedBy&&!player.dead&&player.sukunaFireCast<=0){
   if(!movementLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;if(keys.has(' ' )&&player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}}
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block&&!actionLocked){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
   else if(!wantsBlock&&player.block){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
-  if(keys.has('1')){useAttack(player,'1');keys.delete('1')}if(keys.has('2')){useAttack(player,'2');keys.delete('2')}if(keys.has('3')){useAttack(player,'3');keys.delete('3')}if(keys.has('4')){useAttack(player,'4');keys.delete('4')}
+  if(!gojoBlueMaxMobileControl){if(keys.has('1')){useAttack(player,'1');keys.delete('1')}if(keys.has('2')){useAttack(player,'2');keys.delete('2')}if(keys.has('3')){useAttack(player,'3');keys.delete('3')}if(keys.has('4')){useAttack(player,'4');keys.delete('4')}}
  }else player.block=false;
  // A physical click creates one M1 request. Holding the mouse button never auto-repeats.
- if(mouse.pending){if(player.dead||player.stun>0||player.grabbedBy||player.block){mouse.pending=false;mouse.buffer=0}else if(player.attackCd<=0){useAttack(player,'m1');mouse.pending=false;mouse.buffer=0}else{mouse.buffer=Math.max(0,mouse.buffer-dt);if(mouse.buffer<=0)mouse.pending=false}}
+ if(mouse.pending){if(gojoBlueMaxMobileControl||player.dead||player.stun>0||player.grabbedBy||player.block){mouse.pending=false;mouse.buffer=0}else if(player.attackCd<=0){useAttack(player,'m1');mouse.pending=false;mouse.buffer=0}else{mouse.buffer=Math.max(0,mouse.buffer-dt);if(mouse.buffer<=0)mouse.pending=false}}
 }
 function ai(dt){if(trainingDummy)trainingDummy.aiDisabled=true;if(enemy.dead){enemy.respawn-=dt;if(enemy.respawn<=0){const defeatedChar=enemy.char;let nextChars=Object.keys(CHARS).filter(k=>k!==defeatedChar&&k!==player.char);if(!nextChars.length)nextChars=Object.keys(CHARS).filter(k=>k!==defeatedChar);const nextChar=nextChars.length?nextChars[Math.floor(Math.random()*nextChars.length)]:defeatedChar;enemy=makeFighter('enemy',nextChar,1510+rnd(-120,120),930+rnd(-110,110));showToast('NEW CHALLENGER · '+CHARS[nextChar].name,1100)}return}
  enemy.aiThink-=dt;enemy.aiAction-=dt;
@@ -7362,6 +7369,10 @@ function recordGojoBlueMaxTrail(p){
   if(!last||Math.hypot(p.x-last.x,p.y-last.y)>1.2)points.push({x:p.x,y:p.y,time:now});
   while(points.length>64||(points.length&&now-points[0].time>.28))points.shift();
  }
+function getGojoBlueMaxMobileProjectile(owner=player){
+ if(!owner||owner!==player||!mobileControlsEnabled||onlineMode)return null;
+ return projectiles.find(p=>p&&p.kind==='blueMax'&&p.owner===owner&&p.mobilePiloting&&!p.finished)||null;
+}
 function holdGojoBlueMaxVisual(p,f){
  if(!p||!f||f.isTrainingDummy)return;
  if(!(p.visualTargets instanceof Set))p.visualTargets=new Set();
@@ -7407,7 +7418,7 @@ function startGojoBlueMax(f,angle,aim,target,mobileTarget=null){
   phaseElapsed:0,phaseRemaining:.5,phaseDuration:.5,
   activeDuration:3,collapseDuration:1,followSpeed:950,
   followAimX:Number(aim.x),followAimY:Number(aim.y),
-  targetRef:mobileTarget||target,mobileAutoTarget:!!mobileTarget,
+  targetRef:target||null,mobileAutoTarget:false,mobilePiloting:!!(f===player&&mobileControlsEnabled&&!onlineMode),cameraBlend:0,cameraReturnDelay:.34,steerX:0,steerY:0,
   pullRadius:420,pullForce:.06,damageRadius:165,
   explosionRadius:275,explosionDamage:18,visualTargets:new Set(),
   finished:false,visualReleased:false
@@ -7431,27 +7442,47 @@ function beginGojoBlueMaxCollapse(p){
  p.vx=0;p.vy=0;
  detonateBlueMax(p);
 }
+function updateGojoBlueMaxCamera(p,dt){
+ if(!p||!p.mobilePiloting||p.owner!==player||!mobileControlsEnabled||onlineMode||dt<=0)return;
+ if(p.phase==='collapse'){
+  const delay=Math.max(0,Number(p.cameraReturnDelay)||0);
+  const returnStep=Math.max(0,dt-delay);
+  p.cameraReturnDelay=Math.max(0,delay-dt);
+  if(returnStep>0)p.cameraBlend=clamp((Number(p.cameraBlend)||0)-returnStep/.66,0,1);
+ }else{
+  p.cameraBlend=clamp((Number(p.cameraBlend)||0)+dt/.52,0,1);
+ }
+}
 function updateGojoBlueMaxActive(p,dt){
  const owner=p.owner;
  if(!owner||owner.dead||dt<=0)return;
- let autoTarget=null;
- if(p.mobileAutoTarget&&owner===player&&mobileControlsEnabled){
-  autoTarget=p.targetRef&&!p.targetRef.dead&&!p.targetRef.vehicle?p.targetRef:gojoBlueMaxMobileTarget(owner);
-  if(autoTarget)p.targetRef=autoTarget;
- }
- const aim=autoTarget?{x:autoTarget.x,y:autoTarget.y-23}:aimedAt(owner);
- const aimX=clamp(Number.isFinite(Number(aim.x))?Number(aim.x):p.followAimX,28,WORLD.w-28);
- const aimY=clamp(Number.isFinite(Number(aim.y))?Number(aim.y):p.followAimY,28,WORLD.h-28);
- if(!Number.isFinite(p.followAimX)){p.followAimX=aimX;p.followAimY=aimY}
- // Exponential easing makes mouse tracking frame-rate independent on both PC and mobile.
- const aimBlend=1-Math.exp(-dt*3.4);
- p.followAimX+=(aimX-p.followAimX)*aimBlend;
- p.followAimY+=(aimY-p.followAimY)*aimBlend;
- const dx=p.followAimX-p.x,dy=p.followAimY-p.y,distance=Math.hypot(dx,dy);
- const travel=Math.min(distance,(Number(p.followSpeed)||950)*dt);
- if(distance>.001&&travel>0){
-  p.x=clamp(p.x+dx/distance*travel,28,WORLD.w-28);
-  p.y=clamp(p.y+dy/distance*travel,28,WORLD.h-28);
+ if(p.mobilePiloting&&owner===player&&mobileControlsEnabled&&!onlineMode){
+  const inputX=mobileJoyPointer!==null?clamp(Number(mobileMove.x)||0,-1,1):0;
+  const inputY=mobileJoyPointer!==null?clamp(Number(mobileMove.y)||0,-1,1):0;
+  const inputLength=Math.hypot(inputX,inputY),inputMagnitude=Math.min(1,inputLength);
+  const targetSpeed=660*inputMagnitude;
+  const targetVx=inputLength>.001?inputX/inputLength*targetSpeed:0;
+  const targetVy=inputLength>.001?inputY/inputLength*targetSpeed:0;
+  const velocityBlend=1-Math.exp(-dt*(inputMagnitude>.08?7.5:3.1));
+  p.vx=lerp(Number(p.vx)||0,targetVx,velocityBlend);
+  p.vy=lerp(Number(p.vy)||0,targetVy,velocityBlend);
+  p.x=clamp(p.x+p.vx*dt,28,WORLD.w-28);
+  p.y=clamp(p.y+p.vy*dt,28,WORLD.h-28);
+ }else{
+  const aim=aimedAt(owner);
+  const aimX=clamp(Number.isFinite(Number(aim.x))?Number(aim.x):p.followAimX,28,WORLD.w-28);
+  const aimY=clamp(Number.isFinite(Number(aim.y))?Number(aim.y):p.followAimY,28,WORLD.h-28);
+  if(!Number.isFinite(p.followAimX)){p.followAimX=aimX;p.followAimY=aimY}
+  // Preserve the existing smooth PC mouse steering.
+  const aimBlend=1-Math.exp(-dt*3.4);
+  p.followAimX+=(aimX-p.followAimX)*aimBlend;
+  p.followAimY+=(aimY-p.followAimY)*aimBlend;
+  const dx=p.followAimX-p.x,dy=p.followAimY-p.y,distance=Math.hypot(dx,dy);
+  const travel=Math.min(distance,(Number(p.followSpeed)||950)*dt);
+  if(distance>.001&&travel>0){
+   p.x=clamp(p.x+dx/distance*travel,28,WORLD.w-28);
+   p.y=clamp(p.y+dy/distance*travel,28,WORLD.h-28);
+  }
  }
  recordGojoBlueMaxTrail(p);
  const targets=tenTargets(owner),pullRadius=Math.max(1,Number(p.pullRadius)||420);
@@ -7516,6 +7547,7 @@ function updateGojoBlueMaxProjectile(p,dt){
   const step=Math.min(remaining,Math.max(0,p.phaseRemaining));
   if(step<=.000001)break;
   if(p.phase==='active')updateGojoBlueMaxActive(p,step);
+  updateGojoBlueMaxCamera(p,step);
   p.phaseElapsed=(Number(p.phaseElapsed)||0)+step;
   p.phaseRemaining=Math.max(0,p.phaseRemaining-step);
   remaining=Math.max(0,remaining-step);
@@ -7818,7 +7850,15 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
  if(particles.length>particleLimit)particles.splice(0,particles.length-particleLimit);
  if(debris.length>debrisLimit)debris.splice(0,debris.length-debrisLimit);
  if(trailStrokes.length>trailLimit)trailStrokes.splice(0,trailStrokes.length-trailLimit);
- if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);const camLerp=1-Math.pow(1-.08,dt*60),cameraTarget=player;camera.x=lerp(camera.x,cameraTarget.x,camLerp);camera.y=lerp(camera.y,cameraTarget.y,camLerp);const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud();if(onlineMode)updateOnlineNetwork(dt)}
+ if(game.toastTimer>0){game.toastTimer-=dt*1000;if(game.toastTimer<=0)$('toast').classList.remove('show')}if(game.combatNoticeTimer>0){game.combatNoticeTimer-=dt;if(game.combatNoticeTimer<=0)$('combatNotice').classList.remove('active','ko','death')}game.shake=Math.max(0,game.shake-dt*22);
+ const blueMaxCamera=mobileControlsEnabled&&!onlineMode?projectiles.find(p=>p&&p.kind==='blueMax'&&p.owner===player&&p.mobilePiloting&&!p.finished&&p.cameraBlend>.001):null;
+ const cameraBlend=blueMaxCamera?clamp(blueMaxCamera.cameraBlend,0,1):0;
+ const smoothCameraBlend=cameraBlend*cameraBlend*(3-2*cameraBlend);
+ const cameraTargetX=blueMaxCamera?lerp(player.x,blueMaxCamera.x,smoothCameraBlend):player.x;
+ const cameraTargetY=blueMaxCamera?lerp(player.y,blueMaxCamera.y,smoothCameraBlend):player.y;
+ const camRate=blueMaxCamera ? .13 : .08,camLerp=1-Math.pow(1-camRate,dt*60);
+ camera.x=lerp(camera.x,cameraTargetX,camLerp);camera.y=lerp(camera.y,cameraTargetY,camLerp);
+ const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud();if(onlineMode)updateOnlineNetwork(dt)}
 function sx(x){return x-camera.x+W/2}function sy(y){return y-camera.y+H/2}
 function worldRectVisible(x,y,w,h,pad=48){
  const halfW=W*cameraViewScale()*.5+pad,halfH=H*cameraViewScale()*.5+pad;
