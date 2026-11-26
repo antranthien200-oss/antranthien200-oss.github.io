@@ -2896,7 +2896,7 @@ CRAZY.</div></div>
     <div class="domain-clash-row"><span>YOU</span><div class="domain-clash-track"><div id="pClashFill" class="domain-clash-fill"></div></div><span id="pClashPct" class="domain-clash-pct">0%</span></div>
     <div class="domain-clash-row"><span>CPU</span><div class="domain-clash-track"><div id="eClashFill" class="domain-clash-fill"></div></div><span id="eClashPct" class="domain-clash-pct">0%</span></div>
   </div>
-  <div class="controls"><b>M1</b> Punch combo · separate clicks (holding does not repeat)<br><b>1–4</b> Character skills<br><b>Q</b> Dash / escape stun<br><b>F</b> Hold directional block · face attacker<br><b>R</b> Special technique<br><b>G</b> Awaken at 100%<br><b>E</b> Pick up / throw reusable trash can<br><b>WASD</b> Move · <b>MOUSE</b> Aim / Face<br><b>SPACE</b> Jump · <b>ESC</b> Pause</div>
+  <div class="controls"><b>M1</b> Punch combo · separate clicks (holding does not repeat)<br><b>1–4</b> Character skills<br><b>Q</b> Dash / escape stun<br><b>F</b> Hold directional block · face attacker<br><b>R</b> Special technique<br><b>G</b> Awaken at 100%<br><b>E</b> Pick up / throw reusable trash can<br><b>WASD</b> Move · <b>MOUSE</b> Aim / Face<br><b>SPACE / SHIFT</b> Vehicle drift · <b>ESC</b> Pause</div>
   <div class="bottom">
     <div class="awakening"><div class="awakening-label" id="ultLabel">AWAKENING · 0%</div><div class="ult-track"><div id="ultFill"></div></div></div>
     <div class="slots" id="slots">
@@ -6974,7 +6974,7 @@ if(f.char==='choso'){
 
 function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const gojoBlueMaxMobileControl=getGojoBlueMaxMobileProjectile(player),skillInputLocked=!!(player.skillInputLocked&&player.motion),m1InputLocked=isM1Motion(player),grabInputLocked=!!player.grabbedBy,movementLocked=skillInputLocked||grabInputLocked||!!gojoBlueMaxMobileControl,actionLocked=skillInputLocked||grabInputLocked||m1InputLocked||!!gojoBlueMaxMobileControl;if(keys.has('q')){keys.delete('q');if(!player.dead&&!m1InputLocked&&!grabInputLocked)useAttack(player,'dash')}let x=0,y=0;if(!movementLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.grabbedBy&&!player.dead&&player.sukunaFireCast<=0){
-  if(!movementLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;if(keys.has(' ' )&&player.jump<=0){player.jump=1;player.jumpV=7;burst(player.x,player.y,'#d9e4ef',5,2)}}
+  if(!movementLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;}
   const wantsBlock=keys.has('f');
   if(wantsBlock&&!player.block&&!actionLocked){player.block=true;setMotion(player,'blockGesture',.22,player.face,targetOf(player))}
   else if(!wantsBlock&&player.block){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}
@@ -7729,7 +7729,7 @@ function updateProjectiles(dt){
  }
 }
 
-function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){const d=doorTraps[i];d.life-=dt;if(d.life<=0){doorTraps.splice(i,1);continue}const f=d.owner;if(!d.hit&&f&&f.jump<=0&&dist(f,d)<48&&keys.has(' ')){f.jump=1.65;f.jumpV=8.5;d.life=0;burst(d.x,d.y,'#e5c5ff',16,4);popText(d.x,d.y-38,'BOUNCE!','#e9d5ff',14)}}}
+function updateDoorTraps(dt){for(let i=doorTraps.length-1;i>=0;i--){doorTraps[i].life-=dt;if(doorTraps[i].life<=0)doorTraps.splice(i,1)}}
 function updateBuildingRespawns(dt){
  if(onlineMode)return;
  for(const b of staticBuildings){
