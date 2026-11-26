@@ -241,9 +241,9 @@ body.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:abs
 .mobile-btn[data-mobile-action="2"]{left:87px;top:93px;width:36px;height:36px}
 .mobile-btn[data-mobile-action="3"]{left:136px;top:76px;width:36px;height:36px}
 
-/* Guard and E are directly below dash, before the lower skill arc. */
-.mobile-btn.block{left:0;top:52px;width:26px;height:26px}
-.mobile-btn[data-mobile-action="trash"]{left:29px;top:52px;width:26px;height:26px}
+/* Guard and E match the skill buttons; stack them beneath dash clear of the skill arc. */
+.mobile-btn.block{left:0;top:52px;width:36px;height:36px}
+.mobile-btn[data-mobile-action="trash"]{left:0;top:91px;width:36px;height:36px}
 .mobile-btn.special,.mobile-btn.awaken{position:relative;left:auto;top:auto;width:36px;height:36px}
 
 .mobile-btn.pause-top{position:absolute;left:50%;top:calc(7px + env(safe-area-inset-top));width:31px;height:31px;transform:translateX(-50%);z-index:12;font-size:15px;background:rgba(5,10,18,.20)}
@@ -272,6 +272,8 @@ body.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:abs
  .mobile-btn[data-mobile-action="1"]{left:38px;top:76px;width:34px;height:34px}
  .mobile-btn[data-mobile-action="2"]{left:87px;top:92px;width:34px;height:34px}
  .mobile-btn[data-mobile-action="3"]{left:136px;top:76px;width:34px;height:34px}
+ .mobile-btn.block{left:0;top:51px;width:34px;height:34px}
+ .mobile-btn[data-mobile-action="trash"]{left:0;top:87px;width:34px;height:34px}
  #mobileJoystick{width:120px}
  .mobile-left-actions{left:calc(max(9px,env(safe-area-inset-left)) + 120px + 7px)}
  .mobile-left-actions .mobile-btn{width:34px;height:34px}
@@ -287,8 +289,8 @@ body.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:abs
  .mobile-btn[data-mobile-action="1"]{left:35px;top:71px;width:32px;height:32px}
  .mobile-btn[data-mobile-action="2"]{left:81px;top:86px;width:32px;height:32px}
  .mobile-btn[data-mobile-action="3"]{left:127px;top:71px;width:32px;height:32px}
- .mobile-btn.block{left:0;top:48px;width:24px;height:24px}
- .mobile-btn[data-mobile-action="trash"]{left:27px;top:48px;width:24px;height:24px}
+ .mobile-btn.block{left:0;top:48px;width:32px;height:32px}
+ .mobile-btn[data-mobile-action="trash"]{left:0;top:83px;width:32px;height:32px}
  body.mobile-controls-enabled.game-active .bottom{bottom:calc(155px + env(safe-area-inset-bottom))}
 }
 
