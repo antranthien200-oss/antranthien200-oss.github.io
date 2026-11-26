@@ -10185,6 +10185,7 @@ function drawHeadHands(f,deferMotionVfx=false){
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
  const gojoLockedAngle=Number.isFinite(f.gojoAwakeningFacing)?f.gojoAwakeningFacing:remoteFacing;
   
+ const gojoBlueMaxOrb=f.char==='honored'&&f.awakened&&name==='gojoBlueMax'?projectiles.find(p=>p&&p.kind==='blueMax'&&p.owner===f&&p.phase==='active'&&!p.finished):null;
  const liveTarget=gojoBlueMaxOrb?{x:gojoBlueMaxOrb.x,y:gojoBlueMaxOrb.y}:f.char==='honored'&&f.gojoAwakeningAimLocked?{x:f.x+Math.cos(gojoLockedAngle)*120,y:f.y-23+Math.sin(gojoLockedAngle)*120}:isPlayer?aimWorld():(onlineMode&&f.onlineSessionId?{x:f.x+Math.cos(remoteFacing)*120,y:f.y-23+Math.sin(remoteFacing)*120}:(player?{x:player.x,y:player.y-23}:aimWorld()));
  const liveDx=liveTarget.x-f.x,liveDy=liveTarget.y-(f.y-23),liveDistance=Math.hypot(liveDx,liveDy)||1;
  const lockShrineM1=!!(m&&f.char==='vessel'&&f.awakened&&name.startsWith('m1_')&&Number.isFinite(m.angle));
