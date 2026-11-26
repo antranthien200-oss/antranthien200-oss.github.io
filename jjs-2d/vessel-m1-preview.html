@@ -10801,7 +10801,11 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
- if(f.dead||f.isTrainingDummy||!worldRectVisible(f.x-80,f.y-110,160,150,48))return;
+ // Keep real fighters in the render pass during Blue MAX. The mobile camera follows
+ // the moving orb, so edge-based worldRectVisible culling can otherwise make the
+ // caster and pulled target pop in and out while the camera is blending.
+ const blueMaxRenderLock=isGojoBlueMaxVisualSuppressed(f);
+ if(f.dead||f.isTrainingDummy||(!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48)))return;
  const transition=f.vehicleTransition;
  if(f.vehicle&&!transition)return;
  const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;
