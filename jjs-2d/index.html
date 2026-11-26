@@ -7858,7 +7858,7 @@ function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>
  const cameraTargetY=blueMaxCamera?lerp(player.y,blueMaxCamera.y,smoothCameraBlend):player.y;
  const camRate=blueMaxCamera ? .13 : .08,camLerp=1-Math.pow(1-camRate,dt*60);
  camera.x=lerp(camera.x,cameraTargetX,camLerp);camera.y=lerp(camera.y,cameraTargetY,camLerp);
- const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud();if(onlineMode)updateOnlineNetwork(dt)}
+ const viewScale=cameraViewScale();camera.x=clamp(camera.x,W*viewScale/2,WORLD.w-W*viewScale/2);camera.y=clamp(camera.y,H*viewScale/2,WORLD.h-H*viewScale/2);game.hudTimer=(game.hudTimer||0)-dt;updateHud();if(onlineMode)updateOnlineNetwork(dt)}
 function sx(x){return x-camera.x+W/2}function sy(y){return y-camera.y+H/2}
 function worldRectVisible(x,y,w,h,pad=48){
  const halfW=W*cameraViewScale()*.5+pad,halfH=H*cameraViewScale()*.5+pad;
