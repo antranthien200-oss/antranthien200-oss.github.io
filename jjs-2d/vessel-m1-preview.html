@@ -9132,6 +9132,9 @@ function refreshGojoBlueMaxVisualSuppression(){
 }
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f||f.isTrainingDummy)return false;
+ // Blue MAX applies repeated damage ticks. Keep all real fighters visually stable
+ // for the full projectile lifetime, including the frame before network hit state arrives.
+ if(projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished&&Number(p.life)>0))return true;
  const owner=f.blueMaxVisualOwner;
  if(owner&&owner.kind==='blueMax'&&!owner.finished)return true;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
