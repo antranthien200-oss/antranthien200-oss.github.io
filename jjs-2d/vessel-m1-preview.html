@@ -5989,14 +5989,14 @@ function spawnBloodDeathFx(f){
  if(!f||f.isTrainingDummy||f.bloodDeathFxPlayed)return;
  f.bloodDeathFxPlayed=true;
  const x=f.x,y=f.y-23;
- particles.push({x,y,vx:0,vy:0,life:.48,max:.48,size:isMobileDevice?43:68,color:'#b41434',shape:'bloodBurst'});
- particles.push({x,y,vx:0,vy:0,life:.3,max:.3,size:isMobileDevice?18:27,color:'#560817',shape:'bloodCore'});
+ particles.push({x,y,vx:0,vy:0,life:.95,max:.95,size:isMobileDevice?43:68,color:'#b41434',shape:'bloodBurst'});
+ particles.push({x,y,vx:0,vy:0,life:.68,max:.68,size:isMobileDevice?18:27,color:'#560817',shape:'bloodCore'});
  const count=isMobileDevice?8:18;
  const colors=['#790d24','#a6102f','#d21d40','#ed3655','#940b28'];
  for(let i=0;i<count;i++){
   const angle=rnd(0,Math.PI*2);
   const speed=rnd(2.1,isMobileDevice?4.8:7.1);
-  const life=rnd(.38,.72);
+  const life=rnd(.85,1.15);
   particles.push({
    x:x+rnd(-4,4),y:y+rnd(-4,4),
    vx:Math.cos(angle)*speed,vy:Math.sin(angle)*speed-rnd(.15,.9),
