@@ -6438,6 +6438,7 @@ function updateTrashManEffects(f,dt){
 function useAttack(f,kind,networkReplay=false){
  if(f===player&&f.vehicle)toggleCityVehicle(f);
  if(!f||f.isTrainingDummy||f.passiveNpc||f.aiDisabled||f.dead||(!networkReplay&&f.vehicle)||(!networkReplay&&game.cutsceneTimer>0))return;
+ if(!networkReplay&&f===player&&getGojoBlueMaxMobileProjectile(f))return;
 
  if(!networkReplay&&Number(f.skillLockUntil)>Date.now()&&(['1','2','3','4'].includes(kind)||kind==='special'||kind==='m1'))return;
  if(!networkReplay&&f.grabbedBy)return;
