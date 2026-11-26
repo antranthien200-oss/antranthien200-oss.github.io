@@ -9102,17 +9102,13 @@ function refreshGojoBlueMaxVisualSuppression(){
  for(const remote of onlineRemotePlayers.values())clearExpired(remote);
 }
 function isGojoBlueMaxVisualSuppressed(f){
- if(!f)return false;
+ if(!f||f.isTrainingDummy)return false;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
  if(f.motion&&f.motion.name==='gojoBlueMax')return true;
- // Protect only the caster and fighters actually inside an active Max Blue pull.
- for(const p of projectiles){
-  if(!p||p.kind!=='blueMax'||p.life<=0)continue;
-  const owner=p.owner;
-  if(owner===f)return true;
-  if(owner&&owner.team!==f.team&&p.phase==='active'&&Math.hypot(p.x-f.x,p.y+23-f.y)<(Number(p.pullRadius)||420)+24)return true;
- }
- return false;
+ // Desktop Max Blue follows the mouse, so its orb can move across the pull-radius edge
+ // between frames. Keep fighter hit-flash and stun overlays suppressed for the full
+ // projectile lifetime instead of toggling them as the orb moves in and out of range.
+ return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
 }
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
