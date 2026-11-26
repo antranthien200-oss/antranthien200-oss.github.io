@@ -6730,13 +6730,7 @@ if(f.skillCd[idx]>0)return;const aim=gojoBlueMaxAutoTarget?{x:gojoBlueMaxAutoTar
     popText(f.x,f.y-55,'TWOFOLD COUNTER','#fff0a3',13);showToast('COUNTER READY',550);
    }
   }else{
-   if(idx===0){
-    f.skillInputLocked=false;
-    const orbX=f.x+Math.cos(angle)*70,orbY=f.y-23+Math.sin(angle)*70;
-    f.skillCd[idx]=17;
-    projectiles.push({x:orbX,y:orbY,vx:0,vy:0,r:30,life:6.25,owner:f,kind:'blueMax',damage:2.2,color:'#55cfff',tick:.2,phase:'forming',phaseRemaining:.5,phaseDuration:.5,activeDuration:3,collapseDuration:1,followSpeed:950,followAimX:aim.x,followAimY:aim.y,targetRef:gojoBlueMaxAutoTarget||t,mobileAutoTarget:!!gojoBlueMaxAutoTarget,pullRadius:420,pullForce:.06,damageRadius:165,phaseElapsed:0});
-    showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
-   }
+   if(idx===0){startGojoBlueMax(f,angle,aim,t,gojoBlueMaxAutoTarget);return}
    if(idx===1){f.attackAnim=.95;f.invuln=.25;burst(f.x,f.y,'#ff4c68',22,5);showToast('REVERSAL RED MAX · CHARGING',650);schedule(()=>{if(!f.dead){burst(f.x+Math.cos(angle)*25,f.y+Math.sin(angle)*25,'#ff8293',18,4);projectiles.push({x:f.x+Math.cos(angle)*36,y:f.y+Math.sin(angle)*36,vx:Math.cos(angle)*17,vy:Math.sin(angle)*17,r:25,life:2.2,maxDistance:900,travelled:0,owner:f,kind:'redmax',damage:30,color:'#ff4c68'})}},1210);f.skillCd[idx]=10}
    if(idx===2){f.attackAnim=.75;f.invuln=.22;burst(f.x,f.y,'#bd9dff',26,6);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*16,vy:Math.sin(angle)*16,r:34,life:3.4,maxDistance:920,travelled:0,owner:f,kind:'hollow',damage:70,color:'#c7a7ff'})},620);f.skillCd[idx]=40;game.shake=7}
    if(idx===3){if(startDomain(f,'void',14,1.25,.35,555,1))f.skillCd[idx]=120}
@@ -7289,10 +7283,15 @@ function detonateBlueMax(p){
   if(!target||target===owner||target.dead||target.vehicle)continue;
   const dx=target.x-p.x,dy=target.y-23-p.y,gap=Math.hypot(dx,dy);
   if(gap>blastRadius+23)continue;
-  const angle=gap>1?Math.atan2(dy,dx):(Number.isFinite(owner.face)?owner.face:0);
+  holdGojoBlueMaxVisual(p,target);
+  const angle=gap>1?Math.atan2(dy,dx):(owner&&Number.isFinite(owner.face)?owner.face:0);
   const nx=Math.cos(angle),ny=Math.sin(angle),falloff=1-clamp(gap/blastRadius,0,1),push=18+14*falloff;
   target.blueMaxSuckedBy='';
-  damage(target,p.explosionDamage||18,owner,{stun:.48,kx:nx*push,ky:ny*push,color:'#70dfff',unblockable:true,ignoreInvuln:true,damageType:'explosion'});
+  damage(target,p.explosionDamage||18,owner,{
+   stun:.48,kx:nx*push,ky:ny*push,color:'#70dfff',unblockable:true,
+   ignoreInvuln:true,damageType:'explosion',suppressHitFlash:true,
+   suppressHitFeedback:true,suppressSkillInterrupt:true
+  });
   // Set the launch velocity after damage so the suction hold cannot overwrite it.
   target.vx=nx*push;target.vy=ny*push;
  }
@@ -7305,6 +7304,169 @@ function recordGojoBlueMaxTrail(p){
   if(!last||Math.hypot(p.x-last.x,p.y-last.y)>1.2)points.push({x:p.x,y:p.y,time:now});
   while(points.length>64||(points.length&&now-points[0].time>.28))points.shift();
  }
+function holdGojoBlueMaxVisual(p,f){
+ if(!p||!f||f.isTrainingDummy)return;
+ if(!(p.visualTargets instanceof Set))p.visualTargets=new Set();
+ p.visualTargets.add(f);
+ f.blueMaxVisualOwner=p;
+ // Remove any already-running hit flash once; never toggle this by orb distance.
+ f.flash=0;
+}
+function releaseGojoBlueMaxVisual(p){
+ if(!p||p.visualReleased)return;
+ p.visualReleased=true;
+ if(p.visualTargets instanceof Set){
+  for(const f of p.visualTargets){
+   if(f&&f.blueMaxVisualOwner===p){f.blueMaxVisualOwner=null;f.flash=0}
+  }
+  p.visualTargets.clear();
+ }
+ const owner=p.owner;
+ if(owner&&owner.blueMaxVisualOwner===p){
+  owner.blueMaxVisualOwner=null;
+  owner.flash=0;
+  if(owner.motion&&owner.motion.name==='gojoBlueMax'){
+   owner.motion=null;owner.attackAnim=0;
+   if(owner.attackType==='skill')owner.attackType='';
+   owner.skillInputLocked=false;
+  }
+ }
+}
+function startGojoBlueMax(f,angle,aim,target,mobileTarget=null){
+ if(!f||f.dead)return null;
+ // There can only be one live Max Blue per caster. Finish stale state cleanly first.
+ for(const old of projectiles){
+  if(old&&old.kind==='blueMax'&&old.owner===f&&old.life>0){
+   old.phase='collapse';old.phaseDuration=1;old.phaseRemaining=1;old.phaseElapsed=0;
+   detonateBlueMax(old);releaseGojoBlueMaxVisual(old);old.finished=true;
+  }
+ }
+ const orbX=clamp(f.x+Math.cos(angle)*70,28,WORLD.w-28);
+ const orbY=clamp(f.y-23+Math.sin(angle)*70,28,WORLD.h-28);
+ const p={
+  x:orbX,y:orbY,vx:0,vy:0,r:30,life:4.5,owner:f,kind:'blueMax',
+  damage:2.2,color:'#55cfff',tick:.12,phase:'forming',
+  phaseElapsed:0,phaseRemaining:.5,phaseDuration:.5,
+  activeDuration:3,collapseDuration:1,followSpeed:950,
+  followAimX:Number(aim.x),followAimY:Number(aim.y),
+  targetRef:mobileTarget||target,mobileAutoTarget:!!mobileTarget,
+  pullRadius:420,pullForce:.06,damageRadius:165,
+  explosionRadius:275,explosionDamage:18,visualTargets:new Set(),
+  finished:false,visualReleased:false
+ };
+ f.skillCd[0]=17;
+ f.skillInputLocked=false;
+ f.vx=0;f.vy=0;
+ setMotion(f,'gojoBlueMax',4.5,angle,target);
+ holdGojoBlueMaxVisual(p,f);
+ projectiles.push(p);
+ burst(orbX,orbY,'#55cfff',12,2.6);
+ showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
+ return p;
+}
+function beginGojoBlueMaxCollapse(p){
+ if(!p||p.phase==='collapse'||p.finished)return;
+ p.phase='collapse';
+ p.phaseElapsed=0;
+ p.phaseDuration=Math.max(.05,Number(p.collapseDuration)||1);
+ p.phaseRemaining=p.phaseDuration;
+ p.vx=0;p.vy=0;
+ detonateBlueMax(p);
+}
+function updateGojoBlueMaxActive(p,dt){
+ const owner=p.owner;
+ if(!owner||owner.dead||dt<=0)return;
+ let autoTarget=null;
+ if(p.mobileAutoTarget&&owner===player&&mobileControlsEnabled){
+  autoTarget=p.targetRef&&!p.targetRef.dead&&!p.targetRef.vehicle?p.targetRef:gojoBlueMaxMobileTarget(owner);
+  if(autoTarget)p.targetRef=autoTarget;
+ }
+ const aim=autoTarget?{x:autoTarget.x,y:autoTarget.y-23}:aimedAt(owner);
+ const aimX=clamp(Number.isFinite(Number(aim.x))?Number(aim.x):p.followAimX,28,WORLD.w-28);
+ const aimY=clamp(Number.isFinite(Number(aim.y))?Number(aim.y):p.followAimY,28,WORLD.h-28);
+ if(!Number.isFinite(p.followAimX)){p.followAimX=aimX;p.followAimY=aimY}
+ // Exponential easing makes mouse tracking frame-rate independent on both PC and mobile.
+ const aimBlend=1-Math.exp(-dt*3.4);
+ p.followAimX+=(aimX-p.followAimX)*aimBlend;
+ p.followAimY+=(aimY-p.followAimY)*aimBlend;
+ const dx=p.followAimX-p.x,dy=p.followAimY-p.y,distance=Math.hypot(dx,dy);
+ const travel=Math.min(distance,(Number(p.followSpeed)||950)*dt);
+ if(distance>.001&&travel>0){
+  p.x=clamp(p.x+dx/distance*travel,28,WORLD.w-28);
+  p.y=clamp(p.y+dy/distance*travel,28,WORLD.h-28);
+ }
+ recordGojoBlueMaxTrail(p);
+ const targets=tenTargets(owner),pullRadius=Math.max(1,Number(p.pullRadius)||420);
+ const pullRadiusSq=pullRadius*pullRadius;
+ for(const target of targets){
+  if(!target||target===owner||target.dead||target.vehicle)continue;
+  const dx=p.x-target.x,dy=p.y+23-target.y,gapSq=dx*dx+dy*dy;
+  if(gapSq>=pullRadiusSq)continue;
+  // Once caught, keep the fighter's visual state locked until Max Blue fully ends.
+  holdGojoBlueMaxVisual(p,target);
+  const gap=Math.sqrt(gapSq);
+  if(gap>.001){
+   const pullSpeed=190+((pullRadius-gap)/pullRadius)*260;
+   const step=Math.min(gap,pullSpeed*dt);
+   target.x=clamp(target.x+dx/gap*step,28,WORLD.w-28);
+   target.y=clamp(target.y+dy/gap*step,28,WORLD.h-28);
+  }
+  target.vx=0;target.vy=0;
+  target.stun=Math.max(target.stun,.08);
+ }
+ p.tick=Math.max(-1,Number(p.tick||0)-dt);
+ while(p.tick<=0){
+  p.tick+=.2;
+  let hitAny=false;
+  for(const target of targets){
+   if(!target||target===owner||target.dead||target.vehicle)continue;
+   const dx=p.x-target.x,dy=p.y+23-target.y;
+   if(dx*dx+dy*dy>=(Number(p.damageRadius)||165)**2)continue;
+   holdGojoBlueMaxVisual(p,target);
+   hitAny=true;
+   damage(target,p.damage,owner,{
+    stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true,
+    suppressHitFlash:true,suppressHitFeedback:true,suppressSkillInterrupt:true,
+    suppressComboTracking:true,suppressHudUpdate:true
+   });
+  }
+  if(hitAny)updateHud();
+ }
+}
+function updateGojoBlueMaxProjectile(p,dt){
+ if(!p||p.finished)return true;
+ const frameTime=Math.max(0,Number(dt)||0);
+ p.life=Math.max(0,(Number(p.life)||0)-frameTime);
+ if(!p.owner||p.owner.dead)beginGojoBlueMaxCollapse(p);
+ let remaining=frameTime,guard=0;
+ // Consume each phase separately so PC frame-time changes cannot skip or restart a phase.
+ while(!p.finished&&guard++<5){
+  if(p.phase==='forming'&&p.phaseRemaining<=.000001){
+   p.phase='active';p.phaseElapsed=0;
+   p.phaseDuration=Math.max(.01,Number(p.activeDuration)||3);
+   p.phaseRemaining=p.phaseDuration;p.tick=.12;
+   continue;
+  }
+  if(p.phase==='active'&&p.phaseRemaining<=.000001){
+   beginGojoBlueMaxCollapse(p);
+   continue;
+  }
+  if(p.phase==='collapse'&&p.phaseRemaining<=.000001){
+   p.finished=true;releaseGojoBlueMaxVisual(p);return true;
+  }
+  if(remaining<=.000001)break;
+  const step=Math.min(remaining,Math.max(0,p.phaseRemaining));
+  if(step<=.000001)break;
+  if(p.phase==='active')updateGojoBlueMaxActive(p,step);
+  p.phaseElapsed=(Number(p.phaseElapsed)||0)+step;
+  p.phaseRemaining=Math.max(0,p.phaseRemaining-step);
+  remaining=Math.max(0,remaining-step);
+  if(p.phase==='collapse'){p.vx=0;p.vy=0}
+ }
+ if(p.finished){releaseGojoBlueMaxVisual(p);return true}
+ return false;
+}
+
 function updateProjectiles(dt){
  const projectileDamping=Math.pow(.993,dt*60);
  for(let i=projectiles.length-1;i>=0;i--){
@@ -7329,10 +7491,21 @@ function updateProjectiles(dt){
     }
     if(Number.isFinite(p.networkPhaseDuration))p.phaseDuration=p.networkPhaseDuration;
    }
-   if(p.kind==='blueMax'&&p.phase==='active')recordGojoBlueMaxTrail(p);
+   if(p.kind==='blueMax'){
+     if(p.owner)holdGojoBlueMaxVisual(p,p.owner);
+     if(p.phase==='active'){
+      const remoteTargets=p.owner?tenTargets(p.owner):[];
+      for(const target of remoteTargets){
+       if(!target||target===p.owner||target.dead||target.vehicle)continue;
+       const dx=p.x-target.x,dy=p.y+23-target.y;
+       if(dx*dx+dy*dy<(Number(p.pullRadius)||420)**2)holdGojoBlueMaxVisual(p,target);
+      }
+      recordGojoBlueMaxTrail(p);
+     }
+    }
    if(p.kind==='trashCan')p.rotation=(Number(p.rotation)||0)+(Number(p.spin)||22)*dt;
    p.life=Math.min(Number.isFinite(p.networkLife)?p.networkLife:p.life,Math.max(0,p.life-dt));
-   if(p.life<=0)projectiles.splice(i,1);
+   if(p.life<=0){if(p.kind==='blueMax')releaseGojoBlueMaxVisual(p);projectiles.splice(i,1);}
    continue;
   }
   if(p.kind==='red'){
@@ -7375,70 +7548,9 @@ function updateProjectiles(dt){
    continue;
   }
   if(p.kind==='blueMax'){
-   p.life=Math.max(0,(p.life||0)-dt);
-   p.phaseElapsed=(p.phaseElapsed||0)+dt;
-   p.phaseRemaining=Math.max(0,(p.phaseRemaining||0)-dt);
-   if(!p.owner||p.owner.dead){
-    if(p.phase!=='collapse'){
-     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1;p.phaseDuration=p.collapseDuration||1;
-     p.life=Math.max(p.life,p.phaseRemaining+.05);p.vx=0;p.vy=0;
-     detonateBlueMax(p);
-    }
+    if(updateGojoBlueMaxProjectile(p,dt))projectiles.splice(i,1);
+    continue;
    }
-   if(p.phase==='forming'){
-    if(p.phaseRemaining<=0){
-     p.phase='active';p.phaseElapsed=0;p.phaseRemaining=p.activeDuration||3;p.phaseDuration=p.activeDuration||3;p.tick=.12;
-    }
-   }else if(p.phase==='active'){
-    let autoTarget=null;if(p.mobileAutoTarget&&p.owner===player&&mobileControlsEnabled){autoTarget=p.targetRef&&!p.targetRef.dead&&!p.targetRef.vehicle?p.targetRef:gojoBlueMaxMobileTarget(p.owner);if(autoTarget)p.targetRef=autoTarget}const a=autoTarget?{x:autoTarget.x,y:autoTarget.y-23}:aimedAt(p.owner);
-    if(!Number.isFinite(p.followAimX)){p.followAimX=a.x;p.followAimY=a.y}
-    const aimBlend=1-Math.exp(-dt*3.4);
-    p.followAimX+=(a.x-p.followAimX)*aimBlend;p.followAimY+=(a.y-p.followAimY)*aimBlend;
-    const dx=p.followAimX-p.x,dy=p.followAimY-p.y,l=Math.hypot(dx,dy)||1,step=Math.min(l,(p.followSpeed||950)*dt);
-    p.x=clamp(p.x+dx/l*step,28,WORLD.w-28);p.y=clamp(p.y+dy/l*step,28,WORLD.h-28);
-    recordGojoBlueMaxTrail(p);
-    p.tick-=dt;
-    const targets=tenTargets(p.owner),pullRadius=p.pullRadius||420,pullStrength=p.pullForce||.06;
-    for(const target of targets){
-     if(!target||target.dead||target.vehicle)continue;
-     const targetCenterY=p.y+23,dx=p.x-target.x,dy=targetCenterY-target.y,gap=Math.hypot(dx,dy);
-     if(gap>=pullRadius)continue;
-     // Keep Max Blue's own pull/damage from repeatedly blinking the captured fighter.
-     target.blueMaxVisualUntil=Math.max(Number(target.blueMaxVisualUntil)||0,game.time+.22);
-     // Pull the fighter's visible body center (23px above its world anchor) directly into the orb.
-     const pullSpeed=190+((pullRadius-gap)/pullRadius)*260,step=Math.min(gap,pullSpeed*dt);
-     if(step>0){
-      target.x=clamp(target.x+dx/gap*step,28,WORLD.w-28);
-      target.y=clamp(target.y+dy/gap*step,28,WORLD.h-28);
-     }
-     target.vx=0;target.vy=0;
-     target.stun=Math.max(target.stun,.08);
-    }
-    if(p.tick<=0){
-     p.tick=.2;
-     let blueMaxTickHit=false;
-     for(const target of targets){
-      if(!target||target.dead||target.vehicle)continue;
-      const dx=p.x-target.x,dy=p.y+23-target.y,gap=Math.hypot(dx,dy);
-      if(gap>=(p.damageRadius||165))continue;
-      blueMaxTickHit=true;
-      damage(target,p.damage,p.owner,{stun:.12,kx:0,ky:0,color:'#70dfff',unblockable:true,ignoreInvuln:true,suppressHitFlash:true,suppressHitFeedback:true,suppressSkillInterrupt:true,suppressComboTracking:true,suppressHudUpdate:true});
-     }
-     if(blueMaxTickHit)updateHud();
-    }
-    if(p.phaseRemaining<=0){
-     p.phase='collapse';p.phaseElapsed=0;p.phaseRemaining=p.collapseDuration||1;p.phaseDuration=p.collapseDuration||1;
-     p.life=Math.max(p.life,p.phaseRemaining+.05);p.vx=0;p.vy=0;
-     detonateBlueMax(p);
-    }
-   }else if(p.phase==='collapse'){
-    // The orb stays at its final location while its charge effect retracts in reverse.
-    p.vx=0;p.vy=0;
-    if(p.phaseRemaining<=0||p.life<=0)projectiles.splice(i,1);
-   }
-   continue;
-  }
-
   if(p.kind==='bloodBomb'){
    const owner=p.owner;if(owner&&!owner.dead){const aim=aimedAt(owner),dx=aim.x-p.x,dy=aim.y-p.y,l=Math.hypot(dx,dy)||1;p.x+=dx/l*Math.min(l,220*dt);p.y+=dy/l*Math.min(l,220*dt)}
    p.life-=dt;if(p.detonate||p.life<=0){circleHit(p.x,p.y,165,p.owner,p.damage,{stun:.6,big:true,unblockable:true,color:'#e14a64',push:10});burst(p.x,p.y,'#e14a64',35,7);game.shake=9;if(p.owner&&p.owner.bloodBomb===p)p.owner.bloodBomb=null;projectiles.splice(i,1)}continue;
@@ -9036,12 +9148,10 @@ function refreshGojoBlueMaxVisualSuppression(){
 }
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f||f.isTrainingDummy)return false;
+ const owner=f.blueMaxVisualOwner;
+ if(owner&&owner.kind==='blueMax'&&!owner.finished)return true;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
- if(f.motion&&f.motion.name==='gojoBlueMax')return true;
- // Desktop Max Blue follows the mouse, so its orb can move across the pull-radius edge
- // between frames. Keep fighter hit-flash and stun overlays suppressed for the full
- // projectile lifetime instead of toggling them as the orb moves in and out of range.
- return projectiles.some(p=>p&&p.kind==='blueMax'&&p.life>0);
+ return !!(f.motion&&f.motion.name==='gojoBlueMax');
 }
 function drawPixelCell(x,y,w,h,color){
  // A tiny overlap prevents hairline antialias seams when character parts render at fractional scales.
