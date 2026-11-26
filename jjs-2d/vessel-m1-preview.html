@@ -8454,7 +8454,8 @@ function drawPixelSkillVfx(f,m,p,c,vfxFade=1){
  // Fallbacks do not force red; only a missed grab/catch gets the red stun streaks.
  // now uses the same red stun-streak effect already used by captured/missed attacks.
  const pulse=.72+.28*Math.sin(Math.PI*clamp(p,0,1));
- drawStunRain(f,0,0);
+ // Keep the motion-overlay pass consistent with the Blue MAX flash suppression.
+ if(!isGojoBlueMaxVisualSuppressed(f))drawStunRain(f,0,0);
  return true;
 }
 
