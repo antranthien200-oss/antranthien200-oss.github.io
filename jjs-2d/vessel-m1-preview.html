@@ -10987,7 +10987,7 @@ function drawFighterMotionOverlays(f){
  const flashStepActive=!!fx&&fxAge<Math.max(.24,Number(fx.duration)||.48);
  const fighterVisible=worldRectVisible(f.x-260,f.y-300,520,600,80);
  if(!flashStepActive&&!fighterVisible)return;
- if(flashStepActive)drawGojoFlashStepAfterimage(f,fx,fxAge);
+ if(flashStepActive&&!gojoBlueMaxCharacterRenderFreezeActive)drawGojoFlashStepAfterimage(f,fx,fxAge);
  if(!fighterVisible)return;
  const m=f.motion;
  if(!m){drawGojoBlueSparks(f);return}
