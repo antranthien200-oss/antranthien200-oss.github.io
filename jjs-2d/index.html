@@ -11322,6 +11322,7 @@ function drawDomainClashArenaContent(){
  ctx.drawImage(cache.canvas,0,0,fullW,H);
 }
 function drawDomainClashFighterMarkers(){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  const q=game.domainClash;if(!q)return;
  for(const f of q.members){if(f.dead)continue;const x=sx(f.x),y=sy(f.y),pct=clamp(q.scores[f.team]||0,0,100),color=f.team==='player'?'#72dcff':'#ff7187';
   ctx.save();ctx.globalAlpha=.92;ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y,39,29,game.time*.35,0,Math.PI*2);ctx.stroke();
