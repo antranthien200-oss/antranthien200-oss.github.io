@@ -3955,6 +3955,35 @@ function updateGojoBlueMaxCharacterRenderFreeze(){
  if(active===gojoBlueMaxCharacterRenderFreezeActive)return;
  gojoBlueMaxCharacterRenderFreezeActive=active;
 }
+let gojoBlueMaxCharacterSnapshots=new WeakMap();
+function drawGojoBlueMaxCachedCharacter(f,centerX,centerY,drawSource,size=256){
+ if(!gojoBlueMaxCharacterRenderFreezeActive){drawSource();return}
+ let cached=gojoBlueMaxCharacterSnapshots.get(f);
+ if(!cached){
+  const ratio=Math.max(.5,Number(dpr)||1),surface=document.createElement('canvas');
+  surface.width=Math.max(1,Math.round(size*ratio));
+  surface.height=Math.max(1,Math.round(size*ratio));
+  const surfaceCtx=surface.getContext('2d');
+  if(!surfaceCtx){drawSource();return}
+  const previousCtx=ctx;
+  try{
+   ctx=surfaceCtx;
+   ctx.setTransform(ratio,0,0,ratio,0,0);
+   ctx.imageSmoothingEnabled=false;
+   ctx.translate(size*.5-centerX,size*.5-centerY);
+   drawSource();
+  }finally{
+   ctx=previousCtx;
+  }
+  cached={canvas:surface,size,center:size*.5};
+  gojoBlueMaxCharacterSnapshots.set(f,cached);
+ }
+ ctx.save();
+ ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(cached.canvas,centerX-cached.center,centerY-cached.center,cached.size,cached.size);
+ ctx.restore();
+}
+
 const gojoBlueMaxRenderDebug=typeof location!=='undefined'&&String(location.search||'').includes('debugBlueMax=1');
 let gojoBlueMaxDebugStats={drawCalls:0,drawn:0,culled:0,headCalls:0,fps:0,drawMs:0,frame:{},heads:{}};
 
@@ -4752,7 +4781,14 @@ function getMobileRemoteRenderSets(){
  return {detailed:visible,simple:[]};
 }
 function drawMobileRemoteFighter(remote){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
+ if(!remote||remote.dead)return;
+ if(gojoBlueMaxCharacterRenderFreezeActive){
+  drawGojoBlueMaxCachedCharacter(remote,sx(remote.x),sy(remote.y),()=>drawMobileRemoteFighterUncached(remote),128);
+  return;
+ }
+ drawMobileRemoteFighterUncached(remote);
+}
+function drawMobileRemoteFighterUncached(remote){
  if(!remote||remote.dead)return;
  const x=sx(remote.x),y=sy(remote.y)-remote.jump*3,accent=(CHARS[remote.char]&&CHARS[remote.char].accent)||'#65d8ff';
  ctx.save();ctx.globalAlpha=.96;
@@ -4766,7 +4802,6 @@ function drawMobileRemoteFighter(remote){
  ctx.restore();
 }
 function drawOnlineNameplate(remote){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!remote||remote.dead||!worldRectVisible(remote.x-90,remote.y-110,180,150,36))return;
  const x=sx(remote.x),y=sy(remote.y)-55-remote.jump*3,name=String(remote.onlineName||'PLAYER').toUpperCase();
  ctx.save();ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -6271,7 +6306,15 @@ function drawCityTrain(){
 }
 
 function drawTrainingDummy(){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
+ if(gojoBlueMaxCharacterRenderFreezeActive&&trainingDummy){
+  const activeDomain=domainFighters().find(domainIsActive);
+  if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return drawTrainingDummyUncached();
+  drawGojoBlueMaxCachedCharacter(trainingDummy,sx(trainingDummy.x),sy(trainingDummy.y),()=>drawTrainingDummyUncached(),256);
+  return;
+ }
+ drawTrainingDummyUncached();
+}
+function drawTrainingDummyUncached(){
  if(!trainingDummy)return;const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
  const d=trainingDummy,x=sx(d.x),y=sy(d.y);
  ctx.save();
@@ -10879,7 +10922,15 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
- if(gojoBlueMaxCharacterRenderFreezeActive||!f)return;
+ if(!gojoBlueMaxCharacterRenderFreezeActive||!f||f.dead||f.isTrainingDummy||f.vehicle&&!f.vehicleTransition)return drawFighterUncached(f);
+ const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
+ const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
+ if(outsideViewport)return;
+ const activeDomain=domainFighters().find(domainIsActive);
+ if(activeDomain&&!domainViewMatches(f,activeDomain))return;
+ drawGojoBlueMaxCachedCharacter(f,sx(f.x),sy(f.y),()=>drawFighterUncached(f),256);
+}
+function drawFighterUncached(f){
  // Only bypass viewport culling while the local mobile camera follows the Blue MAX orb.
  // Desktop and multiplayer keep normal culling for unrelated fighters.
  const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
@@ -11229,7 +11280,6 @@ function drawDomainClashArenaContent(){
  ctx.drawImage(cache.canvas,0,0,fullW,H);
 }
 function drawDomainClashFighterMarkers(){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
  const q=game.domainClash;if(!q)return;
  for(const f of q.members){if(f.dead)continue;const x=sx(f.x),y=sy(f.y),pct=clamp(q.scores[f.team]||0,0,100),color=f.team==='player'?'#72dcff':'#ff7187';
   ctx.save();ctx.globalAlpha=.92;ctx.strokeStyle=color;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y,39,29,game.time*.35,0,Math.PI*2);ctx.stroke();
@@ -12097,7 +12147,6 @@ function getVesselSmokeAuraFrames(){
  return vesselSmokeAuraFrames;
 }
 function drawVesselAwakeningSmoke(f){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending||!worldRectVisible(f.x-70,f.y-75,140,130,24))return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3-23,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
  const frames=getVesselSmokeAuraFrames(),framePosition=(visualTime*6)%frames.length,frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
