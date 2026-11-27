@@ -3951,9 +3951,13 @@ let game={started:false,paused:false,over:false,shake:0,shakeTime:0,hitStop:0,la
 
 let gojoBlueMaxCharacterRenderFreezeActive=false;
 function updateGojoBlueMaxCharacterRenderFreeze(){
- const active=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished&&(Number(p.life)||0)>0);
+ // Keep the freeze active through the projectile's complete collapse; life can reach zero
+ // a frame before the projectile is marked finished.
+ const active=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished);
  if(active===gojoBlueMaxCharacterRenderFreezeActive)return;
  gojoBlueMaxCharacterRenderFreezeActive=active;
+ // Each cast gets a fresh, single-frame body snapshot.
+ gojoBlueMaxCharacterSnapshots=new WeakMap();
 }
 let gojoBlueMaxCharacterSnapshots=new WeakMap();
 function drawGojoBlueMaxCachedCharacter(f,centerX,centerY,drawSource,size=256){
@@ -12243,7 +12247,7 @@ function draw(){
  if(!isFullScreenDomainActive()){drawMap();drawDynamicCityObjects();drawCityVehicles();drawCityTrain();drawThrowableProps();drawTrainingDummy();drawTenSummons()}
  // The awakened Vessel's smooth smoke aura stays behind the fighter and all combat effects.
  if(player)drawVesselAwakeningSmoke(player);if(enemy)drawVesselAwakeningSmoke(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawVesselAwakeningSmoke(remote);}
- drawEffects();drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
+ ctx.save();try{drawEffects()}finally{ctx.restore()}drawYujiCrushEffects();drawSukunaHeadCarryEffects();drawTrashManEffects();drawTrashManDomainCan();
  if(player)drawFighter(player);if(enemy)drawFighter(enemy);if(onlineMode){for(const remote of mobileRemoteRender.detailed)drawFighter(remote);for(const remote of mobileRemoteRender.simple)drawMobileRemoteFighter(remote);for(const remote of mobileRemoteRender.detailed)drawOnlineNameplate(remote)}
  drawYujiSkillCancelBurst();drawYujiSkillImpactEffects();
  // Foreground combat pass keeps skill effects and Gojo's hand trails visible over opponents.
