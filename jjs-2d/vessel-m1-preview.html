@@ -10146,11 +10146,6 @@ function drawStunRain(f,x,y,options=null){
 
 function drawHeadHands(f,deferMotionVfx=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
- if(gojoBlueMaxRenderDebug){
-  gojoBlueMaxDebugStats.headCalls++;
-  const key=f===player?'YOU':f===enemy?'CPU':String(f.onlineName||f.char||'REMOTE').slice(0,12);
-  gojoBlueMaxDebugStats.heads[key]={alpha:Number(ctx.globalAlpha.toFixed(3)),shadow:Number(ctx.shadowBlur.toFixed(1)),flash:Number(f.flash)||0,suppressed:blueMaxFlashSuppressed,stun:Number(f.stun)||0};
- }
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -10736,6 +10731,11 @@ function drawHeadHands(f,deferMotionVfx=false){
  }
  if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}
  if(f.flash>0&&!blueMaxFlashSuppressed)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;
+ if(gojoBlueMaxRenderDebug){
+  gojoBlueMaxDebugStats.headCalls++;
+  const key=f===player?'YOU':f===enemy?'CPU':String(f.onlineName||f.char||'REMOTE').slice(0,12);
+  gojoBlueMaxDebugStats.heads[key]={alpha:Number(ctx.globalAlpha.toFixed(3)),shadow:Number(ctx.shadowBlur.toFixed(1)),flash:Number(f.flash)||0,suppressed:blueMaxFlashSuppressed,stun:Number(f.stun)||0};
+ }
  drawCuteHead(f,c,stunTheme);
  const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
