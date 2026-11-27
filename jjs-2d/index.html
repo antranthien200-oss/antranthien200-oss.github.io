@@ -3943,10 +3943,22 @@ updateMenuSummary();
 let game={started:false,paused:false,over:false,shake:0,shakeTime:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
 
 let gojoBlueMaxCharacterRenderFreezeActive=false;
+function isGojoBlueMaxCasterMotion(f){
+ return !!(f&&!f.dead&&f.char==='honored'&&f.awakened&&f.motion&&f.motion.name==='gojoBlueMax');
+}
 function updateGojoBlueMaxCharacterRenderFreeze(){
  // Keep the freeze active through the projectile's complete collapse; life can reach zero
  // a frame before the projectile is marked finished.
- const active=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished);
+ const projectileActive=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished);
+ // Also follow the caster's actual skill motion. This prevents a one-frame redraw if
+ // projectile state is briefly missing while a local or remote cast is being synced.
+ let casterMotionActive=isGojoBlueMaxCasterMotion(player)||isGojoBlueMaxCasterMotion(enemy);
+ if(!casterMotionActive&&onlineMode&&onlineRemotePlayers){
+  for(const remote of onlineRemotePlayers.values()){
+   if(isGojoBlueMaxCasterMotion(remote)){casterMotionActive=true;break;}
+  }
+ }
+ const active=projectileActive||casterMotionActive;
  if(active===gojoBlueMaxCharacterRenderFreezeActive)return;
  gojoBlueMaxCharacterRenderFreezeActive=active;
  // Each cast gets a fresh, single-frame body snapshot.
