@@ -3948,6 +3948,31 @@ $('menuSubDone').addEventListener('click',closeMenuSub);
 updateMenuSummary();
 
 let game={started:false,paused:false,over:false,shake:0,shakeTime:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
+const gojoBlueMaxRenderDebug=typeof location!=='undefined'&&String(location.search||'').includes('debugBlueMax=1');
+let gojoBlueMaxDebugStats={drawCalls:0,drawn:0,culled:0,headCalls:0,fps:0,drawMs:0,frame:{},heads:{}};
+
+function drawGojoBlueMaxDebugOverlay(){
+ if(!gojoBlueMaxRenderDebug)return;
+ const p=projectiles.find(item=>item&&item.kind==='blueMax'&&!item.finished);
+ const loader=drawGojoBlueMaxProjectile;
+ const asset=loader.spriteSheet?'READY':loader.sheetFailed?'FAILED':loader.sheetLoading?'LOADING':'NOT STARTED';
+ const rows=[
+  'BLUE MAX RENDER DIAGNOSTICS',
+  'FPS '+(gojoBlueMaxDebugStats.fps||0)+'  DRAW '+(gojoBlueMaxDebugStats.drawMs||0).toFixed(1)+'ms  DPR '+Number(dpr).toFixed(2),
+  'CANVAS '+canvas.width+'x'+canvas.height+'  ASSET '+asset,
+  'ORB '+(p?(p.phase||'active')+' LIFE '+Number(p.life||0).toFixed(2):'NONE')+'  PLAYERS '+gojoBlueMaxDebugStats.drawn+'/'+gojoBlueMaxDebugStats.drawCalls+'  CULLED '+gojoBlueMaxDebugStats.culled
+ ];
+ for(const key of Object.keys(gojoBlueMaxDebugStats.frame)){
+  const f=gojoBlueMaxDebugStats.frame[key],h=gojoBlueMaxDebugStats.heads[key]||{};
+  rows.push(key+': '+(f.skip?'SKIPPED':'DRAWN')+'  flash '+f.flash.toFixed(2)+'  stun '+f.stun.toFixed(2)+'  sup '+(f.suppressed?1:0)+'  alpha '+(h.alpha??'-')+'  shadow '+(h.shadow??'-'));
+ }
+ ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.globalAlpha=1;
+ ctx.fillStyle='rgba(2,8,16,.9)';ctx.fillRect(9,9,Math.min(W-18,540),20+rows.length*17);
+ ctx.font='11px ui-monospace,Consolas,monospace';ctx.textAlign='left';ctx.textBaseline='top';
+ rows.forEach((row,index)=>{ctx.fillStyle=index===0?'#8de3ff':'#e8f4ff';ctx.fillText(row,17,15+index*17)});
+ ctx.restore();
+}
+
 const scheduledTasks=[];
 let activeSkillScheduleOwner=null;
 function schedule(fn,delayMs){
@@ -10121,6 +10146,11 @@ function drawStunRain(f,x,y,options=null){
 
 function drawHeadHands(f,deferMotionVfx=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
+ if(gojoBlueMaxRenderDebug){
+  gojoBlueMaxDebugStats.headCalls++;
+  const key=f===player?'YOU':f===enemy?'CPU':String(f.onlineName||f.char||'REMOTE').slice(0,12);
+  gojoBlueMaxDebugStats.heads[key]={alpha:Number(ctx.globalAlpha.toFixed(3)),shadow:Number(ctx.shadowBlur.toFixed(1)),flash:Number(f.flash)||0,suppressed:blueMaxFlashSuppressed,stun:Number(f.stun)||0};
+ }
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -10835,7 +10865,14 @@ function drawFighter(f){
  // Only bypass viewport culling while the local mobile camera follows the Blue MAX orb.
  // Desktop and multiplayer keep normal culling for unrelated fighters.
  const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
- if(f.dead||f.isTrainingDummy||(!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48)))return;
+ const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
+ const debugKey=f===player?'YOU':f===enemy?'CPU':String(f.onlineName||f.char||'REMOTE').slice(0,12);
+ if(gojoBlueMaxRenderDebug){
+  gojoBlueMaxDebugStats.drawCalls++;
+  gojoBlueMaxDebugStats.frame[debugKey]={skip:!!(f.dead||f.isTrainingDummy||outsideViewport),dead:!!f.dead,dummy:!!f.isTrainingDummy,outside:outsideViewport,flash:Number(f.flash)||0,stun:Number(f.stun)||0,suppressed:isGojoBlueMaxVisualSuppressed(f),motion:f.motion&&f.motion.name||'idle',x:Math.round(f.x),y:Math.round(f.y)};
+ }
+ if(f.dead||f.isTrainingDummy||outsideViewport){if(gojoBlueMaxRenderDebug)gojoBlueMaxDebugStats.culled++;return}
+ if(gojoBlueMaxRenderDebug)gojoBlueMaxDebugStats.drawn++;
  const transition=f.vehicleTransition;
  if(f.vehicle&&!transition)return;
  const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(f,activeDomain))return;
@@ -12102,6 +12139,8 @@ function positionGojoAwakeningDialogue(){
 }
 
 function draw(){
+ const gojoBlueMaxDebugStart=gojoBlueMaxRenderDebug?performance.now():0;
+ if(gojoBlueMaxRenderDebug){gojoBlueMaxDebugStats.drawCalls=0;gojoBlueMaxDebugStats.drawn=0;gojoBlueMaxDebugStats.culled=0;gojoBlueMaxDebugStats.headCalls=0;gojoBlueMaxDebugStats.frame={};gojoBlueMaxDebugStats.heads={}}
  refreshGojoBlueMaxVisualSuppression();
  const mobileRemoteRender=onlineMode?getMobileRemoteRenderSets():{detailed:[],simple:[]};
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
@@ -12138,10 +12177,11 @@ function draw(){
  // Render the Domain Expansion cut-in in viewport space so mobile camera zoom cannot shrink it.
  if(game.started){for(const f of domainFighters()){if(f&&!f.dead&&f.domainWindup>0){const p=clamp(1-f.domainWindup/(f.domainWindupStart||f.domainWindup||1.25),0,1);const col=f.domainType==='void'?'#e7efff':f.domainType==='shrine'?'#ff5a6c':f.domainType==='hakari'?'#e2d0ff':'#a8f1df';drawDomainHandsignCutin(f,p,col)}}}
  if(!game.started){camera.x=1100;camera.y=750;drawMenuBackdrop()}else if(!mobileControlsEnabled){ctx.save();ctx.translate(mouse.x,mouse.y);ctx.strokeStyle='#eaf7ffcc';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(0,0,8,0,Math.PI*2);ctx.moveTo(-14,0);ctx.lineTo(-5,0);ctx.moveTo(5,0);ctx.lineTo(14,0);ctx.moveTo(0,-14);ctx.lineTo(0,-5);ctx.moveTo(0,5);ctx.lineTo(0,14);ctx.stroke();ctx.restore()}else if(mobileControlsEnabled){drawMobileEnemyPointer()}
+ if(gojoBlueMaxRenderDebug){gojoBlueMaxDebugStats.drawMs=performance.now()-gojoBlueMaxDebugStart;drawGojoBlueMaxDebugOverlay()}
 }
 function drawMenuBackdrop(){ctx.save();ctx.fillStyle='#0a111b66';ctx.fillRect(0,0,W,H);ctx.restore()}
 let mobileAccumulator=0,wasPaused=false,frameUpdateCost=0;
-function loop(ts){requestAnimationFrame(loop);try{const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;}catch(error){console.error('JJS2D frame error; pausing instead of stopping the render loop:',error);game.paused=true;mobileAccumulator=0;wasPaused=true;canvasNeedsDraw=false}}requestAnimationFrame(loop);
+function loop(ts){requestAnimationFrame(loop);try{const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(gojoBlueMaxRenderDebug)gojoBlueMaxDebugStats.fps=Math.round(1/Math.max(.001,rawDt));if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;}catch(error){console.error('JJS2D frame error; pausing instead of stopping the render loop:',error);game.paused=true;mobileAccumulator=0;wasPaused=true;canvasNeedsDraw=false}}requestAnimationFrame(loop);
 // Start positions are rendered behind the title screen too.
 resetMatch();camera.x=1100;camera.y=750;
 })();
