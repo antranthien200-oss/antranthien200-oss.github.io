@@ -3941,6 +3941,43 @@ $('menuSubDone').addEventListener('click',closeMenuSub);
 updateMenuSummary();
 
 let game={started:false,paused:false,over:false,shake:0,shakeTime:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
+
+let gojoBlueMaxCharacterRenderFreezeActive=false;
+let gojoBlueMaxCharacterSnapshots=new WeakMap();
+function updateGojoBlueMaxCharacterRenderFreeze(){
+ const active=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished&&(Number(p.life)||0)>0);
+ if(active===gojoBlueMaxCharacterRenderFreezeActive)return;
+ gojoBlueMaxCharacterRenderFreezeActive=active;
+ gojoBlueMaxCharacterSnapshots=new WeakMap();
+}
+function drawGojoBlueMaxCachedCharacter(f,centerX,centerY,drawSource,size=256){
+ if(!gojoBlueMaxCharacterRenderFreezeActive){drawSource();return}
+ let cached=gojoBlueMaxCharacterSnapshots.get(f);
+ if(!cached){
+  const ratio=Math.max(.5,Number(dpr)||1),surface=document.createElement('canvas');
+  surface.width=Math.max(1,Math.round(size*ratio));
+  surface.height=Math.max(1,Math.round(size*ratio));
+  const surfaceCtx=surface.getContext('2d');
+  if(!surfaceCtx){drawSource();return}
+  const previousCtx=ctx;
+  try{
+   ctx=surfaceCtx;
+   ctx.setTransform(ratio,0,0,ratio,0,0);
+   ctx.imageSmoothingEnabled=false;
+   ctx.translate(size*.5-centerX,size*.5-centerY);
+   drawSource();
+  }finally{
+   ctx=previousCtx;
+  }
+  cached={canvas:surface,size,center:size*.5};
+  gojoBlueMaxCharacterSnapshots.set(f,cached);
+ }
+ ctx.save();
+ ctx.imageSmoothingEnabled=false;
+ ctx.drawImage(cached.canvas,centerX-cached.center,centerY-cached.center,cached.size,cached.size);
+ ctx.restore();
+}
+
 const gojoBlueMaxRenderDebug=typeof location!=='undefined'&&String(location.search||'').includes('debugBlueMax=1');
 let gojoBlueMaxDebugStats={drawCalls:0,drawn:0,culled:0,headCalls:0,fps:0,drawMs:0,frame:{},heads:{}};
 
@@ -4778,6 +4815,11 @@ function getMobileRemoteRenderSets(){
  return {detailed:visible,simple:[]};
 }
 function drawMobileRemoteFighter(remote){
+ if(!remote||remote.dead)return;
+ if(!gojoBlueMaxCharacterRenderFreezeActive)return drawMobileRemoteFighterUncached(remote);
+ return drawGojoBlueMaxCachedCharacter(remote,sx(remote.x),sy(remote.y),()=>drawMobileRemoteFighterUncached(remote),128);
+}
+function drawMobileRemoteFighterUncached(remote){
  if(!remote||remote.dead)return;
  const x=sx(remote.x),y=sy(remote.y)-remote.jump*3,accent=(CHARS[remote.char]&&CHARS[remote.char].accent)||'#65d8ff';
  ctx.save();ctx.globalAlpha=.96;
@@ -10962,6 +11004,15 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
+ if(!gojoBlueMaxCharacterRenderFreezeActive||!f||f.dead||f.isTrainingDummy||f.vehicleTransition)return drawFighterUncached(f);
+ const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
+ const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
+ if(outsideViewport||f.vehicle)return drawFighterUncached(f);
+ const activeDomain=domainFighters().find(domainIsActive);
+ if(activeDomain&&!domainViewMatches(f,activeDomain))return drawFighterUncached(f);
+ return drawGojoBlueMaxCachedCharacter(f,sx(f.x),sy(f.y),()=>drawFighterUncached(f),256);
+}
+function drawFighterUncached(f){
  // Only bypass viewport culling while the local mobile camera follows the Blue MAX orb.
  // Desktop and multiplayer keep normal culling for unrelated fighters.
  const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
@@ -11070,6 +11121,7 @@ function drawFighterMotionOverlays(f){
  // The glass shatter is a foreground layer, drawn after Gojo's body and motion effects.
 }
 function drawFighterHandsForeground(f){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!f||f.dead||!f.motionHandPose||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
  const pose=f.motionHandPose;
  // Render the character's own hands after every skill effect, keeping them in the foreground.
@@ -12255,6 +12307,7 @@ function draw(){
  const gojoBlueMaxDebugStart=gojoBlueMaxRenderDebug?performance.now():0;
  if(gojoBlueMaxRenderDebug){gojoBlueMaxDebugStats.drawCalls=0;gojoBlueMaxDebugStats.drawn=0;gojoBlueMaxDebugStats.culled=0;gojoBlueMaxDebugStats.headCalls=0;gojoBlueMaxDebugStats.frame={};gojoBlueMaxDebugStats.heads={}}
  refreshGojoBlueMaxVisualSuppression();
+ updateGojoBlueMaxCharacterRenderFreeze();
  const mobileRemoteRender=onlineMode?getMobileRemoteRenderSets():{detailed:[],simple:[]};
  const awakeningOverlay=$('awakeningCutscene'),zoomFighter=awakeningOverlay&&awakeningOverlay.classList.contains('vessel-awakening-zoom')?awakeningOverlay._speaker:null;
  if(zoomFighter&&!zoomFighter.dead){
