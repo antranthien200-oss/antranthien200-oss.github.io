@@ -7470,20 +7470,21 @@ function updateGojoBlueMaxActive(p,dt){
   p.x=clamp(p.x+p.vx*dt,28,WORLD.w-28);
   p.y=clamp(p.y+p.vy*dt,28,WORLD.h-28);
  }else{
+  // Use the same damped velocity steering as the mobile joystick, with the
+  // existing PC mouse pointer as the direction input (no extra controls).
   const aim=aimedAt(owner);
-  const aimX=clamp(Number.isFinite(Number(aim.x))?Number(aim.x):p.followAimX,28,WORLD.w-28);
-  const aimY=clamp(Number.isFinite(Number(aim.y))?Number(aim.y):p.followAimY,28,WORLD.h-28);
-  if(!Number.isFinite(p.followAimX)){p.followAimX=aimX;p.followAimY=aimY}
-  // Preserve the existing smooth PC mouse steering.
-  const aimBlend=1-Math.exp(-dt*3.4);
-  p.followAimX+=(aimX-p.followAimX)*aimBlend;
-  p.followAimY+=(aimY-p.followAimY)*aimBlend;
-  const dx=p.followAimX-p.x,dy=p.followAimY-p.y,distance=Math.hypot(dx,dy);
-  const travel=Math.min(distance,(Number(p.followSpeed)||950)*dt);
-  if(distance>.001&&travel>0){
-   p.x=clamp(p.x+dx/distance*travel,28,WORLD.w-28);
-   p.y=clamp(p.y+dy/distance*travel,28,WORLD.h-28);
-  }
+  const dx=clamp(Number(aim.x)||p.x,28,WORLD.w-28)-p.x;
+  const dy=clamp(Number(aim.y)||p.y,28,WORLD.h-28)-p.y;
+  const distance=Math.hypot(dx,dy);
+  const inputMagnitude=distance>.001?clamp(distance/110,0,1):0;
+  const targetSpeed=(Number(p.followSpeed)||950)*inputMagnitude;
+  const targetVx=distance>.001?dx/distance*targetSpeed:0;
+  const targetVy=distance>.001?dy/distance*targetSpeed:0;
+  const velocityBlend=1-Math.exp(-dt*(inputMagnitude>.08?7.5:3.1));
+  p.vx=lerp(Number(p.vx)||0,targetVx,velocityBlend);
+  p.vy=lerp(Number(p.vy)||0,targetVy,velocityBlend);
+  p.x=clamp(p.x+p.vx*dt,28,WORLD.w-28);
+  p.y=clamp(p.y+p.vy*dt,28,WORLD.h-28);
  }
  recordGojoBlueMaxTrail(p);
  const targets=tenTargets(owner),pullRadius=Math.max(1,Number(p.pullRadius)||420);
@@ -10146,6 +10147,8 @@ function drawStunRain(f,x,y,options=null){
 
 function drawHeadHands(f,deferMotionVfx=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
+ // Blue MAX uses the lighter mobile fighter-render profile on desktop too.
+ const mobileFighterEffects=isMobileDevice||blueMaxFlashSuppressed;
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
@@ -10650,11 +10653,11 @@ function drawHeadHands(f,deferMotionVfx=false){
  }
  // Small idle drift, but active attacks own the hand positions for their complete animation.
  if(!name&&!f.sideViewPreview){handA.x+=px*idle;handA.y+=py*idle;handB.x-=px*idle;handB.y-=py*idle}
- if(!isMobileDevice){ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
- if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=isMobileDevice?0:(10);ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
- if(!isMobileDevice&&f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(!mobileFighterEffects){ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
+ if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=mobileFighterEffects?0:(10);ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
+ if(!mobileFighterEffects&&f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  if(f.awakened&&f.char==='honored'){
-  const pulse=.78+.22*Math.sin(game.time*5.2),glowRadius=isMobileDevice?58:72,glowColor=c.accent||'#50baff';
+  const pulse=.78+.22*Math.sin(game.time*5.2),glowRadius=mobileFighterEffects?58:72,glowColor=c.accent||'#50baff';
   ctx.save();const glow=ctx.createRadialGradient(x,headY,3,x,headY,glowRadius);
   glow.addColorStop(0,glowColor+'48');glow.addColorStop(.42,glowColor+'25');glow.addColorStop(1,glowColor+'00');
   ctx.globalAlpha=pulse;ctx.fillStyle=glow;ctx.beginPath();ctx.arc(x,headY,glowRadius,0,Math.PI*2);ctx.fill();ctx.restore();
@@ -10725,11 +10728,11 @@ function drawHeadHands(f,deferMotionVfx=false){
  else f.motionHandPose=null;
  if(!deferHands){
   ctx.save();
-  if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?7:16;}
+  if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=mobileFighterEffects?7:16;}
   if(f.sideViewPreview&&sideViewBackHand){drawFloatingHand(sideViewBackHand.x,sideViewBackHand.y,sideViewBackHand.angle,stunTheme,sideViewBackHand.scale)}else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(handB.x+pulse,handB.y,1.12,handBAngle);drawTinyTrashCanScreen(handA.x-pulse,handA.y,1.12,handAAngle)}else{drawFloatingHand(handB.x,handB.y,handBAngle,stunTheme,handBScale);drawFloatingHand(handA.x,handA.y,handAAngle,stunTheme,handAScale)}
   ctx.restore();
  }
- if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=isMobileDevice?8:18;}
+ if(!f.isTrainingDummy)drawAccessoryAura(f,x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+gojoBlueHeadBob);ctx.save();ctx.translate(x+gojoBlueHeadShiftX,headY+gojoBlueHeadShiftY+awakenHeadDrop+gojoBlueHeadBob);ctx.rotate(awakenHeadTilt+gojoBlueHeadTilt);if(f.char==='honored'&&f.awakened){ctx.shadowColor=c.accent||'#50baff';ctx.shadowBlur=mobileFighterEffects?8:18;}
  if(f.flash>0&&!blueMaxFlashSuppressed)ctx.globalAlpha=.55+Math.sin(game.time*70)*.25;
  if(gojoBlueMaxRenderDebug){
   gojoBlueMaxDebugStats.headCalls++;
@@ -10740,13 +10743,13 @@ function drawHeadHands(f,deferMotionVfx=false){
  const yujiSkillOneEyes=!f.isTrainingDummy&&f.char==='vessel'&&!f.awakened&&(name==='yujiCursedDrag'||name==='yujiCursedDragEnd');
  if(yujiSkillOneEyes){
   const eyePulse=.86+.14*Math.sin(game.time*24+(isPlayer?0:1.1));
-  ctx.save();ctx.globalAlpha=eyePulse;ctx.fillStyle='#ff173d';ctx.shadowColor='#ff092f';ctx.shadowBlur=isMobileDevice?0:(9);
+  ctx.save();ctx.globalAlpha=eyePulse;ctx.fillStyle='#ff173d';ctx.shadowColor='#ff092f';ctx.shadowBlur=mobileFighterEffects?0:(9);
   // Match the awakened Sukuna eye-mark positions on the upper left and right of the face.
   for(const side of [-1,1]){
    const eyeX=side*11.2,eyeY=-6.5;
    ctx.beginPath();ctx.arc(eyeX,eyeY,1.9,0,Math.PI*2);ctx.fill();
-   ctx.shadowBlur=isMobileDevice?0:(0);ctx.fillStyle='#ffbdc8';ctx.beginPath();ctx.arc(eyeX-.35,eyeY-.35,.62,0,Math.PI*2);ctx.fill();
-   ctx.shadowBlur=isMobileDevice?0:(9);ctx.fillStyle='#ff173d';
+   ctx.shadowBlur=mobileFighterEffects?0:(0);ctx.fillStyle='#ffbdc8';ctx.beginPath();ctx.arc(eyeX-.35,eyeY-.35,.62,0,Math.PI*2);ctx.fill();
+   ctx.shadowBlur=mobileFighterEffects?0:(9);ctx.fillStyle='#ff173d';
   }
   ctx.restore();
  }
@@ -10816,7 +10819,7 @@ function drawYutaDomainKatanas(){
   for(const sword of owner.yutaKatanas||[]){
    const x=sx(sword.x),y=sy(sword.y)-(sword.fallTimer>0?sword.fallTimer*240:0);
    if(x<-90||x>W+90||y<-100||y>H+100)continue;
-   ctx.save();ctx.translate(x,y);ctx.rotate(sword.angle||-.7);ctx.globalAlpha=sword.landed?1:.85;ctx.shadowBlur=isMobileDevice?0:(13);ctx.shadowColor='#e8c4f0';
+   ctx.save();ctx.translate(x,y);ctx.rotate(sword.angle||-.7);ctx.globalAlpha=sword.landed?1:.85;ctx.shadowBlur=mobileFighterEffects?0:(13);ctx.shadowColor='#e8c4f0';
    ctx.fillStyle='#241a2d';ctx.fillRect(-5,-7,13,14);ctx.fillStyle='#d9c6a2';ctx.fillRect(-3,-5,9,10);
    ctx.fillStyle='#171827';ctx.fillRect(2,-3,54,6);ctx.fillStyle='#f2e9f4';ctx.fillRect(4,-2,50,4);ctx.fillStyle='#fff';ctx.fillRect(8,-1,40,1);
    ctx.fillStyle='#b99bbd';ctx.fillRect(-7,-2,18,4);ctx.strokeStyle='#fbecff';ctx.lineWidth=1;ctx.strokeRect(1,-3,56,6);ctx.restore();
@@ -10825,7 +10828,7 @@ function drawYutaDomainKatanas(){
  }
 } function drawGoldenTrashCanScreen(x,y,scale=1,angle=0){
  ctx.save();ctx.translate(x,y);ctx.rotate(angle);ctx.scale(scale,scale);
- ctx.globalAlpha=.36;ctx.fillStyle='#ffd957';ctx.shadowBlur=isMobileDevice?0:(25);ctx.shadowColor='#ffe27d';ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
+ ctx.globalAlpha=.36;ctx.fillStyle='#ffd957';ctx.shadowBlur=mobileFighterEffects?0:(25);ctx.shadowColor='#ffe27d';ctx.beginPath();ctx.arc(0,0,34,0,Math.PI*2);ctx.fill();ctx.globalAlpha=1;
  ctx.fillStyle='#573f16';ctx.fillRect(-17,15,34,7);ctx.fillStyle='#b8791d';ctx.fillRect(-15,-13,30,29);ctx.fillStyle='#f3c64d';ctx.fillRect(-13,-11,26,24);ctx.fillStyle='#ffe88d';ctx.fillRect(-7,-8,4,19);ctx.fillRect(5,-8,4,19);ctx.fillStyle='#8c5c19';ctx.fillRect(-16,-17,32,5);ctx.fillStyle='#ffe18a';ctx.fillRect(-14,-19,28,4);ctx.fillStyle='#805316';ctx.fillRect(-18,-23,36,5);ctx.fillStyle='#f6d35b';ctx.fillRect(-16,-25,32,4);ctx.fillStyle='#fff1ad';ctx.fillRect(-9,-22,18,2);ctx.strokeStyle='#7e581b';ctx.lineWidth=1;ctx.strokeRect(-15,-13,30,29);ctx.restore();
 }
 function drawTrashManDomainCan(){
@@ -10849,14 +10852,14 @@ function drawTrashManEffects(){
    const g=f.trashGiantCan,x=sx(g.x),y=sy(g.y);ctx.save();ctx.globalAlpha=.15;ctx.fillStyle='#a3bb84';ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.fill();ctx.globalAlpha=.8;ctx.strokeStyle='#a4b68d';ctx.lineWidth=2;ctx.setLineDash([8,6]);ctx.beginPath();ctx.arc(x,y,g.radius,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();const fallOffset=(g.dropTimer||0)>0?(g.dropTimer||0)*330:0;drawTrashCan(g.x,g.y-fallOffset,1.9+Math.max(0,g.dropTimer||0)*.7,Math.sin(game.time*1.8)*.035,0);
   }
   if(f.trashStinkArea){
-   const a=f.trashStinkArea,x=sx(a.x),y=sy(a.y),r=a.radius,cellSize=18,gridRows=isMobileDevice?3:4,gridCols=isMobileDevice?4:5;
+   const a=f.trashStinkArea,x=sx(a.x),y=sy(a.y),r=a.radius,cellSize=18,gridRows=mobileFighterEffects?3:4,gridCols=mobileFighterEffects?4:5;
    ctx.save();ctx.globalAlpha=.32;
    for(let gy=-gridRows;gy<=gridRows;gy++)for(let gx=-gridCols;gx<=gridCols;gx++){
     const wobble=Math.sin(game.time*4+gx*1.7+gy)*5,px=x+gx*cellSize,py=y+gy*cellSize*.78+wobble;
     if(Math.hypot(gx/5,gy/4)<.94){ctx.fillStyle=(gx+gy)%3===0?'#718e50':(gx%2?'#9ab86a':'#536e45');ctx.fillRect(Math.round(px/cellSize)*cellSize,Math.round(py/cellSize)*cellSize,cellSize-3,cellSize-3)}
    }
    ctx.globalAlpha=.9;
-   for(let i=0;i<(isMobileDevice?7:12);i++){const gx=((i*7)%11)-5,gy=((i*5)%9)-4,px=x+gx*cellSize,py=y+gy*cellSize*.78+Math.sin(game.time*5+i)*6;ctx.fillStyle=i%3===0?'#d9eaa0':'#a9c77c';ctx.fillRect(Math.round(px/6)*6,Math.round(py/6)*6,6+(i%2)*3,6+(i%3)*2)}
+   for(let i=0;i<(mobileFighterEffects?7:12);i++){const gx=((i*7)%11)-5,gy=((i*5)%9)-4,px=x+gx*cellSize,py=y+gy*cellSize*.78+Math.sin(game.time*5+i)*6;ctx.fillStyle=i%3===0?'#d9eaa0':'#a9c77c';ctx.fillRect(Math.round(px/6)*6,Math.round(py/6)*6,6+(i%2)*3,6+(i%3)*2)}
    ctx.globalAlpha=.65;ctx.strokeStyle='#9ec66e';ctx.lineWidth=2;ctx.setLineDash([9,6]);ctx.beginPath();ctx.arc(x,y,r*.82+Math.sin(game.time*4)*5,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);ctx.restore();
   }
  }
