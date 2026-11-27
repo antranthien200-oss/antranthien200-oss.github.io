@@ -3952,24 +3952,30 @@ function updateGojoBlueMaxCharacterRenderFreeze(){
 }
 function drawGojoBlueMaxCachedCharacter(f,centerX,centerY,drawSource,size=256){
  if(!gojoBlueMaxCharacterRenderFreezeActive){drawSource();return}
+ const now=performance.now(),refreshInterval=1000/30;
  let cached=gojoBlueMaxCharacterSnapshots.get(f);
- if(!cached){
-  const ratio=Math.max(.5,Number(dpr)||1),surface=document.createElement('canvas');
-  surface.width=Math.max(1,Math.round(size*ratio));
-  surface.height=Math.max(1,Math.round(size*ratio));
-  const surfaceCtx=surface.getContext('2d');
-  if(!surfaceCtx){drawSource();return}
-  const previousCtx=ctx;
+ if(!cached||now-cached.updatedAt>=refreshInterval){
+  const ratio=Math.max(.5,Number(dpr)||1);
+  if(!cached||cached.canvas.width!==Math.max(1,Math.round(size*ratio))||cached.canvas.height!==Math.max(1,Math.round(size*ratio))){
+   const surface=document.createElement('canvas');
+   surface.width=Math.max(1,Math.round(size*ratio));
+   surface.height=Math.max(1,Math.round(size*ratio));
+   cached={canvas:surface,context:surface.getContext('2d'),size,center:size*.5,ratio,updatedAt:0};
+  }
+  if(!cached.context){drawSource();return}
+  const surfaceCtx=cached.context,previousCtx=ctx;
   try{
+   surfaceCtx.setTransform(1,0,0,1,0,0);
+   surfaceCtx.clearRect(0,0,cached.canvas.width,cached.canvas.height);
    ctx=surfaceCtx;
-   ctx.setTransform(ratio,0,0,ratio,0,0);
+   ctx.setTransform(cached.ratio,0,0,cached.ratio,0,0);
    ctx.imageSmoothingEnabled=false;
    ctx.translate(size*.5-centerX,size*.5-centerY);
    drawSource();
+   cached.updatedAt=now;
   }finally{
    ctx=previousCtx;
   }
-  cached={canvas:surface,size,center:size*.5};
   gojoBlueMaxCharacterSnapshots.set(f,cached);
  }
  ctx.save();
@@ -11121,7 +11127,6 @@ function drawFighterMotionOverlays(f){
  // The glass shatter is a foreground layer, drawn after Gojo's body and motion effects.
 }
 function drawFighterHandsForeground(f){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!f||f.dead||!f.motionHandPose||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
  const pose=f.motionHandPose;
  // Render the character's own hands after every skill effect, keeping them in the foreground.
