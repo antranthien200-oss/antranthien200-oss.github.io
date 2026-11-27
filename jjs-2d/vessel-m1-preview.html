@@ -9164,11 +9164,10 @@ function refreshGojoBlueMaxVisualSuppression(){
 }
 function isGojoBlueMaxVisualSuppressed(f){
  if(!f||f.isTrainingDummy)return false;
- // Blue MAX applies repeated damage ticks. Keep all real fighters visually stable
- // for the full projectile lifetime, including the frame before network hit state arrives.
- if(projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished&&Number(p.life)>0))return true;
+ // Suppress flash/stun overlays only for Gojo and fighters actually caught by this orb.
+ // Do not let one active projectile change the rendering state of every fighter.
  const owner=f.blueMaxVisualOwner;
- if(owner&&owner.kind==='blueMax'&&!owner.finished)return true;
+ if(owner&&owner.kind==='blueMax'&&!owner.finished&&Number(owner.life)>0)return true;
  if((Number(f.blueMaxVisualUntil)||0)>game.time||!!f.blueMaxSuckedBy)return true;
  return !!(f.motion&&f.motion.name==='gojoBlueMax');
 }
@@ -10833,10 +10832,9 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
- // Keep real fighters in the render pass during Blue MAX. The mobile camera follows
- // the moving orb, so edge-based worldRectVisible culling can otherwise make the
- // caster and pulled target pop in and out while the camera is blending.
- const blueMaxRenderLock=isGojoBlueMaxVisualSuppressed(f);
+ // Only bypass viewport culling while the local mobile camera follows the Blue MAX orb.
+ // Desktop and multiplayer keep normal culling for unrelated fighters.
+ const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
  if(f.dead||f.isTrainingDummy||(!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48)))return;
  const transition=f.vehicleTransition;
  if(f.vehicle&&!transition)return;
