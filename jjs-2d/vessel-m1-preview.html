@@ -9048,7 +9048,8 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.restore();
 }
 function drawGojoBlueMaxTrail(p){
-  const points=p.trailPoints||[],screen=[],now=game.time,cutoff=now-.28;
+  const pcTrailScale=isMobileDevice?1:.58,trailLifetime=isMobileDevice?.28:.17;
+  const points=p.trailPoints||[],screen=[],now=game.time,cutoff=now-trailLifetime;
   for(let i=0;i<points.length;i++){
    const point=points[i];
    if(point.time>=cutoff)screen.push({x:sx(point.x),y:sy(point.y)});
@@ -9062,7 +9063,7 @@ function drawGojoBlueMaxTrail(p){
    const nx=-ty/len,ny=tx/len,u=i/(n-1);
    // Match Gojo's unawakened third-skill hand trail: a needle-thin tail
    // that widens smoothly toward the hand/orb, using one filled silhouette.
-   const width=(.22+7.2*Math.pow(u,.92))*1.5;
+   const width=(.22+7.2*Math.pow(u,.92))*1.5*pcTrailScale;
    left.push([screen[i].x+nx*width,screen[i].y+ny*width]);
    right.push([screen[i].x-nx*width,screen[i].y-ny*width]);
   }
@@ -9071,7 +9072,7 @@ function drawGojoBlueMaxTrail(p){
   ctx.filter='none';
   ctx.shadowBlur=0;
   ctx.shadowColor='rgba(0,0,0,0)';
-  ctx.globalAlpha=1;
+  ctx.globalAlpha=isMobileDevice?1:.72;
   ctx.fillStyle='#ffffff';
   ctx.beginPath();
   ctx.moveTo(left[0][0],left[0][1]);
