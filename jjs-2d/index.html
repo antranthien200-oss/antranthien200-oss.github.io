@@ -11015,7 +11015,8 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
- if(!gojoBlueMaxCharacterRenderFreezeActive||!f||f.dead||f.isTrainingDummy||f.vehicle&&!f.vehicleTransition)return drawFighterUncached(f);
+ if(!f)return;
+ if(!gojoBlueMaxCharacterRenderFreezeActive||f.dead||f.isTrainingDummy||f.vehicle&&!f.vehicleTransition)return drawFighterUncached(f);
  const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
  const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
  if(outsideViewport)return;
