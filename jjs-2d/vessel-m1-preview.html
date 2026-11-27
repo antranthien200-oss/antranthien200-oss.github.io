@@ -10201,7 +10201,7 @@ function drawStunRain(f,x,y,options=null){
  ctx.restore();
 }
 
-function drawHeadHands(f,deferMotionVfx=false){
+function drawHeadHands(f,deferMotionVfx=false,renderHandsOnly=false,suppressHands=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
  // Match mobile's lighter renderer for every fighter while desktop Blue MAX is active.
  const blueMaxDesktopActive=!isMobileDevice&&projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&!p.finished);
@@ -10710,6 +10710,10 @@ function drawHeadHands(f,deferMotionVfx=false){
  }
  // Small idle drift, but active attacks own the hand positions for their complete animation.
  if(!name&&!f.sideViewPreview){handA.x+=px*idle;handA.y+=py*idle;handB.x-=px*idle;handB.y-=py*idle}
+ if(renderHandsOnly){
+  f.motionHandPose={a:{x:handA.x,y:handA.y,angle:handAAngle,scale:handAScale},b:{x:handB.x,y:handB.y,angle:handBAngle,scale:handBScale},theme:stunTheme,sideViewBackHand,sideViewFrontHand};
+  return;
+ }
  if(!mobileFighterEffects){ctx.save();ctx.fillStyle='#10161e55';ctx.beginPath();ctx.ellipse(x,y+15,22,8,0,0,Math.PI*2);ctx.fill();ctx.restore();}
  if(f.char==='choso'&&f.convergenceOrbs>0){ctx.save();for(let i=0;i<f.convergenceOrbs;i++){const a=game.time*2+i*Math.PI/2;ctx.fillStyle='#e34c67';ctx.shadowBlur=mobileFighterEffects?0:(10);ctx.shadowColor='#f05a72';ctx.beginPath();ctx.arc(x+Math.cos(a)*30,headY+Math.sin(a)*20,4.5,0,Math.PI*2);ctx.fill()}ctx.restore();}
  if(!mobileFighterEffects&&f.char==='ten'&&f.shadowTimer>0){ctx.save();ctx.fillStyle='#11172566';ctx.beginPath();ctx.ellipse(x,y+15,30,9,0,0,Math.PI*2);ctx.fill();ctx.restore();}
@@ -10779,9 +10783,8 @@ function drawHeadHands(f,deferMotionVfx=false){
   }
   drawTrashCanScreen(canX,canY,.9,angle,0);
  }
- const gojoBlueMaxNeutralHands=f.char==='honored'&&f.awakened&&name==='gojoBlueMax';
- const deferHands=!!(deferMotionVfx&&m&&name&&name!=='carEnter'&&name!=='carExit'&&!m.skipMotionVfx&&!gojoBlueMaxNeutralHands);
- if(deferHands)f.motionHandPose={a:{x:handA.x,y:handA.y,angle:handAAngle,scale:handAScale},b:{x:handB.x,y:handB.y,angle:handBAngle,scale:handBScale},theme:stunTheme};
+ const deferHands=!!(suppressHands||(deferMotionVfx&&m&&name&&name!=='carEnter'&&name!=='carExit'&&!m.skipMotionVfx));
+ if(deferHands)f.motionHandPose={a:{x:handA.x,y:handA.y,angle:handAAngle,scale:handAScale},b:{x:handB.x,y:handB.y,angle:handBAngle,scale:handBScale},theme:stunTheme,sideViewBackHand,sideViewFrontHand};
  else f.motionHandPose=null;
  if(!deferHands){
   ctx.save();
@@ -10952,8 +10955,8 @@ function drawFighterUncached(f){
   const alpha=transition.mode==='enter'?1-smoothstep01(clamp((progress-.58)/.38,0,1)):smoothstep01(clamp(progress/.2,0,1));
   const scale=transition.mode==='enter'?1-.22*eased:.74+.26*eased;
   const visual={...f,x:px,y:py,face:transition.face,vehicle:null,motion:{name:transition.mode==='enter'?'carEnter':'carExit',t:transition.elapsed,duration:transition.duration,activeDuration:transition.duration,angle:transition.face,target:null}};
-  ctx.save();ctx.globalAlpha=alpha;ctx.translate(sx(px),sy(py));ctx.scale(scale,scale);ctx.translate(-sx(px),-sy(py));drawHeadHands(visual,true);ctx.restore();
- }else{drawHeadHands(f,true);}
+  ctx.save();ctx.globalAlpha=alpha;ctx.translate(sx(px),sy(py));ctx.scale(scale,scale);ctx.translate(-sx(px),-sy(py));drawHeadHands(visual,true,false,gojoBlueMaxCharacterRenderFreezeActive);ctx.restore();
+ }else{drawHeadHands(f,true,false,gojoBlueMaxCharacterRenderFreezeActive);}
  if(!transition&&f.char==='yuta'){if(f.rikaSummoned)drawRikaCompanion(f);drawYutaKatana(f)}
  if(!transition&&f.char==='trashman'&&f.trashSwapDecoy)drawTrashCan(f.trashSwapDecoy.x,f.trashSwapDecoy.y,1.22,0,1)
 }
@@ -11041,12 +11044,17 @@ function drawFighterMotionOverlays(f){
  // The glass shatter is a foreground layer, drawn after Gojo's body and motion effects.
 }
 function drawFighterHandsForeground(f){
- if(gojoBlueMaxCharacterRenderFreezeActive)return;
- if(!f||f.dead||!f.motionHandPose||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
- const pose=f.motionHandPose;
- // Render the character's own hands after every skill effect, keeping them in the foreground.
- drawFloatingHand(pose.b.x,pose.b.y,pose.b.angle,pose.theme,pose.b.scale);
- drawFloatingHand(pose.a.x,pose.a.y,pose.a.angle,pose.theme,pose.a.scale);
+ if(!f||f.dead||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
+ // During Blue MAX, recalculate only hand coordinates and draw the hands over the frozen body bitmap.
+ if(gojoBlueMaxCharacterRenderFreezeActive)drawHeadHands(f,true,true,false);
+ const pose=f.motionHandPose;if(!pose)return;
+ ctx.save();
+ if(f.char==='honored'&&f.awakened){const look=getFighterLook(f);ctx.shadowColor=look.accent||'#50baff';ctx.shadowBlur=isMobileDevice?7:16;}
+ if(pose.sideViewBackHand)drawFloatingHand(pose.sideViewBackHand.x,pose.sideViewBackHand.y,pose.sideViewBackHand.angle,pose.theme,pose.sideViewBackHand.scale);
+ else if(f.char==='trashman'&&f.trashBarrageTimer>0){const pulse=Math.sin(game.time*26)*5;drawTinyTrashCanScreen(pose.b.x+pulse,pose.b.y,1.12,pose.b.angle);drawTinyTrashCanScreen(pose.a.x-pulse,pose.a.y,1.12,pose.a.angle)}
+ else{drawFloatingHand(pose.b.x,pose.b.y,pose.b.angle,pose.theme,pose.b.scale);drawFloatingHand(pose.a.x,pose.a.y,pose.a.angle,pose.theme,pose.a.scale)}
+ if(pose.sideViewFrontHand)drawFloatingHand(pose.sideViewFrontHand.x,pose.sideViewFrontHand.y,pose.sideViewFrontHand.angle,pose.theme,pose.sideViewFrontHand.scale);
+ ctx.restore();
 }
 function drawBlockLink(x1,y1,x2,y2,width,color,edge='#111820'){
  const dx=x2-x1,dy=y2-y1,len=Math.hypot(dx,dy)||1;
