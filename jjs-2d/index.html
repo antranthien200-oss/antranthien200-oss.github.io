@@ -7557,8 +7557,10 @@ function updateGojoBlueMaxActive(p,dt){
   // Use the same damped velocity steering as the mobile joystick, with the
   // existing PC mouse pointer as the direction input (no extra controls).
   const aim=aimedAt(owner);
-  const dx=clamp(Number(aim.x)||p.x,28,WORLD.w-28)-p.x;
-  const dy=clamp(Number(aim.y)||p.y,28,WORLD.h-28)-p.y;
+  const aimX=Number.isFinite(Number(aim.x))?Number(aim.x):p.x;
+  const aimY=Number.isFinite(Number(aim.y))?Number(aim.y):p.y;
+  const dx=clamp(aimX,28,WORLD.w-28)-p.x;
+  const dy=clamp(aimY,28,WORLD.h-28)-p.y;
   const distance=Math.hypot(dx,dy);
   const inputMagnitude=distance>.001?clamp(distance/110,0,1):0;
   const targetSpeed=(Number(p.followSpeed)||950)*inputMagnitude;
@@ -9348,7 +9350,7 @@ function drawPixelatedCircle(x,y,r,palette,cell=2.4){
  ctx.restore();
 }
 
-function drawAddedAccessoryAura(id,t,pulse){
+function drawAddedAccessoryAura(id,t,pulse,mobileEffects=isMobileDevice){
  ctx.lineJoin='round';ctx.lineCap='round';
  const star=(x,y,r,color)=>{
   ctx.beginPath();for(let i=0;i<10;i++){const q=-Math.PI/2+i*Math.PI/5,rr=i%2?r*.42:r;if(i===0)ctx.moveTo(x+Math.cos(q)*rr,y+Math.sin(q)*rr);else ctx.lineTo(x+Math.cos(q)*rr,y+Math.sin(q)*rr)}ctx.closePath();ctx.fillStyle=color;ctx.fill();
@@ -9367,15 +9369,15 @@ function drawAddedAccessoryAura(id,t,pulse){
   ctx.globalAlpha=.35*pulse;ctx.strokeStyle='#d7edff';ctx.lineWidth=1;ctx.beginPath();ctx.ellipse(0,0,29,22,t*.1,0,Math.PI*2);ctx.stroke();
   for(let i=0;i<11;i++){const q=t*.22+i*Math.PI*2/11,r=25+(i%3)*3,px=Math.cos(q)*r,py=Math.sin(q)*r,z=i%3===0?5.5:3.3;star(px,py,z,i%2?'#fff4b5':'#c8edff');ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(px-z,py);ctx.lineTo(px+z,py);ctx.moveTo(px,py-z);ctx.lineTo(px,py+z);ctx.stroke()}
  }else if(id==='toxic-mist'){
-  ctx.globalAlpha=.2*pulse;ctx.strokeStyle='#7de69b';ctx.lineWidth=7;ctx.shadowColor='#4adf85';ctx.shadowBlur=isMobileDevice?0:(10);ctx.beginPath();ctx.ellipse(0,0,26,20,t*.14,.1,Math.PI*1.9);ctx.stroke();ctx.shadowBlur=isMobileDevice?0:(0);
+  ctx.globalAlpha=.2*pulse;ctx.strokeStyle='#7de69b';ctx.lineWidth=7;ctx.shadowColor='#4adf85';ctx.shadowBlur=mobileEffects?0:(10);ctx.beginPath();ctx.ellipse(0,0,26,20,t*.14,.1,Math.PI*1.9);ctx.stroke();ctx.shadowBlur=mobileEffects?0:(0);
   for(let i=0;i<6;i++){const q=t*.28+i*Math.PI/3,px=Math.cos(q)*(23+Math.sin(t+i)*3),py=Math.sin(q)*19;ctx.save();ctx.translate(px,py);ctx.rotate(q);const g=ctx.createRadialGradient(0,0,1,0,0,7);g.addColorStop(0,'rgba(190,255,160,.72)');g.addColorStop(.55,'rgba(89,210,123,.32)');g.addColorStop(1,'rgba(52,143,100,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(0,0,5,8,0,0,Math.PI*2);ctx.fill();ctx.strokeStyle='rgba(200,255,181,.72)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,4);ctx.quadraticCurveTo(4,-1,1,-5);ctx.stroke();ctx.restore()}
   for(let i=0;i<7;i++){const q=-t*.25+i*Math.PI*2/7,px=Math.cos(q)*30,py=Math.sin(q)*23;ctx.fillStyle=i%2?'#d4ff9b':'#73e69a';ctx.beginPath();ctx.arc(px,py,i%3===0?1.8:1,0,Math.PI*2);ctx.fill()}
  }else if(id==='void-rift'){
-  ctx.globalAlpha=.85*pulse;ctx.shadowColor='#a16bff';ctx.shadowBlur=isMobileDevice?0:(9);ctx.strokeStyle='#3c2869';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,27,21,t*.18,.08,Math.PI*1.85);ctx.stroke();ctx.shadowBlur=isMobileDevice?0:(0);
+  ctx.globalAlpha=.85*pulse;ctx.shadowColor='#a16bff';ctx.shadowBlur=mobileEffects?0:(9);ctx.strokeStyle='#3c2869';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,27,21,t*.18,.08,Math.PI*1.85);ctx.stroke();ctx.shadowBlur=mobileEffects?0:(0);
   ctx.strokeStyle='#d2a8ff';ctx.lineWidth=1.7;ctx.setLineDash([6,3,2,4]);ctx.beginPath();ctx.ellipse(0,0,24,18,-t*.2,.2,Math.PI*1.8);ctx.stroke();ctx.setLineDash([]);
   for(let i=0;i<7;i++){const q=t*.17+i*Math.PI*2/7,px=Math.cos(q)*25,py=Math.sin(q)*19;ctx.strokeStyle='#8e64d8';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+Math.cos(q+.45)*5,py+Math.sin(q+.45)*5);ctx.lineTo(px+Math.cos(q-.3)*10,py+Math.sin(q-.3)*10);ctx.stroke();ctx.fillStyle='#dfc0ff';ctx.beginPath();ctx.arc(px,py,1.1,0,Math.PI*2);ctx.fill()}
  }else if(id==='black-flame'){
-  ctx.globalAlpha=.9*pulse;ctx.shadowColor='#a46bdb';ctx.shadowBlur=isMobileDevice?0:(7);ctx.strokeStyle='#090b18';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,25,20,t*.12,.08,Math.PI*1.9);ctx.stroke();ctx.shadowBlur=isMobileDevice?0:(0);
+  ctx.globalAlpha=.9*pulse;ctx.shadowColor='#a46bdb';ctx.shadowBlur=mobileEffects?0:(7);ctx.strokeStyle='#090b18';ctx.lineWidth=5;ctx.beginPath();ctx.ellipse(0,0,25,20,t*.12,.08,Math.PI*1.9);ctx.stroke();ctx.shadowBlur=mobileEffects?0:(0);
   ctx.strokeStyle='#6d538c';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,28,23,-t*.16,.25,Math.PI*1.75);ctx.stroke();
   for(let i=0;i<8;i++){const q=t*.2+i*Math.PI/4,px=Math.cos(q)*25,py=Math.sin(q)*20,z=7+(i%3)*2,g=ctx.createLinearGradient(px,py,px+Math.cos(q)*z,py+Math.sin(q)*z);g.addColorStop(0,'#20182e');g.addColorStop(.65,'#714995');g.addColorStop(1,'#d0a0ff');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(px-Math.sin(q)*2,py+Math.cos(q)*2);ctx.quadraticCurveTo(px+Math.cos(q)*z*.5,py+Math.sin(q)*z*.5,px+Math.cos(q)*z,py+Math.sin(q)*z);ctx.quadraticCurveTo(px+Math.cos(q)*z*.35,py+Math.sin(q)*z*.35,px+Math.sin(q)*2,py-Math.cos(q)*2);ctx.closePath();ctx.fill()}
  }else if(id==='electric-static'){
@@ -9383,7 +9385,7 @@ function drawAddedAccessoryAura(id,t,pulse){
   for(let i=0;i<8;i++){const q=t*.24+i*Math.PI/4,c=Math.cos(q),d=Math.sin(q),r=24+(i%2)*2;ctx.strokeStyle='#7950b8';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(c*r,d*r);ctx.lineTo(c*(r+4)-d*3,d*(r+4)+c*3);ctx.lineTo(c*(r+10),d*(r+10));ctx.stroke();ctx.strokeStyle=i%2?'#f0d5ff':'#bff7ff';ctx.lineWidth=1.5;ctx.stroke()}
  }else if(id==='red-motes'){
   ctx.globalAlpha=.85*pulse;ctx.strokeStyle='rgba(232,61,88,.3)';ctx.lineWidth=1.2;ctx.setLineDash([2,6]);ctx.beginPath();ctx.ellipse(0,0,27,21,t*.2,0,Math.PI*2);ctx.stroke();ctx.setLineDash([]);
-  for(let i=0;i<12;i++){const q=-t*.31+i*Math.PI*2/12,r=20+(i%4)*3,px=Math.cos(q)*r,py=Math.sin(q)*r,z=i%3===0?2.8:1.5;ctx.fillStyle=i%2?'#ff526c':'#ffb2bb';ctx.shadowColor='#e83d58';ctx.shadowBlur=isMobileDevice?0:(4);ctx.beginPath();ctx.arc(px,py,z,0,Math.PI*2);ctx.fill();ctx.shadowBlur=isMobileDevice?0:(0);if(i%3===0){ctx.strokeStyle='rgba(255,140,158,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-Math.cos(q)*4,py-Math.sin(q)*4);ctx.lineTo(px-Math.cos(q)*1.5,py-Math.sin(q)*1.5);ctx.stroke()}}
+  for(let i=0;i<12;i++){const q=-t*.31+i*Math.PI*2/12,r=20+(i%4)*3,px=Math.cos(q)*r,py=Math.sin(q)*r,z=i%3===0?2.8:1.5;ctx.fillStyle=i%2?'#ff526c':'#ffb2bb';ctx.shadowColor='#e83d58';ctx.shadowBlur=mobileEffects?0:(4);ctx.beginPath();ctx.arc(px,py,z,0,Math.PI*2);ctx.fill();ctx.shadowBlur=mobileEffects?0:(0);if(i%3===0){ctx.strokeStyle='rgba(255,140,158,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(px-Math.cos(q)*4,py-Math.sin(q)*4);ctx.lineTo(px-Math.cos(q)*1.5,py-Math.sin(q)*1.5);ctx.stroke()}}
  }else if(id==='glitch-pulse'){
   const shift=Math.sin(t*3.4)*3,step=Math.floor(t*7)%8;ctx.globalAlpha=.68*pulse;ctx.lineWidth=1.8;ctx.strokeStyle='#bb6cff';ctx.setLineDash([10,4,3,5]);ctx.beginPath();ctx.ellipse(0,0,25+shift,21,-t*.12,.15,Math.PI*1.85);ctx.stroke();ctx.setLineDash([]);
   ctx.strokeStyle='#65eaff';ctx.lineWidth=1.1;ctx.beginPath();ctx.ellipse(0,0,29-shift,24,t*.1,.3,Math.PI*1.75);ctx.stroke();
@@ -9394,7 +9396,7 @@ function drawAddedAccessoryAura(id,t,pulse){
   for(let i=0;i<9;i++){const q=t*.09+i*Math.PI*2/9,px=Math.cos(q)*27,py=Math.sin(q)*21,z=i%3===0?5:3.5;ctx.save();ctx.translate(px,py);ctx.rotate(q);ctx.strokeStyle='#dcfaff';ctx.lineWidth=1.3;ctx.beginPath();ctx.moveTo(0,-z);ctx.lineTo(0,z);ctx.moveTo(-z*.6,-z*.35);ctx.lineTo(z*.6,z*.35);ctx.moveTo(-z*.6,z*.35);ctx.lineTo(z*.6,-z*.35);ctx.stroke();ctx.fillStyle='#b7efff';ctx.beginPath();ctx.arc(0,0,1.1,0,Math.PI*2);ctx.fill();ctx.restore()}
  }else if(id==='ember-orbit'){
   ctx.globalAlpha=.82*pulse;ctx.strokeStyle='rgba(255,135,71,.42)';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,0,28,22,t*.18,.1,Math.PI*1.85);ctx.stroke();
-  for(let i=0;i<11;i++){const q=-t*.42+i*Math.PI*2/11,r=22+(i%3)*4,px=Math.cos(q)*r,py=Math.sin(q)*r,z=2+(i%3)*.8;ctx.fillStyle=i%2?'#ffb26b':'#ff6747';ctx.shadowColor='#ff6a37';ctx.shadowBlur=isMobileDevice?0:(6);ctx.beginPath();ctx.arc(px,py,z,0,Math.PI*2);ctx.fill();ctx.shadowBlur=isMobileDevice?0:(0);if(i%3===0){ctx.strokeStyle='#ffd5a0';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px,py-5);ctx.lineTo(px+2,py-8);ctx.stroke()}}
+  for(let i=0;i<11;i++){const q=-t*.42+i*Math.PI*2/11,r=22+(i%3)*4,px=Math.cos(q)*r,py=Math.sin(q)*r,z=2+(i%3)*.8;ctx.fillStyle=i%2?'#ffb26b':'#ff6747';ctx.shadowColor='#ff6a37';ctx.shadowBlur=mobileEffects?0:(6);ctx.beginPath();ctx.arc(px,py,z,0,Math.PI*2);ctx.fill();ctx.shadowBlur=mobileEffects?0:(0);if(i%3===0){ctx.strokeStyle='#ffd5a0';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(px,py-5);ctx.lineTo(px+2,py-8);ctx.stroke()}}
  }else if(id==='cursed-seals'){
   ctx.globalAlpha=.9*pulse;
   for(let i=0;i<4;i++){const q=-t*.24+i*Math.PI/2,px=Math.cos(q)*29,py=Math.sin(q)*23;ctx.save();ctx.translate(px,py);ctx.rotate(q+Math.PI/2);ctx.fillStyle='#f1dfb5';ctx.strokeStyle='#8a283c';ctx.lineWidth=1.2;ctx.fillRect(-4,-7,8,14);ctx.strokeRect(-4,-7,8,14);ctx.strokeStyle='#aa3047';ctx.lineWidth=.8;ctx.beginPath();ctx.moveTo(-2,-3);ctx.lineTo(2,-1);ctx.lineTo(-2,2);ctx.lineTo(2,4);ctx.stroke();ctx.fillStyle='#d94c5c';ctx.fillRect(-1,-5,2,2);ctx.restore()}
@@ -9415,15 +9417,16 @@ function drawAddedAccessoryAura(id,t,pulse){
 
 function drawAccessoryAura(f,x,y,scale=1){
  const id=getFighterAccessories(f).aura;if(!id||id==='none')return;
+ const mobileEffects=isMobileDevice||isGojoBlueMaxVisualSuppressed(f)||(!isMobileDevice&&projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&!p.finished));
  const t=game.time,pulse=.88+.12*Math.sin(t*5.5);
  ctx.save();ctx.translate(x,y);ctx.scale(scale,scale);
  ctx.lineJoin='miter';ctx.lineCap='square';
- if(['sakura-petals','heart-orbit','starlight','toxic-mist','void-rift','black-flame','electric-static','red-motes','glitch-pulse','frost-ring','ember-orbit','cursed-seals','moonlight','storm-ring','void-shards'].includes(id)){drawAddedAccessoryAura(id,t,pulse);ctx.restore();return;}
+ if(['sakura-petals','heart-orbit','starlight','toxic-mist','void-rift','black-flame','electric-static','red-motes','glitch-pulse','frost-ring','ember-orbit','cursed-seals','moonlight','storm-ring','void-shards'].includes(id)){drawAddedAccessoryAura(id,t,pulse,mobileEffects);ctx.restore();return;}
  if(id==='blue-flame'){
-  ctx.globalAlpha=.9*pulse;ctx.shadowColor='#4acfff';ctx.shadowBlur=isMobileDevice?0:(8);
+  ctx.globalAlpha=.9*pulse;ctx.shadowColor='#4acfff';ctx.shadowBlur=mobileEffects?0:(8);
   ctx.strokeStyle='#167cac';ctx.lineWidth=4;ctx.setLineDash([9,5]);
   ctx.beginPath();ctx.ellipse(0,0,25,21,t*.28,.12,Math.PI*1.93);ctx.stroke();
-  ctx.shadowBlur=isMobileDevice?0:(0);ctx.strokeStyle='#8eeaff';ctx.lineWidth=1.7;ctx.setLineDash([7,7]);
+  ctx.shadowBlur=mobileEffects?0:(0);ctx.strokeStyle='#8eeaff';ctx.lineWidth=1.7;ctx.setLineDash([7,7]);
   ctx.beginPath();ctx.ellipse(0,0,31,26,-t*.18,.3,Math.PI*1.82);ctx.stroke();ctx.setLineDash([]);
   for(let i=0;i<6;i++){
    const a=t*1.1+i*Math.PI/3,ix=Math.cos(a)*29,iy=Math.sin(a)*24;
@@ -9433,10 +9436,10 @@ function drawAccessoryAura(f,x,y,scale=1){
   }
  }else if(id==='crimson-flame'){
   const r=26+Math.sin(t*7)*1.8;
-  ctx.globalAlpha=.9*pulse;ctx.shadowColor='#ff3157';ctx.shadowBlur=isMobileDevice?0:(9);
+  ctx.globalAlpha=.9*pulse;ctx.shadowColor='#ff3157';ctx.shadowBlur=mobileEffects?0:(9);
   ctx.strokeStyle='#8f1737';ctx.lineWidth=5;ctx.setLineDash([6,4]);
   ctx.beginPath();ctx.ellipse(0,0,r+2,r-4,t*.2,.05,Math.PI*1.95);ctx.stroke();ctx.setLineDash([]);
-  ctx.shadowBlur=isMobileDevice?0:(0);ctx.strokeStyle='#ff6b82';ctx.lineWidth=2;
+  ctx.shadowBlur=mobileEffects?0:(0);ctx.strokeStyle='#ff6b82';ctx.lineWidth=2;
   ctx.beginPath();ctx.ellipse(0,0,r-2,r-7,-t*.16,.28,Math.PI*1.72);ctx.stroke();
   for(let i=0;i<8;i++){
    const a=t*.3+i*Math.PI/4,co=Math.cos(a),si=Math.sin(a),inner=r+1,outer=r+(i%2?8:12);
@@ -10240,8 +10243,9 @@ function drawStunRain(f,x,y,options=null){
 
 function drawHeadHands(f,deferMotionVfx=false){
  const x=sx(f.x),y=sy(f.y)-f.jump*3,c=getFighterLook(f),isPlayer=f.team==='player',blueMaxFlashSuppressed=isGojoBlueMaxVisualSuppressed(f),stunTheme=blueMaxFlashSuppressed?getFighterTheme(f,true):getStunTintedTheme(f);
- // Blue MAX uses the lighter mobile fighter-render profile on desktop too.
- const mobileFighterEffects=isMobileDevice||blueMaxFlashSuppressed;
+ // Match mobile's lighter renderer for every fighter while desktop Blue MAX is active.
+ const blueMaxDesktopActive=!isMobileDevice&&projectiles.some(p=>p&&p.kind==='blueMax'&&p.phase==='active'&&!p.finished);
+ const mobileFighterEffects=isMobileDevice||blueMaxFlashSuppressed||blueMaxDesktopActive;
  const m=f.motion,name=m?m.name:(f.block?'blockGesture':''),progress=m?clamp(m.t/(m.activeDuration||m.duration),0,1):(f.block?.5+.5*Math.sin(game.time*7):0),vfxFade=m&&m.vfxFadeOut?clamp((m.duration-m.t)/m.vfxFadeOut,0,1):1;
  // Online opponents must animate their hands along their own replicated facing direction.
  const remoteFacing=Number.isFinite(f.face)?f.face:0;
