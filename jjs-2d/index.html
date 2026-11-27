@@ -3943,47 +3943,11 @@ updateMenuSummary();
 let game={started:false,paused:false,over:false,shake:0,shakeTime:0,hitStop:0,last:0,time:0,round:1,kills:0,playerHitStreak:0,playerHitTimer:0,toastTimer:0,combatNoticeTimer:0,playerDeathNotified:false,enemyRespawn:0,cutsceneTimer:0,domainClash:null};
 
 let gojoBlueMaxCharacterRenderFreezeActive=false;
-let gojoBlueMaxCharacterSnapshots=new WeakMap();
 function updateGojoBlueMaxCharacterRenderFreeze(){
  const active=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished&&(Number(p.life)||0)>0);
  if(active===gojoBlueMaxCharacterRenderFreezeActive)return;
  gojoBlueMaxCharacterRenderFreezeActive=active;
- gojoBlueMaxCharacterSnapshots=new WeakMap();
 }
-function drawGojoBlueMaxCachedCharacter(f,centerX,centerY,drawSource,size=256){
- if(!gojoBlueMaxCharacterRenderFreezeActive){drawSource();return}
- const now=performance.now(),refreshInterval=1000/30;
- let cached=gojoBlueMaxCharacterSnapshots.get(f);
- if(!cached||now-cached.updatedAt>=refreshInterval){
-  const ratio=Math.max(.5,Number(dpr)||1);
-  if(!cached||cached.canvas.width!==Math.max(1,Math.round(size*ratio))||cached.canvas.height!==Math.max(1,Math.round(size*ratio))){
-   const surface=document.createElement('canvas');
-   surface.width=Math.max(1,Math.round(size*ratio));
-   surface.height=Math.max(1,Math.round(size*ratio));
-   cached={canvas:surface,context:surface.getContext('2d'),size,center:size*.5,ratio,updatedAt:0};
-  }
-  if(!cached.context){drawSource();return}
-  const surfaceCtx=cached.context,previousCtx=ctx;
-  try{
-   surfaceCtx.setTransform(1,0,0,1,0,0);
-   surfaceCtx.clearRect(0,0,cached.canvas.width,cached.canvas.height);
-   ctx=surfaceCtx;
-   ctx.setTransform(cached.ratio,0,0,cached.ratio,0,0);
-   ctx.imageSmoothingEnabled=false;
-   ctx.translate(size*.5-centerX,size*.5-centerY);
-   drawSource();
-   cached.updatedAt=now;
-  }finally{
-   ctx=previousCtx;
-  }
-  gojoBlueMaxCharacterSnapshots.set(f,cached);
- }
- ctx.save();
- ctx.imageSmoothingEnabled=false;
- ctx.drawImage(cached.canvas,centerX-cached.center,centerY-cached.center,cached.size,cached.size);
- ctx.restore();
-}
-
 const gojoBlueMaxRenderDebug=typeof location!=='undefined'&&String(location.search||'').includes('debugBlueMax=1');
 let gojoBlueMaxDebugStats={drawCalls:0,drawn:0,culled:0,headCalls:0,fps:0,drawMs:0,frame:{},heads:{}};
 
@@ -4821,11 +4785,7 @@ function getMobileRemoteRenderSets(){
  return {detailed:visible,simple:[]};
 }
 function drawMobileRemoteFighter(remote){
- if(!remote||remote.dead)return;
- if(!gojoBlueMaxCharacterRenderFreezeActive)return drawMobileRemoteFighterUncached(remote);
- return drawGojoBlueMaxCachedCharacter(remote,sx(remote.x),sy(remote.y),()=>drawMobileRemoteFighterUncached(remote),128);
-}
-function drawMobileRemoteFighterUncached(remote){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!remote||remote.dead)return;
  const x=sx(remote.x),y=sy(remote.y)-remote.jump*3,accent=(CHARS[remote.char]&&CHARS[remote.char].accent)||'#65d8ff';
  ctx.save();ctx.globalAlpha=.96;
@@ -4839,6 +4799,7 @@ function drawMobileRemoteFighterUncached(remote){
  ctx.restore();
 }
 function drawOnlineNameplate(remote){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!remote||remote.dead||!worldRectVisible(remote.x-90,remote.y-110,180,150,36))return;
  const x=sx(remote.x),y=sy(remote.y)-55-remote.jump*3,name=String(remote.onlineName||'PLAYER').toUpperCase();
  ctx.save();ctx.font='900 9px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';
@@ -6397,6 +6358,7 @@ function drawCityTrain(){
 }
 
 function drawTrainingDummy(){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!trainingDummy)return;const activeDomain=domainFighters().find(domainIsActive);if(activeDomain&&!domainViewMatches(trainingDummy,activeDomain))return;
  const d=trainingDummy,x=sx(d.x),y=sy(d.y);
  ctx.save();
@@ -11010,15 +10972,7 @@ function drawTrashManEffects(){
  }
 }
 function drawFighter(f){
- if(!gojoBlueMaxCharacterRenderFreezeActive||!f||f.dead||f.isTrainingDummy||f.vehicleTransition)return drawFighterUncached(f);
- const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
- const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
- if(outsideViewport||f.vehicle)return drawFighterUncached(f);
- const activeDomain=domainFighters().find(domainIsActive);
- if(activeDomain&&!domainViewMatches(f,activeDomain))return drawFighterUncached(f);
- return drawGojoBlueMaxCachedCharacter(f,sx(f.x),sy(f.y),()=>drawFighterUncached(f),256);
-}
-function drawFighterUncached(f){
+ if(gojoBlueMaxCharacterRenderFreezeActive||!f)return;
  // Only bypass viewport culling while the local mobile camera follows the Blue MAX orb.
  // Desktop and multiplayer keep normal culling for unrelated fighters.
  const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
@@ -11081,6 +11035,7 @@ function drawGojoFlashStepAfterimage(f,fx,age){
  ctx.restore();
 }
 function drawFighterMotionOverlays(f){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!f||f.dead||f.vehicleTransition||isGojoAwakeningCutscene(f))return;
  const fx=f.gojoFlashStepFx,fxAge=fx?Math.max(0,(performance.now()-(Number(fx.startedAt)||performance.now()))/1000):Infinity;
  const flashStepActive=!!fx&&fxAge<Math.max(.24,Number(fx.duration)||.48);
@@ -11127,6 +11082,7 @@ function drawFighterMotionOverlays(f){
  // The glass shatter is a foreground layer, drawn after Gojo's body and motion effects.
 }
 function drawFighterHandsForeground(f){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!f||f.dead||!f.motionHandPose||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
  const pose=f.motionHandPose;
  // Render the character's own hands after every skill effect, keeping them in the foreground.
@@ -12246,6 +12202,7 @@ function drawVesselAwakeningSmokePreview(cx,headY,scale,time){
 }
 
 function drawVesselAwakeningSmoke(f){
+ if(gojoBlueMaxCharacterRenderFreezeActive)return;
  if(!f||f.dead||f.char!=='vessel'||!f.awakened||f.sukunaAwakeningVisualPending||!worldRectVisible(f.x-70,f.y-75,140,130,24))return;
  const x=sx(f.x),y=sy(f.y)-f.jump*3-23,visualTime=Number.isFinite(f.sukunaAwakeningVisualTime)?f.sukunaAwakeningVisualTime:game.time;
  const frames=getVesselSmokeAuraFrames(),framePosition=(visualTime*6)%frames.length,frameA=Math.floor(framePosition),frameB=(frameA+1)%frames.length,mix=framePosition-frameA;
