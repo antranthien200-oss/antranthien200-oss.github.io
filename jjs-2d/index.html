@@ -9141,8 +9141,7 @@ function drawBlueGradientSphere(x,y,r,opacity=1){
  ctx.restore();
 }
 function drawGojoBlueMaxTrail(p){
-  const pcTrailScale=isMobileDevice?1:.58,trailLifetime=isMobileDevice?.28:.17;
-  const points=p.trailPoints||[],screen=[],now=game.time,cutoff=now-trailLifetime;
+  const points=p.trailPoints||[],screen=[],now=game.time,cutoff=now-.28;
   for(let i=0;i<points.length;i++){
    const point=points[i];
    if(point.time>=cutoff)screen.push({x:sx(point.x),y:sy(point.y)});
@@ -9156,7 +9155,7 @@ function drawGojoBlueMaxTrail(p){
    const nx=-ty/len,ny=tx/len,u=i/(n-1);
    // Match Gojo's unawakened third-skill hand trail: a needle-thin tail
    // that widens smoothly toward the hand/orb, using one filled silhouette.
-   const width=(.22+7.2*Math.pow(u,.92))*1.5*pcTrailScale;
+   const width=(.22+7.2*Math.pow(u,.92))*1.5;
    left.push([screen[i].x+nx*width,screen[i].y+ny*width]);
    right.push([screen[i].x-nx*width,screen[i].y-ny*width]);
   }
@@ -9165,7 +9164,7 @@ function drawGojoBlueMaxTrail(p){
   ctx.filter='none';
   ctx.shadowBlur=0;
   ctx.shadowColor='rgba(0,0,0,0)';
-  ctx.globalAlpha=isMobileDevice?1:.72;
+  ctx.globalAlpha=1;
   ctx.fillStyle='#ffffff';
   ctx.beginPath();
   ctx.moveTo(left[0][0],left[0][1]);
@@ -12287,70 +12286,8 @@ function draw(){
  if(gojoBlueMaxRenderDebug){gojoBlueMaxDebugStats.drawMs=performance.now()-gojoBlueMaxDebugStart;drawGojoBlueMaxDebugOverlay()}
 }
 function drawMenuBackdrop(){ctx.save();ctx.fillStyle='#0a111b66';ctx.fillRect(0,0,W,H);ctx.restore()}
-const PC_FIXED_DT=1/90,PC_TARGET_FRAME_MS=1000/90,PC_MAX_CATCHUP_STEPS=9;
-let mobileAccumulator=0,pcUpdateAccumulator=0,pcRenderAccumulator=0,wasPaused=false,frameUpdateCost=0,pcLastRenderAt=0,pcRenderedFpsAverage=90;
-function loop(ts){
- requestAnimationFrame(loop);
- try{
-  const rawDt=Math.min(.1,Math.max(0,(ts-game.last)/1000||0));
-  game.last=ts;
-  if(game.started&&!game.paused){
-   if(isMobileDevice){
-    // Preserve the existing mobile 60 Hz update path.
-    mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);
-    let steps=0;frameUpdateCost=0;
-    while(mobileAccumulator>=1/60&&steps<2){
-     const updateStart=performance.now();
-     update(1/60);
-     frameUpdateCost+=performance.now()-updateStart;
-     mobileAccumulator-=1/60;steps++;
-    }
-    if(mobileAccumulator>1/60)mobileAccumulator=1/60;
-    if(steps){
-     if(gojoBlueMaxRenderDebug)gojoBlueMaxDebugStats.fps=Math.round(1/Math.max(.001,rawDt));
-     const drawStart=performance.now();
-     draw();
-     tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);
-     canvasNeedsDraw=false;
-    }
-   }else{
-    // PC simulation runs on a stable 90 Hz step, independent of monitor refresh rate.
-    pcUpdateAccumulator=Math.min(PC_FIXED_DT*PC_MAX_CATCHUP_STEPS,pcUpdateAccumulator+rawDt);
-    let steps=0;
-    while(pcUpdateAccumulator+1e-8>=PC_FIXED_DT&&steps<PC_MAX_CATCHUP_STEPS){
-     update(PC_FIXED_DT);
-     pcUpdateAccumulator-=PC_FIXED_DT;
-     steps++;
-    }
-    // Render at a 90 FPS target. RAF still synchronizes each draw to the monitor,
-    // so 60 Hz displays remain at 60 FPS while 120/144 Hz displays are capped near 90.
-    pcRenderAccumulator+=rawDt;
-    if(pcRenderAccumulator+1e-8>=PC_TARGET_FRAME_MS/1000){
-     pcRenderAccumulator%=PC_TARGET_FRAME_MS/1000;
-     if(gojoBlueMaxRenderDebug){
-      const renderDelta=pcLastRenderAt>0?Math.max(1,ts-pcLastRenderAt):PC_TARGET_FRAME_MS;
-      pcRenderedFpsAverage=pcRenderedFpsAverage*.8+(1000/renderDelta)*.2;
-      gojoBlueMaxDebugStats.fps=Math.round(pcRenderedFpsAverage);
-     }
-     draw();
-     pcLastRenderAt=ts;
-     canvasNeedsDraw=false;
-    }
-   }
-  }else if(game.started&&game.paused){
-   mobileAccumulator=0;pcUpdateAccumulator=0;pcRenderAccumulator=0;
-   if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false;pcLastRenderAt=ts}
-  }else{
-   mobileAccumulator=0;pcUpdateAccumulator=0;pcRenderAccumulator=0;pcLastRenderAt=0;
-  }
-  wasPaused=game.paused;
- }catch(error){
-  console.error('JJS2D frame error; pausing instead of stopping the render loop:',error);
-  game.paused=true;mobileAccumulator=0;pcUpdateAccumulator=0;pcRenderAccumulator=0;
-  wasPaused=true;canvasNeedsDraw=false;
- }
-}
-requestAnimationFrame(loop);
+let mobileAccumulator=0,wasPaused=false,frameUpdateCost=0;
+function loop(ts){requestAnimationFrame(loop);try{const rawDt=Math.min(.1,(ts-game.last)/1000||0);game.last=ts;if(gojoBlueMaxRenderDebug)gojoBlueMaxDebugStats.fps=Math.round(1/Math.max(.001,rawDt));if(game.started&&!game.paused){if(isMobileDevice){mobileAccumulator=Math.min(.05,mobileAccumulator+rawDt);let steps=0;frameUpdateCost=0;while(mobileAccumulator>=1/60&&steps<2){const updateStart=performance.now();update(1/60);frameUpdateCost+=performance.now()-updateStart;mobileAccumulator-=1/60;steps++}if(mobileAccumulator>1/60)mobileAccumulator=1/60;if(steps){const drawStart=performance.now();draw();tuneMobileRenderScale(performance.now()-drawStart,frameUpdateCost);canvasNeedsDraw=false}}else{update(Math.min(.033,rawDt));draw();canvasNeedsDraw=false}}else if(game.started&&game.paused){mobileAccumulator=0;if(!wasPaused||canvasNeedsDraw){draw();canvasNeedsDraw=false}}else{mobileAccumulator=0}wasPaused=game.paused;}catch(error){console.error('JJS2D frame error; pausing instead of stopping the render loop:',error);game.paused=true;mobileAccumulator=0;wasPaused=true;canvasNeedsDraw=false}}requestAnimationFrame(loop);
 // Start positions are rendered behind the title screen too.
 resetMatch();camera.x=1100;camera.y=750;
 })();
