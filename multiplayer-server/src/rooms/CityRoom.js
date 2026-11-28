@@ -23,7 +23,7 @@ export class CityRoom extends Room{
  onCreate(){
   this.maxClients=MAX_PLAYERS;
   const initial=new CityState();initial.world=new WorldState();this.setState(initial);
-  this.lastUpdateAt=new Map();this.lastActivityAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.blackFlashFollowUps=new Map();this.lastBuildingAt=new Map();this.projectiles=new Map();this.fireZones=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;this.shrineTickAt=0;this.sukunaFireArrowCasts=new Map();this.projectileSequence=0;
+  this.lastUpdateAt=new Map();this.lastActivityAt=new Map();this.lastCarControlAt=new Map();this.lastHitAt=new Map();this.lastPropHitAt=new Map();this.lastActionAt=new Map();this.blackFlashFollowUps=new Map();this.lastBuildingAt=new Map();this.projectiles=new Map();this.fireZones=new Map();this.domainClashes=new Map();this.projectileBatchAt=0;this.domainTickAt=0;this.shrineTickAt=0;this.sukunaFireArrowCasts=new Map();this.projectileSequence=0;this.kingSessionId="";
   BUILDING_LAYOUT.forEach((b,id)=>this.state.world.buildings.set(String(id),new BuildingState()));
   CAR_SPAWNS.forEach(spawn=>{const c=new CarState();c.x=spawn.x;c.y=spawn.y;this.state.world.cars.set(String(spawn.id),c)});
   PROP_SPAWNS.forEach(p=>this.state.world.props.set(String(p.id),new PropState()));
@@ -39,7 +39,7 @@ export class CityRoom extends Room{
  onLeave(client){
   const sessionId=client.sessionId,p=this.state.players.get(sessionId);
   if(p?.vehicleId){const c=this.state.world.cars.get(p.vehicleId);if(c&&c.occupiedBy===sessionId){c.occupiedBy="";c.speed=0;c.vx=0;c.vy=0}}if(p?.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}if(p?.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.25)}}
-  this.state.players.delete(sessionId);this.sukunaFireArrowCasts.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastActivityAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.blackFlashFollowUps.delete(sessionId);
+  this.state.players.delete(sessionId);this.sukunaFireArrowCasts.delete(sessionId);this.lastUpdateAt.delete(sessionId);this.lastActivityAt.delete(sessionId);this.lastCarControlAt.delete(sessionId);this.lastActionAt.delete(sessionId);this.blackFlashFollowUps.delete(sessionId);this.updateKingAnnouncement();
   for(const [zoneId,zone] of this.fireZones)if(zone.ownerId===sessionId){this.fireZones.delete(zoneId);this.broadcast("combat:fire-zone-end",{sessionId,id:zoneId})}
   for(const [key,projectile] of this.projectiles)if(projectile.ownerId===sessionId){this.projectiles.delete(key);this.broadcast("combat:projectile-end",{sessionId,id:projectile.clientId})}
   for(const [id,clash] of this.domainClashes)if(clash.participants.includes(sessionId)){
@@ -53,6 +53,23 @@ export class CityRoom extends Room{
   }
   this.broadcast("server:player-count",{count:this.state.players.size,capacity:MAX_PLAYERS});
   console.log("[city] left",p?.name||sessionId,this.state.players.size+"/16");
+ }
+ getCurrentKing(){
+  let kingId="",kingPlayer=null,bestKills=0,bestKillAt=Infinity;
+  for(const [id,candidate] of this.state.players){
+   const kills=Math.max(0,Number(candidate.kills)||0),killAt=Math.max(0,Number(candidate.lastKillAt)||0);
+   if(kills>bestKills||(kills>0&&kills===bestKills&&killAt<bestKillAt)){
+    bestKills=kills;bestKillAt=killAt;kingId=id;kingPlayer=candidate;
+   }
+  }
+  return kingId?{id:kingId,player:kingPlayer,kills:bestKills}:null;
+ }
+ updateKingAnnouncement(){
+  const king=this.getCurrentKing(),nextKingId=king?king.id:"";
+  if(nextKingId===this.kingSessionId)return;
+  this.kingSessionId=nextKingId;
+  if(!king)return;
+  this.broadcast("server:king-announcement",{sessionId:king.id,name:king.player.name,kills:king.kills});
  }
  resetCharacter(client){
   const id=client.sessionId,p=this.state.players.get(id);if(!p)return;
@@ -832,6 +849,7 @@ killPlayer(p,killer=null){
    for(const [killerId,candidate] of this.state.players){
     if(candidate===killer){candidate.kills=Math.max(0,Number(candidate.kills)||0)+1;candidate.lastKillAt=Date.now();break}
    }
+   this.updateKingAnnouncement();
   }
   if(p.grabbedBy){const owner=this.state.players.get(p.grabbedBy);if(owner)owner.activeGrabTarget=""}
   if(p.activeGrabTarget){const target=this.state.players.get(p.activeGrabTarget);if(target){target.grabbedBy="";target.grabKind="";target.grabRemaining=0;target.stun=Math.max(target.stun,.3)}}
