@@ -653,7 +653,7 @@ body.mobile-controls-enabled.game-active .ult-track{
 
 
 /* Fit both mobile control clusters to the available screen width. */
-#mobileControls{--mobile-control-scale:1.5;--mobile-left-button-size:54px;--mobile-left-gap:12px;--mobile-left-font-size:19.5px;--mobile-left-cooldown-size:18px}
+#mobileControls{--mobile-control-scale:1.5;--mobile-left-button-size:54px;--mobile-left-gap:12px;--mobile-left-font-size:19.5px;--mobile-left-cooldown-size:18px;--king-announcement-top:58.5px}
 #mobileControls .mobile-action-grid{transform:scale(var(--mobile-control-scale));transform-origin:bottom right}
 #mobileControls .mobile-left-actions{transform:none;transform-origin:bottom left;gap:var(--mobile-left-gap)}
 #mobileControls .mobile-left-actions .mobile-btn{width:var(--mobile-left-button-size);height:var(--mobile-left-button-size)}
@@ -661,26 +661,28 @@ body.mobile-controls-enabled.game-active .ult-track{
 #mobileControls .mobile-left-actions .mobile-cooldown{font-size:var(--mobile-left-cooldown-size)}
 #mobileControls .mobile-btn.pause-top{transform:translateX(-50%) scale(var(--mobile-control-scale))}
 #mobileControls .mobile-btn.pause-top:active,#mobileControls .mobile-btn.pause-top.active{transform:translateX(-50%) scale(var(--mobile-control-scale))}
+#serverKingAnnouncement{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + var(--king-announcement-top,58.5px));transform:translateX(-50%);display:none;width:max-content;max-width:94vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f6d77e;font:800 clamp(6px,1.9vw,9px)/1.1 system-ui,sans-serif;letter-spacing:.02em;text-align:center;text-shadow:0 0 4px rgba(255,196,75,.72);pointer-events:none;z-index:12}
+#serverKingAnnouncement.visible{display:block}
 
 @media(max-width:520px){
- #mobileControls{--mobile-control-scale:1.25;--mobile-left-button-size:45px;--mobile-left-gap:10px;--mobile-left-font-size:16.25px;--mobile-left-cooldown-size:15px}
+ #mobileControls{--mobile-control-scale:1.25;--mobile-left-button-size:45px;--mobile-left-gap:10px;--mobile-left-font-size:16.25px;--mobile-left-cooldown-size:15px;--king-announcement-top:50.75px}
 }
 @media(max-width:460px){
- #mobileControls{--mobile-control-scale:1.15;--mobile-left-button-size:41px;--mobile-left-gap:9px;--mobile-left-font-size:14.95px;--mobile-left-cooldown-size:13.8px}
+ #mobileControls{--mobile-control-scale:1.15;--mobile-left-button-size:41px;--mobile-left-gap:9px;--mobile-left-font-size:14.95px;--mobile-left-cooldown-size:13.8px;--king-announcement-top:47.65px}
 }
 @media(max-width:440px){
- #mobileControls{--mobile-control-scale:1;--mobile-left-button-size:36px;--mobile-left-gap:8px;--mobile-left-font-size:13px;--mobile-left-cooldown-size:12px}
+ #mobileControls{--mobile-control-scale:1;--mobile-left-button-size:36px;--mobile-left-gap:8px;--mobile-left-font-size:13px;--mobile-left-cooldown-size:12px;--king-announcement-top:43px}
 }
 @media(max-width:380px){
- #mobileControls{--mobile-control-scale:.9;--mobile-left-button-size:32px;--mobile-left-gap:7px;--mobile-left-font-size:11.7px;--mobile-left-cooldown-size:10.8px}
+ #mobileControls{--mobile-control-scale:.9;--mobile-left-button-size:32px;--mobile-left-gap:7px;--mobile-left-font-size:11.7px;--mobile-left-cooldown-size:10.8px;--king-announcement-top:39.9px}
 }
 @media(max-width:340px){
- #mobileControls{--mobile-control-scale:.8;--mobile-left-button-size:29px;--mobile-left-gap:6px;--mobile-left-font-size:10.4px;--mobile-left-cooldown-size:9.6px}
+ #mobileControls{--mobile-control-scale:.8;--mobile-left-button-size:29px;--mobile-left-gap:6px;--mobile-left-font-size:10.4px;--mobile-left-cooldown-size:9.6px;--king-announcement-top:36.8px}
  #mobileControls #mobileJoystick{width:clamp(96px,33vw,120px)}
  #mobileControls .mobile-left-actions{left:calc(max(9px,env(safe-area-inset-left)) + clamp(96px,33vw,120px) + 7px)}
 }
 @media(max-width:300px){
- #mobileControls{--mobile-control-scale:.65;--mobile-left-button-size:25px;--mobile-left-gap:5px;--mobile-left-font-size:8.45px;--mobile-left-cooldown-size:7.8px}
+ #mobileControls{--mobile-control-scale:.65;--mobile-left-button-size:25px;--mobile-left-gap:5px;--mobile-left-font-size:8.45px;--mobile-left-cooldown-size:7.8px;--king-announcement-top:32.15px}
  #mobileControls #mobileJoystick{width:90px}
  #mobileControls .mobile-left-actions{left:calc(max(9px,env(safe-area-inset-left)) + 90px + 7px)}
 }
@@ -2925,6 +2927,7 @@ CRAZY.</div></div>
     <button type="button" class="mobile-btn special" data-mobile-action="special" aria-label="Special"><span class="mobile-btn-main">R</span><span class="mobile-cooldown"></span></button>
   </div>
   <button type="button" class="mobile-btn pause-top" data-mobile-action="pause" aria-label="Pause">Ⅱ</button>
+  <div id="serverKingAnnouncement" aria-live="polite" aria-atomic="true"></div>
   <div class="mobile-action-grid" aria-label="Combat buttons">
     <button type="button" class="mobile-btn" data-mobile-action="dash" aria-label="Dash">
       <span class="mobile-btn-main">🏃</span>
@@ -4110,7 +4113,16 @@ let onlineSendAccumulator=0,onlinePingAccumulator=0,onlineLatencyMs=null,onlineS
 let onlineActivitySentAt=0;
 let onlineTrainX=null,onlineTrainWarning=false;
 const onlineRemotePlayers=new Map();
-let onlineTopPlayerId="";
+let onlineTopPlayerId="",serverKingAnnouncementUntil=0;
+function hideServerKingAnnouncement(){const label=$('serverKingAnnouncement');if(label){label.classList.remove('visible');label.textContent=''}serverKingAnnouncementUntil=0}
+function showServerKingAnnouncement(data){
+ const label=$('serverKingAnnouncement');if(!label||!onlineMode||!data)return;
+ const name=String(data.name||'Player').replace(/[\\u0000-\\u001f]/g,'').replace(/\\s+/g,' ').trim().slice(0,18)||'Player';
+ const kills=Math.max(0,Math.floor(Number(data.kills)||0));if(kills<=0)return;
+ label.textContent=name+' has become the KING with '+kills+' kills!';
+ label.classList.add('visible');serverKingAnnouncementUntil=performance.now()+4200;
+}
+function updateServerKingAnnouncement(){if(!onlineMode||!serverKingAnnouncementUntil||performance.now()>=serverKingAnnouncementUntil)hideServerKingAnnouncement()}
 try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL;onlinePlayerNameSetting=localStorage.getItem('ballsShenaniganPlayerName')||''}catch(e){}
 function setOnlineStatus(message){
  onlineStatusMessage=String(message||'');
@@ -4887,7 +4899,7 @@ function drawOnlineNameplate(remote){
 }
 function startOnlineMatch(){
  stopOnlinePlayerCountPolling();stopOnlineFightAnimation();stopCharacterPreviewAnimation();stopAccessoryPreviewAnimation();
- onlineMode=true;onlineConnectionDropped=false;updatePauseActionButton();
+ hideServerKingAnnouncement();onlineMode=true;onlineConnectionDropped=false;updatePauseActionButton();
  resetMatch();onlineSendAccumulator=0;onlinePingAccumulator=0;onlineLatencyMs=null;onlineStateArrivalAt=0;onlineStateJitterMs=0;onlineRemoteInterpolationDelayMs=60;const pingLabel=$('onlinePing');if(pingLabel){pingLabel.textContent='PING -- MS';delete pingLabel.dataset.quality}onlineRemotePlayers.clear();
  if(onlineRoom&&onlineRoom.state&&onlineRoom.state.players){
   let localState=null;
@@ -4906,7 +4918,7 @@ function startOnlineMatch(){
 function handleOnlineDisconnect(code){
  if(!onlineMode)return;
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
- onlineMode=false;onlineConnectionDropped=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
+ onlineMode=false;onlineConnectionDropped=false;hideServerKingAnnouncement();onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();
  game.started=false;game.paused=false;
  document.body.classList.remove('game-active','game-paused','online-mode');
  $('menu').style.display='flex';$('hud').style.display='none';
@@ -5018,6 +5030,7 @@ function bindOnlineRoom(client,room){
  room.onError((code,message)=>{console.warn('Online room error',code,message);setOnlineStatus('SERVER ERROR · CHECK CONNECTION')});
  room.onMessage('server:player-count',data=>{const label=$('onlinePlayersCount');if(label&&data)label.textContent=(Number(data.count)||0)+' / 16 PLAYERS'});
  room.onMessage('player:reset',data=>{if(!onlineMode||!player||!data)return;clearHeldInputs();const char=CHARS[String(data.character||'')]?String(data.character):selected;const x=Number.isFinite(Number(data.x))?Number(data.x):player.x,y=Number.isFinite(Number(data.y))?Number(data.y):player.y;player=makeFighter('player',char,x,y);player.invuln=clamp(Number(data.invuln)||1.2,0,2);game.playerDeathNotified=false;game.playerHitStreak=0;game.playerHitTimer=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.shake=0;game.hitStop=0;game.domainClash=null;domainClashFrameCache.last=-Infinity;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');const comboDisplay=$('comboDisplay');if(comboDisplay){comboDisplay.classList.remove('active','pop','hot');clearComboRanks(comboDisplay)};game.paused=false;document.body.classList.remove('game-paused');$('pause').style.display='none';syncMobileControls();camera.x=player.x;camera.y=player.y;updateDomainClashHud();updateHud(true);showToast('CHARACTER RESET',900)});
+ room.onMessage('server:king-announcement',data=>showServerKingAnnouncement(data));
  room.onMessage('network:pong',data=>{const sentAt=Number(data&&data.sentAt);if(!Number.isFinite(sentAt))return;const rtt=Math.max(0,performance.now()-sentAt);onlineLatencyMs=onlineLatencyMs===null?rtt:onlineLatencyMs*.8+rtt*.2;const label=$('onlinePing');if(label){label.textContent='PING '+Math.round(onlineLatencyMs)+' MS';label.dataset.quality=onlineLatencyMs<50?'good':onlineLatencyMs<100?'medium':'high'}});
  room.onMessage('combat:action',data=>{
   if(!data||data.sessionId===onlineSessionId)return;
@@ -5150,7 +5163,7 @@ addEventListener('pagehide',()=>{if(onlineMode)leaveOnlineServer()});
 function leaveOnlineServer(){
  const room=onlineRoom;
  try{sessionStorage.removeItem('ballsShenaniganReconnect')}catch(e){}
- onlineMode=false;onlineConnectionDropped=false;onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
+ onlineMode=false;onlineConnectionDropped=false;hideServerKingAnnouncement();onlineRoom=null;onlineClient=null;onlineSessionId=null;onlineRemotePlayers.clear();onlineSendAccumulator=0;
  if(room){try{room.leave()}catch(e){console.warn('Could not leave online room cleanly',e)}}
  game.started=false;game.paused=false;
  document.body.classList.remove('game-active','game-paused','online-mode');
@@ -7996,7 +8009,7 @@ function updateMobileCooldowns(){
 }
 function mixHealthColor(a,b,t){const parse=h=>[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)],aa=parse(a),bb=parse(b);return '#'+aa.map((v,i)=>Math.round(v+(bb[i]-v)*clamp(t,0,1)).toString(16).padStart(2,'0')).join('')}
 function updateHealthBar(id,f){const fill=$(id);if(!fill||!f)return;const pct=clamp((Number(f.hp)||0)/(Number(f.maxHp)||1),0,1),color=pct>=.5?mixHealthColor('#e9d33e','#28d66d',(pct-.5)*2):mixHealthColor('#ed393f','#e9d33e',pct*2),dark=mixHealthColor(color,'#101820',.24),light=mixHealthColor(color,'#ffffff',.2);fill.style.width=(pct*100)+'%';fill.style.background='linear-gradient(90deg,'+dark+','+color+' 72%,'+light+')';fill.style.boxShadow='0 0 12px '+color+'77'}
-function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;updateHealthBar('pHealth',player);updateHealthBar('eHealth',enemy);$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100),awakeningColor=CHARS[player.char].accent||CHARS[player.char].color||'#f05d76',awakeningDark=mixHealthColor(awakeningColor,'#05070d',.42),awakeningLight=mixHealthColor(awakeningColor,'#ffffff',.48),ultFill=$('ultFill'),ultLabel=$('ultLabel');ultFill.style.width=awakeningPct+'%';ultFill.style.background='linear-gradient(90deg,'+awakeningDark+','+awakeningColor+' 68%,'+awakeningLight+')';ultFill.style.boxShadow='0 0 15px '+awakeningColor+'99';ultFill.classList.toggle('draining',player.awakened);ultLabel.style.color=awakeningLight;const ultTrack=ultFill.parentElement;if(ultTrack){ultTrack.style.borderColor=awakeningColor+'99';ultTrack.style.boxShadow='0 3px 12px #0007,0 0 8px '+awakeningColor+'33'}ultLabel.textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':(CHARS[player.char].awakeName||CHARS[player.char].awakening||'AWAKENING')+' · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();}
+function updateHud(force=false){if(!player||!enemy)return;if(!force&&game.started&&game.hudTimer>0)return;game.hudTimer=game.started ? .12 : 0;$('pName').textContent=player.char==='vessel'&&player.awakened?'KING OF CURSES':CHARS[player.char].name;$('eName').textContent=enemy.char==='vessel'&&enemy.awakened?'KING OF CURSES':CHARS[enemy.char].name;updateHealthBar('pHealth',player);updateHealthBar('eHealth',enemy);$('pMeter').style.width=player.meter+'%';$('eMeter').style.width=enemy.meter+'%';$('pHpText').textContent=Math.ceil(player.hp)+' / '+player.maxHp;$('eHpText').textContent=Math.ceil(enemy.hp)+' / '+enemy.maxHp;$('pState').textContent=player.domainWindup>0?'DOMAIN CAST':player.domainType?'DOMAIN ACTIVE':player.jackpot?'JACKPOT':player.awakeMode==='gamble'?'DOMAIN':player.awakened?'AWAKENED':player.block?'BLOCKING':player.rooted>0?'TRAPPED':player.pullTimer>0?'PULLED':player.stun>0?'STUNNED':'READY';$('roundLabel').style.display=(player.domainType||enemy.domainType||player.domainWindup>0||enemy.domainWindup>0)?'none':'block';$('eState').textContent=enemy.domainWindup>0?'DOMAIN CAST':enemy.domainType?'DOMAIN ACTIVE':enemy.jackpot?'JACKPOT':enemy.awakeMode==='gamble'?'DOMAIN':enemy.awakened?'AWAKENED':enemy.block?'BLOCKING':enemy.rooted>0?'TRAPPED':enemy.pullTimer>0?'PULLED':enemy.stun>0?'STUNNED':'FIGHTING';const awakeningPct=player.awakened?clamp(player.awakeFuel??100,0,100):clamp(player.meter,0,100),awakeningColor=CHARS[player.char].accent||CHARS[player.char].color||'#f05d76',awakeningDark=mixHealthColor(awakeningColor,'#05070d',.42),awakeningLight=mixHealthColor(awakeningColor,'#ffffff',.48),ultFill=$('ultFill'),ultLabel=$('ultLabel');ultFill.style.width=awakeningPct+'%';ultFill.style.background='linear-gradient(90deg,'+awakeningDark+','+awakeningColor+' 68%,'+awakeningLight+')';ultFill.style.boxShadow='0 0 15px '+awakeningColor+'99';ultFill.classList.toggle('draining',player.awakened);ultLabel.style.color=awakeningLight;const ultTrack=ultFill.parentElement;if(ultTrack){ultTrack.style.borderColor=awakeningColor+'99';ultTrack.style.boxShadow='0 3px 12px #0007,0 0 8px '+awakeningColor+'33'}ultLabel.textContent=player.jackpot?'JACKPOT · '+Math.ceil(player.awakeFuel)+'%':player.awakeMode==='gamble'?'IDLE DEATH GAMBLE · '+(player.gambleAttempts+1)+'/4':player.awakened?CHARS[player.char].awakeName+' · '+Math.ceil(player.awakeFuel)+'%':(CHARS[player.char].awakeName||CHARS[player.char].awakening||'AWAKENING')+' · '+Math.floor(player.meter)+'%';const moves=activeMoves(player);hudSlots.forEach(el=>{let k=el.dataset.slot;let idx=Number(k)-1;let cd=k==='R'?player.specialCd:k==='Q'?player.dashCd:player.skillCd[idx];if(k!=='R'&&idx>=0&&idx<4)el.querySelector('.slotname').textContent=moves[idx][0];if(k==='R')el.querySelector('.slotname').textContent=player.char==='yuta'?(player.rikaMode?'RIKA MOVES':player.rikaSummoned?'RIKA READY':'RIKA'):player.jackpot?CHARS[player.char].awakeSpecial:player.char==='choso'&&player.convergenceOrbs>0?'CONVERGENCE ×'+player.convergenceOrbs:player.char==='perfection'?['NORMAL','BLADE MODE','CLUB MODE'][player.soulMode]:CHARS[player.char].special;el.classList.toggle('cooling',cd>0);el.querySelector('.cool').textContent=cd>0?cd.toFixed(1):''});if(game.domainClash){$('pState').textContent='CLASHING';$('eState').textContent='CLASHING'}updateDomainClashHud();updateMobileCooldowns();updateServerKingAnnouncement();}
 
 function update(dt){game.shakeTime=(game.shakeTime||0)+dt;if(game.cutsceneTimer>0){
  const cutscene=$('awakeningCutscene'),speaker=cutscene&&cutscene._speaker;
