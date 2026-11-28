@@ -3955,24 +3955,22 @@ function isGojoBlueMaxCasterMotion(f){
 }
 let gojoBlueMaxCharacterRenderFreezeKeepUntil=0;
 function updateGojoBlueMaxCharacterRenderFreeze(){
- // Keep the freeze active through the projectile's complete collapse; life can reach zero
- // a frame before the projectile is marked finished.
- const projectileActive=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.finished);
- // Also follow the caster's actual skill motion. This prevents a one-frame redraw if
- // projectile state is briefly missing while a local or remote cast is being synced.
- let casterMotionActive=isGojoBlueMaxCasterMotion(player)||isGojoBlueMaxCasterMotion(enemy);
- if(!casterMotionActive&&onlineMode&&onlineRemotePlayers){
-  for(const remote of onlineRemotePlayers.values()){
-   if(isGojoBlueMaxCasterMotion(remote)){casterMotionActive=true;break;}
-  }
- }
- const active=projectileActive||casterMotionActive;
+ // The render lock follows the orb, caster, and every fighter still bound to its visual state.
+ const projectileActive=projectiles.some(p=>p&&p.kind==='blueMax'&&!p.visualReleased&&!p.finished);
+ const fighters=[player,enemy];
+ if(onlineMode&&onlineRemotePlayers)for(const remote of onlineRemotePlayers.values())fighters.push(remote);
+ const fighterVisualLock=fighters.some(f=>{
+  if(!f)return false;
+  if(isGojoBlueMaxCasterMotion(f))return true;
+  const owner=f.blueMaxVisualOwner;
+  return !!(owner&&owner.kind==='blueMax'&&!owner.finished&&!owner.visualReleased&&Number(owner.life)>0);
+ });
+ const active=projectileActive||fighterVisualLock;
  if(active){
   if(!gojoBlueMaxCharacterRenderFreezeActive)gojoBlueMaxCharacterSnapshots=new WeakMap();
   gojoBlueMaxCharacterRenderFreezeActive=true;
-  // A short grace period prevents one missing network/projectile frame from
-  // briefly returning every fighter to the live renderer.
-  gojoBlueMaxCharacterRenderFreezeKeepUntil=performance.now()+120;
+  // Keep snapshots through brief gaps in projectile and remote-motion replication.
+  gojoBlueMaxCharacterRenderFreezeKeepUntil=performance.now()+750;
   return;
  }
  if(!gojoBlueMaxCharacterRenderFreezeActive||performance.now()<gojoBlueMaxCharacterRenderFreezeKeepUntil)return;
