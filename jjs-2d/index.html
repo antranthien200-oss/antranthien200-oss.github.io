@@ -4117,7 +4117,7 @@ let onlineTopPlayerId="",serverKingAnnouncementUntil=0;
 function hideServerKingAnnouncement(){const label=$('serverKingAnnouncement');if(label){label.classList.remove('visible');label.textContent=''}serverKingAnnouncementUntil=0}
 function showServerKingAnnouncement(data){
  const label=$('serverKingAnnouncement');if(!label||!onlineMode||!data)return;
- const name=String(data.name||'Player').replace(/[\\u0000-\\u001f]/g,'').replace(/\\s+/g,' ').trim().slice(0,18)||'Player';
+ const name=String(data.name||'Player').trim().slice(0,18)||'Player';
  const kills=Math.max(0,Math.floor(Number(data.kills)||0));if(kills<=0)return;
  label.textContent=name+' has become the KING with '+kills+' kills!';
  label.classList.add('visible');serverKingAnnouncementUntil=performance.now()+4200;
