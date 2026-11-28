@@ -376,7 +376,7 @@ finishDomainClash(clash,winnerId=null,reason="TIME"){
    targetId="";let best=Infinity;
    for(const [otherId,other] of this.state.players){if(otherId===ownerId||other.dead)continue;const d=Math.hypot(other.x-aimX,other.y-aimY);if(d<best){best=d;targetId=otherId}}
   }
-  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed:Math.hypot(vx,vy),r:clamp(Number(payload.r)||18,5,38),hitRadius:clamp(Number(payload.hitRadius)||clamp(Number(payload.r)||18,5,38),5,70),life:clamp(Number(payload.life)||1.2,.08,kind==="blueMax"?6:5),travelled:0,attachDoors:false,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,damage:clamp(Number(payload.damage)||profile.damage,0,250),hitStun:Number.isFinite(Number(payload.hitStun))?clamp(Number(payload.hitStun),0,8):profile.stun,knockbackScale:Number.isFinite(Number(payload.knockbackScale))?clamp(Number(payload.knockbackScale),0,5):1,knockback:Number.isFinite(Number(payload.knockback))?clamp(Number(payload.knockback),0,60):0,unblockable:payload.unblockable===true,ignoreInvuln:payload.ignoreInvuln===true,damageType:/^(melee|bullet|projectile|explosion|domain)$/.test(String(payload.damageType||""))?String(payload.damageType):"projectile",blockedDamage:Number.isFinite(Number(payload.blockedDamage))?clamp(Number(payload.blockedDamage),0,250):clamp(Number(payload.damage)||profile.damage,0,250)*.12,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",followSpeed:kind==="blueMax"?clamp(Number(payload.followSpeed)||520,200,520):0,followAimX:kind==="blueMax"?clamp(Number(payload.followAimX)||aimX,45,WORLD_WIDTH-45):aimX,followAimY:kind==="blueMax"?clamp(Number(payload.followAimY)||aimY,45,WORLD_HEIGHT-45):aimY,phase:kind==="blueMax"?"forming":"active",phaseRemaining:kind==="blueMax"?.5:0,phaseDuration:kind==="blueMax"?.5:0,activeDuration:kind==="blueMax"?3:3,collapseDuration:1,pullRadius:kind==="blueMax"?clamp(Number(payload.pullRadius)||420,180,600):0,pullForce:kind==="blueMax"?clamp(Number(payload.pullForce)||0.06,0.005,0.12):0,damageRadius:kind==="blueMax"?clamp(Number(payload.damageRadius)||165,40,240):0,hitAtByTarget:Object.create(null),aimX,aimY,targetId,nextTickAt:Date.now()+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
+  const projectile={id,clientId,ownerId,move,x:clamp(x,35,WORLD_WIDTH-35),y:clamp(y,35,WORLD_HEIGHT-35),vx,vy,speed:Math.hypot(vx,vy),r:clamp(Number(payload.r)||18,5,38),hitRadius:clamp(Number(payload.hitRadius)||clamp(Number(payload.r)||18,5,38),5,70),life:clamp(Number(payload.life)||1.2,.08,kind==="blueMax"?6:5),travelled:0,attachDoors:false,maxDistance:Math.min(profile.range,clamp(Number(payload.maxDistance)||profile.range,100,profile.range)),profile,damage:clamp(Number(payload.damage)||profile.damage,0,250),hitStun:Number.isFinite(Number(payload.hitStun))?clamp(Number(payload.hitStun),0,8):profile.stun,knockbackScale:Number.isFinite(Number(payload.knockbackScale))?clamp(Number(payload.knockbackScale),0,5):1,knockback:Number.isFinite(Number(payload.knockback))?clamp(Number(payload.knockback),0,60):0,unblockable:payload.unblockable===true,ignoreInvuln:payload.ignoreInvuln===true,damageType:/^(melee|bullet|projectile|explosion|domain)$/.test(String(payload.damageType||""))?String(payload.damageType):"projectile",blockedDamage:Number.isFinite(Number(payload.blockedDamage))?clamp(Number(payload.blockedDamage),0,250):clamp(Number(payload.damage)||profile.damage,0,250)*.12,kind,color:/^#[0-9a-f]{6}$/i.test(String(payload.color||""))?String(payload.color):"#b8e8ff",blastRadius:kind==="redmax"?clamp(Number(payload.blastRadius)||160,60,240):0,followSpeed:kind==="blueMax"?clamp(Number(payload.followSpeed)||520,200,520):0,followAimX:kind==="blueMax"?clamp(Number(payload.followAimX)||aimX,45,WORLD_WIDTH-45):aimX,followAimY:kind==="blueMax"?clamp(Number(payload.followAimY)||aimY,45,WORLD_HEIGHT-45):aimY,phase:kind==="blueMax"?"forming":"active",phaseRemaining:kind==="blueMax"?.5:kind==="redmax"?clamp(Number(payload.phaseRemaining)||1.65,.05,3):0,phaseDuration:kind==="blueMax"?.5:kind==="redmax"?clamp(Number(payload.phaseDuration)||1.65,.05,3):0,phaseElapsed:kind==="redmax"?clamp(Number(payload.phaseElapsed)||0,0,3):0,activeDuration:kind==="blueMax"?3:3,collapseDuration:1,pullRadius:kind==="blueMax"?clamp(Number(payload.pullRadius)||420,180,600):0,pullForce:kind==="blueMax"?clamp(Number(payload.pullForce)||0.06,0.005,0.12):0,damageRadius:kind==="blueMax"?clamp(Number(payload.damageRadius)||165,40,240):0,hitAtByTarget:Object.create(null),aimX,aimY,targetId,nextTickAt:Date.now()+200,detonate:false,golden,domainBound,rideVariant,bounceCount:0};
   if(rideVariant){owner.moveX=0;owner.moveY=0;owner.vx=0;owner.vy=0}
   this.projectiles.set(id,projectile);
   this.broadcast("combat:projectile",{sessionId:ownerId,id:clientId,x:projectile.x,y:projectile.y,vx,vy,r:projectile.r,life:projectile.life,maxDistance:projectile.maxDistance,kind:projectile.kind,color:projectile.color,phase:projectile.phase,phaseRemaining:projectile.phaseRemaining,phaseDuration:projectile.phaseDuration,move,aimX:projectile.aimX,aimY:projectile.aimY,targetId:projectile.targetId,golden,domainBound,rideVariant});
@@ -475,6 +475,17 @@ modifyProjectile(client,payload={}){
     this.applyProjectileDamage(owner,target,12.5,.38,18,angle,false,false,"explosion",6.25,true);
    }
   };
+  const explodeRedMax=(p,x=p.x,y=p.y)=>{
+   const owner=this.state.players.get(p.ownerId);if(!owner)return;
+   const radius=clamp(Number(p.blastRadius)||160,60,240);
+   for(const [targetId,target] of this.state.players){
+    if(targetId===p.ownerId||target.dead||target.vehicleId)continue;
+    const distance=Math.hypot(target.x-x,target.y-y);
+    if(distance>radius+23)continue;
+    const angle=Math.atan2(target.y-y,target.x-x),falloff=clamp(1-distance/radius*.42,.58,1);
+    hurt(owner,target,(Number(p.damage)||30)*falloff,.8,18,angle,true,false,"explosion",p.blockedDamage);
+   }
+  };
   for(const [id,p] of this.projectiles){
    const owner=this.state.players.get(p.ownerId);
    if(!owner||owner.dead){end(p);continue}
@@ -558,7 +569,8 @@ modifyProjectile(client,payload={}){
    }else{
     const sx=p.vx*60*dt,sy=p.vy*60*dt;p.x+=sx;p.y+=sy;p.travelled+=Math.hypot(sx,sy);p.life-=dt;
    }
-   p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);
+   if(p.kind==="redmax")p.phaseRemaining=Math.max(0,(Number(p.phaseRemaining)||0)-dt);
+   else{p.vx*=Math.pow(.993,dt*60);p.vy*=Math.pow(.993,dt*60);}
    if(p.kind==="ball"){
     if(p.x<12||p.x>WORLD_WIDTH-12){p.vx*=-1;p.x=clamp(p.x,12,WORLD_WIDTH-12);p.life-=.25}
     if(p.y<12||p.y>WORLD_HEIGHT-12){p.vy*=-1;p.y=clamp(p.y,12,WORLD_HEIGHT-12);p.life-=.25}
@@ -573,7 +585,9 @@ modifyProjectile(client,payload={}){
    }
    const activeBuildings=BUILDING_LAYOUT.filter((building,index)=>!this.state.world.buildings.get(String(index))?.collapsed);
    if(p.kind!=="sukunaFireArrow"&&isBlockedByBuilding(p,activeBuildings,Math.max(7,p.r*.65))){
-    if(p.kind==="red"){explodeRed(p);end(p,"combat:projectile-explode")}else end(p);
+    if(p.kind==="red"){explodeRed(p);end(p,"combat:projectile-explode")}
+    else if(p.kind==="redmax"){explodeRedMax(p);end(p,"combat:projectile-explode")}
+    else end(p);
     continue;
    }
    if(p.kind==="sukunaFireArrow"){
@@ -592,12 +606,17 @@ modifyProjectile(client,payload={}){
     let hitTarget=null,hitId="";
     for(const [targetId,candidate] of this.state.players){
      if(targetId===p.ownerId||candidate.dead||candidate.vehicleId||(candidate.invuln>0&&p.kind!=="red"))continue;
-     if(pointSegmentDistance(candidate,from,p)<=(p.kind==="red"?(p.hitRadius||p.r):p.r)+23){hitTarget=candidate;hitId=targetId;break}
+     if(pointSegmentDistance(candidate,from,p)<=(p.kind==="red"||p.kind==="redmax"?(p.hitRadius||p.r):p.r)+23){hitTarget=candidate;hitId=targetId;break}
     }
     if(hitTarget){
      const angle=Math.atan2(p.y-from.y,p.x-from.x);
      if(p.kind==="red"){
       explodeRed(p,p.x,p.y);
+      end(p,"combat:projectile-explode",{targetId:hitId});
+      continue;
+     }
+     if(p.kind==="redmax"){
+      explodeRedMax(p,p.x,p.y);
       end(p,"combat:projectile-explode",{targetId:hitId});
       continue;
      }
@@ -623,6 +642,7 @@ modifyProjectile(client,payload={}){
    }
    if(p.life<=0||p.travelled>=p.maxDistance||p.x<20||p.y<20||p.x>WORLD_WIDTH-20||p.y>WORLD_HEIGHT-20){
     if(p.kind==="red"){p.x=clamp(p.x,25,WORLD_WIDTH-25);p.y=clamp(p.y,25,WORLD_HEIGHT-25);explodeRed(p);end(p,"combat:projectile-explode")}
+    else if(p.kind==="redmax"){p.x=clamp(p.x,25,WORLD_WIDTH-25);p.y=clamp(p.y,25,WORLD_HEIGHT-25);explodeRedMax(p);end(p,"combat:projectile-explode")}
     else end(p);
     continue;
    }
