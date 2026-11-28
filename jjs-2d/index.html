@@ -4691,6 +4691,7 @@ function applyOnlineRoomState(state){
     remote.motion={name:String(net.motionName),t:clamp(Math.max(reported,serverAge),0,duration),duration,activeDuration:duration,angle:remote.networkFace,target:null};
    }else remote.motion=null;
   }
+  syncOnlineGojoAwakenedPalette(remote);
   if(remote.hp<oldHp&&!remote.dead){
    const loss=oldHp-remote.hp,grabImpact=remote.attackType==='grab';
    const blueMaxFlashProtected=isGojoBlueMaxVisualSuppressed(remote)||!!remote.blueMaxSuckedBy;
@@ -4753,6 +4754,17 @@ function applyOnlineRoomState(state){
   }
  }
  const label=$('onlinePlayersCount');if(label)label.textContent=entries.length+' / 16 PLAYERS';
+}
+function syncOnlineGojoAwakenedPalette(remote){
+ if(!remote)return;
+ if(remote.char!=='honored'){
+  remote.gojoAwakeningVisualPending=false;remote.gojoSkinAwakened=false;return;
+ }
+ const motion=remote.motion,name=String(motion&&motion.name||remote.motionName||'');
+ const progress=motion&&Number(motion.duration)>0?clamp(Number(motion.t)/Number(motion.duration),0,1):clamp(Number(remote.motionProgress)||0,0,1);
+ const visualStillPlaying=name==='gojoAwakenIntroPose'||(name==='gojoAwaken'&&progress<.93);
+ remote.gojoAwakeningVisualPending=!!remote.awakened&&visualStillPlaying;
+ remote.gojoSkinAwakened=!!remote.awakened&&!remote.gojoAwakeningVisualPending;
 }
 function updateOnlineRemotePlayers(dt){
  const now=performance.now(),renderTime=now-onlineRemoteInterpolationDelayMs;
@@ -5037,6 +5049,8 @@ function bindOnlineRoom(client,room){
   if(actionKind==='special'&&remote.char==='honored'&&target&&target!==remote){target.skillLockUntil=Math.max(Number(target.skillLockUntil)||0,Date.now()+1000);remote.invuln=Math.max(Number(remote.invuln)||0,.62)}
   if(actionKind==='special'&&remote.char==='honored'&&Number.isFinite(Number(data.flashStepFromX))&&Number.isFinite(Number(data.flashStepFromY)))remote.gojoFlashStepFx={fromX:Number(data.flashStepFromX),fromY:Number(data.flashStepFromY),fromFace:Number.isFinite(Number(data.face))?Number(data.face):remote.face,toX:Number(data.flashStepToX),toY:Number(data.flashStepToY),startedAt:performance.now(),duration:.62};
   if(remote.motion){remote.motion.t=Math.min(remote.motion.duration||1,serverAge);remote.attackAnim=Math.max(0,(remote.attackAnim||0)-serverAge)}
+  if(actionKind==='awaken'&&remote.char==='honored'){remote.gojoSkinAwakened=false;remote.gojoAwakeningVisualPending=true;remote.gojoAwakeningFacing=Number.isFinite(Number(data.face))?Number(data.face):remote.face}
+  syncOnlineGojoAwakenedPalette(remote);
  });
  room.onMessage('combat:grab-started',data=>{
   const seq=player&&player.vesselAwakenSequence;
