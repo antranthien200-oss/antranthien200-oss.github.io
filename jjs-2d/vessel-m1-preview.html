@@ -5620,7 +5620,7 @@ function beginPurpleMaxCollision(red,blue,x,y){
   startTime:game.time,growthDuration:2.65,fadeDuration:.85,holdDuration:.28,fadeOutDuration:1.05,recoverDuration:1.1,
   cameraStartX:Number.isFinite(camera.x)?camera.x:(player?player.x:x),cameraStartY:Number.isFinite(camera.y)?camera.y:(player?player.y:y),
   cameraBlend:0,cameraZoom:1,rotation:0,growthProgress:0,orbScale:.72,whiteAlpha:0,particleTimer:0,
-  phase:'grow',detonated:false,redOwner:red.owner||null,blueOwner:blue.owner||null};
+  phase:'grow',detonated:false,redOwner:red.owner||null,blueOwner:blue.owner||null,maxOrbScale:9.5,maxCameraZoom:clamp((205*1.5*9.5)/(Math.max(260,W)*.78*(mobileControlsEnabled?MOBILE_CAMERA_ZOOM:1)),1.65,7.5)};
  game.purpleMaxClash=event;red.purpleMaxConsumed=true;red.life=0;
  blue.purpleMaxConsumed=true;blue.finished=true;blue.life=0;blue.vx=0;blue.vy=0;releaseGojoBlueMaxVisual(blue);
  game.shake=Math.max(game.shake,34);burst(event.x,event.y,'#a77be8',24,8);burst(event.x,event.y,'#d3c0ff',12,5);
@@ -5671,11 +5671,15 @@ function updatePurpleMaxCollision(dt){
  const event=game.purpleMaxClash;if(!event)return;
  const age=Math.max(0,game.time-event.startTime),growth=event.growthDuration,fadeEnd=growth+event.fadeDuration;
  const holdEnd=fadeEnd+event.holdDuration,fadeOutEnd=holdEnd+event.fadeOutDuration,totalEnd=fadeOutEnd+event.recoverDuration;
- event.rotation=(event.rotation||0)+dt*3.85;event.cameraBlend=clamp(age/1.2,0,1);
+ event.rotation=(event.rotation||0)+dt*3.85;
+ event.cameraBlend=clamp(age/1.2,0,1);
+ // Keep enlarging through the entire white fade-in instead of freezing at the end of the first phase.
+ const growthProgress=clamp(age/fadeEnd,0,1),growthEase=growthProgress*growthProgress*(3-2*growthProgress);
+ event.growthProgress=growthEase;
+ event.orbScale=lerp(.72,event.maxOrbScale||9.5,growthEase);
+ event.cameraZoom=lerp(1,event.maxCameraZoom||2.5,growthEase); // >1 pulls the camera OUT.
  if(age<growth){
-  event.phase='grow';const progress=clamp(age/growth,0,1),ease=progress*progress*(3-2*progress);
-  event.growthProgress=ease;event.orbScale=.72+ease*2.78;event.whiteAlpha=0;
-  event.cameraZoom=lerp(1,.64,event.cameraBlend*event.cameraBlend*(3-2*event.cameraBlend));
+  event.phase='grow';event.whiteAlpha=0;
   event.particleTimer-=dt;const interval=isMobileDevice ? .075 : .045;
   while(event.particleTimer<=0){
    event.particleTimer+=interval;const count=isMobileDevice?3:5;
@@ -5686,25 +5690,24 @@ function updatePurpleMaxCollision(dt){
      color:['#8b8d98','#aaa6b7','#8060aa','#a17acb','#c5b4e5'][Math.floor(rnd(0,5))],shape:'square',purpleSuck:true});
    }
   }
-  game.shake=Math.max(game.shake,25+progress*17+Math.sin(age*47)*5);
+  game.shake=Math.max(game.shake,25+growthProgress*17+Math.sin(age*47)*5);
  }else if(age<fadeEnd){
-  event.phase='fadeIn';event.growthProgress=1;event.orbScale=3.5;event.cameraZoom=.64;
+  event.phase='fadeIn';
   event.whiteAlpha=clamp((age-growth)/event.fadeDuration,0,1);game.shake=Math.max(game.shake,28);
  }else if(age<holdEnd){
-  event.phase='hold';event.growthProgress=1;event.orbScale=3.5;event.cameraZoom=.64;event.whiteAlpha=1;game.shake=Math.max(game.shake,17);
+  event.phase='hold';event.whiteAlpha=1;game.shake=Math.max(game.shake,17);
  }else if(age<fadeOutEnd){
-  event.phase='fadeOut';event.growthProgress=1;event.orbScale=3.5;event.cameraZoom=.64;
-  event.whiteAlpha=1-clamp((age-holdEnd)/event.fadeOutDuration,0,1);game.shake=Math.max(game.shake,9);
+  event.phase='fadeOut';event.whiteAlpha=1-clamp((age-holdEnd)/event.fadeOutDuration,0,1);game.shake=Math.max(game.shake,9);
  }else{
   event.phase='recover';event.whiteAlpha=0;
   const recover=clamp((age-fadeOutEnd)/event.recoverDuration,0,1),ease=recover*recover*(3-2*recover);
-  event.recoverProgress=ease;event.cameraZoom=lerp(.64,1,ease);
+  event.recoverProgress=ease;event.cameraZoom=lerp(event.maxCameraZoom||2.5,1,ease);
  }
  if(!event.detonated&&age>=fadeEnd)annihilatePurpleMaxWorld(event);
  if(age>=totalEnd)game.purpleMaxClash=null;
 }
 function drawPurpleMaxClashWorldOrb(){
- const event=game.purpleMaxClash;if(!event||event.phase==='recover'||event.phase==='fadeOut')return;
+ const event=game.purpleMaxClash;if(!event||event.phase==='recover')return;
  const frameIndex=35+Math.round(clamp(event.growthProgress||0,0,1)*5),orb={kind:'blueMax',phase:'active',phaseDuration:1,phaseRemaining:1};
  drawGojoBlueMaxProjectile(orb,sx(event.x),sy(event.y),{scale:event.orbScale||.72,tint:'purple',frameIndex,rotation:event.rotation||0,drawTrail:false});
 }
@@ -9468,7 +9471,7 @@ function drawGojoBlueMaxProjectile(p,x,y,options={}){
  ctx.shadowColor='transparent';
  ctx.filter='none';
  if(Number.isFinite(Number(options.frameIndex)))frameIndex=clamp(Math.floor(Number(options.frameIndex)),0,40);
- const scale=clamp(Number(options.scale)||1,.05,1.5);
+ const scale=clamp(Number(options.scale)||1,.05,12);
  if(options.drawTrail!==false)drawGojoBlueMaxTrail(p,options.tint==='red'?'#ff0000':'#ffffff');
  const drawOrb=()=>{
   ctx.filter=options.tint==='red'?'hue-rotate(160deg) saturate(1.8)':options.tint==='purple'?'hue-rotate(70deg) saturate(1.95) contrast(1.08)':'none';
