@@ -4916,10 +4916,12 @@ function removeOnlineFireZone(data){
  for(let i=fireZones.length-1;i>=0;i--)if(fireZones[i].onlineId===String(data.id))fireZones.splice(i,1);
 }
 function spawnGojoRedExplosionFx(x,y){
- particles.push({x,y,vx:0,vy:0,life:.32,max:.32,size:168,color:'#ff405f',shape:'redShockwave'});
- particles.push({x,y,vx:0,vy:0,life:.22,max:.22,size:104,color:'#ffe9ed',shape:'redShockwave'});
- burst(x,y,'#ff405f',34,9);burst(x,y,'#ff9eae',18,6);burst(x,y,'#fff0f3',8,4);
- game.shake=Math.max(game.shake,10);game.hitStop=Math.max(game.hitStop,.025);
+ // The Red MAX blast expands wider than Blue MAX's 275-unit detonation.
+ particles.push({x,y,vx:0,vy:0,life:.48,max:.48,size:460,color:'#ff405f',shape:'redShockwave'});
+ particles.push({x,y,vx:0,vy:0,life:.34,max:.34,size:285,color:'#ffe9ed',shape:'redShockwave'});
+ particles.push({x,y,vx:0,vy:0,life:.24,max:.24,size:170,color:'#ff8296',shape:'redShockwave'});
+ burst(x,y,'#ff405f',40,11);burst(x,y,'#ff9eae',24,8);burst(x,y,'#fff0f3',12,5);
+ game.shake=Math.max(game.shake,15);game.hitStop=Math.max(game.hitStop,.035);
 }
 function removeOnlineProjectile(data,hit=false){
  if(!data||!data.sessionId||!data.id)return;
@@ -5579,7 +5581,7 @@ function detonateGojoRed(p,x=p.x,y=p.y,applyDamage=true){
 function detonateGojoRedMax(p,x=p.x,y=p.y,applyDamage=true){
  if(!p||p.detonated)return;
  p.detonated=true;
- const radius=Number(p.blastRadius)||160;
+ const radius=Number(p.blastRadius)||360;
  if(applyDamage&&p.owner){
   for(const target of tenTargets(p.owner)){
    if(!target||target===p.owner||target.dead||target.vehicle)continue;
@@ -5863,7 +5865,7 @@ function setMotion(f,name,duration=.5,angle=f.face,target=null){
 }
 function setSkillMotion(f,idx,angle,target){
  let names,times;
- if(f.char==='honored'){names=f.awakened?['gojoBlueMax','gojoRedMax','gojoPurple','gojoVoid']:['gojoBlue','gojoRed','gojoRapid','gojoCounterReady'];times=f.awakened?[4.5,.72,1.4,1.5]:[1.95,.8,4,.6]}
+ if(f.char==='honored'){names=f.awakened?['gojoBlueMax','gojoRedMax','gojoPurple','gojoVoid']:['gojoBlue','gojoRed','gojoRapid','gojoCounterReady'];times=f.awakened?[4.5,1,1.4,1.5]:[1.95,.8,4,.6]}
  else if(f.char==='vessel'){names=f.awakened?['sukunaFlurryWindup','sukunaOpen','sukunaHeadCarryWindup','sukunaShrine']:['yujiCursedDrag','yujiCrush','yujiDivergent','yujiManjiCounter'];times=f.awakened?[.42,3.8,.42,1.5]:[3,.85,.8,.68]}
  else if(f.char==='restless'){names=f.jackpot?['hakariVolley','hakariRushdown','hakariOverwhelming','hakariSurge']:['hakariBall','hakariDoors','hakariRough','hakariFever'];times=f.jackpot?[1.8,1.8,1.7,1.2]:[.45,.65,1.05,1.65]}
  else if(f.char==='ten'){names=f.awakened&&!f.tenBase?['megumiElephant','megumiSerpent','megumiSwarm','megumiMahoraga']:['megumiRabbit','megumiNue','megumiToad','megumiDog'];times=f.awakened&&!f.tenBase?[1.8,1.3,2,2.2]:[1.75,2.2,.85,1.4]}
@@ -6892,12 +6894,12 @@ if(f.skillCd[idx]>0)return;const aim=gojoBlueMaxAutoTarget?{x:gojoBlueMaxAutoTar
   }else{
    if(idx===0){startGojoBlueMax(f,angle,aim,t,gojoBlueMaxAutoTarget);return}
    if(idx===1){
-    f.attackAnim=.72;f.invuln=.25;f.vx=0;f.vy=0;f.gojoRedMaxImpactFrame=null;
+    f.attackAnim=1;f.invuln=.25;f.vx=0;f.vy=0;f.gojoRedMaxImpactFrame=null;
     burst(f.x,f.y-23,'#ff405f',12,3.2);showToast('REVERSAL RED MAX · CHARGING',650);
     schedule(()=>{
      if(f.dead)return;
      const impactAngle=Number.isFinite(f.face)?f.face:angle;
-     f.gojoRedMaxImpactFrame={start:game.time,until:game.time+.075,angle:impactAngle,target:t};
+     f.gojoRedMaxImpactFrame={start:game.time,until:game.time+.05,angle:impactAngle,target:t};
      schedule(()=>{
       if(f.dead)return;
       const launchAngle=Number.isFinite(f.gojoRedMaxImpactFrame&&f.gojoRedMaxImpactFrame.angle)?f.gojoRedMaxImpactFrame.angle:(Number.isFinite(f.face)?f.face:angle);
@@ -6905,10 +6907,10 @@ if(f.skillCd[idx]>0)return;const aim=gojoBlueMaxAutoTarget?{x:gojoBlueMaxAutoTar
       const orbX=f.x+dirX*34-Math.sin(launchAngle)*12;
       const orbY=f.y-23+dirY*34+Math.cos(launchAngle)*12-8;
       burst(orbX,orbY,'#ff405f',12,3.8);
-      projectiles.push({x:orbX,y:orbY,vx:dirX*33,vy:dirY*33,r:16,hitRadius:18,life:1.65,maxDistance:1000,travelled:0,owner:f,kind:'redmax',damage:30,blastRadius:160,color:'#ff405f',phase:'active',phaseElapsed:0,phaseDuration:1.65,phaseRemaining:1.65,trailPoints:[]});
+      projectiles.push({x:orbX,y:orbY,vx:dirX*33,vy:dirY*33,r:16,hitRadius:18,life:1.65,maxDistance:1000,travelled:0,owner:f,kind:'redmax',damage:30,blastRadius:360,color:'#ff405f',phase:'active',phaseElapsed:0,phaseDuration:1.65,phaseRemaining:1.65,trailPoints:[]});
       f.gojoRedMaxImpactFrame=null;f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType='';f.vx=0;f.vy=0;
-     },75);
-    },620);
+     },50);
+    },950);
     f.skillCd[idx]=10;
    }
    if(idx===2){f.attackAnim=.75;f.invuln=.22;burst(f.x,f.y,'#bd9dff',26,6);schedule(()=>{if(!f.dead)projectiles.push({x:f.x+Math.cos(angle)*42,y:f.y+Math.sin(angle)*42,vx:Math.cos(angle)*16,vy:Math.sin(angle)*16,r:34,life:3.4,maxDistance:920,travelled:0,owner:f,kind:'hollow',damage:70,color:'#c7a7ff'})},620);f.skillCd[idx]=40;game.shake=7}
