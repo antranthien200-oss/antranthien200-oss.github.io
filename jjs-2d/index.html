@@ -5008,7 +5008,7 @@ function spawnGojoRedExplosionFx(x,y,isMax=false){
  particles.push({x,y,vx:0,vy:0,life:.34,max:.34,size:285*maxWaveScale,color:'#ffe9ed',shape:'redShockwave'});
  particles.push({x,y,vx:0,vy:0,life:.24,max:.24,size:170*maxWaveScale,color:'#ff8296',shape:'redShockwave'});
  burst(x,y,'#ff405f',40,11);burst(x,y,'#ff9eae',24,8);burst(x,y,'#fff0f3',12,5);
- game.shake=Math.max(game.shake,15);game.hitStop=Math.max(game.hitStop,.035);
+ game.shake=Math.max(game.shake,15);game.hitStop=Math.max(game.hitStop,isMax ? .1 : .035);
 }
 function removeOnlineProjectile(data,hit=false){
  if(!data||!data.sessionId||!data.id)return;
