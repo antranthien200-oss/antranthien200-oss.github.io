@@ -230,6 +230,9 @@ body.mobile-driving #mobileJoystick .mobile-joy-label{display:block;position:abs
 /* Large center M1: strong fist silhouette and double ring like the reference. */
 .mobile-btn.m1{left:67px;top:7px;width:76px;height:76px;border-width:4px;outline-width:3px;background:rgba(0,0,0,.22);box-shadow:inset 0 0 0 5px rgba(255,255,255,.10),inset 0 0 0 9px rgba(0,0,0,.18),0 3px 8px rgba(0,0,0,.28)}
 .mobile-btn.m1 .mobile-btn-main{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:43px;line-height:1;text-shadow:none}
+.mobile-btn.m1.vehicle-drift .mobile-btn-main{font-size:0}
+.mobile-btn.m1.vehicle-drift .mobile-btn-main svg{width:72%;height:72%;fill:none;stroke:#fff;stroke-width:4.5;stroke-linecap:round;stroke-linejoin:round;shape-rendering:geometricPrecision}
+.mobile-btn.m1.vehicle-drift .mobile-btn-main svg .hub{fill:#fff;stroke:none}
 .mobile-btn[data-mobile-action="dash"] .mobile-btn-main{font-family:"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif;font-size:27px;line-height:1;text-shadow:none}
 
 /* Sprint / dash button above-left of M1; skill 4 above-right. */
@@ -3043,7 +3046,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const lerp=(a,b,t)=>a+(b-a)*t;
-const keys=new Set(),movementKeys=new Set(),suppressedKeyUps=new Set();let eKeyDownAt=0;let mouse={x:W*.7,y:H*.5,down:false,buffer:0,pending:false};
+const keys=new Set(),movementKeys=new Set(),suppressedKeyUps=new Set();let eKeyDownAt=0;let mobileVehicleDriftHeld=false;let mouse={x:W*.7,y:H*.5,down:false,buffer:0,pending:false};
 const MOVEMENT_CODE_MAP={KeyW:'w',KeyA:'a',KeyS:'s',KeyD:'d',ArrowUp:'arrowup',ArrowDown:'arrowdown',ArrowLeft:'arrowleft',ArrowRight:'arrowright'};
 function finishEKey(){
  const started=eKeyDownAt;eKeyDownAt=0;
@@ -3087,7 +3090,7 @@ addEventListener('keyup',e=>{
  if(suppressedKeyUps.has(k)){suppressedKeyUps.delete(k);return}
  if((k==='g'||k==='r')&&game.started&&!game.paused&&!game.over&&player&&!player.dead)useAttack(player,k==='g'?'awaken':'special')
 });
-function clearHeldInputs(){eKeyDownAt=0;keys.clear();movementKeys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(typeof stopMobileJoystick==='function')stopMobileJoystick();document.querySelectorAll('#mobileControls .mobile-btn.active').forEach(btn=>btn.classList.remove('active'))}
+function clearHeldInputs(){eKeyDownAt=0;mobileVehicleDriftHeld=false;keys.clear();movementKeys.clear();suppressedKeyUps.clear();mouse.down=false;mouse.pending=false;mouse.buffer=0;if(player){player.block=false;if(player.motion&&player.motion.name==='blockGesture')player.motion=null}if(typeof stopMobileJoystick==='function')stopMobileJoystick();document.querySelectorAll('#mobileControls .mobile-btn.active').forEach(btn=>btn.classList.remove('active'))}
 addEventListener('blur',clearHeldInputs);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)clearHeldInputs()});
 canvas.addEventListener('pointermove',e=>{const p=screenPointToGame(e.clientX,e.clientY);mouse.x=p.x;mouse.y=p.y});
@@ -4810,7 +4813,7 @@ function updateOnlineNetwork(dt){
   const mobileControl=mobile?mobileVehicleControl(player.vehicle):null;
   const steer=mobile?mobileControl.steer:(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
   const throttle=mobile?mobileControl.throttle:(movementKeys.has('w')||movementKeys.has('arrowup')?1:0)-(movementKeys.has('s')||movementKeys.has('arrowdown')?1:0);
-  if(!sendOnlineMessage('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift'))&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05}))return;
+  if(!sendOnlineMessage('car:control',{steer,throttle,drift:(keys.has(' ')||keys.has('shift')||mobileVehicleDriftHeld)&&Math.abs(player.vehicle.speed)>80&&Math.abs(steer)>.05}))return;
  }
  const skillInputLocked=!!(player.skillInputLocked&&player.motion);
  let moveX=0,moveY=0;
@@ -5145,7 +5148,7 @@ function leaveOnlineServer(){
 
 let mapCanvas=null,mapCacheDirty=true;
 const hudSlots=Array.from(document.querySelectorAll('.slot'));
-function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1860,1190);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay){comboDisplay.classList.remove('active','pop','hot');clearComboRanks(comboDisplay)};game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false;b.respawnTimer=0});mapCacheDirty=true;resetTrashCans();resetCityVehicles();player.vehicle=null;camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
+function resetMatch(){mouse.down=false;mouse.pending=false;mouse.buffer=0;mobileVehicleDriftHeld=false;keys.clear();movementKeys.clear();scheduledTasks.length=0;game.cutsceneTimer=0;game.combatNoticeTimer=0;game.playerDeathNotified=false;$('combatNotice').classList.remove('active','ko','death');$('awakeningCutscene').classList.remove('active');player=makeFighter('player',selected,1110,930);const opponents=Object.keys(CHARS).filter(k=>k!==selected);enemy=makeFighter('enemy',opponents[Math.floor(Math.random()*opponents.length)],1510,930);trainingDummy=makeFighter('enemy',selected,1860,1190);trainingDummy.isTrainingDummy=true;trainingDummy.aiDisabled=true;trainingDummy.passiveNpc=true;trainingDummy.hp=260;trainingDummy.maxHp=260;trainingDummy.face=Math.PI;trainingDummy.aiThink=999;game.over=false;game.domainClash=null;domainClashFrameCache.last=-Infinity;updateDomainClashHud();game.enemyRespawn=0;game.kills=0;game.playerHitStreak=0;game.playerHitTimer=0;const comboDisplay=$('comboDisplay');if(comboDisplay){comboDisplay.classList.remove('active','pop','hot');clearComboRanks(comboDisplay)};game.time=0;game.shake=0;game.hitStop=0;particles.length=0;projectiles.length=0;fireZones.length=0;debris.length=0;texts.length=0;doorTraps.length=0;trailStrokes.length=0;destructibles.forEach(o=>{o.alive=true;o.hp=3});staticBuildings.forEach(b=>{b.skillHits=0;b.damageStage=0;b.collapsed=false;b.respawnTimer=0});mapCacheDirty=true;resetTrashCans();resetCityVehicles();player.vehicle=null;camera.x=1300;camera.y=750;game.hudTimer=0;updateHud(true)}
 function startGame(){stopOnlinePlayerCountPolling();stopOnlineFightAnimation();stopCharacterPreviewAnimation();stopAccessoryPreviewAnimation();updatePauseActionButton();resetMatch();game.started=true;game.paused=false;document.body.classList.add('game-active');document.body.classList.remove('game-paused');$('menu').style.display='none';$('pause').style.display='none';$('hud').style.display='block';showToast('FIGHT!',900)}
 $('startBtn').onclick=startGame;
 
@@ -5262,19 +5265,32 @@ function mobileButtonAction(action){
  else if(action==='pause')togglePause();
  else if(['1','2','3','4'].includes(action))useAttack(player,action);
 }
+function syncMobileVehicleButton(){
+ const button=document.querySelector('#mobileControls .mobile-btn.m1'),main=button&&button.querySelector('.mobile-btn-main');
+ if(!button||!main)return;
+ const driving=!!(mobileControlsEnabled&&player&&player.vehicle),mode=driving?'drift':'punch';
+ if(button.dataset.vehicleMode===mode)return;
+ button.dataset.vehicleMode=mode;
+ button.classList.toggle('vehicle-drift',driving);
+ main.innerHTML=driving?'<svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="25"/><circle class="hub" cx="32" cy="32" r="5"/><path d="M32 27V8M27 35 13 45M37 35 51 45"/></svg>':'👊';
+ button.setAttribute('aria-label',driving?'Hold to drift':'Punch');
+}
 const mobileHeldKeys={block:'f'};
 document.querySelectorAll('[data-mobile-action]').forEach(btn=>{
  const action=btn.dataset.mobileAction;
  btn.addEventListener('pointerdown',e=>{
   e.preventDefault();e.stopPropagation();btn.classList.add('active');
   try{btn.setPointerCapture(e.pointerId)}catch(err){}
-  if(mobileHeldKeys[action]){
+  if(action==='m1'&&mobileControlsEnabled&&player&&player.vehicle){
+   mobileVehicleDriftHeld=true;
+  }else if(mobileHeldKeys[action]){
    if(action==='block')mobileAimAtTarget();
    keys.add(mobileHeldKeys[action]);
   }else mobileButtonAction(action);
  });
  const release=()=>{
   btn.classList.remove('active');
+  if(action==='m1')mobileVehicleDriftHeld=false;
   if(mobileHeldKeys[action])keys.delete(mobileHeldKeys[action]);
  };
  btn.addEventListener('pointerup',release);
@@ -7136,7 +7152,7 @@ if(f.char==='choso'){
  }finally{activeSkillScheduleOwner=previousSkillScheduleOwner}
 }
 
-function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const gojoBlueMaxMobileControl=getGojoBlueMaxMobileProjectile(player),skillInputLocked=!!(player.skillInputLocked&&player.motion),m1InputLocked=isM1Motion(player),grabInputLocked=!!player.grabbedBy,movementLocked=skillInputLocked||grabInputLocked||!!gojoBlueMaxMobileControl,actionLocked=skillInputLocked||grabInputLocked||m1InputLocked||!!gojoBlueMaxMobileControl;if(keys.has('q')){keys.delete('q');if(!player.dead&&!m1InputLocked&&!grabInputLocked)useAttack(player,'dash')}let x=0,y=0;if(!movementLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
+function handleInput(dt){if(!game.started||game.paused||game.over||game.cutsceneTimer>0)return;document.body.classList.toggle('mobile-driving',!!(mobileControlsEnabled&&player&&player.vehicle));syncMobileVehicleButton();if(player&&player.vehicleTransition){mouse.pending=false;mouse.buffer=0;return}if(player&&player.vehicle){if(mouse.pending){mouse.pending=false;mouse.buffer=0;useAttack(player,'m1');return}if(keys.has('q')){keys.delete('q');useAttack(player,'dash');return}mouse.pending=false;mouse.buffer=0;updateDrivenVehicle(player,dt);return}if(player&&player.vesselAwakenSequence){player.vx=0;player.vy=0;return}if(player.skillInputLocked&&!player.motion)player.skillInputLocked=false;const gojoBlueMaxMobileControl=getGojoBlueMaxMobileProjectile(player),skillInputLocked=!!(player.skillInputLocked&&player.motion),m1InputLocked=isM1Motion(player),grabInputLocked=!!player.grabbedBy,movementLocked=skillInputLocked||grabInputLocked||!!gojoBlueMaxMobileControl,actionLocked=skillInputLocked||grabInputLocked||m1InputLocked||!!gojoBlueMaxMobileControl;if(keys.has('q')){keys.delete('q');if(!player.dead&&!m1InputLocked&&!grabInputLocked)useAttack(player,'dash')}let x=0,y=0;if(!movementLocked){if(movementKeys.has('w')||movementKeys.has('arrowup'))y--;if(movementKeys.has('s')||movementKeys.has('arrowdown'))y++;if(movementKeys.has('a')||movementKeys.has('arrowleft'))x--;if(movementKeys.has('d')||movementKeys.has('arrowright'))x++;if(mobileControlsEnabled&&mobileJoyPointer!==null){x+=mobileMove.x;y+=mobileMove.y}}let l=Math.hypot(x,y)||1;x/=l;y/=l;
  if(player.stun<=0&&!player.grabbedBy&&!player.dead&&player.sukunaFireCast<=0){
   if(!movementLocked){const moveScale=mobileControlsEnabled?1.5:1;player.vx+=x*.8*dt*60*moveScale;player.vy+=y*.8*dt*60*moveScale;}
   const wantsBlock=keys.has('f');
@@ -7942,10 +7958,12 @@ function updateDestructibles(dt){
 }
 function updateMobileCooldowns(){
  if(!player)return;
+ syncMobileVehicleButton();
  document.querySelectorAll('#mobileControls [data-mobile-action]').forEach(btn=>{
   const action=btn.dataset.mobileAction;
+  const vehicleM1=action==='m1'&&mobileControlsEnabled&&!!player.vehicle;
   let cd=0;
-  if(action==='m1')cd=player.attackCd||0;
+  if(action==='m1')cd=vehicleM1?0:(player.attackCd||0);
   else if(action==='dash')cd=player.dashCd||0;
   else if(['1','2','3','4'].includes(action))cd=player.skillCd[Number(action)-1]||0;
   else if(action==='special')cd=player.specialCd||0;
@@ -7955,7 +7973,7 @@ function updateMobileCooldowns(){
   const overlay=btn.querySelector('.mobile-cooldown');
   if(overlay)overlay.textContent=cooling?cd.toFixed(1):'';
   if(cooling)btn.setAttribute('aria-label',action+' cooldown '+cd.toFixed(1)+' seconds');
-  else if(action==='m1')btn.setAttribute('aria-label','Punch');
+  else if(action==='m1')btn.setAttribute('aria-label',vehicleM1?'Hold to drift':'Punch');
   else if(action==='dash')btn.setAttribute('aria-label','Dash');
   else if(['1','2','3','4'].includes(action))btn.setAttribute('aria-label','Skill '+action);
   else if(action==='special')btn.setAttribute('aria-label','Special');
@@ -8484,7 +8502,7 @@ function updateDrivenVehicle(f,dt){
  const steer=mobileDriving?mobileControl.steer:(movementKeys.has('a')||movementKeys.has('arrowleft')?-1:0)+(movementKeys.has('d')||movementKeys.has('arrowright')?1:0);
  const forward=mobileDriving?mobileControl.throttle>0:(movementKeys.has('w')||movementKeys.has('arrowup'));
  const reverse=mobileDriving?false:(movementKeys.has('s')||movementKeys.has('arrowdown'));
- const drifting=(keys.has(' ')||keys.has('shift'))&&Math.abs(car.speed)>80&&steer!==0;
+ const drifting=(keys.has(' ')||keys.has('shift')||mobileVehicleDriftHeld)&&Math.abs(car.speed)>80&&steer!==0;
  if(mobileDriving){
   const throttle=mobileControl.throttle;
   if(throttle>0){if(car.speed<0)car.speed=Math.min(0,car.speed+620*dt);else car.speed=Math.min(car.maxSpeed,car.speed+340*throttle*dt)}
@@ -8546,6 +8564,7 @@ function advanceVehicleTransition(f,dt){
 }
 function toggleCityVehicle(f){
  if(!f)return false;
+ mobileVehicleDriftHeld=false;
  if(f.vehicleTransition)return true;
  if(onlineMode&&f===player&&onlineRoom){
   if(f.vehicle)return sendOnlineMessage('car:exit',{});
