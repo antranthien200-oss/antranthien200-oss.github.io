@@ -662,7 +662,13 @@ body.mobile-controls-enabled.game-active .ult-track{
 #mobileControls .mobile-btn.pause-top{transform:translateX(-50%) scale(var(--mobile-control-scale))}
 #mobileControls .mobile-btn.pause-top:active,#mobileControls .mobile-btn.pause-top.active{transform:translateX(-50%) scale(var(--mobile-control-scale))}
 #serverKingAnnouncement{position:absolute;left:50%;top:calc(env(safe-area-inset-top) + var(--king-announcement-top,58.5px));transform:translateX(-50%);display:none;width:max-content;max-width:94vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f6d77e;font:800 clamp(6px,1.9vw,9px)/1.1 system-ui,sans-serif;letter-spacing:.02em;text-align:center;text-shadow:0 0 4px rgba(255,196,75,.72);pointer-events:none;z-index:12}
-#serverKingAnnouncement.visible{display:block}
+#serverKingAnnouncement.visible{display:block;animation:kingAnnouncementPop .24s cubic-bezier(.18,.85,.32,1.2) both}
+@keyframes kingAnnouncementPop{
+ 0%{opacity:0;transform:translate(-50%,-4px) scale(.72)}
+ 72%{opacity:1;transform:translate(-50%,1px) scale(1.045)}
+ 100%{opacity:1;transform:translate(-50%,0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){#serverKingAnnouncement.visible{animation:none}}
 
 @media(max-width:520px){
  #mobileControls{--mobile-control-scale:1.25;--mobile-left-button-size:45px;--mobile-left-gap:10px;--mobile-left-font-size:16.25px;--mobile-left-cooldown-size:15px;--king-announcement-top:50.75px}
@@ -4120,7 +4126,7 @@ function showServerKingAnnouncement(data){
  const name=String(data.name||'Player').trim().slice(0,18)||'Player';
  const kills=Math.max(0,Math.floor(Number(data.kills)||0));if(kills<=0)return;
  label.textContent=name+' has become the KING with '+kills+' kills!';
- label.classList.add('visible');serverKingAnnouncementUntil=performance.now()+4200;
+ label.classList.remove('visible');void label.offsetWidth;label.classList.add('visible');serverKingAnnouncementUntil=performance.now()+4200;
 }
 function updateServerKingAnnouncement(){if(!onlineMode||!serverKingAnnouncementUntil||performance.now()>=serverKingAnnouncementUntil)hideServerKingAnnouncement()}
 try{onlineServerUrlSetting=localStorage.getItem('ballsShenaniganOnlineServer')||ONLINE_DEFAULT_SERVER_URL;onlinePlayerNameSetting=localStorage.getItem('ballsShenaniganPlayerName')||''}catch(e){}
