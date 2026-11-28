@@ -7779,6 +7779,7 @@ function updateProjectiles(dt){
   if(p.kind==='redmax'){
    const oldX=p.x,oldY=p.y;
    p.x+=p.vx*60*dt;p.y+=p.vy*60*dt;
+   recordGojoBlueMaxTrail(p);
    p.travelled=(p.travelled||0)+Math.hypot(p.x-oldX,p.y-oldY);
    p.life-=dt;
    p.phaseElapsed=(Number(p.phaseElapsed)||0)+dt;
@@ -9326,7 +9327,7 @@ function drawGojoBlueMaxProjectile(p,x,y,options={}){
  ctx.shadowColor='transparent';
  ctx.filter='none';
  const scale=clamp(Number(options.scale)||1,.05,1.5);
- if(options.drawTrail!==false)drawGojoBlueMaxTrail(p,options.tint==='red'?'#ff405f':'#ffffff');
+ if(options.drawTrail!==false)drawGojoBlueMaxTrail(p,options.tint==='red'?'#ff0000':'#ffffff');
  const drawOrb=()=>{
   ctx.filter=options.tint==='red'?'hue-rotate(160deg) saturate(1.8)':'none';
   if(loader.spriteSheet){
