@@ -4915,11 +4915,16 @@ function removeOnlineFireZone(data){
  if(!data||!data.id)return;
  for(let i=fireZones.length-1;i>=0;i--)if(fireZones[i].onlineId===String(data.id))fireZones.splice(i,1);
 }
-function spawnGojoRedExplosionFx(x,y){
- // The Red MAX blast expands wider than Blue MAX's 275-unit detonation.
- particles.push({x,y,vx:0,vy:0,life:.48,max:.48,size:460,color:'#ff405f',shape:'redShockwave'});
- particles.push({x,y,vx:0,vy:0,life:.34,max:.34,size:285,color:'#ffe9ed',shape:'redShockwave'});
- particles.push({x,y,vx:0,vy:0,life:.24,max:.24,size:170,color:'#ff8296',shape:'redShockwave'});
+function spawnGojoRedExplosionFx(x,y,isMax=false){
+ // Blue MAX collapse frames render at 205*1.5 = 307.5px.
+ // Red MAX's outer shockwave is exactly 1.25x that diameter.
+ // redShockwave drawing adds an 8px starting radius, so subtract it
+ // when calculating the particle size to keep the final diameter exact.
+ const maxOuterRadius=(205*1.5*1.25)/2;
+ const maxWaveScale=isMax?(maxOuterRadius-8)/460:1;
+ particles.push({x,y,vx:0,vy:0,life:.48,max:.48,size:460*maxWaveScale,color:'#ff405f',shape:'redShockwave'});
+ particles.push({x,y,vx:0,vy:0,life:.34,max:.34,size:285*maxWaveScale,color:'#ffe9ed',shape:'redShockwave'});
+ particles.push({x,y,vx:0,vy:0,life:.24,max:.24,size:170*maxWaveScale,color:'#ff8296',shape:'redShockwave'});
  burst(x,y,'#ff405f',40,11);burst(x,y,'#ff9eae',24,8);burst(x,y,'#fff0f3',12,5);
  game.shake=Math.max(game.shake,15);game.hitStop=Math.max(game.hitStop,.035);
 }
@@ -4929,7 +4934,7 @@ function removeOnlineProjectile(data,hit=false){
  if(index>=0){
   const p=projectiles[index],x=Number.isFinite(Number(data.x))?Number(data.x):p.x,y=Number.isFinite(Number(data.y))?Number(data.y):p.y;
   projectiles.splice(index,1);
-  if(hit){if(p.kind==='red'||p.kind==='redmax')spawnGojoRedExplosionFx(x,y);else burst(x,y,p.color||'#b8e8ff',14,4);if(data.sessionId!==onlineSessionId)game.shake=Math.max(game.shake,1.5)}
+  if(hit){if(p.kind==='red'||p.kind==='redmax')spawnGojoRedExplosionFx(x,y,p.kind==='redmax');else burst(x,y,p.color||'#b8e8ff',14,4);if(data.sessionId!==onlineSessionId)game.shake=Math.max(game.shake,1.5)}
  }
 }
 function bindOnlineRoom(client,room){if(SUKUNA_PREVIEW_MODE)return;
@@ -5591,7 +5596,7 @@ function detonateGojoRedMax(p,x=p.x,y=p.y,applyDamage=true){
    damage(target,(Number(p.damage)||30)*falloff,p.owner,{stun:.8,kx:Math.cos(a)*18,ky:Math.sin(a)*18,color:p.color||'#ff405f',big:true,unblockable:true,damageType:'explosion'});
   }
  }
- spawnGojoRedExplosionFx(x,y);
+ spawnGojoRedExplosionFx(x,y,true);
 }
 function rushEmberBurst(x,y,angle,count=8,power=4){
  if(isMobileDevice)count=Math.min(count,2);
