@@ -3953,6 +3953,7 @@ let gojoBlueMaxCharacterRenderFreezeActive=false;
 function isGojoBlueMaxCasterMotion(f){
  return !!(f&&!f.dead&&f.char==='honored'&&f.awakened&&f.motion&&f.motion.name==='gojoBlueMax');
 }
+let gojoBlueMaxCharacterRenderFreezeKeepUntil=0;
 function updateGojoBlueMaxCharacterRenderFreeze(){
  // Keep the freeze active through the projectile's complete collapse; life can reach zero
  // a frame before the projectile is marked finished.
@@ -3966,9 +3967,16 @@ function updateGojoBlueMaxCharacterRenderFreeze(){
   }
  }
  const active=projectileActive||casterMotionActive;
- if(active===gojoBlueMaxCharacterRenderFreezeActive)return;
- gojoBlueMaxCharacterRenderFreezeActive=active;
- // Each cast gets a fresh, single-frame body snapshot.
+ if(active){
+  if(!gojoBlueMaxCharacterRenderFreezeActive)gojoBlueMaxCharacterSnapshots=new WeakMap();
+  gojoBlueMaxCharacterRenderFreezeActive=true;
+  // A short grace period prevents one missing network/projectile frame from
+  // briefly returning every fighter to the live renderer.
+  gojoBlueMaxCharacterRenderFreezeKeepUntil=performance.now()+120;
+  return;
+ }
+ if(!gojoBlueMaxCharacterRenderFreezeActive||performance.now()<gojoBlueMaxCharacterRenderFreezeKeepUntil)return;
+ gojoBlueMaxCharacterRenderFreezeActive=false;
  gojoBlueMaxCharacterSnapshots=new WeakMap();
 }
 let gojoBlueMaxCharacterSnapshots=new WeakMap();
@@ -3994,9 +4002,12 @@ function drawGojoBlueMaxCachedCharacter(f,centerX,centerY,drawSource,size=256){
   cached={canvas:surface,size,center:size*.5};
   gojoBlueMaxCharacterSnapshots.set(f,cached);
  }
+ const pixelRatio=Math.max(.5,Number(dpr)||1);
+ const drawX=Math.round(centerX*pixelRatio)/pixelRatio;
+ const drawY=Math.round(centerY*pixelRatio)/pixelRatio;
  ctx.save();
  ctx.imageSmoothingEnabled=false;
- ctx.drawImage(cached.canvas,centerX-cached.center,centerY-cached.center,cached.size,cached.size);
+ ctx.drawImage(cached.canvas,drawX-cached.center,drawY-cached.center,cached.size,cached.size);
  ctx.restore();
 }
 
@@ -7497,8 +7508,11 @@ function startGojoBlueMax(f,angle,aim,target,mobileTarget=null){
  f.skillInputLocked=false;
  f.vx=0;f.vy=0;
  setMotion(f,'gojoBlueMax',4.5,angle,target);
- holdGojoBlueMaxVisual(p,f);
  projectiles.push(p);
+ // projectiles.push wraps and clones entries, so bind the caster lock to the
+ // actual stored projectile that will have its life/finished state updated.
+ const liveProjectile=projectiles[projectiles.length-1]||p;
+ holdGojoBlueMaxVisual(liveProjectile,f);
  burst(orbX,orbY,'#55cfff',12,2.6);
  showToast('LAPSE BLUE MAX · GUIDE THE ORB',850);
  return p;
@@ -10943,18 +10957,16 @@ function drawTrashManEffects(){
 function drawFighter(f){
  if(!f)return;
  if(!gojoBlueMaxCharacterRenderFreezeActive||f.dead||f.isTrainingDummy||f.vehicle&&!f.vehicleTransition)return drawFighterUncached(f);
- const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
- const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
- if(outsideViewport)return;
  const activeDomain=domainFighters().find(domainIsActive);
  if(activeDomain&&!domainViewMatches(f,activeDomain))return;
- drawGojoBlueMaxCachedCharacter(f,sx(f.x),sy(f.y),()=>drawFighterUncached(f),256);
+ // Match the dummy's no-cull render path while the body snapshot is locked.
+ drawGojoBlueMaxCachedCharacter(f,sx(f.x),sy(f.y),()=>drawFighterUncached(f,true),256);
 }
-function drawFighterUncached(f){
+function drawFighterUncached(f,forceVisible=false){
  // Only bypass viewport culling while the local mobile camera follows the Blue MAX orb.
  // Desktop and multiplayer keep normal culling for unrelated fighters.
- const blueMaxRenderLock=!!(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f));
- const outsideViewport=!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
+ const blueMaxRenderLock=!!(forceVisible||(mobileControlsEnabled&&!onlineMode&&isGojoBlueMaxVisualSuppressed(f)));
+ const outsideViewport=!forceVisible&&!blueMaxRenderLock&&!worldRectVisible(f.x-80,f.y-110,160,150,48);
  const debugKey=f===player?'YOU':f===enemy?'CPU':String(f.onlineName||f.char||'REMOTE').slice(0,12);
  if(gojoBlueMaxRenderDebug){
   gojoBlueMaxDebugStats.drawCalls++;
@@ -11060,7 +11072,7 @@ function drawFighterMotionOverlays(f){
  // The glass shatter is a foreground layer, drawn after Gojo's body and motion effects.
 }
 function drawFighterHandsForeground(f){
- if(!f||f.dead||!worldRectVisible(f.x-130,f.y-150,260,220,48))return;
+ if(!f||f.dead||(!gojoBlueMaxCharacterRenderFreezeActive&&!worldRectVisible(f.x-130,f.y-150,260,220,48)))return;
  // During Blue MAX, recalculate only hand coordinates and draw the hands over the frozen body bitmap.
  if(gojoBlueMaxCharacterRenderFreezeActive)drawHeadHands(f,true,true,false);
  const pose=f.motionHandPose;if(!pose)return;
