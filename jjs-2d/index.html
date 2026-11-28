@@ -5008,7 +5008,7 @@ function spawnGojoRedExplosionFx(x,y,isMax=false){
  particles.push({x,y,vx:0,vy:0,life:.34,max:.34,size:285*maxWaveScale,color:'#ffe9ed',shape:'redShockwave'});
  particles.push({x,y,vx:0,vy:0,life:.24,max:.24,size:170*maxWaveScale,color:'#ff8296',shape:'redShockwave'});
  burst(x,y,'#ff405f',40,11);burst(x,y,'#ff9eae',24,8);burst(x,y,'#fff0f3',12,5);
- game.shake=Math.max(game.shake,15);game.hitStop=Math.max(game.hitStop,isMax ? .1 : .035);
+ game.shake=Math.max(game.shake,15);game.hitStop=Math.max(game.hitStop,.035);
 }
 function removeOnlineProjectile(data,hit=false){
  if(!data||!data.sessionId||!data.id)return;
@@ -7037,17 +7037,18 @@ if(f.skillCd[idx]>0)return;const aim=gojoBlueMaxAutoTarget?{x:gojoBlueMaxAutoTar
     schedule(()=>{
      if(f.dead)return;
      const impactAngle=Number.isFinite(f.face)?f.face:angle;
-     f.gojoRedMaxImpactFrame={start:game.time,until:game.time+.05,angle:impactAngle,target:t};
+     const dirX=Math.cos(impactAngle),dirY=Math.sin(impactAngle);
+     const orbX=f.x+dirX*34-Math.sin(impactAngle)*12;
+     const orbY=f.y-23+dirY*34+Math.cos(impactAngle)*12-8;
+     const redMaxProjectile={x:orbX,y:orbY,vx:dirX*33,vy:dirY*33,r:16,hitRadius:18,life:1.65,maxDistance:1000,travelled:0,owner:f,kind:'redmax',damage:30,blastRadius:360,color:'#ff405f',phase:'active',phaseElapsed:0,phaseDuration:1.65,phaseRemaining:1.65,trailPoints:[]};
+     f.gojoRedMaxImpactFrame={start:game.time,until:game.time+.1,angle:impactAngle,target:t,projectile:redMaxProjectile};
+     burst(orbX,orbY,'#ff405f',12,3.8);
+     projectiles.push(redMaxProjectile);
      schedule(()=>{
-      if(f.dead)return;
-      const launchAngle=Number.isFinite(f.gojoRedMaxImpactFrame&&f.gojoRedMaxImpactFrame.angle)?f.gojoRedMaxImpactFrame.angle:(Number.isFinite(f.face)?f.face:angle);
-      const dirX=Math.cos(launchAngle),dirY=Math.sin(launchAngle);
-      const orbX=f.x+dirX*34-Math.sin(launchAngle)*12;
-      const orbY=f.y-23+dirY*34+Math.cos(launchAngle)*12-8;
-      burst(orbX,orbY,'#ff405f',12,3.8);
-      projectiles.push({x:orbX,y:orbY,vx:dirX*33,vy:dirY*33,r:16,hitRadius:18,life:1.65,maxDistance:1000,travelled:0,owner:f,kind:'redmax',damage:30,blastRadius:360,color:'#ff405f',phase:'active',phaseElapsed:0,phaseDuration:1.65,phaseRemaining:1.65,trailPoints:[]});
-      f.gojoRedMaxImpactFrame=null;f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType='';f.vx=0;f.vy=0;
-     },50);
+      if(f.gojoRedMaxImpactFrame&&f.gojoRedMaxImpactFrame.projectile===redMaxProjectile)f.gojoRedMaxImpactFrame=null;
+      f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType='';f.vx=0;f.vy=0;
+      game.shake=Math.max(game.shake,8);
+     },100);
     },950);
     f.skillCd[idx]=10;
    }
@@ -12571,9 +12572,8 @@ function drawGojoRedMaxImpactFrameOverlay(){
   caster.face=previousFace;
   const target=impact.target;
   if(target&&target!==caster&&!target.dead){drawHeadHands(target,true,false,false);drawFighterHandsForeground(target)}
-  const orbX=sx(caster.x)+Math.cos(angle)*34-Math.sin(angle)*12;
-  const orbY=sy(caster.y)-caster.jump*3-23+Math.sin(angle)*34+Math.cos(angle)*12-8;
-  drawGojoBlueMaxProjectile({phase:'active',phaseDuration:.075,phaseRemaining:Math.max(0,.075-(game.time-impact.start))},orbX,orbY,{scale:.5,tint:'red',drawTrail:false});
+  const redMaxOrb=impact.projectile;
+  if(redMaxOrb)drawGojoBlueMaxProjectile(redMaxOrb,sx(redMaxOrb.x),sy(redMaxOrb.y),{scale:.5,tint:'red',drawTrail:false,rotation:redMaxOrb.rotation||0});
   ctx.globalCompositeOperation='source-in';ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over';
  }finally{ctx=previousCtx;caster.face=previousFace}
  if(!gojoRedMaxImpactOverlayCanvas){
