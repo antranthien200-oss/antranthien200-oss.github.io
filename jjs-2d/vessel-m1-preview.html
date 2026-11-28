@@ -6903,7 +6903,7 @@ if(f.skillCd[idx]>0)return;const aim=gojoBlueMaxAutoTarget?{x:gojoBlueMaxAutoTar
       const launchAngle=Number.isFinite(f.gojoRedMaxImpactFrame&&f.gojoRedMaxImpactFrame.angle)?f.gojoRedMaxImpactFrame.angle:(Number.isFinite(f.face)?f.face:angle);
       const dirX=Math.cos(launchAngle),dirY=Math.sin(launchAngle);
       const orbX=f.x+dirX*34-Math.sin(launchAngle)*12;
-      const orbY=f.y-23+dirY*34+Math.cos(launchAngle)*12;
+      const orbY=f.y-23+dirY*34+Math.cos(launchAngle)*12-8;
       burst(orbX,orbY,'#ff405f',12,3.8);
       projectiles.push({x:orbX,y:orbY,vx:dirX*33,vy:dirY*33,r:16,hitRadius:18,life:1.65,maxDistance:1000,travelled:0,owner:f,kind:'redmax',damage:30,blastRadius:160,color:'#ff405f',phase:'active',phaseElapsed:0,phaseDuration:1.65,phaseRemaining:1.65,trailPoints:[]});
       f.gojoRedMaxImpactFrame=null;f.skillInputLocked=false;f.motion=null;f.attackAnim=0;f.attackType='';f.vx=0;f.vy=0;
@@ -8682,7 +8682,7 @@ function drawMotionVfx(f,m,p,c,vfxFade=1){
   const angle=Number.isFinite(f.face)?f.face:(Number.isFinite(f.motion&&f.motion.angle)?f.motion.angle:0);
   const charge=clamp(p,0,1);
   ctx.save();ctx.rotate(angle);
-  drawGojoBlueMaxProjectile({phase:'forming',phaseDuration:.72,phaseRemaining:(1-charge)*.72},34,12,{scale:.15,tint:'red',drawTrail:false});
+  drawGojoBlueMaxProjectile({phase:'forming',phaseDuration:.72,phaseRemaining:(1-charge)*.72},34-8*Math.sin(angle),12-8*Math.cos(angle),{scale:.15,tint:'red',drawTrail:false});
   ctx.restore();return;
  }
  if(m==='gojoRed'){
@@ -12396,19 +12396,19 @@ function drawGojoRedMaxImpactFrameOverlay(){
  if(!surfaceCtx)return;
  surfaceCtx.setTransform(1,0,0,1,0,0);surfaceCtx.clearRect(0,0,surfaceW,surfaceH);
  surfaceCtx.setTransform(gameRatio,0,0,gameRatio,0,0);
- const previousCtx=ctx,angle=Number.isFinite(impact.angle)?impact.angle:caster.face;
+ const previousCtx=ctx,previousFace=caster.face,angle=Number.isFinite(impact.angle)?impact.angle:caster.face;
  try{
   ctx=surfaceCtx;ctx.imageSmoothingEnabled=false;ctx.globalCompositeOperation='source-over';ctx.filter='none';
-  const previousFace=caster.face;caster.face=angle;
+  caster.face=angle;
   drawHeadHands(caster,true,false,false);drawFighterHandsForeground(caster);
   caster.face=previousFace;
   const target=impact.target;
   if(target&&target!==caster&&!target.dead){drawHeadHands(target,true,false,false);drawFighterHandsForeground(target)}
   const orbX=sx(caster.x)+Math.cos(angle)*34-Math.sin(angle)*12;
-  const orbY=sy(caster.y)-caster.jump*3-23+Math.sin(angle)*34+Math.cos(angle)*12;
+  const orbY=sy(caster.y)-caster.jump*3-23+Math.sin(angle)*34+Math.cos(angle)*12-8;
   drawGojoBlueMaxProjectile({phase:'active',phaseDuration:.075,phaseRemaining:Math.max(0,.075-(game.time-impact.start))},orbX,orbY,{scale:.15,tint:'red',drawTrail:false});
   ctx.globalCompositeOperation='source-in';ctx.fillStyle='#ffffff';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='source-over';
- }finally{ctx=previousCtx;caster.face=Number.isFinite(caster.face)?caster.face:angle}
+ }finally{ctx=previousCtx;caster.face=previousFace}
  if(!gojoRedMaxImpactOverlayCanvas){
   gojoRedMaxImpactOverlayCanvas=document.createElement('canvas');
   gojoRedMaxImpactOverlayCanvas.style.cssText='position:fixed;inset:0;width:100vw;height:100vh;z-index:2147483000;pointer-events:none;display:none';
